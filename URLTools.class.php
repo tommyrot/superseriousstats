@@ -126,7 +126,7 @@ final class URLTools
 		 * 1. Convert scheme and authority to lower case.
 		 * 2. Strip trailing slashes from path or authority.
 		 */
-		$csURL = preg_replace(array('/^'.$this->scheme.$this->authority.'/ei', '/^'.$this->scheme.$this->authority.$this->path.'/ei'), array("strtolower('\\0')", "rtrim('\\0', '/')"), $csURL);
+		$csURL = preg_replace(array('/^'.$this->scheme.$this->authority.'/ei', '/^'.$this->scheme.$this->authority.$this->path.'/ei'), array("strtolower('$0')", "rtrim('$0', '/')"'), $csURL);
 		return $csURL;
 	}
 }
