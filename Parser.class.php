@@ -353,7 +353,7 @@ abstract class Parser extends Parser_MySQL
 					$this->nicks_objs[$nick]->addValue($this->smileys[strtolower($csWord)], 1);
 				elseif (preg_match('/^(www\.|https?:\/\/)/i', $csWord)) {
 					// Put "http://" scheme in front of all URLs beginning with just "www.".
-					$csURL = preg_replace('/^www\./i', 'http://\\0', $csWord);
+					$csURL = preg_replace('/^www\./i', 'http://$0', $csWord);
 
 					if ($this->validateURL($csURL)) {
 						$csURL = $this->URLTools->normalizeURL($csURL);
