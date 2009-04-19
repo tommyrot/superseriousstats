@@ -20,7 +20,7 @@
  * Super Serious Stats
  * Parser.class.php
  *
- * General parse instructions. This class will be extended by a class with logfileformat specific parse instructions.
+ * General parse instructions. This class will be extended by a class with logfile format specific parse instructions.
  */
 
 abstract class Parser extends Parser_MySQL
@@ -163,7 +163,7 @@ abstract class Parser extends Parser_MySQL
 					 */
 					$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
 
-					// Pass on the normalized line to the logfileformat specific parser class extending this class.
+					// Pass on the normalized line to the logfile format specific parser class extending this class.
 					$this->lineNum++;
 					$this->parseLine($line);
 					$this->prevLine = $line;
