@@ -20,7 +20,7 @@
  * Super Serious Stats
  * Parser_Eggdrop.class.php
  *
- * Parse instructions for Eggdrop logfileformat.
+ * Parse instructions for Eggdrop logfile format.
  */
 
 final class Parser_Eggdrop extends Parser
