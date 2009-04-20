@@ -77,13 +77,15 @@ final class Parser_Irssi extends Parser
 			 * "Mode" lines by user. Format: "-!- mode/CHAN [+o-v NICK NICK] by NICK".
 			 * "Mode" lines by server. Format: "-!- ServerMode/CHAN [+o-v NICK NICK] by NICK".
 			 */
-			} elseif (strpos($lineParts[1], 'mode/') === 0 || strpos($lineParts[1], 'ServerMode/') === 0) {
+			} elseif (stripos($lineParts[1], 'mode/') !== FALSE) {
 				$modes = ltrim($lineParts[2], '[');
 
 				// Only process modes consisting of ops and voices.
 				if (preg_match('/^[-+][ov]+([-+][ov]+)?$/', $modes)) {
 					$modesTotal = substr_count($modes, 'o') + substr_count($modes, 'v');
-					$csNick_performing = $lineParts[4 + $modesTotal];
+
+					// It's possible there are multiple "performing" nicks separated by commas. We use only the first one and strip the comma from it.
+					$csNick_performing = rtrim($lineParts[4 + $modesTotal], ',');
 
 					// Irssi doesn't log a users' host for "mode" lines so we pass on NULL to setMode().
 					$csHost = NULL;
