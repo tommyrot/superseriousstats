@@ -528,7 +528,7 @@ abstract class Parser extends Parser_MySQL
 			$this->nicks_objs[$nick_performing]->addValue('slaps', 1);
 
 			// Clean possible network prefix (psyBNC) from undergoing nick.
-			if (preg_match('/[~\']/', $csNick_undergoing)) {
+			if (substr_count($csNick_undergoing, '~') + substr_count($csNick_undergoing, '\'') == 1) {
 				$this->output('notice', 'setSlap(): cleaning "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
 				$tmp = preg_split('/[~\']/', $csNick_undergoing, 2);
 				$csNick_undergoing = $tmp[1];
