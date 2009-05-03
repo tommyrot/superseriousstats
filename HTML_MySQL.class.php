@@ -35,14 +35,10 @@ final class HTML_MySQL
 	private $l_total = 0;
 	private $l_minimum = 0;
 	private $days = 0;
-	private $bar_night_vertical = 'b1.png';
-	private $bar_night_horizontal = 'b2.png';
-	private $bar_morning_vertical = 'g1.png';
-	private $bar_morning_horizontal = 'g2.png';
-	private $bar_afternoon_vertical = 'y1.png';
-	private $bar_afternoon_horizontal = 'y2.png';
-	private $bar_evening_vertical = 'r1.png';
-	private $bar_evening_horizontal = 'r2.png';
+	private $bar_night = 'b.png';
+	private $bar_morning = 'g.png';
+	private $bar_afternoon = 'y.png';
+	private $bar_evening = 'r.png';
 
 	public function setValue($var, $value)
 	{
@@ -292,7 +288,7 @@ final class HTML_MySQL
 					if (round(${$time}[$i]['lines'] * $barWidth) == 0)
 						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'</td>';
 					else
-						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br /><img src="'.$this->{'bar_'.$time.'_horizontal'}.'" width="'.round(${$time}[$i]['lines'] * $barWidth).'" alt="" /></td>';
+						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br /><img src="'.$this->{'bar_'.$time}.'" width="'.round(${$time}[$i]['lines'] * $barWidth).'" alt="" /></td>';
 				} else
 					$output .= '<td class="v"></td>';
 
@@ -402,13 +398,13 @@ final class HTML_MySQL
 				$barHeight = round(($l_total[$hour] / $l_total_high) * 100);
 
 				if ($barHeight != 0 && $hour >= 0 && $hour <= 5)
-					$output .= '<img src="b1.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+					$output .= '<img src="'.$this->bar_night.'" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
 				elseif ($barHeight != 0 && $hour >= 6 && $hour <= 11)
-					$output .= '<img src="g1.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+					$output .= '<img src="'.$this->bar_morning.'" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
 				elseif ($barHeight != 0 && $hour >= 12 && $hour <= 17)
-					$output .= '<img src="y1.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+					$output .= '<img src="'.$this->bar_afternoon.'" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
 				elseif ($barHeight != 0 && $hour >= 18 && $hour <= 23)
-					$output .= '<img src="r1.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+					$output .= '<img src="'.$this->bar_evening.'" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
 
 				$output .= '</td>';
 			} else
@@ -522,11 +518,6 @@ final class HTML_MySQL
 			// Format the "when?" bar.
 			$when_output = '';
 			$when_width = 50;
-			//TODO: convert to statics
-			$when_image_night = 'b2.png';
-			$when_image_morning = 'g2.png';
-			$when_image_afternoon = 'y2.png';
-			$when_image_evening = 'r2.png';
 			$times = array('night', 'morning', 'afternoon', 'evening');
 			unset($l_night_width_real, $l_night_width, $l_morning_width_real, $l_morning_width, $l_afternoon_width_real, $l_afternoon_width, $l_evening_width_real, $l_evening_width, $remainders, $when_night, $when_morning, $when_afternoon, $when_evening);
 
@@ -551,14 +542,14 @@ final class HTML_MySQL
 				foreach ($remainders as $time => $remainder) {
 					if ($when_width != 0) {
 						$when_width--;
-						${'when_'.$time} = '<img src="'.${'when_image_'.$time}.'" width="'.++${'l_'.$time.'_width'}.'" alt="" />';
+						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.++${'l_'.$time.'_width'}.'" alt="" />';
 					} else
-						${'when_'.$time} = '<img src="'.${'when_image_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
+						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
 				}
 			} else
 				foreach ($times as $time)
 					if (!empty(${'l_'.$time.'_width'}))
-						${'when_'.$time} = '<img src="'.${'when_image_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
+						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
 
 			foreach ($times as $time)
 				if (!empty(${'when_'.$time}))
@@ -672,28 +663,28 @@ final class HTML_MySQL
 					$l_evening_barHeight = round(($activity[$year][$month][$day]['l_evening'] / $l_total_high) * 100);
 
 					if ($l_evening_barHeight != 0)
-						$output .= '<img src="r1.png" height="'.$l_evening_barHeight.'" alt="" title="" />';
+						$output .= '<img src="'.$this->bar_evening.'" height="'.$l_evening_barHeight.'" alt="" title="" />';
 				}
 
 				if ($activity[$year][$month][$day]['l_afternoon'] != 0) {
 					$l_afternoon_barHeight = round(($activity[$year][$month][$day]['l_afternoon'] / $l_total_high) * 100);
 
 					if ($l_afternoon_barHeight != 0)
-						$output .= '<img src="y1.png" height="'.$l_afternoon_barHeight.'" alt="" title="" />';
+						$output .= '<img src="'.$this->bar_afternoon.'" height="'.$l_afternoon_barHeight.'" alt="" title="" />';
 				}
 
 				if ($activity[$year][$month][$day]['l_morning'] != 0) {
 					$l_morning_barHeight = round(($activity[$year][$month][$day]['l_morning'] / $l_total_high) * 100);
 
 					if ($l_morning_barHeight != 0)
-						$output .= '<img src="g1.png" height="'.$l_morning_barHeight.'" alt="" title="" />';
+						$output .= '<img src="'.$this->bar_morning.'" height="'.$l_morning_barHeight.'" alt="" title="" />';
 				}
 
 				if ($activity[$year][$month][$day]['l_night'] != 0) {
 					$l_night_barHeight = round(($activity[$year][$month][$day]['l_night'] / $l_total_high) * 100);
 
 					if ($l_night_barHeight != 0)
-						$output .= '<img src="b1.png" height="'.$l_night_barHeight.'" alt="" title="" />';
+						$output .= '<img src="'.$this->bar_night.'" height="'.$l_night_barHeight.'" alt="" title="" />';
 				}
 
 				$output .= '</td>';
@@ -781,28 +772,28 @@ final class HTML_MySQL
 					$l_evening_barHeight = round(($l_evening[$day] / $l_total_high) * 100);
 
 					if ($l_evening_barHeight != 0)
-						$output .= '<img src="r1.png" height="'.$l_evening_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						$output .= '<img src="'.$this->bar_evening.'" height="'.$l_evening_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
 				}
 
 				if ($l_afternoon[$day] != 0) {
 					$l_afternoon_barHeight = round(($l_afternoon[$day] / $l_total_high) * 100);
 
 					if ($l_afternoon_barHeight != 0)
-						$output .= '<img src="y1.png" height="'.$l_afternoon_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						$output .= '<img src="'.$this->bar_afternoon.'" height="'.$l_afternoon_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
 				}
 
 				if ($l_morning[$day] != 0) {
 					$l_morning_barHeight = round(($l_morning[$day] / $l_total_high) * 100);
 
 					if ($l_morning_barHeight != 0)
-						$output .= '<img src="g1.png" height="'.$l_morning_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						$output .= '<img src="'.$this->bar_morning.'" height="'.$l_morning_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
 				}
 
 				if ($l_night[$day] != 0) {
 					$l_night_barHeight = round(($l_night[$day] / $l_total_high) * 100);
 
 					if ($l_night_barHeight != 0)
-						$output .= '<img src="b1.png" height="'.$l_night_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						$output .= '<img src="'.$this->bar_night.'" height="'.$l_night_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
 				}
 
 				$output .= '</td>';
