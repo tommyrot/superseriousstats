@@ -78,14 +78,11 @@ final class HTML_MySQL
 		else
 			$this->l_minimum = 500;
 
-		$this->current_year = date('Y');
-		$this->current_month = date('m');
-		$this->current_day_of_month = date('d');
-		$this->stats_year = date('Y', mktime(0, 0, 0, $this->current_month, $this->current_day_of_month - 1, $this->current_year));
-		$this->stats_month = date('m', mktime(0, 0, 0, $this->current_month, $this->current_day_of_month - 1, $this->current_year));
-		$this->stats_month_name = date('F', mktime(0, 0, 0, $this->current_month, $this->current_day_of_month - 1, $this->current_year));
-		$this->stats_day_of_month = date('d', mktime(0, 0, 0, $this->current_month, $this->current_day_of_month - 1, $this->current_year));
-		$this->stats_day_of_year = date('z', mktime(0, 0, 0, $this->current_month, $this->current_day_of_month - 1, $this->current_year) + 1);
+		$this->year = date('Y', strtotime('yesterday'));
+		$this->month = date('m', strtotime('yesterday'));
+		$this->month_name = date('F', strtotime('yesterday'));
+		$this->day_of_month = date('d', strtotime('yesterday'));
+		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
 
 		// Doctype and stuff.
 		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n".'<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n".'<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n".'<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n".'<meta http-equiv="Content-Style-Type" content="text/css" />'."\n".'<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n".'</head>'."\n\n".'<body>'."\n";
@@ -132,12 +129,12 @@ final class HTML_MySQL
 		echo '<div class="box">';
 		$this->makeTable_MostActivePeople('alltime', 30, 'Most Active People, Alltime', array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'));
 
-		if ($this->current_month == 1)
-			$this->makeTable_MostActivePeople('year', 10, 'Most Active People, '.($this->stats_year - 1), array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), ($this->stats_year - 1));
+		if (date('m') == 1)
+			$this->makeTable_MostActivePeople('year', 10, 'Most Active People, '.($this->year - 1), array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), ($this->year - 1));
 		else
-			$this->makeTable_MostActivePeople('year', 10, 'Most Active People, '.$this->stats_year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->stats_year);
+			$this->makeTable_MostActivePeople('year', 10, 'Most Active People, '.$this->year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->year);
 
-		$this->makeTable_MostActivePeople('month', 10, 'Most Active People, '.$this->stats_month_name.' '.$this->stats_year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->stats_year, $this->stats_month);
+		$this->makeTable_MostActivePeople('month', 10, 'Most Active People, '.$this->month_name.' '.$this->year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->year, $this->month);
 		echo '</div>'."\n\n";
 
 		echo '<div class="box">'."\n";
@@ -156,18 +153,74 @@ final class HTML_MySQL
 		$this->makeTable('small', 5, 'Most Fluent Chatters', array('', 'Words/Line', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`words` / `l_total`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('small', 5, 'Most Tedious Chatters', array('', 'Chars/Line', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`characters` / `l_total`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 
-		//think of a better query so the registered csNick is displayed instead of possible an alias
-		//$this->makeTable('small', 5, 'Individual Top Days, Alltime',			   array('', 'Lines', 'User'),		 array('SELECT `RUID`, MAX(`l_total`) AS `v1` FROM `user_activity`, `user_status`, `user_details` WHERE `user_activity`.`UID` = `user_status`.`UID` AND `user_status`.`UID` = `user_details`.`UID` AND `status` != 3 GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 5'), 0, FALSE, 5, TRUE);
-		if ($this->current_month != 1) {
-		  #makeTable('small', 'Individual Top Days, '.$this->stats_year,		       array('', 'Lines', 'User'),		 array('SELECT `RUID`, MAX(`l_total`) AS `v1` FROM `user_activity`, `user_status`, `user_details` WHERE `user_activity`.`UID` = `user_status`.`UID` AND `user_status`.`UID` = `user_details`.`UID` AND `status` != 3 AND `date` LIKE \''.$this->stats_year.'-%\' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 5'), 0, FALSE, 5, TRUE);
+		////////////////////
+		//TOP DAYS - ALLTIME
+		$query = @mysql_query('SELECT `RUID`, MAX(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysql_error());
+		$tmpArr = array();
+		while ($result = @mysql_fetch_object($query)) {
+			$query2 = @mysql_query('SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
+			$result2 = @mysql_fetch_object($query2);
+			if ($result2->status != 3)
+				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
 		}
-		#makeTable('small', 'Individual Top Days, '.$this->stats_month_name.' '.$this->stats_year,  array('', 'Lines', 'User'),		 array('SELECT `RUID`, MAX(`l_total`) AS `v1` FROM `user_activity`, `user_status`, `user_details` WHERE `user_activity`.`UID` = `user_status`.`UID` AND `user_status`.`UID` = `user_details`.`UID` AND `status` != 3 AND `date` LIKE \''.$this->stats_year.'-'.$this->stats_month.'-%\' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 5'), 0, FALSE, 5, TRUE);
+		$this->makeTable2('small', 5, 'Individual Top Days, Alltime', array('', 'Lines', 'User'), 0, FALSE, $tmpArr);
 
-		#makeTable('small', 'Most Active Chatters, Alltime',			  array('', 'Activity', 'User'),	      array('SELECT `csNick` AS `v2`, (`activeDays` / '.CHANNEL_DAYS.') * 100 AS `v1` FROM `user_details`, `query_lines`, `user_status` WHERE `user_details`.`UID` = `query_lines`.`UID` AND `user_details`.`UID` = `user_status`.`UID` AND `status` != 3 ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'), 2, TRUE, 5);
-		if ($this->current_month != 1) {
-		  #makeTable('small', 'Most Active Chatters, '.$this->stats_year,		      array('', 'Activity', 'User'),	      array('SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->stats_day_of_year.') * 100 AS `v1` FROM `user_activity`, `user_details`, `user_status` WHERE `user_activity`.`UID` = `user_details`.`UID` AND `user_details`.`UID` = `user_status`.`UID` AND `status` != 3 AND `date` LIKE \''.$this->stats_year.'-%\' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 5'), 2, TRUE, 5, TRUE);
+		/////////////////
+		//TOP DAYS - YEAR
+		if (date('m') != 1) {
+		$query = @mysql_query('SELECT `RUID`, MAX(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysql_error());
+		$tmpArr = array();
+		while ($result = @mysql_fetch_object($query)) {
+			$query2 = @mysql_query('SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
+			$result2 = @mysql_fetch_object($query2);
+			if ($result2->status != 3)
+				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
 		}
-		#makeTable('small', 'Most Active Chatters, '.$this->stats_month_name.' '.$this->stats_year, array('', 'Activity', 'User'),	      array('SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->stats_day_of_month.') * 100 AS `v1` FROM `user_activity`, `user_details`, `user_status` WHERE `user_activity`.`UID` = `user_details`.`UID` AND `user_details`.`UID` = `user_status`.`UID` AND `status` != 3 AND `date` LIKE \''.$this->stats_year.'-'.$this->stats_month.'-%\' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 5'), 2, TRUE, 5, TRUE);
+		$this->makeTable2('small', 5, 'Individual Top Days, '.$this->year, array('', 'Lines', 'User'), 0, FALSE, $tmpArr);
+		}
+
+		//////////////////
+		//TOP DAYS - MONTH
+		$query = @mysql_query('SELECT `RUID`, MAX(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysql_error());
+		$tmpArr = array();
+		while ($result = @mysql_fetch_object($query)) {
+			$query2 = @mysql_query('SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
+			$result2 = @mysql_fetch_object($query2);
+			if ($result2->status != 3)
+				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
+		}
+		$this->makeTable2('small', 5, 'Individual Top Days, '.$this->month_name.' '.$this->year, array('', 'Lines', 'User'), 0, FALSE, $tmpArr);
+
+		////////////////////
+		//ACTIVITY - ALLTIME
+		$this->makeTable('small', 5, 'Most Active Chatters, Alltime', array('', 'Activity', 'User'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`activeDays` / '.$this->days.') * 100 AS `v1` FROM `user_status` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`UID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `status` != 3 ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
+
+		/////////////////
+		//ACTIVITY - YEAR
+		if (date('m') != 1) {
+		$query = @mysql_query('SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_year.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysql_error());
+		$tmpArr = array();
+		while ($result = @mysql_fetch_object($query)) {
+			$query2 = @mysql_query('SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
+			$result2 = @mysql_fetch_object($query2);
+			if ($result2->status != 3)
+				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
+		}
+		$this->makeTable2('small', 5, 'Most Active Chatters, '.$this->year, array('', 'Activity', 'User'), 2, TRUE, $tmpArr);
+		}
+
+		//////////////////
+		//ACTIVITY - MONTH
+		$query = @mysql_query('SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_month.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysql_error());
+		$tmpArr = array();
+		while ($result = @mysql_fetch_object($query)) {
+			$query2 = @mysql_query('SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
+			$result2 = @mysql_fetch_object($query2);
+			if ($result2->status != 3)
+				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
+		}
+		$this->makeTable2('small', 5, 'Most Active Chatters, '.$this->month_name.' '.$this->year, array('', 'Activity', 'User'), 2, TRUE, $tmpArr);
+
 
 		$this->makeTable('large', 5, 'Most Exclamations', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`exclamations` / `l_total`) * 100 AS `v1`, `ex_exclamations` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `exclamations` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('large', 5, 'Most Questions', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`questions` / `l_total`) * 100 AS `v1`, `ex_questions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `questions` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
@@ -296,6 +349,54 @@ final class HTML_MySQL
 		}
 
 		echo $output.'</table></div>'."\n";
+	}
+
+	//maketable2, don't know what the deal will be yet
+	private function makeTable2($size, $rows, $head, $keys, $decimals, $percentage, $result)
+	{
+		$i = 0;
+
+		foreach ($result as $row) {
+			$i++;
+
+			if ($i > 5)
+				break;
+
+			if ($size == 'small')
+				$data[] = array($i, number_format($row['v1'], $decimals).($percentage ? '%' : ''), htmlspecialchars($row['v2']));
+			elseif ($size == 'large')
+				$data[] = array($i, number_format($row['v1'], $decimals).($percentage ? '%' : ''), htmlspecialchars($row['v2']), htmlspecialchars($row['v3']));
+		}
+
+		// If there are less rows to display than the desired minimum amount of rows we skip this table.
+		if ($this->minRows <= $rows && $i < $this->minRows)
+			return;
+
+		for ($i = count($data); $i < $rows; $i++)
+			if ($size == 'small')
+				$data[] = array('&nbsp;', '', '');
+			elseif ($size == 'large')
+				$data[] = array('&nbsp;', '', '', '');
+
+		if ($size == 'small') {
+			$output = '<div class="small"><table class="small">';
+			$output .= '<tr><th colspan="3">'.$head.'</th></tr>';
+			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td></tr>';
+
+			foreach ($data as $row)
+				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
+
+			echo $output.'</table></div>'."\n";
+		} elseif ($size == 'large') {
+			$output = '<div class="large"><table class="large">';
+			$output .= '<tr><th colspan="4">'.$head.'</th></tr>';
+			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td><td class="k3">'.$keys[3].'</td></tr>';
+
+			foreach ($data as $row)
+				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+
+			echo $output.'</table></div>'."\n";
+		}
 	}
 
 	//maketable from file needs review
@@ -503,9 +604,9 @@ final class HTML_MySQL
 			$query_lastSeen = @mysql_query('SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$result->RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or exit('MySQL: '.mysql_error());
 			$result_lastSeen = @mysql_fetch_object($query_lastSeen);
 			$lastSeen = explode(' ', $result_lastSeen->lastSeen);
-			$lastSeen = explode('-', $lastSeen[0]);
-			$lastSeen = round((mktime(0, 0, 0, $this->current_month, $this->current_day_of_month, $this->current_year) - mktime(0, 0, 0, $lastSeen[1], $lastSeen[2], $lastSeen[0])) / 86400);
-
+			//$lastSeen = explode('-', $lastSeen[0]);
+			//$lastSeen = round((mktime(0, 0, 0, $this->current_month, $this->current_day_of_month, $this->current_year) - mktime(0, 0, 0, $lastSeen[1], $lastSeen[2], $lastSeen[0])) / 86400);
+			$lastSeen = round((strtotime('today') - strtotime($lastSeen[0])) / 86400);
 			if (($lastSeen / 365) >= 1)
 				$lastSeen = rtrim(number_format($lastSeen / 365, 1), '.0').' Years Ago';
 			elseif (($lastSeen / 30.42) >= 1)
