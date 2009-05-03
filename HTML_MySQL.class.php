@@ -73,8 +73,14 @@ final class HTML_MySQL
 		$result_date_last = @mysql_fetch_object($query_date_last);
 		$this->date_last = $result_date_last->date;
 
-		// This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
-		$this->l_minimum = round($this->l_total / 1000);
+		/*
+		 *  This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
+		 *  500 will be the minimum minimum! So tables will look somewhat more sane on low volume channels.
+		 */
+		if (round($this->l_total / 1000) >= 500)
+			$this->l_minimum = round($this->l_total / 1000);
+		else
+			$this->l_minimum = 500;
 
 		$this->current_year = date('Y');
 		$this->current_month = date('m');
