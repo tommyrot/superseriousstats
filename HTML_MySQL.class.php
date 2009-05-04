@@ -155,7 +155,7 @@ final class HTML_MySQL
 
 		////////////////////
 		//TOP DAYS - ALLTIME
-		$query = @mysql_query('SELECT `RUID`, MAX(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysql_error());
+		$query = @mysql_query('SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC') or exit('MySQL: '.mysql_error());
 		$tmpArr = array();
 		while ($result = @mysql_fetch_object($query)) {
 			$query2 = @mysql_query('SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
@@ -168,7 +168,7 @@ final class HTML_MySQL
 		/////////////////
 		//TOP DAYS - YEAR
 		if (date('m') != 1) {
-		$query = @mysql_query('SELECT `RUID`, MAX(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysql_error());
+		$query = @mysql_query('SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC') or exit('MySQL: '.mysql_error());
 		$tmpArr = array();
 		while ($result = @mysql_fetch_object($query)) {
 			$query2 = @mysql_query('SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
@@ -181,7 +181,7 @@ final class HTML_MySQL
 
 		//////////////////
 		//TOP DAYS - MONTH
-		$query = @mysql_query('SELECT `RUID`, MAX(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysql_error());
+		$query = @mysql_query('SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC') or exit('MySQL: '.mysql_error());
 		$tmpArr = array();
 		while ($result = @mysql_fetch_object($query)) {
 			$query2 = @mysql_query('SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
