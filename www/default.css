@@ -1,247 +1,268 @@
-html {
-	border: 0; /* IE fix: site border */
+.graph .bar1,table.small td.k2,table.small td.v2,table.large td.k2,table.large td.k3,table.large td.v2,table.large td.v3,table.map td.k3,table.map td.v3
+{
+	padding-left:2px;
 }
 
-body {
-	background-color: #F9F9F9;
-	margin: 0px;
-	margin-left: auto;
-	margin-right: auto;
-	width: 840px;
+.graph .bar24
+{
+	padding-right:2px;
 }
 
-div.box {
-	clear: both;
-	float: left;
-	width: 840px;
+.graph .bars td
+{
+	height:125px;
+	vertical-align:bottom;
+	width:34px;
 }
 
-div.small,div.large,div.tod,div.map,div.ms {
-	border-collapse: separate;
-	border-color: #666666;
-	border-style: solid;
-	border-width: 3px 1px 1px;
-	display: inline; /* IE fix: double float-margins */
-	float: left;
+.graph .sub td,table.small td.k1,table.small td.k2,table.small td.pos,table.large td.k1,table.large td.k2,table.large td.k3,table.large td.pos,table.tod td.k,table.tod td.pos,table.map td.k1,table.map td.k2,table.map td.k3,table.map td.k4,table.map td.k5,table.map td.k6,table.map td.pos,table.ms td.pos,table.ms td.k
+{
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
 }
 
-div.small,div.large,div.box p,div.tod,div.map,div.ms {
-	margin: 10px 15px 5px 0;
-	/* margin: 0 15px 15px 0; */
+.graph .sub td.bold
+{
+	color:#666;
+	font-size:10px;
+	font-weight:bold;
 }
 
-div.box p { 
-	/* background-color: #ff0000; */
-	color: #666666;
-	font-family: "verdana", sans-serif;
-	font-size: 10px;
-	font-weight: bold;
+.graph img
+{
+	border-color:#e3e3e3;
+	border-left-style:solid;
+	border-left-width:1px;
+	border-right-style:solid;
+	border-right-width:1px;
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+	width:15px;
 }
 
-div.tod img {
-	float: right;
-	height: 5px;
-	padding: 2px 0 3px 0;
+.graph table
+{
+	background-color:#eee;
+	border-collapse:collapse;
+	border-color:#666;
+	border-spacing:0;
+	border-style:solid;
+	border-width:3px 1px 1px;
+	color:#333;
+	font-family:"verdana";
+	font-size:10px;
+	margin-bottom:5px;
+	text-align:center;
 }
 
-div.map img {
-	height: 5px;
-	padding-top: 4px;
-	vertical-align: top;
+.graph td,.graph th
+{
+	padding-bottom:2px;
 }
 
-div.graph {
-	float: left;
-	margin: 10px 15px 5px 0;
+.graph th
+{
+	font-size:10px;
 }
 
-.graph table {
-	border-collapse: collapse;
-	border-spacing: 0px;
-	border-width: 3px 1px 1px;
-	border-style: solid;
-	font-family: "verdana";
-	font-size: 10px;
-	margin-bottom: 5px;
+.grey
+{
+	color:#999;
 }
 
-.graph table {
-	text-align: center;
+a
+{
+	color:#333;
+	font-family:"verdana";
+	font-size:10px;
+	text-decoration:none;
 }
 
-.graph img {
-	margin-left: auto;
-	margin-right: auto;
-	width: 15px;
-	border-left-width: 1px;
-	border-left-style: solid;
-	border-right-width: 1px;
-	border-right-style: solid;
-	display: block;
+a:hover
+{
+	color:#000;
+	text-decoration:underline;
 }
 
-.graph td,.graph th {
-	padding-bottom: 2px;
+body
+{
+	background-color:#F9F9F9;
+	margin:0 auto;
+	width:840px;
 }
 
-.graph .bars td {
-	height: 125px;
-	width: 34px;
-	vertical-align: bottom;
+div.box
+{
+	clear:both;
+	float:left;
+	width:840px;
 }
 
-.graph th {
-	font-size: 10px;
+div.box p
+{
+	color:#666;
+	font-family:"verdana", sans-serif;
+	font-size:10px;
+	font-weight:bold;
 }
 
-.graph .bar1 {
-	padding-left: 2px;
+div.graph
+{
+	float:left;
+	margin:10px 15px 5px 0;
 }
 
-.graph .bar24 {
-	padding-right: 2px;
+div.map img
+{
+	height:5px;
+	padding-top:4px;
+	vertical-align:top;
 }
 
-.graph .sub td.bold {
-	font-weight: bold;
-	font-size: 10px;
-	color: #666666;
+div.small,div.large,div.box p,div.tod,div.map,div.ms
+{
+	margin:10px 15px 5px 0;
 }
 
-a {
-	font-family: "verdana";
-	font-size: 10px;
-	text-decoration: none;
-	color: #333333;
+div.small,div.large,div.tod,div.map,div.ms
+{
+	border-collapse:separate;
+	border-color:#666;
+	border-style:solid;
+	border-width:3px 1px 1px;
+	display:inline;
+	float:left;
 }
 
-a:hover {
-	text-decoration: underline;
-	color: #000000;
+div.tod img
+{
+	float:right;
+	height:5px;
+	padding:2px 0 3px;
 }
 
-input,option,select {
-	border-width: 1px;
-	font-family: "verdana";
-	font-size: 10px;
-	font-weight: normal;
+html
+{
+	border:0;
 }
 
-.graph .sub td {
-	background-color: #E0E0E0;
-	color: #999999;
-	font-weight: bold;
+input,option,select
+{
+	border-width:1px;
+	font-family:"verdana";
+	font-size:10px;
+	font-weight:normal;
 }
 
-.graph table {
-	background-color: #eeeeee;
+table
+{
+	border-collapse:collapse;
 }
 
-.graph table {
-	color: #333333;
-	border-color: #666666;
+table.large td.k3
+{
+	width:557px;
 }
 
-.graph img {
-	border-color: #e3e3e3;
+table.large,table.tod,table.map,table.ms
+{
+	width:823px;
 }
 
-.grey {
-	color: #999999;
+table.map td.k1,table.map td.v1
+{
+	text-align:right;
 }
 
-table {
-	border-collapse: collapse;
+table.map td.k4
+{
+	width:54px;
 }
 
-td {
-	color: #333333;
-	font-family: "verdana", sans-serif;
-	font-size: 10px;
-	vertical-align: top;
+table.map td.k5
+{
+	width:100px;
 }
 
-th {
-	color: #666666;
-	font-family: "verdana", sans-serif;
-	font-size: 10px;
-	font-weight: bold;
-	padding-left: 3px;
-	text-align: left;
+table.map td.k6
+{
+	width:318px;
 }
 
-table.small,table.large,table.tod,table.map,table.ms {
-	background-color: #EEEEEE;
+table.ms td.k
+{
+	width:151px;
 }
 
-table.small {
-	width: 263px;
+table.ms td.pos
+{
+	width:50px;
 }
 
-table.large,table.tod,table.map,table.ms {
-	width: 823px;
+table.small
+{
+	width:263px;
 }
 
-table.tod td.k {
-	width: 196px;
-}
-
-table.ms td.k {
-	width: 151px;
-}
-
-table.small td.k1,table.large td.k1,table.map td.k1,table.map td.k2 {
-	width: 80px;
-}
-
-table.small td.k2,table.large td.k2,table.map td.k3 {
-	width: 150px;
-}
-
-table.large td.k3 {
-	width: 557px;
-}
-
-table.map td.k4 {
-	width: 54px;
-}
-
-table.map td.k5 {
-	width: 100px;
-}
-
-table.map td.k6 {
-	width: 318px;
-}
-
-table.small td.pos,table.large td.pos,table.tod td.pos,table.map td.pos
-	{
-	text-align: center;
-	width: 25px;
-}
-
-table.ms td.pos {
-	width: 50px;
-}
-
-table.small td.k1,table.small td.k2,table.small td.pos,table.large td.k1,table.large td.k2,table.large td.k3,table.large td.pos,table.tod td.k,table.tod td.pos,table.map td.k1,table.map td.k2,table.map td.k3,table.map td.k4,table.map td.k5,table.map td.k6,table.map td.pos,table.ms td.pos,table.ms td.k
-	{
-	background-color: #E0E0E0;
-	color: #999999;
-	font-weight: bold;
+table.small td.k1,table.large td.k1,table.map td.k1,table.map td.k2
+{
+	width:80px;
 }
 
 table.small td.k1,table.small td.v1,table.large td.k1,table.large td.v1,table.tod td.k,table.tod td.v,table.map td.k2,table.map td.v2,table.ms td.k,table.ms td.v,table.ms td.pos
-	{
-	padding-right: 2px;
-	text-align: right;
+{
+	padding-right:2px;
+	text-align:right;
 }
 
-table.small td.k2,table.small td.v2,table.large td.k2,table.large td.k3,table.large td.v2,table.large td.v3,table.map td.k3,table.map td.v3
-	{
-	padding-left: 2px;
+table.small td.k2,table.large td.k2,table.map td.k3
+{
+	width:150px;
 }
 
-table.map td.k1,table.map td.v1 {
-	text-align: right;
+table.small td.pos,table.large td.pos,table.tod td.pos,table.map td.pos
+{
+	text-align:center;
+	width:25px;
+}
+
+table.small,table.large,table.tod,table.map,table.ms
+{
+	background-color:#EEE;
+}
+
+table.tod td.k
+{
+	width:196px;
+}
+
+td
+{
+	color:#333;
+	font-family:"verdana", sans-serif;
+	font-size:10px;
+	vertical-align:top;
+}
+
+th
+{
+	color:#666;
+	font-family:"verdana", sans-serif;
+	font-size:10px;
+	font-weight:bold;
+	padding-left:3px;
+	padding-right: 3px;
+	text-align:left;
+}
+
+th span.left {
+	float: left;
+}
+
+th span.right {
+	float: right;
+	font-weight:normal;
+	color:#999;
 }
