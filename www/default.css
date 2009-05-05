@@ -1,255 +1,247 @@
 html {
-  border: 0; /* IE fix: site border */
-  }
+	border: 0; /* IE fix: site border */
+}
 
 body {
-  background-color: #F9F9F9;
-  margin: 0px;
-  margin-left: auto;
-  margin-right: auto;
-  width: 840px;
-  }
+	background-color: #F9F9F9;
+	margin: 0px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 840px;
+}
 
 div.box {
-  clear: both;
-  float: left;
-  width: 840px;
-  }
+	clear: both;
+	float: left;
+	width: 840px;
+}
 
-div.small, div.large, div.tod, div.map, div.ms {
-  border-collapse: separate;
-  border-color: #666666;
-  border-style: solid;
-  border-width: 3px 1px 1px;
-  display: inline; /* IE fix: double float-margins */
-  float: left;
-  }
+div.small,div.large,div.tod,div.map,div.ms {
+	border-collapse: separate;
+	border-color: #666666;
+	border-style: solid;
+	border-width: 3px 1px 1px;
+	display: inline; /* IE fix: double float-margins */
+	float: left;
+}
 
-div.small, div.large, div.box p, div.tod, div.map, div.ms {
-  margin: 10px 15px 5px 0;
-  /* margin: 0 15px 15px 0; */
-  }
+div.small,div.large,div.box p,div.tod,div.map,div.ms {
+	margin: 10px 15px 5px 0;
+	/* margin: 0 15px 15px 0; */
+}
 
-div.box p {
-/* background-color: #ff0000; */
-  color: #666666;
-  font-family: "verdana", sans-serif;
-  font-size: 10px;
-  font-weight: bold;
-  }
+div.box p { 
+	/* background-color: #ff0000; */
+	color: #666666;
+	font-family: "verdana", sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+}
 
 div.tod img {
-  float: right;
-  height: 5px;
-  padding: 2px 0 3px 0;
-  }
+	float: right;
+	height: 5px;
+	padding: 2px 0 3px 0;
+}
 
 div.map img {
-  height: 5px;
-  padding-top: 4px;
-  vertical-align: top;
-  }
-
-/* nalopen */
+	height: 5px;
+	padding-top: 4px;
+	vertical-align: top;
+}
 
 div.graph {
-  float: left;
-  margin: 10px 15px 5px 0;
-  }
+	float: left;
+	margin: 10px 15px 5px 0;
+}
 
 .graph table {
-  border-collapse: collapse;
-  border-spacing: 0px;
-  border-width: 3px 1px 1px;
-  border-style: solid;
-  font-family: "verdana";
-  font-size: 10px;
-  margin-bottom: 5px;
-  }
+	border-collapse: collapse;
+	border-spacing: 0px;
+	border-width: 3px 1px 1px;
+	border-style: solid;
+	font-family: "verdana";
+	font-size: 10px;
+	margin-bottom: 5px;
+}
 
 .graph table {
-  text-align: center;
-  }
+	text-align: center;
+}
 
 .graph img {
-  margin-left: auto;
-  margin-right: auto;
-  width: 15px;
-  border-left-width: 1px;
-  border-left-style: solid;
-  border-right-width: 1px;
-  border-right-style: solid;
-  display: block;
-  }
+	margin-left: auto;
+	margin-right: auto;
+	width: 15px;
+	border-left-width: 1px;
+	border-left-style: solid;
+	border-right-width: 1px;
+	border-right-style: solid;
+	display: block;
+}
 
-.graph td, .graph th {
-  padding-bottom: 2px;
-  }
+.graph td,.graph th {
+	padding-bottom: 2px;
+}
 
 .graph .bars td {
-  height: 125px;
-  width: 34px;
-  vertical-align: bottom;
-  }
-
-.graph th, .graph .bars {
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  }
+	height: 125px;
+	width: 34px;
+	vertical-align: bottom;
+}
 
 .graph th {
-  font-size: 10px;
-  }
+	font-size: 10px;
+}
 
 .graph .bar1 {
-  padding-left: 2px;
-  }
+	padding-left: 2px;
+}
 
 .graph .bar24 {
-  padding-right: 2px;
-  }
+	padding-right: 2px;
+}
 
-.bold {
-  font-weight: bold;
-  font-size: 10px;
-  }
-
-a {
-  font-family: "verdana";
-  font-size: 10px;
-  text-decoration: none;
-  }
-
-a:hover {
-  text-decoration: underline;
-  }
-
-input, option, select {
-  border-width: 1px;
-  font-family: "verdana";
-  font-size: 10px;
-  font-weight: normal;
-  }
-
-
-.graph .bars td:hover, .graph .sub, .graph th {
-  background-color: #e3e3e3;
-  }
-
-.graph table {
-  background-color: #eeeeee;
-  }
+.graph .sub td.bold {
+	font-weight: bold;
+	font-size: 10px;
+	color: #666666;
+}
 
 a {
-  color: #333333;
-  }
+	font-family: "verdana";
+	font-size: 10px;
+	text-decoration: none;
+	color: #333333;
+}
 
 a:hover {
-  color: #000000;
-  }
+	text-decoration: underline;
+	color: #000000;
+}
+
+input,option,select {
+	border-width: 1px;
+	font-family: "verdana";
+	font-size: 10px;
+	font-weight: normal;
+}
+
+.graph .sub td {
+	background-color: #E0E0E0;
+	color: #999999;
+	font-weight: bold;
+}
 
 .graph table {
-  color: #333333;
-  border-color: #666666;
-  }
+	background-color: #eeeeee;
+}
+
+.graph table {
+	color: #333333;
+	border-color: #666666;
+}
 
 .graph img {
-  border-color: #e3e3e3;
-  }
+	border-color: #e3e3e3;
+}
 
 .grey {
-  color: #999999;
-  }
+	color: #999999;
+}
 
-/* style_tables */
 table {
-  border-collapse: collapse;
-  }
+	border-collapse: collapse;
+}
 
 td {
-  color: #333333;
-  font-family: "verdana", sans-serif;
-  font-size: 10px;
-  vertical-align: top;
-  }
+	color: #333333;
+	font-family: "verdana", sans-serif;
+	font-size: 10px;
+	vertical-align: top;
+}
 
 th {
-  color: #666666;
-  font-family: "verdana", sans-serif;
-  font-size: 10px;
-  font-weight: bold;
-  padding-left: 3px;
-  text-align: left;
-  }
+	color: #666666;
+	font-family: "verdana", sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+	padding-left: 3px;
+	text-align: left;
+}
 
-table.small, table.large, table.tod, table.map, table.ms {
-  background-color: #EEEEEE;
-  }
+table.small,table.large,table.tod,table.map,table.ms {
+	background-color: #EEEEEE;
+}
 
 table.small {
-  width: 263px;
-  }
+	width: 263px;
+}
 
-table.large, table.tod, table.map, table.ms {
-  width: 823px;
-  }
+table.large,table.tod,table.map,table.ms {
+	width: 823px;
+}
 
 table.tod td.k {
-  width: 196px;
-  }
+	width: 196px;
+}
 
 table.ms td.k {
-  width: 151px;
-  }
+	width: 151px;
+}
 
-table.small td.k1, table.large td.k1, table.map td.k1, table.map td.k2 {
-  width: 80px;
-  }
+table.small td.k1,table.large td.k1,table.map td.k1,table.map td.k2 {
+	width: 80px;
+}
 
-table.small td.k2, table.large td.k2, table.map td.k3 {
-  width: 150px;
-  }
+table.small td.k2,table.large td.k2,table.map td.k3 {
+	width: 150px;
+}
 
 table.large td.k3 {
-  width: 557px;
-  }
+	width: 557px;
+}
 
 table.map td.k4 {
-  width: 54px;
-  }
+	width: 54px;
+}
 
 table.map td.k5 {
-  width: 100px;
-  }
+	width: 100px;
+}
 
 table.map td.k6 {
-  width: 318px;
-  }
+	width: 318px;
+}
 
-table.small td.pos, table.large td.pos, table.tod td.pos, table.map td.pos {
-  text-align: center;
-  width: 25px;
-  }
+table.small td.pos,table.large td.pos,table.tod td.pos,table.map td.pos
+	{
+	text-align: center;
+	width: 25px;
+}
 
 table.ms td.pos {
-  width: 50px;
-  }
+	width: 50px;
+}
 
-table.small td.k1, table.small td.k2, table.small td.pos, table.large td.k1, table.large td.k2, table.large td.k3, table.large td.pos, table.tod td.k, table.tod td.pos, table.map td.k1, table.map td.k2, table.map td.k3, table.map td.k4, table.map td.k5, table.map td.k6, table.map td.pos, table.ms td.pos, table.ms td.k {
-  background-color: #E0E0E0;
-  color: #999999;
-  font-weight: bold;
-  }
+table.small td.k1,table.small td.k2,table.small td.pos,table.large td.k1,table.large td.k2,table.large td.k3,table.large td.pos,table.tod td.k,table.tod td.pos,table.map td.k1,table.map td.k2,table.map td.k3,table.map td.k4,table.map td.k5,table.map td.k6,table.map td.pos,table.ms td.pos,table.ms td.k
+	{
+	background-color: #E0E0E0;
+	color: #999999;
+	font-weight: bold;
+}
 
-table.small td.k1, table.small td.v1, table.large td.k1, table.large td.v1, table.tod td.k, table.tod td.v, table.map td.k2, table.map td.v2, table.ms td.k, table.ms td.v, table.ms td.pos {
-  padding-right: 2px;
-  text-align: right;
-  }
+table.small td.k1,table.small td.v1,table.large td.k1,table.large td.v1,table.tod td.k,table.tod td.v,table.map td.k2,table.map td.v2,table.ms td.k,table.ms td.v,table.ms td.pos
+	{
+	padding-right: 2px;
+	text-align: right;
+}
 
-table.small td.k2, table.small td.v2, table.large td.k2, table.large td.k3, table.large td.v2, table.large td.v3, table.map td.k3, table.map td.v3 {
-  padding-left: 2px;
-  }
+table.small td.k2,table.small td.v2,table.large td.k2,table.large td.k3,table.large td.v2,table.large td.v3,table.map td.k3,table.map td.v3
+	{
+	padding-left: 2px;
+}
 
-table.map td.k1, table.map td.v1 {
-  text-align: right;
-  }
+table.map td.k1,table.map td.v1 {
+	text-align: right;
+}
