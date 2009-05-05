@@ -71,6 +71,7 @@ final class Maintenance_MySQL
 		$this->makeQuerytables();
 		$this->optimizeTables();
 		@mysql_close();
+		$this->output('notice', 'doMaintenance(): maintenance completed');
 	}
 
 	/*

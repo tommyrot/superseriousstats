@@ -170,6 +170,7 @@ abstract class Parser extends Parser_MySQL
 				}
 
 				fclose($handle);
+				$this->output('notice', 'parseLog(): parsing completed');
 			} else
 				$this->output('critical', 'parseLog(): failed to open file: \''.$logfile.'\'');
 		} else
