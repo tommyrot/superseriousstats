@@ -427,22 +427,11 @@ final class HTML_MySQL
 		if (!empty($queries[1])) {
 			$query = @mysql_query($queries[1]);
 			$result = @mysql_fetch_object($query);
-
-			if ($size == 'small') {
-				if ($result->v0 > 0)
-					$data[] = array('', '<span class="grey">'.number_format($result->v0).'</span>', '<span class="grey">'.htmlspecialchars($this->channel).' total</span>');
-				else
-					$data[] = array('&nbsp;', '', '');
-			} elseif ($size == 'large')
-				if ($result->v0 > 0)
-					$data[] = array('', '<span class="grey">'.number_format($result->v0).'</span>', '<span class="grey">'.htmlspecialchars($this->channel).' total</span>', '');
-				else
-					$data[] = array('&nbsp;', '', '', '');
 		}
 
 		if ($size == 'small') {
 			$output = '<div class="small"><table class="small">';
-			$output .= '<tr><th colspan="3">'.$head.'</th></tr>';
+			$output .= '<tr><th colspan="3"><span class="left">'.$head.'</span>'.(empty($result->v0) ? '' : '<span class="right">'.number_format($result->v0).' total</span>').'</th></tr>';
 			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td></tr>';
 
 			foreach ($data as $row)
@@ -451,7 +440,7 @@ final class HTML_MySQL
 			echo $output.'</table></div>'."\n";
 		} elseif ($size == 'large') {
 			$output = '<div class="large"><table class="large">';
-			$output .= '<tr><th colspan="4">'.$head.'</th></tr>';
+			$output .= '<tr><th colspan="4"><span class="left">'.$head.'</span>'.(empty($result->v0) ? '' : '<span class="right">'.number_format($result->v0).' total</span>').'</th></tr>';
 			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td><td class="k3">'.$keys[3].'</td></tr>';
 
 			foreach ($data as $row)
