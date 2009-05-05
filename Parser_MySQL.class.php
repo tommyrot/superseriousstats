@@ -51,6 +51,7 @@ abstract class Parser_MySQL
 				$this->words_objs[$word]->writeData() or $this->output('critical', 'MySQL: '.mysql_error());
 
 			@mysql_close();
+			$this->output('notice', 'writeData(): writing completed');
 		} else
 			$this->output('notice', 'writeData(): no data to write to database');
 	}
