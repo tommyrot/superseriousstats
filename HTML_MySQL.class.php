@@ -104,11 +104,11 @@ final class HTML_MySQL
 		$result = @mysql_fetch_object($query);
 		$sum = number_format($result->sum);
 
-		echo '<br />Logs contain '.$sum.' lines, an average of '.number_format($avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($maxdate)).' with a total of '.number_format($max).' lines typed.';
+		echo '<br />Logs contain '.$sum.' lines, an average of '.number_format($avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($maxdate)).' with a total of '.number_format($max).' lines typed.</p>';
 		echo '</div>'."\n\n";
 
 		// Activity.
-		echo '<div class="box">'."\n".'<p>:: Activity<p>'."\n";
+		echo '<div class="box">'."\n".'<p>:: Activity</p>'."\n";
 		echo '<div class="graph">'."\n";
 		$this->makeTable_MostActiveTimes('Most Active Times');
 		echo '</div>'."\n\n";
