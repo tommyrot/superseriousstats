@@ -11,8 +11,6 @@
  * You normally only have to edit the settings.php file for things to work.
  */
 
-error_reporting(E_STRICT);
-
 if (!@include('settings.php'))
         exit('Settings file (settings.php) cannot be opened, it should be in the same directory as this script..'."\n");
 
@@ -22,8 +20,7 @@ if (!isset($argv[1]))
 date_default_timezone_set($timezone);
 
 // Extract date and day from the filename. Be crafty and replace ".yesterday" with yesterday's date! Useful when running this script from a cronjob.
-$argv[1] = preg_replace('/yesterday$/', date('Ymd', strtotime('yesterday')), $argv[1]);
-$logfile = $argv[1];
+$logfile = preg_replace('/yesterday$/', date('Ymd', strtotime('yesterday')), $argv[1]);
 
 if (!preg_match('/(19[7-9][0-9]|20[0-9]{2})(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/', $logfile))
         exit('The logfile doesn\'t appear to have a valid date in it\'s filename.'."\n");
