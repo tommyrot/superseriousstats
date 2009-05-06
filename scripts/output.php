@@ -9,8 +9,6 @@
  * You normally only have to edit the settings.php file for things to work.
  */
 
-error_reporting(E_STRICT);
-
 if (!@include('settings.php'))
         exit('Settings file (settings.php) cannot be opened, it should be in the same directory as this script..'."\n");
 
