@@ -472,14 +472,9 @@ final class HTML_MySQL
 		$output = '<table><tr><th colspan="24">'.$head.'</th></tr><tr class="bars">';
 
 		for ($hour = 0; $hour < 24; $hour++) {
-			if ($hour == 0)
-				$output .= '<td class="bar1">';
-			elseif ($hour == 23)
-				$output .= '<td class="bar24">';
-			else
+			if ($l_total[$hour] != 0) {
 				$output .= '<td>';
 
-			if ($l_total[$hour] != 0) {
 				if ((($l_total[$hour] / $this->l_total) * 100) >= 9.95)
 					$output .= round(($l_total[$hour] / $this->l_total) * 100).'%';
 				else
@@ -498,7 +493,7 @@ final class HTML_MySQL
 
 				$output .= '</td>';
 			} else
-				$output .= '<span>n/a</span></td>';
+				$output .= '<td><span class="grey">n/a</span></td>';
 		}
 
 		$output .= '</tr><tr class="sub">';
@@ -741,9 +736,9 @@ final class HTML_MySQL
 					break;
 			}
 
-			$output .= '<td>';
-
 			if (!empty($activity[$year][$month][$day]['l_total'])) {
+				$output .= '<td>';
+
 				if ($activity[$year][$month][$day]['l_total'] >= 10000)
 					$output .= round($activity[$year][$month][$day]['l_total'] / 1000).'K';
 				else
@@ -779,7 +774,7 @@ final class HTML_MySQL
 
 				$output .= '</td>';
 			} else
-				$output .= '<span>n/a</span></td>';
+				$output .= '<td><span class="grey">n/a</span></td>';
 		}
 
 		$tmp = $cols;
@@ -850,9 +845,9 @@ final class HTML_MySQL
 		$output = '<table><tr><th colspan="7">'.$head.'</th></tr><tr class="bars">';
 
 		foreach ($days as $day) {
-			$output .= '<td>';
-
 			if ($l_total[$day] != 0) {
+				$output .= '<td>';
+
 				if ((($l_total[$day] / $this->l_total) * 100) >= 9.95)
 					$output .= round(($l_total[$day] / $this->l_total) * 100).'%';
 				else
@@ -888,7 +883,7 @@ final class HTML_MySQL
 
 				$output .= '</td>';
 			} else
-				$output .= '<span>n/a</span></td>';
+				$output .= '<td><span class="grey">n/a</span></td>';
 		}
 
 		$output .= '</tr><tr class="sub">';
