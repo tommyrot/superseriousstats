@@ -1,268 +1,223 @@
-.graph .bar1,table.small td.k2,table.small td.v2,table.large td.k2,table.large td.k3,table.large td.v2,table.large td.v3,table.map td.k3,table.map td.v3
-{
-	padding-left:2px;
-}
-
-.graph .bar24
-{
-	padding-right:2px;
-}
-
-.graph .bars td
-{
-	height:125px;
-	vertical-align:bottom;
-	width:34px;
-}
-
-.graph .sub td,table.small td.k1,table.small td.k2,table.small td.pos,table.large td.k1,table.large td.k2,table.large td.k3,table.large td.pos,table.tod td.k,table.tod td.pos,table.map td.k1,table.map td.k2,table.map td.k3,table.map td.k4,table.map td.k5,table.map td.k6,table.map td.pos,table.ms td.pos,table.ms td.k
-{
-	background-color:#E0E0E0;
-	color:#999;
-	font-weight:bold;
-}
-
-.graph .sub td.bold
-{
-	color:#666;
-	font-size:10px;
-	font-weight:bold;
-}
-
-.graph img
-{
-	border-color:#e3e3e3;
-	border-left-style:solid;
-	border-left-width:1px;
-	border-right-style:solid;
-	border-right-width:1px;
-	display:block;
-	margin-left:auto;
-	margin-right:auto;
-	width:15px;
-}
-
-.graph table
-{
-	background-color:#eee;
-	border-collapse:collapse;
-	border-color:#666;
-	border-spacing:0;
-	border-style:solid;
-	border-width:3px 1px 1px;
-	color:#333;
-	font-family:"verdana";
-	font-size:10px;
-	margin-bottom:5px;
-	text-align:center;
-}
-
-.graph td,.graph th
-{
-	padding-bottom:2px;
-}
-
-.graph th
-{
-	font-size:10px;
-}
-
-.grey
-{
-	color:#999;
-}
-
-a
-{
-	color:#333;
-	font-family:"verdana";
-	font-size:10px;
-	text-decoration:none;
-}
-
-a:hover
-{
-	color:#000;
-	text-decoration:underline;
-}
-
-body
-{
+/* Global styling */
+body {
 	background-color:#F9F9F9;
-	margin:0 auto;
+	margin:0 auto 0 auto;
 	width:840px;
 }
-
-div.box
-{
+.box {
 	clear:both;
 	float:left;
 	width:840px;
 }
-
-div.box p
-{
-	color:#666;
-	font-family:"verdana", sans-serif;
-	font-size:10px;
-	font-weight:bold;
+.grey {
+	color:#999;
 }
-
-div.graph
-{
-	float:left;
-	margin:10px 15px 5px 0;
-}
-
-div.map img
-{
-	height:5px;
-	padding-top:4px;
-	vertical-align:top;
-}
-
-div.small,div.large,div.box p,div.tod,div.map,div.ms
-{
-	margin:10px 15px 5px 0;
-}
-
-div.small,div.large,div.tod,div.map,div.ms
-{
-	border-collapse:separate;
-	border-color:#666;
-	border-style:solid;
-	border-width:3px 1px 1px;
-	display:inline;
+.left {
 	float:left;
 }
-
-div.tod img
-{
+.right {
+	color:#999;
 	float:right;
-	height:5px;
-	padding:2px 0 3px;
-}
-
-html
-{
-	border:0;
-}
-
-input,option,select
-{
-	border-width:1px;
-	font-family:"verdana";
-	font-size:10px;
 	font-weight:normal;
 }
-
-table
-{
-	border-collapse:collapse;
+.head {
+	background-color:#EEE;
+	color:#666;
+	float:left;
+	font-family:verdana, sans-serif;
+	font-size:12px;
+	font-weight:bold;
+	margin:15px 22px 7px 0;
+	text-align:center;
+	width:818px
+}
+.info {
+	color:#666;
+	float:left;
+	font-family:verdana, sans-serif;
+	font-size:12px;
+	font-weight:bold;
+	margin:15px 22px 7px 0;
+	width:818px;
 }
 
-table.large td.k3
-{
-	width:557px;
+/* Global table styling */
+.graph,.mad,.yearly,.map,.tod,.small,.large {
+	background-color:#EEE;
+	border-collapse:separate;
+	border-color:#666;
+	border-spacing:0;
+	border-style:solid;
+	border-width:3px 1px 1px 1px;
+	color:#333;
+	float:left;
+	font-family:verdana, sans-serif;
+	font-size:10px;
+	margin:15px 22px 7px 0;
 }
 
-table.large,table.tod,table.map,table.ms
-{
-	width:823px;
+/* Specific table styling: activity graphs, most active days, yearly activity */
+.graph,.mad,.yearly {
+	text-align:center;
+}
+.graph img,.mad img,.yearly img {
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+	width:16px;
+}
+.graph {
+	width:818px;
+}
+.mad {
+	width:240px;
+}
+.yearly { 
+	/* Variable width, specified in HTML */
+}
+.graph th,.mad th,.yearly th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 0 0 3px;
+	text-align:left;
+}
+.graph tr.bars td,.mad tr.bars td,.yearly tr.bars td {
+	height:125px;
+	vertical-align:bottom;
+	width:34px;
+	padding:0;
+}
+.graph tr.sub td,.mad tr.sub td,.yearly tr.sub td {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+	padding:1px 0 1px 0;
+}
+.graph tr.sub td.bold,.mad tr.sub td.bold,.yearly tr.sub td.bold {
+	color:#666;
 }
 
-table.map td.k1,table.map td.v1
-{
+/* Specific table styling: most active people */
+.map {
+	text-align:left;
+	width:818px;
+}
+.map img {
+	height:6px;
+	padding-bottom:3px;
+	vertical-align:bottom;
+}
+.map th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 0 1px 3px;
+}
+.map td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+.map td.k1,.map td.k2,.map td.k3,.map td.k4,.map td.k5,.map td.k6,.map td.pos {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.map td.k1,.map td.v1 {
+	width:80px;
 	text-align:right;
 }
-
-table.map td.k4
-{
-	width:54px;
-}
-
-table.map td.k5
-{
-	width:100px;
-}
-
-table.map td.k6
-{
-	width:318px;
-}
-
-table.ms td.k
-{
-	width:151px;
-}
-
-table.ms td.pos
-{
-	width:50px;
-}
-
-table.small
-{
-	width:263px;
-}
-
-table.small td.k1,table.large td.k1,table.map td.k1,table.map td.k2
-{
-	width:80px;
-}
-
-table.small td.k1,table.small td.v1,table.large td.k1,table.large td.v1,table.tod td.k,table.tod td.v,table.map td.k2,table.map td.v2,table.ms td.k,table.ms td.v,table.ms td.pos
-{
+.map td.k2,.map td.v2 {
+	width:78px;
 	padding-right:2px;
 	text-align:right;
 }
-
-table.small td.k2,table.large td.k2,table.map td.k3
-{
-	width:150px;
+.map td.k3,.map td.v3 {
+	width:148px;
+	padding-left:2px;
 }
-
-table.small td.pos,table.large td.pos,table.tod td.pos,table.map td.pos
-{
-	text-align:center;
+.map td.k4,.map td.v4 {
+	width:54px;
+}
+.map td.k5,.map td.v5 {
+	width:98px;
+	padding-left:2px;
+}
+.map td.k6,.map td.v6 {
+	width:327px;
+}
+.map td.pos {
 	width:25px;
+	text-align:center;
 }
 
-table.small,table.large,table.tod,table.map,table.ms
-{
-	background-color:#EEE;
+/* Specific table styling: time of day */
+.tod {
+	text-align:right;
+	width:818px;
 }
-
-table.tod td.k
-{
-	width:196px;
+.tod img {
+	height:6px;
+	padding:2px 0 3px 0;
 }
-
-td
-{
-	color:#333;
-	font-family:"verdana", sans-serif;
-	font-size:10px;
-	vertical-align:top;
-}
-
-th
-{
+.tod th {
 	color:#666;
-	font-family:"verdana", sans-serif;
-	font-size:10px;
 	font-weight:bold;
-	padding-left:3px;
-	padding-right: 3px;
+	padding:1px 0 1px 3px;
 	text-align:left;
 }
-
-th span.left {
-	float: left;
+.tod td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+.tod td.k,.tod td.pos {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.tod td.k,.tod td.v {
+	width:195px;
+	padding-right:2px;
+}
+.tod td.pos {
+	width:28px;
+	text-align:center;
 }
 
-th span.right {
-	float: right;
-	font-weight:normal;
+/* Specific table styling: small, large */
+.small,.large {
+	text-align:left;
+}
+.small {
+	width:258px;
+}
+.large {
+	width:818px;
+}
+.small th,.large th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
+}
+.small td,.large td {
+	padding:1px 0 1px 0;
+}
+.small td.k1,.small td.k2,.small td.pos,.large td.k1,.large td.k2,.large td.k3,.large td.pos {
+	background-color:#E0E0E0;
 	color:#999;
+	font-weight:bold;
+}
+.small td.k1,.small td.v1,.large td.k1,.large td.v1 {
+	width:78px;
+	padding-right:2px;
+	text-align:right;
+}
+.small td.k2,.small td.v2,.large td.k2,.large td.v2 {
+	width:148px;
+	padding-left:2px;
+}
+.large td.k3,.large td.v3 {
+	width:560px;
+}
+.small td.pos,.large td.pos {
+	width:26px;
+	text-align:center;
 }

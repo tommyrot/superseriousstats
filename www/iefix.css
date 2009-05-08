@@ -1,0 +1,7 @@
+/* IE fixes, workarounds */
+html {
+	border:0;
+}
+table.graph,table.mad,table.yearly,table.map,table.tod,table.small,table.large {
+	border-collapse:collapse;
+}
