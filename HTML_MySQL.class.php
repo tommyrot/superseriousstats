@@ -84,12 +84,23 @@ final class HTML_MySQL
 		$this->day_of_month = date('d', strtotime('yesterday'));
 		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
 
-		// Doctype and stuff.
-		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n".'<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n".'<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n".'<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n".'<meta http-equiv="Content-Style-Type" content="text/css" />'."\n".'<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n".'</head>'."\n\n".'<body>'."\n";
-
-		// Header.
-		echo '<div class="box">'."\n";
-		echo '<p>'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />'."\n";
+		// Build the HTML page.
+		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n";
+		echo '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n";
+		echo '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n";
+		echo '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n";
+		echo '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n";
+		echo '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n";
+		echo '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n";
+		$query = @mysql_query('SELECT COUNT(DISTINCT YEAR(`date`)) AS `total` FROM `channel`');
+		$result = @mysql_fetch_object($query);
+		if ($result->total > 0) {
+			$width = 2 + ($result->total * 34);
+			echo '<style type="text/css">'."\n".'  table.yearly {width:'.$width.'px}'."\n".'</style>'."\n";
+		}
+		echo '</head>'."\n\n".'<body>'."\n";
+		echo '<div class="box">'."\n\n";
+		echo '<div class="info">'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />';
 
 		$query = @mysql_query('select avg(`l_total`) as `avg` from `channel` limit 1');
   		$result = @mysql_fetch_object($query);
@@ -104,29 +115,14 @@ final class HTML_MySQL
 		$result = @mysql_fetch_object($query);
 		$sum = number_format($result->sum);
 
-		echo '<br />Logs contain '.$sum.' lines, an average of '.number_format($avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($maxdate)).' with a total of '.number_format($max).' lines typed.</p>';
-		echo '</div>'."\n\n";
+		echo '<br />Logs contain '.$sum.' lines, an average of '.number_format($avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($maxdate)).' with a total of '.number_format($max).' lines typed.</div>'."\n";
+		echo '<div class="head">Activity</div>'."\n";
 
-		// Activity.
-		echo '<div class="box">'."\n".'<p>:: Activity</p>'."\n";
-		echo '<div class="graph">'."\n";
 		$this->makeTable_MostActiveTimes('Most Active Times');
-		echo '</div>'."\n\n";
-		echo '<div class="graph">'."\n";
 		$this->makeTable_Activity('days', 'Daily Activity');
-		echo '</div>'."\n\n";
-		echo '<div class="graph">'."\n";
 		$this->makeTable_Activity('months', 'Monthly Activity');
-		echo '</div>'."\n\n";
-		echo '<div class="graph">'."\n";
 		$this->makeTable_MostActiveDays('Most Active Days');
-		echo '</div>'."\n\n";
-		echo '<div class="graph">'."\n";
 		$this->makeTable_Activity('years', 'Yearly Activity');
-		echo '</div>'."\n\n";
-		echo '</div>'."\n\n";
-
-		echo '<div class="box">';
 		$this->makeTable_MostActivePeople('alltime', 30, 'Most Active People, Alltime', array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'));
 
 		if (date('m') == 1)
@@ -135,20 +131,15 @@ final class HTML_MySQL
 			$this->makeTable_MostActivePeople('year', 10, 'Most Active People, '.$this->year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->year);
 
 		$this->makeTable_MostActivePeople('month', 10, 'Most Active People, '.$this->month_name.' '.$this->year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->year, $this->month);
-		echo '</div>'."\n\n";
-
-		echo '<div class="box">'."\n";
 		$this->makeTable_TimeOfDay('Activity, by Time of Day', array('Nightcrawlers<br />0h - 5h', 'Early Birds<br />6h - 11h', 'Afternoon Shift<br />12h - 17h', 'Evening Chatters<br />18h - 23h'));
-		echo '</div>'."\n\n";
 
 		/*
 		Bots are excluded from statistics unless stated otherwise.
 		They are, however, included in the (channel) totals.
 		*/
 
-		// General Chat
+		echo '<div class="head">General Chat</div>'."\n";
 
-		echo '<div class="box">'."\n".'<p>:: General Chat</p>'."\n";
 		$this->makeTable('small', 5, 'Most Talkative Chatters', array('', 'Lines/Day', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`l_total` / `activeDays`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('small', 5, 'Most Fluent Chatters', array('', 'Words/Line', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`words` / `l_total`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('small', 5, 'Most Tedious Chatters', array('', 'Chars/Line', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`characters` / `l_total`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
@@ -221,7 +212,6 @@ final class HTML_MySQL
 		}
 		$this->makeTable2('small', 5, 'Most Active Chatters, '.$this->month_name.' '.$this->year, array('', 'Activity', 'User'), 2, TRUE, $tmpArr);
 
-
 		$this->makeTable('large', 5, 'Most Exclamations', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`exclamations` / `l_total`) * 100 AS `v1`, `ex_exclamations` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `exclamations` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('large', 5, 'Most Questions', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`questions` / `l_total`) * 100 AS `v1`, `ex_questions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `questions` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('large', 5, 'Most UPPERCASED Lines', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`uppercased` / `l_total`) * 100 AS `v1`, `ex_uppercased` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `uppercased` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
@@ -233,11 +223,9 @@ final class HTML_MySQL
 		$this->makeTable('small', 5, 'Longest Monologue', array('', 'Lines', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `topMonologue` AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topMonologue` != 0 ORDER BY `topMonologue` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('large', 5, 'Most Actions', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`actions` / `l_total`) * 100 AS `v1`, `ex_actions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `actions` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('small', 5, 'Most Mentioned Nicks', array('', 'Mentioned', 'Nick'), 0, FALSE, array('SELECT `csNick` AS `v2`, `total` AS `v1` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` JOIN `words` ON `user_details`.`csNick` = `words`.`word` WHERE `status` = 1 ORDER BY `total` DESC, `csNick` ASC LIMIT 5'));
-		echo '</div>'."\n\n";
 
-		// Modes
+		echo '<div class="head">Modes</div>'."\n";
 
-		echo '<div class="box">'."\n".'<p>:: Modes</p>'."\n";
 		$this->makeTable('small', 5, 'Most Ops \'+o\', Given', array('', 'Ops', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_op` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_op` != 0 ORDER BY `m_op` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_op`) AS `v0` FROM `query_events`'));
 		$this->makeTable('small', 5, 'Most Ops \'+o\', Received', array('', 'Ops', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_opped` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_opped` != 0 ORDER BY `m_opped` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_opped`) AS `v0` FROM `query_events`'));
 		$this->makeTable('small', 5, 'Most deOps \'-o\', Given', array('', 'deOps', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_deOp` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_deOp` != 0 ORDER BY `m_deOp` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_deOp`) AS `v0` FROM `query_events`'));
@@ -246,11 +234,9 @@ final class HTML_MySQL
 		$this->makeTable('small', 5, 'Most Voices \'+v\', Received', array('', 'Voices', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_voiced` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_voiced` != 0 ORDER BY `m_voiced` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_voiced`) AS `v0` FROM `query_events`'));
 		$this->makeTable('small', 5, 'Most deVoices \'-v\', Given', array('', 'deVoices', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_deVoice` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_deVoice` != 0 ORDER BY `m_deVoice` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_deVoice`) AS `v0` FROM `query_events`'));
 		$this->makeTable('small', 5, 'Most deVoices \'-v\', Received', array('', 'deVoices', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_deVoiced` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_deVoiced` != 0 ORDER BY `m_deVoiced` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_deVoiced`) AS `v0` FROM `query_events`'));
-		echo '</div>'."\n\n";
 
-		// Events
+		echo '<div class="head">Events</div>'."\n";
 
-		echo '<div class="box">'."\n".'<p>:: Events</p>'."\n";
 		$this->makeTable('large', 5, 'Most Kicks', array('', 'Kicks', 'User', 'Example'), 0, FALSE, array('SELECT `csNick` AS `v2`, `kicks` AS `v1`, `ex_kicks` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicks` != 0 ORDER BY `kicks` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`kicks`) AS `v0` FROM `query_events`'));
 		$this->makeTable('large', 5, 'Most Kicked', array('', 'Kicked', 'User', 'Example'), 0, FALSE, array('SELECT `csNick` AS `v2`, `kicked` AS `v1`, `ex_kicked` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicked` != 0 ORDER BY `kicked` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`kicked`) AS `v0` FROM `query_events`'));
 		$this->makeTable('small', 5, 'Most Joins', array('', 'Joins', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `joins` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `joins` != 0 ORDER BY `joins` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`joins`) AS `v0` FROM `query_events`'));
@@ -263,11 +249,7 @@ final class HTML_MySQL
 		// needs to be fixed
 		//table_topics();
 
-		echo '</div>'."\n\n";
-
-		// Smileys
-
-		echo '<div class="box">'."\n".'<p>:: Smileys</p>'."\n";
+		echo '<div class="head">Smileys</div>'."\n";
 
 		$smileys = array('Big Cheerful Smile' => array('=]', 's_01')
 				,'Cheerful Smile' => array('=)', 's_02')
@@ -298,15 +280,8 @@ final class HTML_MySQL
 				$this->makeTable('small', 5, $k, array('', $v[0], 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `'.$v[1].'` AS `v1` FROM `user_details`, `query_smileys`, `user_status` WHERE `user_details`.`UID` = `query_smileys`.`UID` AND `user_details`.`UID` = `user_status`.`UID` AND `status` != 3 AND `'.$v[1].'` != 0 ORDER BY `'.$v[1].'` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`'.$v[1].'`) AS `v0` FROM `query_smileys`'));
 		}
 
-		echo '</div>'."\n\n";
-
-		// Footer
-
-		echo '<div class="box"><p>Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.<br /><br /><br /></p></div>'."\n\n";
-
-		// Page end
-
-		echo '</body>'."\n\n".'</html>'."\n";
+		echo '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
+		echo '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 
 		@mysql_close();
 	}
@@ -331,7 +306,7 @@ final class HTML_MySQL
 		}
 
 		$barWidth = (190 / $l_total_high);
-		$output = '<div class="tod"><table class="tod"><tr><th colspan="5">'.$head.'</th></tr><tr><td class="pos"></td><td class="k">'.$keys[0].'</td><td class="k">'.$keys[1].'</td><td class="k">'.$keys[2].'</td><td class="k">'.$keys[3].'</td></tr>';
+		$output = '<table class="tod"><tr><th colspan="5">'.$head.'</th></tr><tr><td class="pos"></td><td class="k">'.$keys[0].'</td><td class="k">'.$keys[1].'</td><td class="k">'.$keys[2].'</td><td class="k">'.$keys[3].'</td></tr>';
 
 		for ($i = 1; $i <= 10; $i++) {
 			$output .= '<tr><td class="pos">'.$i.'</td>';
@@ -348,7 +323,7 @@ final class HTML_MySQL
 			$output .= '</tr>';
 		}
 
-		echo $output.'</table></div>'."\n";
+		echo $output.'</table>'."\n";
 	}
 
 	//maketable2, don't know what the deal will be yet
@@ -379,23 +354,23 @@ final class HTML_MySQL
 				$data[] = array('&nbsp;', '', '', '');
 
 		if ($size == 'small') {
-			$output = '<div class="small"><table class="small">';
+			$output = '<table class="small">';
 			$output .= '<tr><th colspan="3">'.$head.'</th></tr>';
 			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td></tr>';
 
 			foreach ($data as $row)
 				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
 
-			echo $output.'</table></div>'."\n";
+			echo $output.'</table>'."\n";
 		} elseif ($size == 'large') {
-			$output = '<div class="large"><table class="large">';
+			$output = '<table class="large">';
 			$output .= '<tr><th colspan="4">'.$head.'</th></tr>';
 			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td><td class="k3">'.$keys[3].'</td></tr>';
 
 			foreach ($data as $row)
 				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 
-			echo $output.'</table></div>'."\n";
+			echo $output.'</table>'."\n";
 		}
 	}
 
@@ -430,23 +405,23 @@ final class HTML_MySQL
 		}
 
 		if ($size == 'small') {
-			$output = '<div class="small"><table class="small">';
+			$output = '<table class="small">';
 			$output .= '<tr><th colspan="3"><span class="left">'.$head.'</span>'.(empty($result->v0) ? '' : '<span class="right">'.number_format($result->v0).' total</span>').'</th></tr>';
 			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td></tr>';
 
 			foreach ($data as $row)
 				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
 
-			echo $output.'</table></div>'."\n";
+			echo $output.'</table>'."\n";
 		} elseif ($size == 'large') {
-			$output = '<div class="large"><table class="large">';
+			$output = '<table class="large">';
 			$output .= '<tr><th colspan="4"><span class="left">'.$head.'</span>'.(empty($result->v0) ? '' : '<span class="right">'.number_format($result->v0).' total</span>').'</th></tr>';
 			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td><td class="k3">'.$keys[3].'</td></tr>';
 
 			foreach ($data as $row)
 				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 
-			echo $output.'</table></div>'."\n";
+			echo $output.'</table>'."\n";
 		}
 	}
 
@@ -469,7 +444,7 @@ final class HTML_MySQL
 			}
 		}
 
-		$output = '<table><tr><th colspan="24">'.$head.'</th></tr><tr class="bars">';
+		$output = '<table class="graph"><tr><th colspan="24">'.$head.'</th></tr><tr class="bars">';
 
 		for ($hour = 0; $hour < 24; $hour++) {
 			if ($l_total[$hour] != 0) {
@@ -533,7 +508,7 @@ final class HTML_MySQL
 			break;
 		}
 
-		$output = '<div class="map"><table class="map"><tr><th colspan="7">'.$head.'</th></tr><tr><td class="k1">'.$keys[0].'</td><td class="k2">'.$keys[1].'</td><td class="pos"></td><td class="k3">'.$keys[2].'</td><td class="k4">'.$keys[3].'</td><td class="k5">'.$keys[4].'</td><td class="k6">'.$keys[5].'</td></tr>';
+		$output = '<table class="map"><tr><th colspan="7">'.$head.'</th></tr><tr><td class="k1">'.$keys[0].'</td><td class="k2">'.$keys[1].'</td><td class="pos"></td><td class="k3">'.$keys[2].'</td><td class="k4">'.$keys[3].'</td><td class="k5">'.$keys[4].'</td><td class="k6">'.$keys[5].'</td></tr>';
 		$i = 0;
 
 		// Go throught the results and construct the output line for each user.
@@ -643,7 +618,7 @@ final class HTML_MySQL
 			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.$result->csNick.'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($result->quote).$hover.'</td></tr>';
 		}
 
-		echo $output.'</table></div>'."\n";
+		echo $output.'</table>'."\n";
 	}
 
 	//makeTable_Activity from file needs review
@@ -659,6 +634,7 @@ final class HTML_MySQL
 				$cols = 24;
 				$startDate = date('Y-m-d', strtotime('-'.$minus.' '.$type));
 				$query = @mysql_query('SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' ORDER BY `date` ASC') or exit('MySQL: '.mysql_error());
+				$table_class = 'graph';
 				break;
 			case 'months':
 				/*
@@ -674,21 +650,31 @@ final class HTML_MySQL
 				$cols = 24;
 				$startDate = date('Y-m-01', strtotime('-'.$minus.' '.$type));
 				$query = @mysql_query('SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' GROUP BY YEAR(`date`), MONTH(`date`) ORDER BY `date` ASC') or exit('MySQL: '.mysql_error());
+				$table_class = 'graph';
 				break;
 			case 'years':
+				//this needs redoing!
+
 				/*
 				 * Log data is _always_ one day old.
 				 * '-16 years' gives 16 rows in SQL when the current day is the first day of the first month of the year.
 				 * In other cases we will get 17 rows so we use '-15 years' to get just the 16 rows we want.
 				 */
-				if (date('jn') == 11)
-					$minus = 16;
-				else
-					$minus = 15;
+				$query = @mysql_query('SELECT COUNT(DISTINCT YEAR(`date`)) AS `total` FROM `channel`');
+				$result = @mysql_fetch_object($query);
 
-				$cols = 16;
+				if (date('jn') == 11)
+					$minus = $result->total;
+				else
+					$minus = $result->total - 1;
+
+				if ($minus < 1)
+					break;
+
+				$cols = $result->total;
 				$startDate = date('Y-01-01', strtotime('-'.$minus.' '.$type));
 				$query = @mysql_query('SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' GROUP BY YEAR(`date`) ORDER BY `date` ASC') or exit('MySQL: '.mysql_error());
+				$table_class = 'yearly';
 				break;
 		}
 
@@ -710,7 +696,7 @@ final class HTML_MySQL
 		}
 
 		$tmp = $cols;
-		$output = '<table><tr><th colspan="'.$cols.'">'.$head.'</th></tr><tr class="bars">';
+		$output = '<table class="'.$table_class.'"><tr><th colspan="'.$cols.'">'.$head.'</th></tr><tr class="bars">';
 
 		for ($i = $minus; $i >= 0; $i--) {
 			if ($tmp == 0)
@@ -842,7 +828,7 @@ final class HTML_MySQL
 			$l_evening[$day] = $result->{'l_'.$day.'_evening'};
 		}
 
-		$output = '<table><tr><th colspan="7">'.$head.'</th></tr><tr class="bars">';
+		$output = '<table class="mad"><tr><th colspan="7">'.$head.'</th></tr><tr class="bars">';
 
 		foreach ($days as $day) {
 			if ($l_total[$day] != 0) {
