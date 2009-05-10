@@ -215,7 +215,7 @@ abstract class Parser extends Parser_MySQL
 
 	/*
 	 * Validate a given URL.
-	 * The max lenght variable is used for stats purposes only. URL validation is done by an external class.
+	 * The max length variable is used to keep stored URLs within boundaries of our database field. URL validation is done by an external class.
 	 */
 	final private function validateURL($csURL)
 	{
@@ -267,7 +267,7 @@ abstract class Parser extends Parser_MySQL
 		} else
 			$this->nicks_objs[$nick]->setValue('csNick', $csNick);
 
-		if ($dateTime !== NULL)
+		if (!is_null($dateTime))
 			$this->nicks_objs[$nick]->lastSeen($dateTime);
 
 		return $nick;
@@ -400,10 +400,11 @@ abstract class Parser extends Parser_MySQL
 						break;
 				}
 
-				if ($this->validateHost($csHost))
-					$this->nicks_objs[$nick_performing]->addHost($csHost);
-				else
-					$this->output('warning', 'setMode(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+				if (!is_null($csHost))
+					if ($this->validateHost($csHost))
+						$this->nicks_objs[$nick_performing]->addHost($csHost);
+					else
+						$this->output('warning', 'setMode(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
 			} else
 				$this->output('warning', 'setMode(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
 		} else
@@ -496,13 +497,14 @@ abstract class Parser extends Parser_MySQL
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('topics', 1);
 
-			if ($this->validateHost($csHost))
-				$this->nicks_objs[$nick]->addHost($csHost);
-			else
-				$this->output('warning', 'setTopic(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+			if (!is_null($csHost))
+				if ($this->validateHost($csHost))
+					$this->nicks_objs[$nick]->addHost($csHost);
+				else
+					$this->output('warning', 'setTopic(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
 
 			// Keep track of every single topic set.
-			if ($line !== NULL)
+			if (!is_null($line))
 				$this->nicks_objs[$nick]->addTopic($line, $dateTime);
 		} else
 			$this->output('warning', 'setTopic(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
@@ -528,19 +530,22 @@ abstract class Parser extends Parser_MySQL
 			$nick_performing = $this->addNick($csNick_performing, $dateTime);
 			$this->nicks_objs[$nick_performing]->addValue('slaps', 1);
 
-			// Clean possible network prefix (psyBNC) from undergoing nick.
-			if (substr_count($csNick_undergoing, '~') + substr_count($csNick_undergoing, '\'') == 1) {
-				$this->output('notice', 'setSlap(): cleaning "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-				$tmp = preg_split('/[~\']/', $csNick_undergoing, 2);
-				$csNick_undergoing = $tmp[1];
-			}
+			if (!is_null($csNick_undergoing)) {
+				// Clean possible network prefix (psyBNC) from undergoing nick.
+				if (substr_count($csNick_undergoing, '~') + substr_count($csNick_undergoing, '\'') == 1) {
+					$this->output('notice', 'setSlap(): cleaning "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+					$tmp = preg_split('/[~\']/', $csNick_undergoing, 2);
+					$csNick_undergoing = $tmp[1];
+				}
 
-			if ($this->validateNick($csNick_undergoing)) {
-				// Don't pass a time when adding the undergoing nick while it may only be referred to instead of being seen for real.
-				$nick_undergoing = $this->addNick($csNick_undergoing, NULL);
-				$this->nicks_objs[$nick_undergoing]->addValue('slapped', 1);
-			} else
-				$this->output('warning', 'setSlap(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+				if ($this->validateNick($csNick_undergoing)) {
+					// Don't pass a time when adding the undergoing nick while it may only be referred to instead of being seen for real.
+					$dateTime = NULL;
+					$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
+					$this->nicks_objs[$nick_undergoing]->addValue('slapped', 1);
+				} else
+					$this->output('warning', 'setSlap(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+			}
 		} else
 			$this->output('warning', 'setSlap(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
 	}

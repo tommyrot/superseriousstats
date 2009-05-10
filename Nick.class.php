@@ -196,7 +196,7 @@ final class Nick extends Nick_MySQL
 	{
 		$host = strtolower($csHost);
 
-		if ($host != '' && !in_array($host, $this->hosts_list))
+		if (!in_array($host, $this->hosts_list))
 			$this->hosts_list[] = $host;
 	}
 

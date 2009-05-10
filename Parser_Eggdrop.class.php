@@ -36,15 +36,9 @@ final class Parser_Eggdrop extends Parser
 			$line = substr($line, 8);
 			$lineParts = explode(' ', $line);
 
-			/*
-			 * "Normal" lines. Format: "<NICK> MSG".
-			 * Catch "normal" lines even if the nick is empty.
-			 */
-			if (preg_match('/^<.*>$/', $lineParts[0])) {
-				/*
-				 * Only process non empty "normal" lines.
-				 * Empty lines are silently ignored.
-				 */
+			// "Normal" lines. Format: "<NICK> MSG".
+			if (preg_match('/^<.+>$/', $lineParts[0])) {
+				// Empty "normal" lines are silently ignored.
 				if (isset($lineParts[1])) {
 					$csNick = trim($lineParts[0], '<>');
 					$line = implode(' ', array_slice($lineParts, 1));
@@ -56,17 +50,18 @@ final class Parser_Eggdrop extends Parser
 			 * "Slap" lines. Format: "Action: NICK slaps MSG".
 			 */
 			} elseif ($lineParts[0] == 'Action:') {
-				/*
-				 * Only process non empty "action" lines.
-				 * Empty lines are silently ignored.
-				 */
+				// Empty "action" lines are silently ignored.
 				if (isset($lineParts[2])) {
 					$csNick = $lineParts[1];
 					$line = implode(' ', array_slice($lineParts, 1));
 
 					// There doesn't have to be an "undergoing" nick for a slap to count.
 					if ($lineParts[2] == 'slaps') {
-						$csNick_undergoing = $lineParts[3];
+						if (isset($lineParts[3]))
+							$csNick_undergoing = $lineParts[3];
+						else
+							$csNick_undergoing = NULL;
+
 						$this->setSlap($dateTime, $csNick, $csNick_undergoing);
 					}
 
@@ -105,9 +100,16 @@ final class Parser_Eggdrop extends Parser
 				// Only process modes consisting of ops and voices.
 				if (preg_match('/^[-+][ov]+([-+][ov]+)?$/', $modes)) {
 					$modesTotal = substr_count($modes, 'o') + substr_count($modes, 'v');
-					$tmp = explode('!', $lineParts[5 + $modesTotal]);
-					$csNick_performing = $tmp[0];
-					$csHost = ltrim($tmp[1], '~');
+
+					if (strpos($lineParts[5 + $modesTotal], '!') !== FALSE) {
+						$tmp = explode('!', $lineParts[5 + $modesTotal]);
+						$csNick_performing = $tmp[0];
+						$csHost = ltrim($tmp[1], '~');
+					} else {
+						$csNick_performing = $lineParts[5 + $modesTotal];
+						$csHost = NULL;
+					}
+
 					$modeNum = 0;
 
 					for ($i = 0; $i < strlen($modes); $i++) {
