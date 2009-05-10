@@ -30,21 +30,14 @@ final class Parser_Irssi extends Parser
 		// Only process lines beginning with a timestamp.
 		if (preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]/', $line)) {
 			$dateTime = DATE.' '.substr($line, 0, 5);
-			$line = substr($line, 6);
 
-			// Normalize the nick in a "normal" line. Irssi logs a users' status and we don't want nor use that info.
-			$line = preg_replace('/^<[\x20\+@](.*)>/', '<$1>', $line);
+			// Normalize the nick in a "normal" line. Irssi logs a user's status and we don't want nor use that info.
+			$line = preg_replace('/^<[\x20\+@](.+)>/', '<$1>', substr($line, 6));
 			$lineParts = explode(' ', $line);
 
-			/*
-			 * "Normal" lines. Format: "<NICK> MSG".
-			 * Catch "normal" lines even if the nick is empty.
-			 */
-			if (preg_match('/^<.*>$/', $lineParts[0])) {
-				/*
-				 * Only process non empty "normal" lines.
-				 * Empty lines are silently ignored.
-				 */
+			// "Normal" lines. Format: "<NICK> MSG".
+			if (preg_match('/^<.+>$/', $lineParts[0])) {
+				// Empty "normal" lines are silently ignored.
 				if (isset($lineParts[1])) {
 					$csNick = trim($lineParts[0], '<>');
 					$line = implode(' ', array_slice($lineParts, 1));
@@ -56,17 +49,18 @@ final class Parser_Irssi extends Parser
 			 * "Slap" lines. Format: "* NICK slaps MSG".
 			 */
 			} elseif ($lineParts[0] == '*') {
-				/*
-				 * Only process non empty "action" lines.
-				 * Empty lines are silently ignored.
-				 */
+				// Empty "action" lines are silently ignored.
 				if (isset($lineParts[2])) {
 					$csNick = $lineParts[1];
 					$line = implode(' ', array_slice($lineParts, 1));
 
 					// There doesn't have to be an "undergoing" nick for a slap to count.
 					if ($lineParts[2] == 'slaps') {
-						$csNick_undergoing = $lineParts[3];
+						if (isset($lineParts[3]))
+							$csNick_undergoing = $lineParts[3];
+						else
+							$csNick_undergoing = NULL;
+
 						$this->setSlap($dateTime, $csNick, $csNick_undergoing);
 					}
 
@@ -84,10 +78,10 @@ final class Parser_Irssi extends Parser
 				if (preg_match('/^[-+][ov]+([-+][ov]+)?$/', $modes)) {
 					$modesTotal = substr_count($modes, 'o') + substr_count($modes, 'v');
 
-					// It's possible there are multiple "performing" nicks separated by commas. We use only the first one and strip the comma from it.
+					// Irssi may log multiple "performing" nicks separated by commas. We use only the first one and strip the comma from it.
 					$csNick_performing = rtrim($lineParts[4 + $modesTotal], ',');
 
-					// Irssi doesn't log a users' host for "mode" lines so we pass on NULL to setMode().
+					// Irssi doesn't log a user's host for "mode" lines so we pass on NULL to setMode().
 					$csHost = NULL;
 					$modeNum = 0;
 
@@ -121,17 +115,13 @@ final class Parser_Irssi extends Parser
 				$csHost = trim($lineParts[2], '[~]');
 				$this->setJoin($dateTime, $csNick, $csHost);
 
-			/*
-			 * "Part" lines. Format: "-!- NICK [HOST] has left CHAN [MSG]".
-			 */
+			// "Part" lines. Format: "-!- NICK [HOST] has left CHAN [MSG]".
 			} elseif ($lineParts[4] == 'left') {
 				$csNick = $lineParts[1];
 				$csHost = trim($lineParts[2], '[~]');
 				$this->setPart($dateTime, $csNick, $csHost);
 
-			/*
-			 * "Quit" lines. Format: "-!- NICK [HOST] has quit [MSG]".
-			 */
+			// "Quit" lines. Format: "-!- NICK [HOST] has quit [MSG]".
 			} elseif ($lineParts[4] == 'quit') {
 				$csNick = $lineParts[1];
 				$csHost = trim($lineParts[2], '[~]');
@@ -141,7 +131,7 @@ final class Parser_Irssi extends Parser
 			} elseif ($lineParts[2] == 'changed') {
 				$csNick = $lineParts[1];
 
-				// Irssi doesn't log a users' host for "topic" lines so we pass on NULL to setTopic().
+				// Irssi doesn't log a user's host for "topic" lines so we pass on NULL to setTopic().
 				$csHost = NULL;
 
 				// If the topic is empty we pass on NULL to setTopic().
