@@ -55,7 +55,7 @@ final class Parser_Irssi extends Parser
 					$line = implode(' ', array_slice($lineParts, 1));
 
 					// There doesn't have to be an "undergoing" nick for a slap to count.
-					if ($lineParts[2] == 'slaps') {
+					if (strtolower($lineParts[2]) == 'slaps') {
 						if (isset($lineParts[3]))
 							$csNick_undergoing = $lineParts[3];
 						else
