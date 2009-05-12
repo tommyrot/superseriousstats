@@ -2,10 +2,10 @@
 
 // Change the settings below according to your specific installation.
 
-// Name of the IRC channel.
-$channel = '#channel';
+// Name of the IRC channel you are generating stats for.
+$channel = '#example';
 
-// The full path to the Super Serious Stats release directory.
+// The full path to the Super Serious Stats directory.
 $path = '/home/user/sss/1.0.x';
 
 // Timezones can be found at http://php.net/manual/en/timezones.php
@@ -15,7 +15,7 @@ $timezone = 'Europe/Amsterdam';
 $db_host = '127.0.0.1';
 $db_user = 'user';
 $db_pass = 'password';
-$db_name = 'database';
+$db_name = 'sss-example';
 
 /*
  * The different output levels for event messages are:
@@ -29,11 +29,11 @@ $outputLevel = 1;
 
 /*
  * Enable (TRUE) or disable (FALSE, default) the tracking of words.
- * Enabling this feature may or may not have a noticable effect on parsetimes,
- * depending on the available processing power of the system used, and the
- * amount of lines and unique users in the logfile being parsed.
+ * Enabling this feature may pose a big performance hit on parsetimes,
+ * depending on the available processing power of the system used and the
+ * amount of lines in the logfile being parsed.
  * The ability to generate the "Most Mentioned Nicks" table is dependent on
- * this feature and possible some other tables as well.
+ * this feature and possibly other tables as well in the future.
  */
 $wordTracking = FALSE;
 
@@ -44,7 +44,7 @@ $wordTracking = FALSE;
  */
 $writeData = TRUE;
 
-/* 
+/*
  * Perform maintenance routines on the database tables. Default is TRUE.
  * It's safe to do maintenance but in case of testing or debugging you may
  * want to skip this step to gain time, e.g. when doing an initial database
