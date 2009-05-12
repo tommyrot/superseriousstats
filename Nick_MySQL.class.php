@@ -25,6 +25,7 @@
 
 abstract class Nick_MySQL
 {
+	// The array below should contain "user_details" as its first element.
 	private $user_tables = array('user_details', 'user_events', 'user_lines', 'user_smileys');
 	private $user_details = array('UID', 'csNick', 'firstSeen', 'lastSeen');
 	private $user_events = array('UID', 'm_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deOp', 'm_deOpped', 'm_deVoice', 'm_deVoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked');
@@ -39,7 +40,7 @@ abstract class Nick_MySQL
 				if (!$query = @mysql_query('SELECT * FROM `'.$table.'` WHERE `csNick` = \''.mysql_real_escape_string($this->csNick).'\' LIMIT 1'))
 					return FALSE;
 			} else
-				if (!$query = @mysql_query('SELECT * FROM `'.$table.'` WHERE `UID` = '.$UID.' LIMIT 1'))
+				if (!$query = @mysql_query('SELECT * FROM `'.$table.'` WHERE `UID` = '.$this->UID.' LIMIT 1'))
 					return FALSE;
 
 			$rows = @mysql_num_rows($query);
@@ -51,8 +52,8 @@ abstract class Nick_MySQL
 				$query = 'INSERT INTO `'.$table.'` SET';
 
 				foreach ($this->{$table} as $key)
-					if ($key == 'UID' && $UID != 0)
-						$query .= ' `'.$key.'` = '.$UID.',';
+					if ($key == 'UID' && $this->$key != 0)
+						$query .= ' `'.$key.'` = '.$this->$key.',';
 					elseif (is_int($this->$key) && $this->$key != 0) {
 						$query .= ' `'.$key.'` = '.$this->$key.',';
 						$submit = TRUE;
@@ -68,9 +69,9 @@ abstract class Nick_MySQL
 						return FALSE;
 
 					if ($table == 'user_details') {
-						$UID = @mysql_insert_id();
+						$this->UID = @mysql_insert_id();
 
-						if (!@mysql_query('INSERT INTO `user_status` (`UID`, `RUID`, `status`) VALUES ('.$UID.', '.$UID.', 0)'))
+						if (!@mysql_query('INSERT INTO `user_status` (`UID`, `RUID`, `status`) VALUES ('.$this->UID.', '.$this->UID.', 0)'))
 							return FALSE;
 					}
 				}
@@ -78,7 +79,7 @@ abstract class Nick_MySQL
 				$result = @mysql_fetch_object($query);
 
 				if ($table == 'user_details')
-					$UID = $result->UID;
+					$this->UID = $result->UID;
 
 				$query = 'UPDATE `'.$table.'` SET';
 
@@ -96,7 +97,7 @@ abstract class Nick_MySQL
 						$submit = TRUE;
 					}
 
-				$query = rtrim($query, ',').' WHERE `UID` = '.$UID;
+				$query = rtrim($query, ',').' WHERE `UID` = '.$this->UID;
 
 				if ($submit)
 					if (!@mysql_query($query))
@@ -106,13 +107,13 @@ abstract class Nick_MySQL
 
 		// Write data to database table "user_activity".
 		if ($this->l_total != 0)
-			if (!@mysql_query('INSERT INTO `user_activity` (`UID`, `date`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES ('.$UID.', \''.mysql_real_escape_string(DATE).'\', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')'))
+			if (!@mysql_query('INSERT INTO `user_activity` (`UID`, `date`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES ('.$this->UID.', \''.mysql_real_escape_string(DATE).'\', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')'))
 				return FALSE;
 
 		// Write data to database table "user_hosts".
 		if (!empty($this->hosts_list)) {
 			foreach ($this->hosts_list as $host) {
-				if (!$query = @mysql_query('SELECT * FROM `user_hosts` WHERE `UID` = '.$UID.' AND `host` = \''.mysql_real_escape_string($host).'\' LIMIT 1'))
+				if (!$query = @mysql_query('SELECT * FROM `user_hosts` WHERE `UID` = '.$this->UID.' AND `host` = \''.mysql_real_escape_string($host).'\' LIMIT 1'))
 					return FALSE;
 
 				$rows = @mysql_num_rows($query);
@@ -126,12 +127,12 @@ abstract class Nick_MySQL
 					$rows = @mysql_num_rows($query);
 
 					if (empty($rows)) {
-						if (!@mysql_query('INSERT INTO `user_hosts` (`UID`, `host`) VALUES ('.$UID.', \''.mysql_real_escape_string($host).'\')'))
+						if (!@mysql_query('INSERT INTO `user_hosts` (`UID`, `host`) VALUES ('.$this->UID.', \''.mysql_real_escape_string($host).'\')'))
 							return FALSE;
 					} else {
 						$result = @mysql_fetch_object($query);
 
-						if (!@mysql_query('INSERT INTO `user_hosts` (`HID`, `UID`, `host`) VALUES ('.$result->HID.', '.$UID.', \''.mysql_real_escape_string($host).'\')'))
+						if (!@mysql_query('INSERT INTO `user_hosts` (`HID`, `UID`, `host`) VALUES ('.$result->HID.', '.$this->UID.', \''.mysql_real_escape_string($host).'\')'))
 							return FALSE;
 					}
 				}
@@ -141,7 +142,7 @@ abstract class Nick_MySQL
 		// Write data to database table "user_topics".
 		if (!empty($this->topics_list)) {
 			foreach ($this->topics_list as $topic) {
-				if (!$query = @mysql_query('SELECT * FROM `user_topics` WHERE `UID` = '.$UID.' AND `csTopic` = \''.mysql_real_escape_string($topic['csTopic']).'\' AND `setDate` = \''.mysql_real_escape_string($topic['setDate']).'\' LIMIT 1'))
+				if (!$query = @mysql_query('SELECT * FROM `user_topics` WHERE `UID` = '.$this->UID.' AND `csTopic` = \''.mysql_real_escape_string($topic['csTopic']).'\' AND `setDate` = \''.mysql_real_escape_string($topic['setDate']).'\' LIMIT 1'))
 					return FALSE;
 
 				$rows = @mysql_num_rows($query);
@@ -158,12 +159,12 @@ abstract class Nick_MySQL
 					$rows = @mysql_num_rows($query);
 
 					if (empty($rows)) {
-						if (!@mysql_query('INSERT INTO `user_topics` (`UID`, `csTopic`, `setDate`) VALUES ('.$UID.', \''.mysql_real_escape_string($topic['csTopic']).'\', \''.mysql_real_escape_string($topic['setDate']).'\')'))
+						if (!@mysql_query('INSERT INTO `user_topics` (`UID`, `csTopic`, `setDate`) VALUES ('.$this->UID.', \''.mysql_real_escape_string($topic['csTopic']).'\', \''.mysql_real_escape_string($topic['setDate']).'\')'))
 							return FALSE;
 					} else {
 						$result = @mysql_fetch_object($query);
 
-						if (!@mysql_query('INSERT INTO `user_topics` (`TID`, `UID`, `csTopic`, `setDate`) VALUES ('.$result->TID.', '.$UID.', \''.mysql_real_escape_string($topic['csTopic']).'\', \''.mysql_real_escape_string($topic['setDate']).'\')'))
+						if (!@mysql_query('INSERT INTO `user_topics` (`TID`, `UID`, `csTopic`, `setDate`) VALUES ('.$result->TID.', '.$this->UID.', \''.mysql_real_escape_string($topic['csTopic']).'\', \''.mysql_real_escape_string($topic['setDate']).'\')'))
 							return FALSE;
 					}
 				}
@@ -172,7 +173,7 @@ abstract class Nick_MySQL
 
 		// Write data to database table "user_URLs".
 		foreach ($this->URLs_list as $URL)
-			if (!$this->URLs_objs[$URL]->writeData($UID))
+			if (!$this->URLs_objs[$URL]->writeData($this->UID))
 				return FALSE;
 
 		return TRUE;

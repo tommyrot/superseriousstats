@@ -25,6 +25,9 @@
 
 final class Nick extends Nick_MySQL
 {
+	// User ID. Should be 0, don't touch.
+	protected $UID = 0;
+
 	// Variables used in database table "user_details".
 	protected $csNick = '';
 	protected $firstSeen = '';
