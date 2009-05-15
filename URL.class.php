@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * Copyright (c) 2007-2009 Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
+/**
  * Super Serious Stats
  * URL.class.php
  *

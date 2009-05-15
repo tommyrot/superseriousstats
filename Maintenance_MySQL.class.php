@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * Copyright (c) 2007-2009 Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -16,18 +16,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
+/**
  * Super Serious Stats
  * Maintenance_MySQL.class.php
  *
  * Class for performing database maintenance.
  *
- * One should understand the following basic variables before continuing to read through this file. Comments in this file are likely to be confusing and not of any help with understanding how things work.
+ * One should understand the following basic variables before continuing to read through this file.
+ * Comments in this file are likely to be confusing and not of any help with understanding how things work.
  *
  * UID = User ID
  * RUID = UID of the registered user
  *
- * The registered user has the same RUID as UID and can be identified accordingly. Its aliases have their own unique UIDs and a RUID which is set to the UID of the registered user.
+ * The registered user has the same RUID as UID and can be identified accordingly.
+ * Its aliases have their own unique UIDs and a RUID which is set to the UID of the registered user.
  */
 
 final class Maintenance_MySQL
@@ -74,7 +76,7 @@ final class Maintenance_MySQL
 		$this->output('notice', 'doMaintenance(): maintenance completed');
 	}
 
-	/*
+	/**
 	 * Nicks are stored with their UID, RUID and status. For new nicks the UID = RUID and status = 0.
 	 *
 	 * The possible statusses for nicks are:
@@ -138,7 +140,10 @@ final class Maintenance_MySQL
 	// Make the alias with the most lines the new registered nick for the user or bot it is linked to.
 	private function registerMostActiveAlias()
 	{
-		// First get all valid RUIDs (UID = RUID and status = 1 or 3). Then check for aliases pointing to those RUIDs and determine the one with most lines. Finally change the registered nick.
+		/**
+		 * First get all valid RUIDs (UID = RUID and status = 1 or 3). Then check for aliases pointing to those RUIDs and determine the one with most lines.
+		 * Finally change the registered nick.
+		 */
 		$query_valid_RUIDs = @mysql_query('SELECT `RUID`, `status` FROM `user_status` WHERE `UID` = `RUID` AND (`status` = 1 OR `status` = 3) ORDER BY `RUID` ASC') or $this->output('critical', 'MySQL: '.mysql_error());
 
 		while ($result_valid_RUIDs = mysql_fetch_object($query_valid_RUIDs)) {
@@ -146,7 +151,7 @@ final class Maintenance_MySQL
 			$result_aliases = @mysql_fetch_object($query_aliases);
 
 			if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
-				/*
+				/**
 				 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old RUID has.
 				 * Update all aliases linked to the old RUID and make them point to the new registered nick, including the old RUID.
 				 */

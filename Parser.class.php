@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * Copyright (c) 2007-2009 Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
+/**
  * Super Serious Stats
  * Parser.class.php
  *
@@ -25,7 +25,7 @@
 
 abstract class Parser extends Parser_MySQL
 {
-	/*
+	/**
 	 * Don't change any of the default settings below unless you know what you're doing!
 	 * Documented changes can be made from the startup script.
 	 */
@@ -155,7 +155,7 @@ abstract class Parser extends Parser_MySQL
 				while (!feof($handle)) {
 					$line = fgets($handle);
 
-					/*
+					/**
 					 * Normalize the line:
 					 * 1. Remove control codes: ascii characters x00 to x1F and x7F except x09. Treat x03 differently since it is used for color codes.
 					 * 2. Remove double spacing (x20) and tabs (x09).
@@ -177,7 +177,7 @@ abstract class Parser extends Parser_MySQL
 			$this->output('critical', 'parseLog(): no such file: \''.$logfile.'\'');
 	}
 
-	/*
+	/**
 	 * Validate a given nick.
 	 * Check on syntax and variable length.
 	 */
@@ -189,9 +189,10 @@ abstract class Parser extends Parser_MySQL
 			return FALSE;
 	}
 
-	/*
+	/**
 	 * Validate a given host.
-	 * Only check for length since standards don't apply to network specific spoofed hosts. These are needed for nicklinking however.
+	 * Only check for length since standards don't apply to network specific spoofed hosts.
+	 * These are needed for nicklinking however.
 	 */
 	final private function validateHost($csHost)
 	{
@@ -201,7 +202,7 @@ abstract class Parser extends Parser_MySQL
 			return FALSE;
 	}
 
-	/*
+	/**
 	 * Validate a given quote.
 	 * Since all non printable characters are stripped from the lines we can suffice with checking on min and max length.
 	 */
@@ -213,9 +214,10 @@ abstract class Parser extends Parser_MySQL
 			return FALSE;
 	}
 
-	/*
+	/**
 	 * Validate a given URL.
-	 * The max length variable is used to keep stored URLs within boundaries of our database field. URL validation is done by an external class.
+	 * The max length variable is used to keep stored URLs within boundaries of our database field.
+	 * URL validation is done by an external class.
 	 */
 	final private function validateURL($csURL)
 	{
@@ -225,7 +227,7 @@ abstract class Parser extends Parser_MySQL
 			return FALSE;
 	}
 
-	/*
+	/**
 	 * An $int percent chance to return TRUE.
 	 * Used for making the selection of quotes more dynamic.
 	 */
@@ -237,7 +239,7 @@ abstract class Parser extends Parser_MySQL
 			return FALSE;
 	}
 
-	/*
+	/**
 	 * Function for the global word tracking. Word tracking can be turned off by setting $wordTracking to FALSE from the startup script.
 	 * Due to the in_array() function being shitty inefficient, searching large arrays is a big performance hit.
 	 */
@@ -253,7 +255,7 @@ abstract class Parser extends Parser_MySQL
 		$this->words_objs[$word]->addValue('total', 1);
 	}
 
-	/*
+	/**
 	 * Create an object of the nick if it doesn't already exist.
 	 * Return the lowercase nick for further referencing by the calling function.
 	 */
@@ -347,7 +349,10 @@ abstract class Parser extends Parser_MySQL
 			$lineParts = explode(' ', $line);
 
 			foreach ($lineParts as $csWord) {
-				// The "words" counter below has no relation with the real words which are stored in the database. It simply counts all character groups seperated by whitespace.
+				/**
+				 * The "words" counter below has no relation with the real words which are stored in the database.
+				 * It simply counts all character groups seperated by whitespace.
+				 */
 				$this->nicks_objs[$nick]->addValue('words', 1);
 
 				if (preg_match('/^(=[]\)]|;([]\(\)xp]|-\))|:([]\/\(\)\\\>xpd]|-\))|\\\o\/)$/i', $csWord))
@@ -363,7 +368,7 @@ abstract class Parser extends Parser_MySQL
 					} else
 						$this->output('notice', 'setNormal(): invalid URL: \''.$csWord.'\' on line '.$this->lineNum);
 				} elseif ($this->wordTracking && preg_match('/^[a-z]{1,255}$/i', $csWord))
-					/*
+					/**
 					 * To keep it simple we only track words composed of the characters A through Z.
 					 * Words of 30+ characters are most likely not real words but then again we're not a dictionary.
 					 */

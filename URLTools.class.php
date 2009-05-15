@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * Copyright (c) 2007-2009 Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
+/**
  * Super Serious Stats
  * URLTools.class.php
  *
@@ -122,7 +122,7 @@ final class URLTools
 
 	public function normalizeURL($csURL)
 	{
-		/*
+		/**
 		 * 1. Convert scheme and authority to lower case.
 		 * 2. Strip trailing slashes from path or authority.
 		 */
