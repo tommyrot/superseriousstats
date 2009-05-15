@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * Copyright (c) 2007-2009 Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
+/**
  * Super Serious Stats
  * Nick_MySQL.class.php
  *
@@ -147,7 +147,7 @@ abstract class Nick_MySQL
 
 				$rows = @mysql_num_rows($query);
 
-				/*
+				/**
 				 * Don't insert a topic already set by this user at the same time.
 				 * The combination of TID/UID/setDate is unique in the database where TID is the identifier of the topic.
 				 */

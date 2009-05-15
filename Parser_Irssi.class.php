@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * Copyright (c) 2009 Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
+/**
  * Super Serious Stats
  * Parser_Irssi.class.php
  *
@@ -44,7 +44,7 @@ final class Parser_Irssi extends Parser
 					$this->setNormal($dateTime, $csNick, $line);
 				}
 
-			/*
+			/**
 			 * "Action" lines. Format: "* NICK MSG".
 			 * "Slap" lines. Format: "* NICK slaps MSG".
 			 */
@@ -67,7 +67,7 @@ final class Parser_Irssi extends Parser
 					$this->setAction($dateTime, $csNick, $line);
 				}
 
-			/*
+			/**
 			 * "Mode" lines by user. Format: "-!- mode/CHAN [+o-v NICK NICK] by NICK".
 			 * "Mode" lines by server. Format: "-!- ServerMode/CHAN [+o-v NICK NICK] by NICK".
 			 */

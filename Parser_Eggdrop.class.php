@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * Copyright (c) 2007-2009 Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
+/**
  * Super Serious Stats
  * Parser_Eggdrop.class.php
  *
@@ -45,7 +45,7 @@ final class Parser_Eggdrop extends Parser
 					$this->setNormal($dateTime, $csNick, $line);
 				}
 
-			/*
+			/**
 			 * "Action" lines. Format: "Action: NICK MSG".
 			 * "Slap" lines. Format: "Action: NICK slaps MSG".
 			 */
@@ -80,7 +80,7 @@ final class Parser_Eggdrop extends Parser
 				$csHost = trim($lineParts[1], '(~)');
 				$this->setJoin($dateTime, $csNick, $csHost);
 
-			/*
+			/**
 			 * "Part" lines. Format: "NICK (HOST) left CHAN (MSG).".
 			 * "Quit" lines. Format: "NICK (HOST) left irc: MSG".
 			 */
@@ -150,7 +150,7 @@ final class Parser_Eggdrop extends Parser
 				$csNick_undergoing = $lineParts[0];
 				$this->setKick($dateTime, $csNick_performing, $csNick_undergoing, $line);
 
-			/*
+			/**
 			 * Eggdrops log repeated lines (case insensitive matches) in the format: "Last message repeated NUM time(s).".
 			 * We process the previous line NUM times.
 			 */

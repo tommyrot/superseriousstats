@@ -1,7 +1,7 @@
 #!/usr/local/bin/php5
 <?php
 
-/*
+/**
  * Output wrapper, this script will:
  * - Read your settings from settings.php
  * - Generate a HTML page with statistics for you channel
@@ -10,7 +10,7 @@
  */
 
 if (!@include('settings.php'))
-        exit('Settings file (settings.php) cannot be opened, it should be in the same directory as this script..'."\n");
+	exit('Settings file (settings.php) cannot be opened, it should be in the same directory as this script..'."\n");
 
 date_default_timezone_set($timezone);
 $date = date('Y-m-d');
@@ -27,7 +27,7 @@ define('DAY', $day);
 
 function __autoload($class)
 {
-        require_once(rtrim(PATH, '/').'/'.$class.'.class.php');
+	require_once(rtrim(PATH, '/').'/'.$class.'.class.php');
 }
 
 // Get this baby running!
