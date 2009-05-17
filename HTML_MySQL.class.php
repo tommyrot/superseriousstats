@@ -28,7 +28,7 @@ final class HTML_MySQL
 	// The correct way for changing the variables below is from the startup script.
 	private $decimals = 2;
 	private $stylesheet = 'default.css';
-	private $channel = '';
+	private $channel = '#example';
 	private $minRows = 3;
 
 	// Other variables. Shouldn't be tampered with in most cases.
@@ -85,14 +85,15 @@ final class HTML_MySQL
 		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
 
 		// Build the HTML page.
-		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n";
-		echo '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n";
-		echo '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n";
-		echo '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n";
-		echo '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n";
-		echo '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n";
-		echo '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n";
+		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
+		   . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
+		   . '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n"
+		   . '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
+		   . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
+		   . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
+		   . '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n";
 		$query = @mysql_query('SELECT COUNT(DISTINCT YEAR(`date`)) AS `total` FROM `channel`');
+
 		$result = @mysql_fetch_object($query);
 		if ($result->total > 0) {
 			$width = 2 + ($result->total * 34);
@@ -103,7 +104,7 @@ final class HTML_MySQL
 		echo '<div class="info">'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />';
 
 		$query = @mysql_query('select avg(`l_total`) as `avg` from `channel` limit 1');
-  		$result = @mysql_fetch_object($query);
+		$result = @mysql_fetch_object($query);
 		$avg = $result->avg;
 
 		$query = @mysql_query('select `l_total` as `max`, `date` from `channel` order by `l_total` desc limit 1');
@@ -683,8 +684,16 @@ final class HTML_MySQL
 
 		while ($result = @mysql_fetch_object($query)) {
 			$year = date('Y', strtotime($result->date));
-			$month = date('n', strtotime($result->date));
-			$day = date('j', strtotime($result->date));
+
+			if ($type == 'years')
+				$month = 1;
+			else
+				$month = date('n', strtotime($result->date));
+
+			if ($type == 'months' || $type == 'years')
+				$day = 1;
+			else
+				$day = date('j', strtotime($result->date));
 
 			foreach ($sums as $sum)
 				$activity[$year][$month][$day][$sum] = $result->$sum;
