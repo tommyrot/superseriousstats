@@ -157,11 +157,11 @@ abstract class Parser extends Parser_MySQL
 
 					/**
 					 * Normalize the line:
-					 * 1. Remove control codes: ascii characters x00 to x1F and x7F except x09. Treat x03 differently since it is used for color codes.
-					 * 2. Remove double spacing (x20) and tabs (x09).
+					 * 1. Remove ISO-8859-1 control codes: characters x00 to x1F (except x09) and x7F to x9F. Treat x03 differently since it is used for (mIRC) color codes.
+					 * 2. Remove multiple adjacent spaces (x20) and all tabs (x09).
 					 * 3. Remove whitespaces at the beginning and end of a line.
 					 */
-					$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
+					$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
 
 					// Pass on the normalized line to the logfile format specific parser class extending this class.
 					$this->lineNum++;
@@ -204,7 +204,7 @@ abstract class Parser extends Parser_MySQL
 
 	/**
 	 * Validate a given quote.
-	 * Since all non printable characters are stripped from the lines we can suffice with checking on min and max length.
+	 * Since all non printable ISO-8859-1 characters are stripped from the lines we can suffice with checking on min and max length.
 	 */
 	final private function validateQuote($line)
 	{
