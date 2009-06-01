@@ -246,9 +246,7 @@ final class HTML_MySQL
 		$this->makeTable('small', 5, 'Most Nick Changes', array('', 'Nick Changes', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `nickChanges` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `nickChanges` != 0 ORDER BY `nickChanges` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`nickChanges`) AS `v0` FROM `query_events`'));
 		$this->makeTable('small', 5, 'Most Aliases', array('', 'Aliases', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, COUNT(*) AS `v1` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `status` != 3 GROUP BY `RUID` ORDER BY `v1` DESC, `csNick` ASC LIMIT 5', 'SELECT COUNT(*) AS `v0` FROM `user_status`'));
 		$this->makeTable('small', 5, 'Most Topics', array('', 'Topics', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `topics` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topics` != 0 ORDER BY `topics` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`topics`) AS `v0` FROM `query_events`'));
-
-		// needs to be fixed
-		//table_topics();
+		$this->table_topics();
 
 		echo '<div class="head">Smileys</div>'."\n";
 
@@ -876,6 +874,35 @@ final class HTML_MySQL
 				$output .= '<td>'.ucfirst($day).'</td>';
 
 		echo $output.'</tr></table>'."\n";
+	}
+
+	// I'm too stupid to come up with a cool SQL query that does half the below work for me, so here's a less elegant solution.
+	private function table_topics()
+	{
+		$query = @mysql_query('SELECT `csTopic`, `setDate`, `csNick` FROM `user_topics` JOIN `user_details` ON `user_topics`.`UID` = `user_details`.`UID` ORDER BY `setDate` ASC');
+
+		while ($result = @mysql_fetch_object($query)) {
+			if (isset($lastDate)) {
+				$days = floor((strtotime($result->setDate) - strtotime($lastDate)) / 86400);
+				$topics[] = array($days, $lastUser, $lastTopic);
+			}
+
+			$lastTopic = $result->csTopic;
+			$lastUser = $result->csNick;
+			$lastDate = $result->setDate;
+		}
+
+		$days = floor((strtotime('yesterday') - strtotime($lastDate)) / 86400);
+		$topics[] = array($days, $lastUser, $lastTopic);
+		rsort($topics);
+
+		for ($i = 1; $i <= 5; $i++) {
+			$rows[] = array('v1' => $topics[$i-1][0]
+				       ,'v2' => $topics[$i-1][1]
+				       ,'v3' => $topics[$i-1][2]);
+		}
+
+		$this->makeTable2('large', 5, 'Longest Standing Topics', array('', 'Days', 'User', 'Topic'), 0, FALSE, $rows);
 	}
 }
 
