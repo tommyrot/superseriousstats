@@ -625,44 +625,31 @@ final class HTML_MySQL
 	//makeTable_Activity from file needs review
 	private function makeTable_Activity($type, $head)
 	{
+		// Remember that log data is _always_ one day old!
 		switch ($type) {
 			case 'days':
-				/**
-				 * Log data is _always_ one day old.
-				 * '-24 days' gives 24 rows in SQL since there's no data on the current day.
-				 */
-				$minus = 24;
 				$cols = 24;
-				$startDate = date('Y-m-d', strtotime('-'.$minus.' '.$type));
+				$minus = 24;
+				$startDate = date('Y-m-d', mktime(0, 0, 0, date('m'), date('j') - $minus, date('Y')));
 				$query = @mysql_query('SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' ORDER BY `date` ASC') or exit('MySQL: '.mysql_error());
 				$table_class = 'graph';
 				break;
 			case 'months':
-				/**
-				 * Log data is _always_ one day old.
-				 * '-24 months' gives 24 rows in SQL when the current day is the first day of the month on which there isn't any data on the current month in the database yet.
-				 * In other cases we will get 25 rows so we use '-23 months' to get just the 24 rows we want.
-				 */
+				$cols = 24;
+
 				if (date('j') == 1)
 					$minus = 24;
 				else
 					$minus = 23;
 
-				$cols = 24;
-				$startDate = date('Y-m-01', strtotime('-'.$minus.' '.$type));
+				$startDate = date('Y-m-01', mktime(0, 0, 0, date('m') - $minus, date('j'), date('Y')));
 				$query = @mysql_query('SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' GROUP BY YEAR(`date`), MONTH(`date`) ORDER BY `date` ASC') or exit('MySQL: '.mysql_error());
 				$table_class = 'graph';
 				break;
 			case 'years':
-				//this needs redoing!
-
-				/**
-				 * Log data is _always_ one day old.
-				 * '-16 years' gives 16 rows in SQL when the current day is the first day of the first month of the year.
-				 * In other cases we will get 17 rows so we use '-15 years' to get just the 16 rows we want.
-				 */
 				$query = @mysql_query('SELECT COUNT(DISTINCT YEAR(`date`)) AS `total` FROM `channel`');
 				$result = @mysql_fetch_object($query);
+				$cols = $result->total;
 
 				if (date('jn') == 11)
 					$minus = $result->total;
@@ -672,8 +659,7 @@ final class HTML_MySQL
 				if ($minus < 1)
 					break;
 
-				$cols = $result->total;
-				$startDate = date('Y-01-01', strtotime('-'.$minus.' '.$type));
+				$startDate = date('Y-01-01', mktime(0, 0, 0, date('m'), date('j'), date('Y') - $minus));
 				$query = @mysql_query('SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' GROUP BY YEAR(`date`) ORDER BY `date` ASC') or exit('MySQL: '.mysql_error());
 				$table_class = 'yearly';
 				break;
@@ -715,17 +701,17 @@ final class HTML_MySQL
 
 			switch ($type) {
 				case 'days':
-					$year = date('Y', strtotime('-'.$i.' '.$type));
-					$month = date('n', strtotime('-'.$i.' '.$type));
-					$day = date('j', strtotime('-'.$i.' '.$type));
+					$year = date('Y', mktime(0, 0, 0, date('m'), date('j') - $i, date('Y')));
+					$month = date('n', mktime(0, 0, 0, date('m'), date('j') - $i, date('Y')));
+					$day = date('j', mktime(0, 0, 0, date('m'), date('j') - $i, date('Y')));
 					break;
 				case 'months':
-					$year = date('Y', strtotime('-'.$i.' '.$type));
-					$month = date('n', strtotime('-'.$i.' '.$type));
+					$year = date('Y', mktime(0, 0, 0, date('m') - $i, date('j'), date('Y')));
+					$month = date('n', mktime(0, 0, 0, date('m') - $i, date('j'), date('Y')));
 					$day = 1;
 					break;
 				case 'years':
-					$year = date('Y', strtotime('-'.$i.' '.$type));
+					$year = date('Y', mktime(0, 0, 0, date('m'), date('j'), date('Y') - $i));
 					$month = 1;
 					$day = 1;
 					break;
@@ -783,7 +769,7 @@ final class HTML_MySQL
 
 			switch ($type) {
 				case 'days':
-					$date = date('Y-m-d', strtotime('-'.$i.' '.$type));
+					$date = date('Y-m-d', mktime(0, 0, 0, date('m'), date('j') - $i, date('Y')));
 
 					if ($l_total_high_date == $date)
 						$output .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
@@ -792,7 +778,7 @@ final class HTML_MySQL
 
 					break;
 				case 'months':
-					$date = date('Y-m-01', strtotime('-'.$i.' '.$type));
+					$date = date('Y-m-01', mktime(0, 0, 0, date('m') - $i, date('j'), date('Y')));
 
 					if ($l_total_high_date == $date)
 						$output .= '<td class="bold">'.date('M', strtotime($date)).'<br />'.date('\'y', strtotime($date)).'</td>';
@@ -801,7 +787,7 @@ final class HTML_MySQL
 
 					break;
 				case 'years':
-					$date = date('Y-01-01', strtotime('-'.$i.' '.$type));
+					$date = date('Y-01-01', mktime(0, 0, 0, date('m'), date('j'), date('Y') - $i));
 
 					if ($l_total_high_date == $date)
 						$output .= '<td class="bold">'.date('\'y', strtotime($date)).'</td>';
