@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * Copyright (c) 2007-2009 Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
+/**
  * Super Serious Stats
  * HTML_MySQL.class.php
  *
@@ -26,19 +26,19 @@
 final class HTML_MySQL
 {
 	// The correct way for changing the variables below is from the startup script.
-	private $decimals = 2;
-	private $stylesheet = 'default.css';
-	private $channel = '#example';
-	private $minRows = 3;
-
-	// Other variables. Shouldn't be tampered with in most cases.
-	private $l_total = 0;
-	private $l_minimum = 0;
-	private $days = 0;
 	private $bar_night = 'b.png';
 	private $bar_morning = 'g.png';
 	private $bar_afternoon = 'y.png';
 	private $bar_evening = 'r.png';
+	private $channel = '#example';
+	private $decimals = 2;
+	private $minRows = 3;
+	private $stylesheet = 'default.css';
+
+	// The following variables shouldn't be tampered with.
+	private $l_total = 0;
+	private $l_minimum = 0;
+	private $days = 0;
 
 	public function setValue($var, $value)
 	{
@@ -69,7 +69,7 @@ final class HTML_MySQL
 		$result_date_last = @mysql_fetch_object($query_date_last);
 		$this->date_last = $result_date_last->date;
 
-		/*
+		/**
 		 *  This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
 		 *  500 will be the minimum minimum! So tables will look somewhat more sane on low volume channels.
 		 */
@@ -134,7 +134,7 @@ final class HTML_MySQL
 		$this->makeTable_MostActivePeople('month', 10, 'Most Active People, '.$this->month_name.' '.$this->year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->year, $this->month);
 		$this->makeTable_TimeOfDay('Activity, by Time of Day', array('Nightcrawlers<br />0h - 5h', 'Early Birds<br />6h - 11h', 'Afternoon Shift<br />12h - 17h', 'Evening Chatters<br />18h - 23h'));
 
-		/*
+		/**
 		Bots are excluded from statistics unless stated otherwise.
 		They are, however, included in the (channel) totals.
 		*/
@@ -527,7 +527,7 @@ final class HTML_MySQL
 				$result->quote = $result_csNick->quote;
 			}
 
-			/*
+			/**
 			 * Make sure that quotes don't exceed the limit of 300px in width.
 			 * Below is the old and crappy way of doing so, i'd love to have this tidied up one day.
 			 */
@@ -627,7 +627,7 @@ final class HTML_MySQL
 	{
 		switch ($type) {
 			case 'days':
-				/*
+				/**
 				 * Log data is _always_ one day old.
 				 * '-24 days' gives 24 rows in SQL since there's no data on the current day.
 				 */
@@ -638,7 +638,7 @@ final class HTML_MySQL
 				$table_class = 'graph';
 				break;
 			case 'months':
-				/*
+				/**
 				 * Log data is _always_ one day old.
 				 * '-24 months' gives 24 rows in SQL when the current day is the first day of the month on which there isn't any data on the current month in the database yet.
 				 * In other cases we will get 25 rows so we use '-23 months' to get just the 24 rows we want.
@@ -656,7 +656,7 @@ final class HTML_MySQL
 			case 'years':
 				//this needs redoing!
 
-				/*
+				/**
 				 * Log data is _always_ one day old.
 				 * '-16 years' gives 16 rows in SQL when the current day is the first day of the first month of the year.
 				 * In other cases we will get 17 rows so we use '-15 years' to get just the 16 rows we want.
