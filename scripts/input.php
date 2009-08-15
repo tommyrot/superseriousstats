@@ -26,11 +26,11 @@ date_default_timezone_set($timezone);
 $logfile = preg_replace('/yesterday$/', date('Ymd', strtotime('yesterday')), $argv[1]);
 
 if (!preg_match('/(19[7-9][0-9]|20[0-9]{2})(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/', $logfile))
-	exit('The logfile doesn\'t appear to have a valid date in it\'s filename.'."\n");
+	exit('The logfile doesn\'t appear to have a valid date in its filename.'."\n");
 
-$logfile_date = substr($logfile, strlen($logfile) - 8);
-$date = date('Y-m-d', strtotime($logfile_date));
-$day = strtolower(date('D', strtotime($logfile_date)));
+$tmp = substr($logfile, strlen($logfile) - 8);
+$date = date('Y-m-d', strtotime($tmp));
+$day = strtolower(date('D', strtotime($tmp)));
 
 // Define some constants used throughout the scripts.
 define('PATH', $path);
