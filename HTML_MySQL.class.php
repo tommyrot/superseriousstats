@@ -26,19 +26,22 @@
 final class HTML_MySQL
 {
 	// The correct way for changing the variables below is from the startup script.
-	private $bar_night = 'b.png';
-	private $bar_morning = 'g.png';
-	private $bar_afternoon = 'y.png';
-	private $bar_evening = 'r.png';
 	private $channel = '#example';
 	private $decimals = 2;
 	private $minRows = 3;
 	private $stylesheet = 'default.css';
 
 	// The following variables shouldn't be tampered with.
-	private $l_total = 0;
-	private $l_minimum = 0;
+	private $date_first = '';
+	private $date_last = '';
+	private $day_of_month = 0;
+	private $day_of_year = 0;
 	private $days = 0;
+	private $l_minimum = 0;
+	private $l_total = 0;
+	private $month = 0;
+	private $month_name = '';
+	private $year = 0;
 
 	public function setValue($var, $value)
 	{
@@ -49,29 +52,26 @@ final class HTML_MySQL
 	{
 		@mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or exit('MySQL: '.mysql_error());
 		@mysql_select_db(MYSQL_DB) or exit('MySQL: '.mysql_error());
-
 		$query_l_total = @mysql_query('SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit('MySQL: '.mysql_error());
 		$result_l_total = @mysql_fetch_object($query_l_total);
 		$this->l_total = $result_l_total->l_total;
 
 		if (empty($this->l_total))
-			exit('No data.');
+			exit('The database is empty.');
 
 		$query_days = @mysql_query('SELECT COUNT(*) AS `days` FROM `channel`') or exit('MySQL: '.mysql_error());
 		$result_days = @mysql_fetch_object($query_days);
 		$this->days = $result_days->days;
-
 		$query_date_first = @mysql_query('SELECT MIN(`date`) AS `date` FROM `channel`') or exit('MySQL: '.mysql_error());
 		$result_date_first = @mysql_fetch_object($query_date_first);
 		$this->date_first = $result_date_first->date;
-
 		$query_date_last = @mysql_query('SELECT MAX(`date`) AS `date` FROM `channel`') or exit('MySQL: '.mysql_error());
 		$result_date_last = @mysql_fetch_object($query_date_last);
 		$this->date_last = $result_date_last->date;
 
 		/**
 		 *  This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
-		 *  500 will be the minimum minimum! So tables will look somewhat more sane on low volume channels.
+		 *  500 will be the minimum minimum so tables will look more interesting on low volume channels.
 		 */
 		if (round($this->l_total / 1000) >= 500)
 			$this->l_minimum = round($this->l_total / 1000);
@@ -457,13 +457,13 @@ final class HTML_MySQL
 				$barHeight = round(($l_total[$hour] / $l_total_high) * 100);
 
 				if ($barHeight != 0 && $hour >= 0 && $hour <= 5)
-					$output .= '<img src="'.$this->bar_night.'" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+					$output .= '<img src="b.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
 				elseif ($barHeight != 0 && $hour >= 6 && $hour <= 11)
-					$output .= '<img src="'.$this->bar_morning.'" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+					$output .= '<img src="g.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
 				elseif ($barHeight != 0 && $hour >= 12 && $hour <= 17)
-					$output .= '<img src="'.$this->bar_afternoon.'" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+					$output .= '<img src="y.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
 				elseif ($barHeight != 0 && $hour >= 18 && $hour <= 23)
-					$output .= '<img src="'.$this->bar_evening.'" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+					$output .= '<img src="r.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
 
 				$output .= '</td>';
 			} else
@@ -727,28 +727,28 @@ final class HTML_MySQL
 					$l_evening_barHeight = round(($activity[$year][$month][$day]['l_evening'] / $l_total_high) * 100);
 
 					if ($l_evening_barHeight != 0)
-						$output .= '<img src="'.$this->bar_evening.'" height="'.$l_evening_barHeight.'" alt="" title="" />';
+						$output .= '<img src="r.png" height="'.$l_evening_barHeight.'" alt="" title="" />';
 				}
 
 				if ($activity[$year][$month][$day]['l_afternoon'] != 0) {
 					$l_afternoon_barHeight = round(($activity[$year][$month][$day]['l_afternoon'] / $l_total_high) * 100);
 
 					if ($l_afternoon_barHeight != 0)
-						$output .= '<img src="'.$this->bar_afternoon.'" height="'.$l_afternoon_barHeight.'" alt="" title="" />';
+						$output .= '<img src="y.png" height="'.$l_afternoon_barHeight.'" alt="" title="" />';
 				}
 
 				if ($activity[$year][$month][$day]['l_morning'] != 0) {
 					$l_morning_barHeight = round(($activity[$year][$month][$day]['l_morning'] / $l_total_high) * 100);
 
 					if ($l_morning_barHeight != 0)
-						$output .= '<img src="'.$this->bar_morning.'" height="'.$l_morning_barHeight.'" alt="" title="" />';
+						$output .= '<img src="g.png" height="'.$l_morning_barHeight.'" alt="" title="" />';
 				}
 
 				if ($activity[$year][$month][$day]['l_night'] != 0) {
 					$l_night_barHeight = round(($activity[$year][$month][$day]['l_night'] / $l_total_high) * 100);
 
 					if ($l_night_barHeight != 0)
-						$output .= '<img src="'.$this->bar_night.'" height="'.$l_night_barHeight.'" alt="" title="" />';
+						$output .= '<img src="b.png" height="'.$l_night_barHeight.'" alt="" title="" />';
 				}
 
 				$output .= '</td>';
@@ -836,28 +836,28 @@ final class HTML_MySQL
 					$l_evening_barHeight = round(($l_evening[$day] / $l_total_high) * 100);
 
 					if ($l_evening_barHeight != 0)
-						$output .= '<img src="'.$this->bar_evening.'" height="'.$l_evening_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						$output .= '<img src="r.png" height="'.$l_evening_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
 				}
 
 				if ($l_afternoon[$day] != 0) {
 					$l_afternoon_barHeight = round(($l_afternoon[$day] / $l_total_high) * 100);
 
 					if ($l_afternoon_barHeight != 0)
-						$output .= '<img src="'.$this->bar_afternoon.'" height="'.$l_afternoon_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						$output .= '<img src="y.png" height="'.$l_afternoon_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
 				}
 
 				if ($l_morning[$day] != 0) {
 					$l_morning_barHeight = round(($l_morning[$day] / $l_total_high) * 100);
 
 					if ($l_morning_barHeight != 0)
-						$output .= '<img src="'.$this->bar_morning.'" height="'.$l_morning_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						$output .= '<img src="g.png" height="'.$l_morning_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
 				}
 
 				if ($l_night[$day] != 0) {
 					$l_night_barHeight = round(($l_night[$day] / $l_total_high) * 100);
 
 					if ($l_night_barHeight != 0)
-						$output .= '<img src="'.$this->bar_night.'" height="'.$l_night_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						$output .= '<img src="b.png" height="'.$l_night_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
 				}
 
 				$output .= '</td>';
