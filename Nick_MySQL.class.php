@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Copyright (c) 2007-2009 Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2009, Jos de Ruijter <jos@dutnie.nl>
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
@@ -52,8 +52,8 @@ abstract class Nick_MySQL
 				$query = 'INSERT INTO `'.$table.'` SET';
 
 				foreach ($this->{$table} as $key)
-					if ($key == 'UID' && $this->$key != 0)
-						$query .= ' `'.$key.'` = '.$this->$key.',';
+					if ($key == 'UID' && $this->UID != 0)
+						$query .= ' `UID` = '.$this->UID.',';
 					elseif (is_int($this->$key) && $this->$key != 0) {
 						$query .= ' `'.$key.'` = '.$this->$key.',';
 						$submit = TRUE;
@@ -86,8 +86,8 @@ abstract class Nick_MySQL
 				foreach ($this->{$table} as $key)
 					if (is_int($this->$key) && $this->$key != 0 && $key != 'UID') {
 						if ($key == 'topMonologue') {
-							if ($this->$key > $result->$key)
-								$query .= ' `'.$key.'` = '.$this->$key.',';
+							if ($this->topMonologue > $result->topMonologue)
+								$query .= ' `topMonologue` = '.$this->topMonologue.',';
 						} else
 							$query .= ' `'.$key.'` = '.($this->$key + $result->$key).',';
 
