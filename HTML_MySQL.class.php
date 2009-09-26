@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Copyright (c) 2007-2009 Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2009, Jos de Ruijter <jos@dutnie.nl>
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
@@ -39,6 +39,7 @@ final class HTML_MySQL
 	private $days = 0;
 	private $l_minimum = 0;
 	private $l_total = 0;
+	private $l_minimum = 500;
 	private $month = 0;
 	private $month_name = '';
 	private $year = 0;
@@ -57,7 +58,14 @@ final class HTML_MySQL
 		$this->l_total = $result_l_total->l_total;
 
 		if (empty($this->l_total))
-			exit('The database is empty.');
+			exit('The database is empty. Nothing to do!');
+
+		/**
+		 *  This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
+		 *  500 is the default minimum so tables will still look interesting on low volume channels.
+		 */
+		if (round($this->l_total / 1000) >= 500)
+			$this->l_minimum = round($this->l_total / 1000);
 
 		$query_days = @mysql_query('SELECT COUNT(*) AS `days` FROM `channel`') or exit('MySQL: '.mysql_error());
 		$result_days = @mysql_fetch_object($query_days);
@@ -68,16 +76,6 @@ final class HTML_MySQL
 		$query_date_last = @mysql_query('SELECT MAX(`date`) AS `date` FROM `channel`') or exit('MySQL: '.mysql_error());
 		$result_date_last = @mysql_fetch_object($query_date_last);
 		$this->date_last = $result_date_last->date;
-
-		/**
-		 *  This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
-		 *  500 will be the minimum minimum so tables will look more interesting on low volume channels.
-		 */
-		if (round($this->l_total / 1000) >= 500)
-			$this->l_minimum = round($this->l_total / 1000);
-		else
-			$this->l_minimum = 500;
-
 		$this->year = date('Y', strtotime('yesterday'));
 		$this->month = date('m', strtotime('yesterday'));
 		$this->month_name = date('F', strtotime('yesterday'));
