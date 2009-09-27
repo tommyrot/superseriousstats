@@ -25,10 +25,10 @@
 
 abstract class Word_MySQL
 {
-	final public function writeData()
+	final public function writeData($mysqli)
 	{
 		// Write data to database table "words".
-		if (!@mysql_query('INSERT INTO `words` (`word`, `total`) VALUES (\''.mysql_real_escape_string($this->word).'\', '.$this->total.') ON DUPLICATE KEY UPDATE `total` = `total` + '.$this->total))
+		if (!@mysqli_query($mysqli, 'INSERT INTO `words` (`word`, `total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->word).'\', '.$this->total.') ON DUPLICATE KEY UPDATE `total` = `total` + '.$this->total))
 			return FALSE;
 
 		return TRUE;
