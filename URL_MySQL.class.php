@@ -25,34 +25,34 @@
 
 abstract class URL_MySQL
 {
-	final public function writeData($UID)
+	final public function writeData($mysqli, $UID)
 	{
 		// Write data to database table "user_URLs".
-		if (!$query = @mysql_query('SELECT * FROM `user_URLs` WHERE `UID` = '.$UID.' AND `csURL` = \''.mysql_real_escape_string($this->csURL).'\' LIMIT 1'))
+		if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `UID` = '.$UID.' AND `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1'))
 			return FALSE;
 
-		$rows = @mysql_num_rows($query);
+		$rows = @mysqli_num_rows($query);
 
 		if (empty($rows)) {
 			// Check if the URL exists in the database paired with an UID other than mine and if it does, use its LID in my own insert query.
-			if (!$query = @mysql_query('SELECT * FROM `user_URLs` WHERE `csURL` = \''.mysql_real_escape_string($this->csURL).'\' LIMIT 1'))
+			if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1'))
 				return FALSE;
 
-			$rows = @mysql_num_rows($query);
+			$rows = @mysqli_num_rows($query);
 
 			if (empty($rows)) {
-				if (!@mysql_query('INSERT INTO `user_URLs` (`UID`, `csURL`, `total`, `firstUsed`, `lastUsed`) VALUES ('.$UID.', \''.mysql_real_escape_string($this->csURL).'\', '.$this->total.', \''.mysql_real_escape_string($this->firstUsed).'\', \''.mysql_real_escape_string($this->lastUsed).'\')'))
+				if (!@mysqli_query($mysqli, 'INSERT INTO `user_URLs` (`UID`, `csURL`, `total`, `firstUsed`, `lastUsed`) VALUES ('.$UID.', \''.mysqli_real_escape_string($mysqli, $this->csURL).'\', '.$this->total.', \''.mysqli_real_escape_string($mysqli, $this->firstUsed).'\', \''.mysqli_real_escape_string($mysqli, $this->lastUsed).'\')'))
 					return FALSE;
 			} else {
-				$result = @mysql_fetch_object($query);
+				$result = @mysqli_fetch_object($query);
 
-				if (!@mysql_query('INSERT INTO `user_URLs` (`LID`, `UID`, `csURL`, `total`, `firstUsed`, `lastUsed`) VALUES ('.$result->LID.', '.$UID.', \''.mysql_real_escape_string($this->csURL).'\', '.$this->total.', \''.mysql_real_escape_string($this->firstUsed).'\', \''.mysql_real_escape_string($this->lastUsed).'\')'))
+				if (!@mysqli_query($mysqli, 'INSERT INTO `user_URLs` (`LID`, `UID`, `csURL`, `total`, `firstUsed`, `lastUsed`) VALUES ('.$result->LID.', '.$UID.', \''.mysqli_real_escape_string($mysqli, $this->csURL).'\', '.$this->total.', \''.mysqli_real_escape_string($mysqli, $this->firstUsed).'\', \''.mysqli_real_escape_string($mysqli, $this->lastUsed).'\')'))
 					return FALSE;
 			}
 		} else {
-			$result = @mysql_fetch_object($query);
+			$result = @mysqli_fetch_object($query);
 
-			if (!@mysql_query('UPDATE `user_URLs` SET `csURL` = \''.mysql_real_escape_string($this->csURL).'\', `total` = '.($this->total + $result->total).', `firstUsed` = \''.mysql_real_escape_string($this->firstUsed.':00' < $result->firstUsed ? $this->firstUsed : $result->firstUsed).'\', `lastUsed` = \''.mysql_real_escape_string($this->lastUsed.':00' > $result->lastUsed ? $this->lastUsed : $result->lastUsed).'\' WHERE `LID` = '.$result->LID.' AND `UID` = '.$UID))
+			if (!@mysqli_query($mysqli, 'UPDATE `user_URLs` SET `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\', `total` = '.($this->total + $result->total).', `firstUsed` = \''.mysqli_real_escape_string($mysqli, $this->firstUsed.':00' < $result->firstUsed ? $this->firstUsed : $result->firstUsed).'\', `lastUsed` = \''.mysqli_real_escape_string($mysqli, $this->lastUsed.':00' > $result->lastUsed ? $this->lastUsed : $result->lastUsed).'\' WHERE `LID` = '.$result->LID.' AND `UID` = '.$UID))
 				return FALSE;
 		}
 
