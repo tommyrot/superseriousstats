@@ -25,8 +25,6 @@
 
 abstract class Parser_MySQL
 {
-	public $dblink;
-
 	final public function writeData()
 	{
 		// If there are no nicks there is no data. Don't write channel data so the log can be parsed at a later time.
