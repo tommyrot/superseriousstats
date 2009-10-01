@@ -43,7 +43,7 @@ abstract class Nick_MySQL
 				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `UID` = '.$this->UID.' LIMIT 1'))
 					return FALSE;
 
-			$rows = @mysqli_num_rows($query);
+			$rows = mysqli_num_rows($query);
 
 			// Don't send anything to the database if user data is empty or hasn't changed.
 			$submit = FALSE;
@@ -69,14 +69,14 @@ abstract class Nick_MySQL
 						return FALSE;
 
 					if ($table == 'user_details') {
-						$this->UID = @mysqli_insert_id($mysqli);
+						$this->UID = mysqli_insert_id($mysqli);
 
 						if (!@mysqli_query($mysqli, 'INSERT INTO `user_status` (`UID`, `RUID`, `status`) VALUES ('.$this->UID.', '.$this->UID.', 0)'))
 							return FALSE;
 					}
 				}
 			} else {
-				$result = @mysqli_fetch_object($query);
+				$result = mysqli_fetch_object($query);
 
 				if ($table == 'user_details')
 					$this->UID = $result->UID;
@@ -116,7 +116,7 @@ abstract class Nick_MySQL
 				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `UID` = '.$this->UID.' AND `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1'))
 					return FALSE;
 
-				$rows = @mysqli_num_rows($query);
+				$rows = mysqli_num_rows($query);
 
 				// Only add hosts for this user which aren't already in the database.
 				if (empty($rows)) {
@@ -124,13 +124,13 @@ abstract class Nick_MySQL
 					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1'))
 						return FALSE;
 
-					$rows = @mysqli_num_rows($query);
+					$rows = mysqli_num_rows($query);
 
 					if (empty($rows)) {
 						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`UID`, `host`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')'))
 							return FALSE;
 					} else {
-						$result = @mysqli_fetch_object($query);
+						$result = mysqli_fetch_object($query);
 
 						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`HID`, `UID`, `host`) VALUES ('.$result->HID.', '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')'))
 							return FALSE;
@@ -145,7 +145,7 @@ abstract class Nick_MySQL
 				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `UID` = '.$this->UID.' AND `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' AND `setDate` = \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\' LIMIT 1'))
 					return FALSE;
 
-				$rows = @mysqli_num_rows($query);
+				$rows = mysqli_num_rows($query);
 
 				/**
 				 * Don't insert a topic already set by this user at the same time.
@@ -156,13 +156,13 @@ abstract class Nick_MySQL
 					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' LIMIT 1'))
 						return FALSE;
 
-					$rows = @mysqli_num_rows($query);
+					$rows = mysqli_num_rows($query);
 
 					if (empty($rows)) {
 						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`UID`, `csTopic`, `setDate`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')'))
 							return FALSE;
 					} else {
-						$result = @mysqli_fetch_object($query);
+						$result = mysqli_fetch_object($query);
 
 						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`TID`, `UID`, `csTopic`, `setDate`) VALUES ('.$result->TID.', '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')'))
 							return FALSE;
