@@ -668,6 +668,7 @@ final class HTML_MySQL
 
 		$sums = array('l_total', 'l_night', 'l_morning', 'l_afternoon', 'l_evening');
 		$l_total_high = 0;
+		$l_total_high_date = '';
 
 		while ($result = mysqli_fetch_object($query)) {
 			$year = date('Y', strtotime($result->date));
