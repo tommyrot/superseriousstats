@@ -35,7 +35,7 @@ $logfile_format = 'Eggdrop';
  *
  * Options: MySQL
  */
-$database = 'MySQL';
+$database_server = 'MySQL';
 
 /**
  * Database connection variables.
