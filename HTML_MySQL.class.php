@@ -32,6 +32,7 @@ final class HTML_MySQL
 	private $stylesheet = 'default.css';
 
 	// The following variables shouldn't be tampered with.
+	private $contents = '';
 	private $date_first = '';
 	private $date_last = '';
 	private $day_of_month = 0;
@@ -57,7 +58,7 @@ final class HTML_MySQL
 
 	public function makeHTML()
 	{
-		$this->mysqli = @mysqli_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB) or exit('MySQL: '.mysqli_connect_error());
+		$this->mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit('MySQL: '.mysqli_connect_error());
 		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit('MySQL: '.mysqli_error($this->mysqli));
 		$result_l_total = mysqli_fetch_object($query_l_total);
 		$this->l_total = $result_l_total->l_total;
@@ -88,23 +89,23 @@ final class HTML_MySQL
 		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
 
 		// Build the HTML page.
-		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
-		   . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
-		   . '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n"
-		   . '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
-		   . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
-		   . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
-		   . '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n";
+		$this->contents = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
+				. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
+				. '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n"
+				. '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
+				. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
+				. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
+				. '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n";
 		$query = @mysqli_query($this->mysqli, 'SELECT COUNT(DISTINCT YEAR(`date`)) AS `total` FROM `channel`');
 
 		$result = mysqli_fetch_object($query);
 		if ($result->total > 0) {
 			$width = 2 + ($result->total * 34);
-			echo '<style type="text/css">'."\n".'  table.yearly {width:'.$width.'px}'."\n".'</style>'."\n";
+			$this->contents .= '<style type="text/css">'."\n".'  table.yearly {width:'.$width.'px}'."\n".'</style>'."\n";
 		}
-		echo '</head>'."\n\n".'<body>'."\n";
-		echo '<div class="box">'."\n\n";
-		echo '<div class="info">'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />';
+		$this->contents .= '</head>'."\n\n".'<body>'."\n";
+		$this->contents .= '<div class="box">'."\n\n";
+		$this->contents .= '<div class="info">'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />';
 
 		$query = @mysqli_query($this->mysqli, 'select avg(`l_total`) as `avg` from `channel` limit 1');
 		$result = mysqli_fetch_object($query);
@@ -119,8 +120,8 @@ final class HTML_MySQL
 		$result = mysqli_fetch_object($query);
 		$sum = number_format($result->sum);
 
-		echo '<br />Logs contain '.$sum.' lines, an average of '.number_format($avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($maxdate)).' with a total of '.number_format($max).' lines typed.</div>'."\n";
-		echo '<div class="head">Activity</div>'."\n";
+		$this->contents .= '<br />Logs contain '.$sum.' lines, an average of '.number_format($avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($maxdate)).' with a total of '.number_format($max).' lines typed.</div>'."\n";
+		$this->contents .= '<div class="head">Activity</div>'."\n";
 
 		$this->makeTable_MostActiveTimes('Most Active Times');
 		$this->makeTable_Activity('days', 'Daily Activity');
@@ -142,7 +143,7 @@ final class HTML_MySQL
 		They are, however, included in the (channel) totals.
 		*/
 
-		echo '<div class="head">General Chat</div>'."\n";
+		$this->contents .= '<div class="head">General Chat</div>'."\n";
 
 		$this->makeTable('small', 5, 'Most Talkative Chatters', array('', 'Lines/Day', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`l_total` / `activeDays`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('small', 5, 'Most Fluent Chatters', array('', 'Words/Line', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`words` / `l_total`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
@@ -228,7 +229,7 @@ final class HTML_MySQL
 		$this->makeTable('large', 5, 'Most Actions', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`actions` / `l_total`) * 100 AS `v1`, `ex_actions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `actions` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
 		$this->makeTable('small', 5, 'Most Mentioned Nicks', array('', 'Mentioned', 'Nick'), 0, FALSE, array('SELECT `csNick` AS `v2`, `total` AS `v1` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` JOIN `words` ON `user_details`.`csNick` = `words`.`word` WHERE `status` = 1 ORDER BY `total` DESC, `csNick` ASC LIMIT 5'));
 
-		echo '<div class="head">Modes</div>'."\n";
+		$this->contents .= '<div class="head">Modes</div>'."\n";
 
 		$this->makeTable('small', 5, 'Most Ops \'+o\', Given', array('', 'Ops', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_op` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_op` != 0 ORDER BY `m_op` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_op`) AS `v0` FROM `query_events`'));
 		$this->makeTable('small', 5, 'Most Ops \'+o\', Received', array('', 'Ops', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_opped` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_opped` != 0 ORDER BY `m_opped` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_opped`) AS `v0` FROM `query_events`'));
@@ -239,7 +240,7 @@ final class HTML_MySQL
 		$this->makeTable('small', 5, 'Most deVoices \'-v\', Given', array('', 'deVoices', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_deVoice` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_deVoice` != 0 ORDER BY `m_deVoice` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_deVoice`) AS `v0` FROM `query_events`'));
 		$this->makeTable('small', 5, 'Most deVoices \'-v\', Received', array('', 'deVoices', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_deVoiced` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_deVoiced` != 0 ORDER BY `m_deVoiced` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_deVoiced`) AS `v0` FROM `query_events`'));
 
-		echo '<div class="head">Events</div>'."\n";
+		$this->contents .= '<div class="head">Events</div>'."\n";
 
 		$this->makeTable('large', 5, 'Most Kicks', array('', 'Kicks', 'User', 'Example'), 0, FALSE, array('SELECT `csNick` AS `v2`, `kicks` AS `v1`, `ex_kicks` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicks` != 0 ORDER BY `kicks` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`kicks`) AS `v0` FROM `query_events`'));
 		$this->makeTable('large', 5, 'Most Kicked', array('', 'Kicked', 'User', 'Example'), 0, FALSE, array('SELECT `csNick` AS `v2`, `kicked` AS `v1`, `ex_kicked` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicked` != 0 ORDER BY `kicked` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`kicked`) AS `v0` FROM `query_events`'));
@@ -251,7 +252,7 @@ final class HTML_MySQL
 		$this->makeTable('small', 5, 'Most Topics', array('', 'Topics', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `topics` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topics` != 0 ORDER BY `topics` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`topics`) AS `v0` FROM `query_events`'));
 		$this->table_topics();
 
-		echo '<div class="head">Smileys</div>'."\n";
+		$this->contents .= '<div class="head">Smileys</div>'."\n";
 
 		$smileys = array('Big Cheerful Smile' => array('=]', 's_01')
 				,'Cheerful Smile' => array('=)', 's_02')
@@ -282,10 +283,12 @@ final class HTML_MySQL
 				$this->makeTable('small', 5, $k, array('', $v[0], 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `'.$v[1].'` AS `v1` FROM `user_details`, `query_smileys`, `user_status` WHERE `user_details`.`UID` = `query_smileys`.`UID` AND `user_details`.`UID` = `user_status`.`UID` AND `status` != 3 AND `'.$v[1].'` != 0 ORDER BY `'.$v[1].'` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`'.$v[1].'`) AS `v0` FROM `query_smileys`'));
 		}
 
-		echo '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
-		echo '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		$this->contents .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
+		$this->contents .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 
 		@mysqli_close($this->mysqli);
+
+		return $this->contents;
 	}
 
 	private function makeTable_TimeOfDay($head, $keys)
@@ -325,7 +328,7 @@ final class HTML_MySQL
 			$output .= '</tr>';
 		}
 
-		echo $output.'</table>'."\n";
+		$this->contents .= $output.'</table>'."\n";
 	}
 
 	//maketable2, don't know what the deal will be yet
@@ -363,7 +366,7 @@ final class HTML_MySQL
 			foreach ($data as $row)
 				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
 
-			echo $output.'</table>'."\n";
+			$this->contents .= $output.'</table>'."\n";
 		} elseif ($size == 'large') {
 			$output = '<table class="large">';
 			$output .= '<tr><th colspan="4">'.$head.'</th></tr>';
@@ -372,7 +375,7 @@ final class HTML_MySQL
 			foreach ($data as $row)
 				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 
-			echo $output.'</table>'."\n";
+			$this->contents .= $output.'</table>'."\n";
 		}
 	}
 
@@ -414,7 +417,7 @@ final class HTML_MySQL
 			foreach ($data as $row)
 				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
 
-			echo $output.'</table>'."\n";
+			$this->contents .= $output.'</table>'."\n";
 		} elseif ($size == 'large') {
 			$output = '<table class="large">';
 			$output .= '<tr><th colspan="4"><span class="left">'.$head.'</span>'.(empty($result->v0) ? '' : '<span class="right">'.number_format($result->v0).' total</span>').'</th></tr>';
@@ -423,7 +426,7 @@ final class HTML_MySQL
 			foreach ($data as $row)
 				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 
-			echo $output.'</table>'."\n";
+			$this->contents .= $output.'</table>'."\n";
 		}
 	}
 
@@ -481,7 +484,7 @@ final class HTML_MySQL
 			else
 				$output .= '<td>'.$hour.'h</td>';
 
-		echo $output.'</tr></table>'."\n";
+		$this->contents .= $output.'</tr></table>'."\n";
 	}
 
 	//maketable most active ppl from file needs review
@@ -620,7 +623,7 @@ final class HTML_MySQL
 			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.$result->csNick.'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($result->quote).$hover.'</td></tr>';
 		}
 
-		echo $output.'</table>'."\n";
+		$this->contents .= $output.'</table>'."\n";
 	}
 
 	//makeTable_Activity from file needs review
@@ -800,7 +803,7 @@ final class HTML_MySQL
 			}
 		}
 
-		echo $output.'</tr></table>'."\n";
+		$this->contents .= $output.'</tr></table>'."\n";
 	}
 
 	//makeTable_mostactivedays from file needs review
@@ -877,7 +880,7 @@ final class HTML_MySQL
 			else
 				$output .= '<td>'.ucfirst($day).'</td>';
 
-		echo $output.'</tr></table>'."\n";
+		$this->contents .= $output.'</tr></table>'."\n";
 	}
 
 	// I'm too stupid to come up with a cool SQL query that does half the below work for me, so here's a less elegant solution.
