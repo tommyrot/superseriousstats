@@ -29,8 +29,8 @@ abstract class Parser_MySQL
 	{
 		// If there are no nicks there is no data. Don't write channel data so the log can be parsed at a later time.
 		if (!empty($this->nicks_list)) {
-			$this->output('notice', 'writeData(): writing data to database: \''.MYSQL_DB.'\'');
-			$mysqli = @mysqli_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
+			$this->output('notice', 'writeData(): writing data to database: \''.DB_NAME.'\'');
+			$mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
 
 			// Write data to database table "channel".
 			@mysqli_query($mysqli, 'INSERT INTO `channel` (`date`, `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES (\''.mysqli_real_escape_string($mysqli, DATE).'\', '.$this->l_00.', '.$this->l_01.', '.$this->l_02.', '.$this->l_03.', '.$this->l_04.', '.$this->l_05.', '.$this->l_06.', '.$this->l_07.', '.$this->l_08.', '.$this->l_09.', '.$this->l_10.', '.$this->l_11.', '.$this->l_12.', '.$this->l_13.', '.$this->l_14.', '.$this->l_15.', '.$this->l_16.', '.$this->l_17.', '.$this->l_18.', '.$this->l_19.', '.$this->l_20.', '.$this->l_21.', '.$this->l_22.', '.$this->l_23.', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));

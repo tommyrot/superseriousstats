@@ -69,7 +69,7 @@ final class Maintenance_MySQL
 	public function doMaintenance()
 	{
 		$this->output('notice', 'doMaintenance(): performing database maintenance routines');
-		$this->mysqli = @mysqli_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DB) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
+		$this->mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
 		$this->fixUserStatusErrors();
 		$this->registerMostActiveAlias();
 		$this->makeQuerytables();
