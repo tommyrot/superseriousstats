@@ -44,6 +44,9 @@ if ($argv[1] == '-i') {
 	$sss_parser = new $tmp();
 	$sss_parser->setValue('outputLevel', $outputLevel);
 	$sss_parser->setValue('wordTracking', $wordTracking);
+
+	// Place your own $sss_parser->setValue lines here
+
 	$sss_parser->parseLog($logfile);
 
 	if ($writeData)
@@ -54,12 +57,17 @@ if ($argv[1] == '-i') {
 		$sss_maintenance = new $tmp();
 		$sss_maintenance->setValue('outputLevel', $outputLevel);
 		$sss_maintenance->setValue('sanitisationDay', $sanitisationDay);
+
+		// Place your own $sss_maintenance->setValue lines here
+
 		$sss_maintenance->doMaintenance();
 	}
 } elseif ($argv[1] == '-o') {
 	$tmp = 'HTML_'.$database_server;
 	$sss_output = new $tmp();
 	$sss_output->setValue('channel', $channel);
+
+	// Place your own $sss_output->setValue lines here
 
 	if ($handle = @fopen($argv[2], 'wb')) {
 		fwrite($handle, $sss_output->makeHTML());
