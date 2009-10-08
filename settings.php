@@ -8,34 +8,34 @@
 /**
  * Name of the IRC channel you are generating stats for.
  */
-$channel = '#superseriousstats';
+$cfg['channel'] = '#superseriousstats';
 
 /**
  * Your timezone. A list of supported timezones can be found at
  * http://php.net/manual/en/timezones.php
  */
-$timezone = 'Europe/Amsterdam';
+$cfg['timezone'] = 'Europe/Amsterdam';
 
 /**
  * Format of the date string suffixed to the logfiles.
  *
  * Options (most common): Ymd, dmY
  */
-$date_format = 'Ymd';
+$cfg['date_format'] = 'Ymd';
 
 /**
  * Logfile format.
  *
  * Options: Eggdrop, Irssi
  */
-$logfile_format = 'Eggdrop';
+$cfg['logfile_format'] = 'Eggdrop';
 
 /**
  * Database server. Currently only 'MySQL' is supported.
  *
  * Options: MySQL
  */
-$database_server = 'MySQL';
+$cfg['database_server'] = 'MySQL';
 
 /**
  * Database connection variables.
@@ -46,11 +46,11 @@ $database_server = 'MySQL';
  * $db_pass - Password
  * $db_name - Database used when performing queries
  */
-$db_host = '127.0.0.1';
-$db_port = 3306;
-$db_user = 'user';
-$db_pass = 'pass';
-$db_name = 'superseriousstats';
+$cfg['db_host'] = '127.0.0.1';
+$cfg['db_port'] = 3306;
+$cfg['db_user'] = 'user';
+$cfg['db_pass'] = 'pass';
+$cfg['db_name'] = 'superseriousstats';
 
 /**
  * Output level for event messages.
@@ -63,7 +63,7 @@ $db_name = 'superseriousstats';
  *
  * Options: 0, 1, 2, 3, 4
  */
-$outputLevel = 1;
+$cfg['outputLevel'] = 1;
 
 /**
  * Word tracking. Enabling this feature increases parsetimes substantially.
@@ -72,7 +72,7 @@ $outputLevel = 1;
  *
  * Options: TRUE, FALSE
  */
-$wordTracking = FALSE;
+$cfg['wordTracking'] = FALSE;
 
 /**
  * Write data to the database. Disabling this may sometimes be preferred when
@@ -80,7 +80,7 @@ $wordTracking = FALSE;
  *
  * Options: TRUE, FALSE
  */
-$writeData = TRUE;
+$cfg['writeData'] = TRUE;
 
 /**
  * Perform maintenance routines on the database tables. Generates query tables
@@ -88,7 +88,7 @@ $writeData = TRUE;
  *
  * Options: TRUE, FALSE
  */
-$doMaintenance = TRUE;
+$cfg['doMaintenance'] = TRUE;
 
 /**
  * The day on which to perform extended database maintenance. This will run
@@ -97,6 +97,6 @@ $doMaintenance = TRUE;
  *
  * Options: mon, tue, wed, thu, fri, sat, sun
  */
-$sanitisationDay = 'mon';
+$cfg['sanitisationDay'] = 'mon';
 
 ?>
