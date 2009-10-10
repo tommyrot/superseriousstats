@@ -40,11 +40,11 @@ $cfg['database_server'] = 'MySQL';
 /**
  * Database connection variables.
  *
- * $db_host - IP address of the database server
- * $db_port - Port number the database server is running on
- * $db_user - Username
- * $db_pass - Password
- * $db_name - Database used when performing queries
+ * db_host - IP address of the database server
+ * db_port - Port number the database server is running on
+ * db_user - Username
+ * db_pass - Password
+ * db_name - Database used when performing queries
  */
 $cfg['db_host'] = '127.0.0.1';
 $cfg['db_port'] = 3306;
