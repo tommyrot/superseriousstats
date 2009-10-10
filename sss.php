@@ -1,6 +1,22 @@
 <?php
 
 /**
+ * Copyright (c) 2009, Jos de Ruijter <jos@dutnie.nl>
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+/**
  * This script should be called from the commandline with PHP version 5.3.0 or up.
  *
  * usage: php sss.php {-i <log_file> [-o <html_file>] | -o <html_file>}
@@ -8,8 +24,8 @@
  * Make sure to use absolute paths when specifying either <log_file> or <html_file>.
  *
  * The options are:
- * 	-i	parse <log_file>
- * 	-o	generate statistics and output to <html_file>
+ *	-i	parse <log_file>
+ *	-o	generate statistics and output to <html_file>
  */
 
 if (substr(phpversion(), 0, 3) != '5.3')
@@ -73,10 +89,9 @@ function output($cfg, $html_file)
 
 	if ($handle = @fopen($html_file, 'wb')) {
 		fwrite($handle, $sss_output->makeHTML());
+		fclose($handle);
 	} else
 		exit('cannot open: '.$html_file."\n");
-
-	fclose($handle);
 }
 
 if (count($argv) == 3) {
