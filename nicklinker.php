@@ -47,9 +47,41 @@ define('DB_PASS', $cfg['db_pass']);
 define('DB_NAME', $cfg['db_name']);
 
 if ($argv[1] == '-i') {
+	if ($handle = @fopen($argv[2], 'rb')) {
+		$mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit('MySQL: '.mysqli_connect_error()."\n");
+		$query = @mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or exit('MySQL: '.mysqli_error($mysqli)."\n");
+		$query = @mysqli_query($mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or exit('MySQL: '.mysqli_error($mysqli)."\n");
+		$rows = mysqli_num_rows($query);
 
+		if (!empty($rows)) {
+			while ($result = mysqli_fetch_object($query))
+				$csNick2UID[$result->csNick] = $result->UID;
 
+			while (!feof($handle)) {
+				$line = fgets($handle);
+				$lineParts = explode(',', $line);
+				$status = trim($lineParts[0]);
 
+				if ($status == 1 || $status == 3) {
+					$csNick_main = trim($lineParts[1]);
+
+					if (!empty($csNick_main)) {
+						@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$csNick2UID[$csNick_main]) or exit('MySQL: '.mysqli_error($mysqli)."\n");
+
+						for ($i = 2; $i < count($lineParts); $i++) {
+							$csNick = trim($lineParts[$i]);
+
+							if (!empty($csNick))
+								@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$csNick2UID[$csNick_main].', `status` = 2 WHERE `UID` = '.$csNick2UID[$csNick]) or exit('MySQL: '.mysqli_error($mysqli)."\n");
+						}
+					}
+				}
+			}
+		}
+
+		fclose($handle);
+	} else
+		exit('cannot open: '.$argv[2]."\n");
 } elseif ($argv[1] == '-o') {
 	if ($handle = @fopen($argv[2], 'wb')) {
 		$mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit('MySQL: '.mysqli_connect_error()."\n");
