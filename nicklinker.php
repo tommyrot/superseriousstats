@@ -49,7 +49,6 @@ define('DB_NAME', $cfg['db_name']);
 if ($argv[1] == '-i') {
 	if ($handle = @fopen($argv[2], 'rb')) {
 		$mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit('MySQL: '.mysqli_connect_error()."\n");
-		$query = @mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or exit('MySQL: '.mysqli_error($mysqli)."\n");
 		$query = @mysqli_query($mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or exit('MySQL: '.mysqli_error($mysqli)."\n");
 		$rows = mysqli_num_rows($query);
 
@@ -57,11 +56,21 @@ if ($argv[1] == '-i') {
 			while ($result = mysqli_fetch_object($query))
 				$csNick2UID[$result->csNick] = $result->UID;
 
+			// Set all nicks to their default status before updating any records from the input file.
+			@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or exit('MySQL: '.mysqli_error($mysqli)."\n");
+
 			while (!feof($handle)) {
 				$line = fgets($handle);
 				$lineParts = explode(',', $line);
 				$status = trim($lineParts[0]);
 
+				/**
+				 * Only lines starting with the numer 1 (normal user) or 3 (bot) will be used when updating the user records.
+				 * The first nick on each line will initially be used as the "main" nick, and gets the status 1 or 3, as specified.
+				 * Additional nicks on the same line will be linked to this "main" nick and get the status 2, indicating it being an alias.
+				 * The database maintenance routine "registerMostActiveAlias()" should be ran to make the most active alias the "main" nick for each user.
+				 * This routine is normally automatically invoked after parsing a logfile (see: settings.php and sss.php).
+				 */
 				if ($status == 1 || $status == 3) {
 					$csNick_main = trim($lineParts[1]);
 
