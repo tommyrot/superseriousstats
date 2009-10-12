@@ -83,7 +83,7 @@ final class Maintenance_MySQL
 	 *
 	 * The possible statusses for nicks are:
 	 * 0. Unlinked
-	 * 1. Registered
+	 * 1. Nomal user (registered)
 	 * 2. Alias
 	 * 3. Bot (registered)
 	 *
@@ -96,7 +96,7 @@ final class Maintenance_MySQL
 		$query = @mysqli_query($this->mysqli, 'SELECT `UID` FROM `user_status` WHERE `UID` = `RUID` AND `status` = 2 ORDER BY `UID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 
 		while ($result = mysqli_fetch_object($query)) {
-			$this->output('debug', 'fixUserStatusErrors(): (UID=RUID&status=2) UID='.$result->UID.':status=0');
+			$this->output('debug', 'fixUserStatusErrors(): UID '.$result->UID.' set to default (alias of self)');
 			@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `status` = 0 WHERE `UID` = '.$result->UID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 		}
 
@@ -104,7 +104,7 @@ final class Maintenance_MySQL
 		$query = @mysqli_query($this->mysqli, 'SELECT `UID` FROM `user_status` WHERE `UID` != `RUID` AND `status` != 2 ORDER BY `UID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 
 		while ($result = mysqli_fetch_object($query)) {
-			$this->output('debug', 'fixUserStatusErrors(): (UID!=RUID&status!=2) UID='.$result->UID.':RUID='.$result->UID.'&status=0');
+			$this->output('debug', 'fixUserStatusErrors(): UID '.$result->UID.' set to default (non alias pointing to non self)');
 			@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result->UID.', `status` = 0 WHERE `UID` = '.$result->UID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 		}
 
@@ -131,7 +131,7 @@ final class Maintenance_MySQL
 						$query = @mysqli_query($this->mysqli, 'SELECT `UID` FROM `user_status` WHERE `RUID` = '.$RUID.' AND `status` = 2 ORDER BY `UID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 
 						while ($result = mysqli_fetch_object($query)) {
-							$this->output('debug', 'fixUserStatusErrors(): (!RUID) UID='.$result->UID.':RUID='.$result->UID.'&status=0');
+							$this->output('debug', 'fixUserStatusErrors(): UID '.$result->UID.' set to default (pointing to invalid registered)');
 							@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result->UID.', `status` = 0 WHERE `UID` = '.$result->UID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 						}
 					}
@@ -157,7 +157,7 @@ final class Maintenance_MySQL
 				 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old RUID has.
 				 * Update all aliases linked to the old RUID and make them point to the new registered nick, including the old RUID.
 				 */
-				$this->output('debug', 'registerMostActiveAlias(): UID='.$result_aliases->UID.':RUID='.$result_aliases->UID.'&status='.$result_valid_RUIDs->status);
+				$this->output('debug', 'registerMostActiveAlias(): UID '.$result_aliases->UID.' set to new registered');
 				@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 				@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 			}
