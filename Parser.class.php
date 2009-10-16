@@ -31,7 +31,7 @@ abstract class Parser extends Parser_MySQL
 	 */
 	private $maxStreak = 5;
 	private $nick_minLen = 1;
-	private $nick_maxLen = 15;
+	private $nick_maxLen = 255;
 	private $host_maxLen = 255;
 	private $URL_maxLen = 255;
 	private $quote_minLen = 25;
