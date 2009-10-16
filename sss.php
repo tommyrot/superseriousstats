@@ -87,9 +87,11 @@ function output($cfg, $html_file)
 
 	// Place your own $sss_output->setValue lines here
 
-	if ($handle = @fopen($html_file, 'wb')) {
-		fwrite($handle, $sss_output->makeHTML());
-		fclose($handle);
+	$fp = @fopen($html_file, 'wb');
+
+	if ($fp) {
+		fwrite($fp, $sss_output->makeHTML());
+		fclose($fp);
 	} else
 		exit('cannot open: '.$html_file."\n");
 }
