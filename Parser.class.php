@@ -149,11 +149,13 @@ abstract class Parser extends Parser_MySQL
 	final public function parseLog($logfile)
 	{
 		if (file_exists($logfile)) {
-			if ($handle = @fopen($logfile, 'rb')) {
+			$fp = @fopen($logfile, 'rb');
+
+			if ($fp) {
 				$this->output('notice', 'parseLog(): parsing logfile: \''.$logfile.'\'');
 
-				while (!feof($handle)) {
-					$line = fgets($handle);
+				while (!feof($fp)) {
+					$line = fgets($fp);
 
 					/**
 					 * Normalize the line:
@@ -169,7 +171,7 @@ abstract class Parser extends Parser_MySQL
 					$this->prevLine = $line;
 				}
 
-				fclose($handle);
+				fclose($fp);
 				$this->output('notice', 'parseLog(): parsing completed');
 			} else
 				$this->output('critical', 'parseLog(): failed to open file: \''.$logfile.'\'');

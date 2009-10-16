@@ -47,7 +47,9 @@ define('DB_PASS', $cfg['db_pass']);
 define('DB_NAME', $cfg['db_name']);
 
 if ($argv[1] == '-i') {
-	if ($handle = @fopen($argv[2], 'rb')) {
+	$fp = @fopen($argv[2], 'rb');
+
+	if ($fp) {
 		$mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit('MySQL: '.mysqli_connect_error()."\n");
 		$query = @mysqli_query($mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or exit('MySQL: '.mysqli_error($mysqli)."\n");
 		$rows = mysqli_num_rows($query);
@@ -59,8 +61,8 @@ if ($argv[1] == '-i') {
 			// Set all nicks to their default status before updating any records from the input file.
 			@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or exit('MySQL: '.mysqli_error($mysqli)."\n");
 
-			while (!feof($handle)) {
-				$line = fgets($handle);
+			while (!feof($fp)) {
+				$line = fgets($fp);
 				$lineParts = explode(',', $line);
 				$status = trim($lineParts[0]);
 
@@ -88,11 +90,13 @@ if ($argv[1] == '-i') {
 			}
 		}
 
-		fclose($handle);
+		fclose($fp);
 	} else
 		exit('cannot open: '.$argv[2]."\n");
 } elseif ($argv[1] == '-o') {
-	if ($handle = @fopen($argv[2], 'wb')) {
+	$fp = @fopen($argv[2], 'wb');
+	
+	if ($fp) {
 		$mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit('MySQL: '.mysqli_connect_error()."\n");
 		$query = mysqli_query($mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC');
 		$rows = mysqli_num_rows($query);
@@ -127,8 +131,8 @@ if ($argv[1] == '-i') {
 			$output .= "\n";
 		}
 
-		fwrite($handle, $output);
-		fclose($handle);
+		fwrite($fp, $output);
+		fclose($fp);
 	} else
 		exit('cannot open: '.$argv[2]."\n");
 }
