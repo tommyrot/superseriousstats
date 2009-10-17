@@ -25,7 +25,9 @@
 
 abstract class Nick_MySQL
 {
-	// The array below should contain "user_details" as its first element.
+	/**
+	 * The array below should contain "user_details" as its first element.
+	 */
 	private $user_tables = array('user_details', 'user_events', 'user_lines', 'user_smileys');
 	private $user_details = array('UID', 'csNick', 'firstSeen', 'lastSeen');
 	private $user_events = array('UID', 'm_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deOp', 'm_deOpped', 'm_deVoice', 'm_deVoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked');
@@ -34,7 +36,9 @@ abstract class Nick_MySQL
 
 	final public function writeData($mysqli)
 	{
-		// Write data to database tables "user_details", "user_status", "user_events", "user_lines" and "user_smileys".
+		/**
+		 * Write data to database tables "user_details", "user_status", "user_events", "user_lines" and "user_smileys".
+		 */
 		foreach ($this->user_tables as $table) {
 			if ($table == 'user_details') {
 				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `csNick` = \''.mysqli_real_escape_string($mysqli, $this->csNick).'\' LIMIT 1'))
@@ -45,7 +49,9 @@ abstract class Nick_MySQL
 
 			$rows = mysqli_num_rows($query);
 
-			// Don't send anything to the database if user data is empty or hasn't changed.
+			/**
+			 * Don't send anything to the database if user data is empty or hasn't changed.
+			 */
 			$submit = FALSE;
 
 			if (empty($rows)) {
@@ -105,12 +111,16 @@ abstract class Nick_MySQL
 			}
 		}
 
-		// Write data to database table "user_activity".
+		/**
+		 * Write data to database table "user_activity".
+		 */
 		if ($this->l_total != 0)
 			if (!@mysqli_query($mysqli, 'INSERT INTO `user_activity` (`UID`, `date`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, DATE).'\', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')'))
 				return FALSE;
 
-		// Write data to database table "user_hosts".
+		/**
+		 * Write data to database table "user_hosts".
+		 */
 		if (!empty($this->hosts_list)) {
 			foreach ($this->hosts_list as $host) {
 				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `UID` = '.$this->UID.' AND `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1'))
@@ -118,9 +128,13 @@ abstract class Nick_MySQL
 
 				$rows = mysqli_num_rows($query);
 
-				// Only add hosts for this user which aren't already in the database.
+				/**
+				 * Only add hosts for this user which aren't already in the database.
+				 */
 				if (empty($rows)) {
-					// Check if the host exists in the database paired with an UID other than mine and if it does, use its HID in my own insert query.
+					/**
+					 * Check if the host exists in the database paired with an UID other than mine and if it does, use its HID in my own insert query.
+					 */
 					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1'))
 						return FALSE;
 
@@ -139,7 +153,9 @@ abstract class Nick_MySQL
 			}
 		}
 
-		// Write data to database table "user_topics".
+		/**
+		 * Write data to database table "user_topics".
+		 */
 		if (!empty($this->topics_list)) {
 			foreach ($this->topics_list as $topic) {
 				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `UID` = '.$this->UID.' AND `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' AND `setDate` = \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\' LIMIT 1'))
@@ -152,7 +168,9 @@ abstract class Nick_MySQL
 				 * The combination of TID/UID/setDate is unique in the database where TID is the identifier of the topic.
 				 */
 				if (empty($rows)) {
-					// Check if the topic exists in the database and if it does, use its TID in the insert query.
+					/**
+					 * Check if the topic exists in the database and if it does, use its TID in the insert query.
+					 */
 					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' LIMIT 1'))
 						return FALSE;
 
@@ -171,7 +189,9 @@ abstract class Nick_MySQL
 			}
 		}
 
-		// Write data to database table "user_URLs".
+		/**
+		 * Write data to database table "user_URLs".
+		 */
 		foreach ($this->URLs_list as $URL)
 			if (!$this->URLs_objs[$URL]->writeData($mysqli, $this->UID))
 				return FALSE;

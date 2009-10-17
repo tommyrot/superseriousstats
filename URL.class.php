@@ -25,7 +25,9 @@
 
 final class URL extends URL_MySQL
 {
-	// Variables used in database table "user_URLs".
+	/**
+	 * Variables used in database table "user_URLs".
+	 */
 	protected $csURL = '';
 	protected $total = 0;
 	protected $firstUsed = '';

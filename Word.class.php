@@ -25,7 +25,9 @@
 
 final class Word extends Word_MySQL
 {
-	// Variables used in database table "user_words".
+	/**
+	 * Variables used in database table "user_words".
+	 */
 	protected $word = '';
 	protected $total = 0;
 

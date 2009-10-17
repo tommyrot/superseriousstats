@@ -25,25 +25,37 @@
 
 final class Nick extends Nick_MySQL
 {
-	// User ID. Should be 0, don't touch.
+	/**
+	 * User ID. Should be 0, don't touch.
+	 */
 	protected $UID = 0;
 
-	// Variables used in database table "user_details".
+	/**
+	 * Variables used in database table "user_details".
+	 */
 	protected $csNick = '';
 	protected $firstSeen = '';
 	protected $lastSeen = '';
 
-	// Variables used in database table "user_hosts".
+	/**
+	 * Variables used in database table "user_hosts".
+	 */
 	protected $hosts_list = array();
 
-	// Variables used in database table "user_topics".
+	/**
+	 * Variables used in database table "user_topics".
+	 */
 	protected $topics_list = array();
 
-	// Variables used in database table "user_URLs".
+	/**
+	 * Variables used in database table "user_URLs".
+	 */
 	protected $URLs_list = array();
 	protected $URLs_objs = array();
 
-	// Variables used in database table "user_events".
+	/**
+	 * Variables used in database table "user_events".
+	 */
 	protected $m_op = 0;
 	protected $m_opped = 0;
 	protected $m_voice = 0;
@@ -62,7 +74,9 @@ final class Nick extends Nick_MySQL
 	protected $ex_kicks = '';
 	protected $ex_kicked = '';
 
-	// Variables used in database table "user_lines".
+	/**
+	 * Variables used in database table "user_lines".
+	 */
 	protected $l_00 = 0;
 	protected $l_01 = 0;
 	protected $l_02 = 0;
@@ -139,7 +153,9 @@ final class Nick extends Nick_MySQL
 	protected $ex_uppercased = '';
 	protected $lastTalked = '';
 
-	// Variables used in database table "user_smileys".
+	/**
+	 * Variables used in database table "user_smileys".
+	 */
 	protected $s_01 = 0;
 	protected $s_02 = 0;
 	protected $s_03 = 0;
