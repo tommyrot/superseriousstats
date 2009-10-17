@@ -27,14 +27,18 @@ abstract class URL_MySQL
 {
 	final public function writeData($mysqli, $UID)
 	{
-		// Write data to database table "user_URLs".
+		/**
+		 * Write data to database table "user_URLs".
+		 */
 		if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `UID` = '.$UID.' AND `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1'))
 			return FALSE;
 
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
-			// Check if the URL exists in the database paired with an UID other than mine and if it does, use its LID in my own insert query.
+			/**
+			 * Check if the URL exists in the database paired with an UID other than mine and if it does, use its LID in my own insert query.
+			 */
 			if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1'))
 				return FALSE;
 

@@ -58,7 +58,9 @@ if ($argv[1] == '-i') {
 			while ($result = mysqli_fetch_object($query))
 				$csNick2UID[$result->csNick] = $result->UID;
 
-			// Set all nicks to their default status before updating any records from the input file.
+			/**
+			 * Set all nicks to their default status before updating any records from the input file.
+			 */
 			@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or exit('MySQL: '.mysqli_error($mysqli)."\n");
 
 			while (!feof($fp)) {
@@ -95,7 +97,7 @@ if ($argv[1] == '-i') {
 		exit('cannot open: '.$argv[2]."\n");
 } elseif ($argv[1] == '-o') {
 	$fp = @fopen($argv[2], 'wb');
-	
+
 	if ($fp) {
 		$mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit('MySQL: '.mysqli_connect_error()."\n");
 		$query = mysqli_query($mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC');

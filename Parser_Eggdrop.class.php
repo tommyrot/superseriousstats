@@ -25,20 +25,28 @@
 
 final class Parser_Eggdrop extends Parser
 {
-	// Variable to prevent the parser from repeating a line endlessly.
+	/**
+	 * Variable to prevent the parser from repeating a line endlessly.
+	 */
 	private $repeating = FALSE;
 
 	protected function parseLine($line)
 	{
-		// Only process lines beginning with a timestamp.
+		/**
+		 * Only process lines beginning with a timestamp.
+		 */
 		if (preg_match('/^\[([01][0-9]|2[0-3]):[0-5][0-9]\]/', $line)) {
 			$dateTime = DATE.' '.substr($line, 1, 5);
 			$line = substr($line, 8);
 			$lineParts = explode(' ', $line);
 
-			// "Normal" lines. Format: "<NICK> MSG".
+			/**
+			 * "Normal" lines. Format: "<NICK> MSG".
+			 */
 			if (preg_match('/^<.+>$/', $lineParts[0])) {
-				// Empty "normal" lines are silently ignored.
+				/**
+				 * Empty "normal" lines are silently ignored.
+				 */
 				if (isset($lineParts[1])) {
 					$csNick = trim($lineParts[0], '<>');
 					$line = implode(' ', array_slice($lineParts, 1));
@@ -50,12 +58,16 @@ final class Parser_Eggdrop extends Parser
 			 * "Slap" lines. Format: "Action: NICK slaps MSG".
 			 */
 			} elseif ($lineParts[0] == 'Action:') {
-				// Empty "action" lines are silently ignored.
+				/**
+				 * Empty "action" lines are silently ignored.
+				 */
 				if (isset($lineParts[2])) {
 					$csNick = $lineParts[1];
 					$line = implode(' ', array_slice($lineParts, 1));
 
-					// There doesn't have to be an "undergoing" nick for a slap to count.
+					/**
+					 * There doesn't have to be an "undergoing" nick for a slap to count.
+					 */
 					if (strtolower($lineParts[2]) == 'slaps') {
 						if (isset($lineParts[3]))
 							$csNick_undergoing = $lineParts[3];
@@ -68,13 +80,17 @@ final class Parser_Eggdrop extends Parser
 					$this->setAction($dateTime, $csNick, $line);
 				}
 
-			// "Nickchange" lines. Format: "Nick change: NICK -> NICK".
+			/**
+			 * "Nickchange" lines. Format: "Nick change: NICK -> NICK".
+			 */
 			} elseif ($lineParts[1] == 'change:') {
 				$csNick_performing = $lineParts[2];
 				$csNick_undergoing = $lineParts[4];
 				$this->setNickchange($dateTime, $csNick_performing, $csNick_undergoing);
 
-			// "Join" lines. Format: "NICK (HOST) joined CHAN.".
+			/**
+			 * "Join" lines. Format: "NICK (HOST) joined CHAN.".
+			 */
 			} elseif ($lineParts[2] == 'joined') {
 				$csNick = $lineParts[0];
 				$csHost = trim($lineParts[1], '(~)');
@@ -93,11 +109,15 @@ final class Parser_Eggdrop extends Parser
 				else
 					$this->setPart($dateTime, $csNick, $csHost);
 
-			// "Mode" lines. Format: "CHAN: mode change '+o-v NICK NICK' by NICK!HOST".
+			/**
+			 * "Mode" lines. Format: "CHAN: mode change '+o-v NICK NICK' by NICK!HOST".
+			 */
 			} elseif ($lineParts[1] == 'mode') {
 				$modes = ltrim($lineParts[3], '\'');
 
-				// Only process modes consisting of ops and voices.
+				/**
+				 * Only process modes consisting of ops and voices.
+				 */
 				if (preg_match('/^[-+][ov]+([-+][ov]+)?$/', $modes)) {
 					$modesTotal = substr_count($modes, 'o') + substr_count($modes, 'v');
 
@@ -130,13 +150,17 @@ final class Parser_Eggdrop extends Parser
 					}
 				}
 
-			// "Topic" lines. Format: "Topic changed on CHAN by NICK!HOST: MSG".
+			/**
+			 * "Topic" lines. Format: "Topic changed on CHAN by NICK!HOST: MSG".
+			 */
 			} elseif ($lineParts[1] == 'changed') {
 				$tmp = explode('!', $lineParts[5]);
 				$csNick = $tmp[0];
 				$csHost = trim($tmp[1], '~:');
 
-				// If the topic is empty we pass on NULL to setTopic().
+				/**
+				 * If the topic is empty we pass on NULL to setTopic().
+				 */
 				if (isset($lineParts[6]))
 					$line = implode(' ', array_slice($lineParts, 6));
 				else
@@ -144,7 +168,9 @@ final class Parser_Eggdrop extends Parser
 
 				$this->setTopic($dateTime, $csNick, $csHost, $line);
 
-			// "Kick" lines. Format: "NICK kicked from CHAN by NICK: MSG".
+			/**
+			 * "Kick" lines. Format: "NICK kicked from CHAN by NICK: MSG".
+			 */
 			} elseif ($lineParts[1] == 'kicked') {
 				$csNick_performing = rtrim($lineParts[5], ':');
 				$csNick_undergoing = $lineParts[0];
@@ -155,7 +181,9 @@ final class Parser_Eggdrop extends Parser
 			 * We process the previous line NUM times.
 			 */
 			} elseif ($lineParts[1] == 'message') {
-				// Lock the repeating of lines to prevent a loop. Don't touch!!
+				/**
+				 * Lock the repeating of lines to prevent a loop. Don't touch!!
+				 */
 				if (!$this->repeating) {
 					$this->repeating = TRUE;
 					$this->lineNum--;
@@ -168,7 +196,9 @@ final class Parser_Eggdrop extends Parser
 					$this->repeating = FALSE;
 				}
 
-			// Skip everything else.
+			/**
+			 * Skip everything else.
+			 */
 			} else
 				$this->output('notice', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
 		}

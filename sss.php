@@ -60,7 +60,9 @@ function input($cfg, $log_file)
 	$sss_parser->setValue('outputLevel', $cfg['outputLevel']);
 	$sss_parser->setValue('wordTracking', $cfg['wordTracking']);
 
-	// Place your own $sss_parser->setValue lines here
+	/**
+	 * Place your own $sss_parser->setValue lines here
+	 */
 
 	$sss_parser->parseLog($logfile);
 
@@ -73,7 +75,9 @@ function input($cfg, $log_file)
 		$sss_maintenance->setValue('outputLevel', $cfg['outputLevel']);
 		$sss_maintenance->setValue('sanitisationDay', $cfg['sanitisationDay']);
 
-		// Place your own $sss_maintenance->setValue lines here
+		/**
+		 * Place your own $sss_maintenance->setValue lines here
+		 */
 
 		$sss_maintenance->doMaintenance();
 	}
@@ -85,7 +89,9 @@ function output($cfg, $html_file)
 	$sss_output = new $tmp();
 	$sss_output->setValue('channel', $cfg['channel']);
 
-	// Place your own $sss_output->setValue lines here
+	/**
+	 * Place your own $sss_output->setValue lines here
+	 */
 
 	$fp = @fopen($html_file, 'wb');
 

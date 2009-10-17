@@ -39,14 +39,18 @@ abstract class Parser extends Parser_MySQL
 	private $outputLevel = 1;
 	private $wordTracking = FALSE;
 
-	// Default percentages used by the randomizer.
+	/**
+	 * Default percentages used by the randomizer.
+	 */
 	private $random_actions = 50;
 	private $random_exclamations = 40;
 	private $random_questions = 20;
 	private $random_quote = 5;
 	private $random_uppercased = 50;
 
-	// Variables used in database table "channel".
+	/**
+	 * Variables used in database table "channel".
+	 */
 	protected $l_00 = 0;
 	protected $l_01 = 0;
 	protected $l_02 = 0;
@@ -77,11 +81,15 @@ abstract class Parser extends Parser_MySQL
 	protected $l_evening = 0;
 	protected $l_total = 0;
 
-	// Variables used in database table "words".
+	/**
+	 * Variables used in database table "words".
+	 */
 	protected $words_list = array();
 	protected $words_objs = array();
 
-	// Other variables.
+	/**
+	 * Other variables.
+	 */
 	protected $nicks_list = array();
 	protected $nicks_objs = array();
 	protected $prevLine = '';
@@ -115,16 +123,22 @@ abstract class Parser extends Parser_MySQL
 		$this->URLTools = new URLTools();
 	}
 
-	// Function to change and set variables. Used only from the startup script.
+	/**
+	 * Function to change and set variables. Used only from the startup script.
+	 */
 	final public function setValue($var, $value)
 	{
 		$this->$var = $value;
 	}
 
-	// Output given messages to the console.
+	/**
+	 * Output given messages to the console.
+	 */
 	final protected function output($type, $msg)
 	{
-		// Don't output the same thing twice, like mode errors and repeated lines.
+		/**
+		 * Don't output the same thing twice, like mode errors and repeated lines.
+		 */
 		if (!in_array($msg, $this->prevOutput)) {
 			switch ($type) {
 				case 'notice':
@@ -145,7 +159,9 @@ abstract class Parser extends Parser_MySQL
 		}
 	}
 
-	// Main function with general parse instructions.
+	/**
+	 * Main function with general parse instructions.
+	 */
 	final public function parseLog($logfile)
 	{
 		if (file_exists($logfile)) {
@@ -165,7 +181,9 @@ abstract class Parser extends Parser_MySQL
 					 */
 					$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
 
-					// Pass on the normalized line to the logfile format specific parser class extending this class.
+					/**
+					 * Pass on the normalized line to the logfile format specific parser class extending this class.
+					 */
 					$this->lineNum++;
 					$this->parseLine($line);
 					$this->prevLine = $line;
@@ -277,7 +295,9 @@ abstract class Parser extends Parser_MySQL
 		return $nick;
 	}
 
-	// Do stuff with "normal" lines data.
+	/**
+	 * Do stuff with "normal" lines data.
+	 */
 	final protected function setNormal($dateTime, $csNick, $line)
 	{
 		if ($this->validateNick($csNick)) {
@@ -360,7 +380,9 @@ abstract class Parser extends Parser_MySQL
 				if (preg_match('/^(=[]\)]|;([]\(\)xp]|-\))|:([]\/\(\)\\\>xpd]|-\))|\\\o\/)$/i', $csWord))
 					$this->nicks_objs[$nick]->addValue($this->smileys[strtolower($csWord)], 1);
 				elseif (preg_match('/^(www\.|https?:\/\/)/i', $csWord)) {
-					// Put "http://" scheme in front of all URLs beginning with just "www.".
+					/**
+					 * Put "http://" scheme in front of all URLs beginning with just "www.".
+					 */
 					$csURL = preg_replace('/^www\./i', 'http://$0', $csWord);
 
 					if ($this->validateURL($csURL)) {
@@ -380,7 +402,9 @@ abstract class Parser extends Parser_MySQL
 			$this->output('warning', 'setNormal(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 	}
 
-	// Do stuff with "mode" lines data.
+	/**
+	 * Do stuff with "mode" lines data.
+	 */
 	final protected function setMode($dateTime, $csNick_performing, $csNick_undergoing, $mode, $csHost)
 	{
 		if ($this->validateNick($csNick_performing)) {
@@ -418,7 +442,9 @@ abstract class Parser extends Parser_MySQL
 			$this->output('warning', 'setMode(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
 	}
 
-	// Do stuff with "join" lines data.
+	/**
+	 * Do stuff with "join" lines data.
+	 */
 	final protected function setJoin($dateTime, $csNick, $csHost)
 	{
 		if ($this->validateNick($csNick)) {
@@ -433,7 +459,9 @@ abstract class Parser extends Parser_MySQL
 			$this->output('warning', 'setJoin(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 	}
 
-	// Do stuff with "part" lines data.
+	/**
+	 * Do stuff with "part" lines data.
+	 */
 	final protected function setPart($dateTime, $csNick, $csHost)
 	{
 		if ($this->validateNick($csNick)) {
@@ -448,7 +476,9 @@ abstract class Parser extends Parser_MySQL
 			$this->output('warning', 'setPart(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 	}
 
-	// Do stuff with "quit" lines data.
+	/**
+	 * Do stuff with "quit" lines data.
+	 */
 	final protected function setQuit($dateTime, $csNick, $csHost)
 	{
 		if ($this->validateNick($csNick)) {
@@ -463,7 +493,9 @@ abstract class Parser extends Parser_MySQL
 			$this->output('warning', 'setQuit(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 	}
 
-	// Do stuff with "kick" lines data.
+	/**
+	 * Do stuff with "kick" lines data.
+	 */
 	final protected function setKick($dateTime, $csNick_performing, $csNick_undergoing, $line)
 	{
 		if ($this->validateNick($csNick_performing)) {
@@ -483,7 +515,9 @@ abstract class Parser extends Parser_MySQL
 			$this->output('warning', 'setKick(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
 	}
 
-	// Do stuff with "nickchange" lines data.
+	/**
+	 * Do stuff with "nickchange" lines data.
+	 */
 	final protected function setNickchange($dateTime, $csNick_performing, $csNick_undergoing)
 	{
 		if ($this->validateNick($csNick_performing)) {
@@ -497,7 +531,9 @@ abstract class Parser extends Parser_MySQL
 			$this->output('warning', 'setNickchange(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
 	}
 
-	// Do stuff with "topic" lines data.
+	/**
+	 * Do stuff with "topic" lines data.
+	 */
 	final protected function setTopic($dateTime, $csNick, $csHost, $line)
 	{
 		if ($this->validateNick($csNick)) {
@@ -510,14 +546,18 @@ abstract class Parser extends Parser_MySQL
 				else
 					$this->output('warning', 'setTopic(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
 
-			// Keep track of every single topic set.
+			/**
+			 * Keep track of every single topic set.
+			 */
 			if (!is_null($line))
 				$this->nicks_objs[$nick]->addTopic($line, $dateTime);
 		} else
 			$this->output('warning', 'setTopic(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 	}
 
-	// Do stuff with "action" lines data.
+	/**
+	 * Do stuff with "action" lines data.
+	 */
 	final protected function setAction($dateTime, $csNick, $line)
 	{
 		if ($this->validateNick($csNick)) {
@@ -530,7 +570,9 @@ abstract class Parser extends Parser_MySQL
 			$this->output('warning', 'setAction(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 	}
 
-	// Do stuff with "slap" lines data.
+	/**
+	 * Do stuff with "slap" lines data.
+	 */
 	final protected function setSlap($dateTime, $csNick_performing, $csNick_undergoing)
 	{
 		if ($this->validateNick($csNick_performing)) {
@@ -538,7 +580,9 @@ abstract class Parser extends Parser_MySQL
 			$this->nicks_objs[$nick_performing]->addValue('slaps', 1);
 
 			if (!is_null($csNick_undergoing)) {
-				// Clean possible network prefix (psyBNC) from undergoing nick.
+				/**
+				 * Clean possible network prefix (psyBNC) from undergoing nick.
+				 */
 				if (substr_count($csNick_undergoing, '~') + substr_count($csNick_undergoing, '\'') == 1) {
 					$this->output('notice', 'setSlap(): cleaning "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
 					$tmp = preg_split('/[~\']/', $csNick_undergoing, 2);
@@ -546,7 +590,9 @@ abstract class Parser extends Parser_MySQL
 				}
 
 				if ($this->validateNick($csNick_undergoing)) {
-					// Don't pass a time when adding the undergoing nick while it may only be referred to instead of being seen for real.
+					/**
+					 * Don't pass a time when adding the undergoing nick while it may only be referred to instead of being seen for real.
+					 */
 					$dateTime = NULL;
 					$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
 					$this->nicks_objs[$nick_undergoing]->addValue('slapped', 1);
