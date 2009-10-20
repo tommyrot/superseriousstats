@@ -28,7 +28,7 @@ final class HTML_MySQL
 	// The correct way for changing the variables below is from the startup script.
 	private $channel = '#example';
 	private $decimals = 2;
-	private $minRows = 3;
+	private $minRows = 3; //ok
 	private $stylesheet = 'default.css';
 
 	// The following variables shouldn't be tampered with.
@@ -38,12 +38,14 @@ final class HTML_MySQL
 	private $day_of_month = 0;
 	private $day_of_year = 0;
 	private $days = 0;
-	private $l_minimum = 500;
+	private $minLines = 500; //ok
 	private $l_total = 0;
-	private $mysqli;
+	private $mysqli; //ok
 	private $month = 0;
 	private $month_name = '';
+	private $output = ''; //ok
 	private $year = 0;
+	private $category_list = array();//ok
 
 	//
 	private $bar_night = 'b.png';
@@ -71,7 +73,7 @@ final class HTML_MySQL
 		 *  500 is the default minimum so tables will still look interesting on low volume channels.
 		 */
 		if (round($this->l_total / 1000) >= 500)
-			$this->l_minimum = round($this->l_total / 1000);
+			$this->minLines = round($this->l_total / 1000);
 
 		$query_days = @mysqli_query($this->mysqli, 'SELECT COUNT(*) AS `days` FROM `channel`') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
 		$result_days = mysqli_fetch_object($query_days);
@@ -89,7 +91,7 @@ final class HTML_MySQL
 		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
 
 		// Build the HTML page.
-		$this->contents = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
+		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 				. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
 				. '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n"
 				. '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
@@ -101,11 +103,11 @@ final class HTML_MySQL
 		$result = mysqli_fetch_object($query);
 		if ($result->total > 0) {
 			$width = 2 + ($result->total * 34);
-			$this->contents .= '<style type="text/css">'."\n".'  table.yearly {width:'.$width.'px}'."\n".'</style>'."\n";
+			$this->output .= '<style type="text/css">'."\n".'  table.yearly {width:'.$width.'px}'."\n".'</style>'."\n";
 		}
-		$this->contents .= '</head>'."\n\n".'<body>'."\n";
-		$this->contents .= '<div class="box">'."\n\n";
-		$this->contents .= '<div class="info">'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />';
+		$this->output .= '</head>'."\n\n".'<body>'."\n";
+		$this->output .= '<div class="box">'."\n\n";
+		$this->output .= '<div class="info">'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />';
 
 		$query = @mysqli_query($this->mysqli, 'select avg(`l_total`) as `avg` from `channel` limit 1');
 		$result = mysqli_fetch_object($query);
@@ -120,8 +122,8 @@ final class HTML_MySQL
 		$result = mysqli_fetch_object($query);
 		$sum = number_format($result->sum);
 
-		$this->contents .= '<br />Logs contain '.$sum.' lines, an average of '.number_format($avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($maxdate)).' with a total of '.number_format($max).' lines typed.</div>'."\n";
-		$this->contents .= '<div class="head">Activity</div>'."\n";
+		$this->output .= '<br />Logs contain '.$sum.' lines, an average of '.number_format($avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($maxdate)).' with a total of '.number_format($max).' lines typed.</div>'."\n";
+		$this->output .= '<div class="head">Activity</div>'."\n";
 
 		$this->makeTable_MostActiveTimes('Most Active Times');
 		$this->makeTable_Activity('days', 'Daily Activity');
@@ -143,117 +145,81 @@ final class HTML_MySQL
 		They are, however, included in the (channel) totals.
 		*/
 
-		$this->contents .= '<div class="head">General Chat</div>'."\n";
+		/**
+		 * General Chat section
+		 */
+		$output = '';
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Talkative Chatters', 'key1' => 'Lines/Day', 'key2' => 'User', 'decimals' => 1, 'percentage' => FALSE, 'query' => 'SELECT (`l_total` / `activeDays`) AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Fluent Chatters', 'key1' => 'Words/Line', 'key2' => 'User', 'decimals' => 1, 'percentage' => FALSE, 'query' => 'SELECT (`words` / `l_total`) AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Tedious Chatters', 'key1' => 'Chars/Line', 'key2' => 'User', 'decimals' => 1, 'percentage' => FALSE, 'query' => 'SELECT (`characters` / `l_total`) AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, Alltime', 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
 
-		$this->makeTable('small', 5, 'Most Talkative Chatters', array('', 'Lines/Day', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`l_total` / `activeDays`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
-		$this->makeTable('small', 5, 'Most Fluent Chatters', array('', 'Words/Line', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`words` / `l_total`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
-		$this->makeTable('small', 5, 'Most Tedious Chatters', array('', 'Chars/Line', 'User'), 1, FALSE, array('SELECT `csNick` AS `v2`, (`characters` / `l_total`) AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
+		if (date('m') != 1)
+			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
 
-		////////////////////
-		//TOP DAYS - ALLTIME
-		$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
-		$tmpArr = array();
-		while ($result = mysqli_fetch_object($query)) {
-			$query2 = @mysqli_query($this->mysqli, 'SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
-			$result2 = mysqli_fetch_object($query2);
-			if ($result2->status != 3)
-				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
-		}
-		$this->makeTable2('small', 5, 'Individual Top Days, Alltime', array('', 'Lines', 'User'), 0, FALSE, $tmpArr);
+		$output	.= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->month_name.' '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, Alltime', 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`activeDays` / '.$this->days.') * 100 AS `v1`, `csNick` AS `v2` FROM `user_status` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`UID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `status` != 3 ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 
-		/////////////////
-		//TOP DAYS - YEAR
-		if (date('m') != 1) {
-		$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
-		$tmpArr = array();
-		while ($result = mysqli_fetch_object($query)) {
-			$query2 = @mysqli_query($this->mysqli, 'SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
-			$result2 = mysqli_fetch_object($query2);
-			if ($result2->status != 3)
-				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
-		}
-		$this->makeTable2('small', 5, 'Individual Top Days, '.$this->year, array('', 'Lines', 'User'), 0, FALSE, $tmpArr);
-		}
+		if (date('m') != 1)
+			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, '.$this->year, 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_year.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25'));
 
-		//////////////////
-		//TOP DAYS - MONTH
-		$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
-		$tmpArr = array();
-		while ($result = mysqli_fetch_object($query)) {
-			$query2 = @mysqli_query($this->mysqli, 'SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
-			$result2 = mysqli_fetch_object($query2);
-			if ($result2->status != 3)
-				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
-		}
-		$this->makeTable2('small', 5, 'Individual Top Days, '.$this->month_name.' '.$this->year, array('', 'Lines', 'User'), 0, FALSE, $tmpArr);
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, '.$this->month_name.' '.$this->year, 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_month.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25'));
+		$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most Exclamations', 'key1' => 'Percentage', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`exclamations` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_exclamations` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `exclamations` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
+		$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most Questions', 'key1' => 'Percentage', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`questions` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_questions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `questions` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
+		$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most UPPERCASED Lines', 'key1' => 'Percentage', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`uppercased` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_uppercased` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `uppercased` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most URLs, by Users', 'key1' => 'URLs', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `URLs` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `URLs` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`URLs`) AS `total` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most URLs, by Bots', 'key1' => 'URLs', 'key2' => 'Bot', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `URLs` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` = 3 AND `URLs` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`URLs`) AS `total` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` = 3'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Monologues', 'key1' => 'Monologues', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `monologues` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `monologues` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`monologues`) AS `total` FROM `query_lines`'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Slaps, Given', 'key1' => 'Slaps', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `slaps` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `slaps` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`slaps`) AS `total` FROM `query_lines`'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Slaps, Received', 'key1' => 'Slaps', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `slapped` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `slapped` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`slapped`) AS `total` FROM `query_lines`'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Longest Monologue', 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `topMonologue` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topMonologue` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
+		$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most Actions', 'key1' => 'Percentage', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`actions` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_actions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `actions` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Mentioned Nicks', 'key1' => 'Mentioned', 'key2' => 'Nick', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `total` AS `v1`, `csNick` AS `v2` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` JOIN `words` ON `user_details`.`csNick` = `words`.`word` WHERE `status` = 1 ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 
-		////////////////////
-		//ACTIVITY - ALLTIME
-		$this->makeTable('small', 5, 'Most Active Chatters, Alltime', array('', 'Activity', 'User'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`activeDays` / '.$this->days.') * 100 AS `v1` FROM `user_status` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`UID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `status` != 3 ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
+		if (!empty($output))
+			$this->output .= '<div class="head">General Chat</div>'."\n".$output;
 
-		/////////////////
-		//ACTIVITY - YEAR
-		if (date('m') != 1) {
-		$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_year.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
-		$tmpArr = array();
-		while ($result = mysqli_fetch_object($query)) {
-			$query2 = @mysqli_query($this->mysqli, 'SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
-			$result2 = mysqli_fetch_object($query2);
-			if ($result2->status != 3)
-				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
-		}
-		$this->makeTable2('small', 5, 'Most Active Chatters, '.$this->year, array('', 'Activity', 'User'), 2, TRUE, $tmpArr);
-		}
+		/**
+		 * Modes section
+		 */
+		$output = '';
+		$modes = array('Most Ops \'+o\', Given' => array('Ops', 'm_op')
+			      ,'Most Ops \'+o\', Received' => array('Ops', 'm_opped')
+			      ,'Most deOps \'-o\', Given' => array('deOps', 'm_deOp')
+			      ,'Most deOps \'-o\', Received' => array('deOps', 'm_deOpped')
+			      ,'Most Voices \'+v\', Given' => array('Voices', 'm_voice')
+			      ,'Most Voices \'+v\', Received' => array('Voices', 'm_voiced')
+			      ,'Most deVoices \'-v\', Given' => array('deVoices', 'm_deVoice')
+			      ,'Most deVoices \'-v\', Received' => array('deVoices', 'm_deVoiced'));
 
-		//////////////////
-		//ACTIVITY - MONTH
-		$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_month.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
-		$tmpArr = array();
-		while ($result = mysqli_fetch_object($query)) {
-			$query2 = @mysqli_query($this->mysqli, 'SELECT `status`, `csNick` AS `v2` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$result->RUID);
-			$result2 = mysqli_fetch_object($query2);
-			if ($result2->status != 3)
-				$tmpArr[] = array('v1' => $result->v1, 'v2' => $result2->v2);
-		}
-		$this->makeTable2('small', 5, 'Most Active Chatters, '.$this->month_name.' '.$this->year, array('', 'Activity', 'User'), 2, TRUE, $tmpArr);
+		foreach ($modes as $k => $v)
+			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => $k, 'key1' => $v[0], 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `'.$v[1].'` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `'.$v[1].'` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`'.$v[1].'`) AS `total` FROM `query_events`'));
 
-		$this->makeTable('large', 5, 'Most Exclamations', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`exclamations` / `l_total`) * 100 AS `v1`, `ex_exclamations` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `exclamations` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
-		$this->makeTable('large', 5, 'Most Questions', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`questions` / `l_total`) * 100 AS `v1`, `ex_questions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `questions` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
-		$this->makeTable('large', 5, 'Most UPPERCASED Lines', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`uppercased` / `l_total`) * 100 AS `v1`, `ex_uppercased` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `uppercased` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
-		$this->makeTable('small', 5, 'Most URLs, by Users', array('', 'URLs', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `URLs` AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `URLs` != 0 ORDER BY `URLs` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`URLs`) AS `v0` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3'));
-		$this->makeTable('small', 5, 'Most URLs, by Bots', array('', 'URLs', 'Bot'), 0, FALSE, array('SELECT `csNick` AS `v2`, `URLs` AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` = 3 AND `URLs` != 0 ORDER BY `URLs` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`URLs`) AS `v0` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` = 3'));
-		$this->makeTable('small', 5, 'Most Monologues', array('', 'Monologues', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `monologues` AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `monologues` != 0 ORDER BY `monologues` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`monologues`) AS `v0` FROM `query_lines`'));
-		$this->makeTable('small', 5, 'Most Slaps, Given', array('', 'Slaps', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `slaps` AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `slaps` != 0 ORDER BY `slaps` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`slaps`) AS `v0` FROM `query_lines`'));
-		$this->makeTable('small', 5, 'Most Slaps, Received', array('', 'Slaps', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `slapped` AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `slapped` != 0 ORDER BY `slapped` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`slapped`) AS `v0` FROM `query_lines`'));
-		$this->makeTable('small', 5, 'Longest Monologue', array('', 'Lines', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `topMonologue` AS `v1` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topMonologue` != 0 ORDER BY `topMonologue` DESC, `csNick` ASC LIMIT 5'));
-		$this->makeTable('large', 5, 'Most Actions', array('', 'Percentage', 'User', 'Example'), 2, TRUE, array('SELECT `csNick` AS `v2`, (`actions` / `l_total`) * 100 AS `v1`, `ex_actions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `actions` != 0 AND `l_total` >= '.$this->l_minimum.' ORDER BY `v1` DESC, `csNick` ASC LIMIT 5'));
-		$this->makeTable('small', 5, 'Most Mentioned Nicks', array('', 'Mentioned', 'Nick'), 0, FALSE, array('SELECT `csNick` AS `v2`, `total` AS `v1` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` JOIN `words` ON `user_details`.`csNick` = `words`.`word` WHERE `status` = 1 ORDER BY `total` DESC, `csNick` ASC LIMIT 5'));
+		if (!empty($output))
+			$this->output .= '<div class="head">Modes</div>'."\n".$output;
 
-		$this->contents .= '<div class="head">Modes</div>'."\n";
+		/**
+		 * Events section
+		 */
+		$output = '';
+		$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most Kicks', 'key1' => 'Kicks', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `kicks` AS `v1`, `csNick` AS `v2`, `ex_kicks` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicks` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`kicks`) AS `total` FROM `query_events`'));
+		$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most Kicked', 'key1' => 'Kicked', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `kicked` AS `v1`, `csNick` AS `v2`, `ex_kicked` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicked` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`kicked`) AS `total` FROM `query_events`'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Joins', 'key1' => 'Joins', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `joins` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `joins` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`joins`) AS `total` FROM `query_events`'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Parts', 'key1' => 'Parts', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `parts` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `parts` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`parts`) AS `total` FROM `query_events`'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Quits', 'key1' => 'Quits', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `quits` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `quits` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`quits`) AS `total` FROM `query_events`'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Nick Changes', 'key1' => 'Nick Changes', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `nickChanges` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `nickChanges` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`nickChanges`) AS `total` FROM `query_events`'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Aliases', 'key1' => 'Aliases', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT COUNT(*) AS `v1`, `csNick` AS `v2` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `status` != 3 GROUP BY `RUID` ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT COUNT(*) AS `total` FROM `user_status`'));
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Topics', 'key1' => 'Topics', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `topics` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topics` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`topics`) AS `total` FROM `query_events`'));
 
-		$this->makeTable('small', 5, 'Most Ops \'+o\', Given', array('', 'Ops', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_op` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_op` != 0 ORDER BY `m_op` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_op`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most Ops \'+o\', Received', array('', 'Ops', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_opped` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_opped` != 0 ORDER BY `m_opped` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_opped`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most deOps \'-o\', Given', array('', 'deOps', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_deOp` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_deOp` != 0 ORDER BY `m_deOp` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_deOp`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most deOps \'-o\', Received', array('', 'deOps', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_deOpped` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_deOpped` != 0 ORDER BY `m_deOpped` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_deOpped`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most Voices \'+v\', Given', array('', 'Voices', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_voice` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_voice` != 0 ORDER BY `m_voice` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_voice`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most Voices \'+v\', Received', array('', 'Voices', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_voiced` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_voiced` != 0 ORDER BY `m_voiced` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_voiced`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most deVoices \'-v\', Given', array('', 'deVoices', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_deVoice` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_deVoice` != 0 ORDER BY `m_deVoice` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_deVoice`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most deVoices \'-v\', Received', array('', 'deVoices', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `m_deVoiced` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `m_deVoiced` != 0 ORDER BY `m_deVoiced` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`m_deVoiced`) AS `v0` FROM `query_events`'));
+		//$this->table_topics();
 
-		$this->contents .= '<div class="head">Events</div>'."\n";
+		if (!empty($output))
+			$this->output .= '<div class="head">Events</div>'."\n".$output;
 
-		$this->makeTable('large', 5, 'Most Kicks', array('', 'Kicks', 'User', 'Example'), 0, FALSE, array('SELECT `csNick` AS `v2`, `kicks` AS `v1`, `ex_kicks` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicks` != 0 ORDER BY `kicks` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`kicks`) AS `v0` FROM `query_events`'));
-		$this->makeTable('large', 5, 'Most Kicked', array('', 'Kicked', 'User', 'Example'), 0, FALSE, array('SELECT `csNick` AS `v2`, `kicked` AS `v1`, `ex_kicked` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicked` != 0 ORDER BY `kicked` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`kicked`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most Joins', array('', 'Joins', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `joins` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `joins` != 0 ORDER BY `joins` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`joins`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most Parts', array('', 'Parts', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `parts` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `parts` != 0 ORDER BY `parts` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`parts`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most Quits', array('', 'Quits', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `quits` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `quits` != 0 ORDER BY `quits` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`quits`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most Nick Changes', array('', 'Nick Changes', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `nickChanges` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `nickChanges` != 0 ORDER BY `nickChanges` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`nickChanges`) AS `v0` FROM `query_events`'));
-		$this->makeTable('small', 5, 'Most Aliases', array('', 'Aliases', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, COUNT(*) AS `v1` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `status` != 3 GROUP BY `RUID` ORDER BY `v1` DESC, `csNick` ASC LIMIT 5', 'SELECT COUNT(*) AS `v0` FROM `user_status`'));
-		$this->makeTable('small', 5, 'Most Topics', array('', 'Topics', 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `topics` AS `v1` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topics` != 0 ORDER BY `topics` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`topics`) AS `v0` FROM `query_events`'));
-		$this->table_topics();
-
-		$this->contents .= '<div class="head">Smileys</div>'."\n";
-
+		/**
+		 * Smileys section
+		 */
+		$output = '';
 		$smileys = array('Big Cheerful Smile' => array('=]', 's_01')
 				,'Cheerful Smile' => array('=)', 's_02')
 				,'Lovely Kiss' => array(';x', 's_03')
@@ -272,23 +238,28 @@ final class HTML_MySQL
 				,'Classic Happy' => array(':-)', 's_16')
 				,'Happy' => array(':)', 's_17')
 				,'Sad' => array(':(', 's_18')
-				,'Cheer' => array('\\o/', 's_19')
-				);
-
+				,'Cheer' => array('\\o/', 's_19'));
+		
 		foreach ($smileys as $k => $v) {
-			$query = @mysqli_query($this->mysqli, 'SELECT SUM(`'.$v[1].'`) AS `total` FROM `query_smileys`');
+			$query = @mysqli_query($this->mysqli, 'SELECT SUM(`'.$v[1].'`) AS `total` FROM `query_smileys`') or exit;
 			$result = mysqli_fetch_object($query);
 
-			if ($result->total >= $this->l_minimum)
-				$this->makeTable('small', 5, $k, array('', $v[0], 'User'), 0, FALSE, array('SELECT `csNick` AS `v2`, `'.$v[1].'` AS `v1` FROM `user_details`, `query_smileys`, `user_status` WHERE `user_details`.`UID` = `query_smileys`.`UID` AND `user_details`.`UID` = `user_status`.`UID` AND `status` != 3 AND `'.$v[1].'` != 0 ORDER BY `'.$v[1].'` DESC, `csNick` ASC LIMIT 5', 'SELECT SUM(`'.$v[1].'`) AS `v0` FROM `query_smileys`'));
+			if ($result->total >= $this->minLines)
+				$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => $k, 'key1' => $v[0], 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `'.$v[1].'` AS `v1`, `csNick` AS `v2` FROM `query_smileys` JOIN `user_details` ON `query_smileys`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_smileys`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `'.$v[1].'` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`'.$v[1].'`) AS `total` FROM `query_smileys`'));
 		}
 
-		$this->contents .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
-		$this->contents .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		if (!empty($output))
+			$this->output .= '<div class="head">Smileys</div>'."\n".$output;
+
+		/**
+		 * Foot
+		 */
+		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
+		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 
 		@mysqli_close($this->mysqli);
 
-		return $this->contents;
+		return $this->output;
 	}
 
 	private function makeTable_TimeOfDay($head, $keys)
@@ -328,106 +299,85 @@ final class HTML_MySQL
 			$output .= '</tr>';
 		}
 
-		$this->contents .= $output.'</table>'."\n";
+		$this->output .= $output.'</table>'."\n";
 	}
 
-	//maketable2, don't know what the deal will be yet
-	private function makeTable2($size, $rows, $head, $keys, $decimals, $percentage, $result)
+	private function getDetails($UID)
 	{
-		$i = 0;
+		$query = mysqli_query($this->mysqli, 'SELECT `csNick`, `status` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `user_details`.`UID` = '.$UID) or exit;
+		$result = mysqli_fetch_object($query);
 
-		foreach ($result as $row) {
-			$i++;
-
-			if ($i > 5)
-				break;
-
-			if ($size == 'small')
-				$data[] = array($i, number_format($row['v1'], $decimals).($percentage ? '%' : ''), htmlspecialchars($row['v2']));
-			elseif ($size == 'large')
-				$data[] = array($i, number_format($row['v1'], $decimals).($percentage ? '%' : ''), htmlspecialchars($row['v2']), htmlspecialchars($row['v3']));
-		}
-
-		// If there are less rows to display than the desired minimum amount of rows we skip this table.
-		if ($this->minRows <= $rows && $i < $this->minRows)
-			return;
-
-		for ($i = count($data); $i < $rows; $i++)
-			if ($size == 'small')
-				$data[] = array('&nbsp;', '', '');
-			elseif ($size == 'large')
-				$data[] = array('&nbsp;', '', '', '');
-
-		if ($size == 'small') {
-			$output = '<table class="small">';
-			$output .= '<tr><th colspan="3">'.$head.'</th></tr>';
-			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td></tr>';
-
-			foreach ($data as $row)
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
-
-			$this->contents .= $output.'</table>'."\n";
-		} elseif ($size == 'large') {
-			$output = '<table class="large">';
-			$output .= '<tr><th colspan="4">'.$head.'</th></tr>';
-			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td><td class="k3">'.$keys[3].'</td></tr>';
-
-			foreach ($data as $row)
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
-
-			$this->contents .= $output.'</table>'."\n";
-		}
+		return array('csNick' => $result->csNick
+			    ,'status' => $result->status);
 	}
 
-	//maketable from file needs review
-	private function makeTable($size, $rows, $head, $keys, $decimals, $percentage, $queries)
+	private function makeTable($settings)
 	{
-		$query = @mysqli_query($this->mysqli, $queries[0]);
+		$query = @mysqli_query($this->mysqli, $settings['query']) or exit;
 		$i = 0;
 
 		while ($result = mysqli_fetch_object($query)) {
+			if  ($i >= $settings['rows'])
+				break;
+
+			if (isset($settings['getDetails'])) {
+				$details = $this->getDetails($result->$settings['getDetails']);
+
+				if ($details['status'] == 3)
+					break;
+				else
+					$result->v2 = $details['csNick'];
+			}
+
 			$i++;
 
-			if ($size == 'small')
-				$data[] = array($i, number_format($result->v1, $decimals).($percentage ? '%' : ''), htmlspecialchars($result->v2));
-			elseif ($size == 'large')
-				$data[] = array($i, number_format($result->v1, $decimals).($percentage ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
+			if ($settings['size'] == 'small')
+				$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2));
+			elseif ($settings['size'] == 'large')
+				$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 		}
 
-		// If there are less rows to display than the desired minimum amount of rows we skip this table.
-		if ($this->minRows <= $rows && $i < $this->minRows)
-			return;
+		$output = '';
 
-		for ($i = count($data); $i < $rows; $i++)
-			if ($size == 'small')
-				$data[] = array('&nbsp;', '', '');
-			elseif ($size == 'large')
-				$data[] = array('&nbsp;', '', '', '');
+		/**
+		 * If there are less rows to display than the desired minimum amount of rows we skip this table.
+		 */
+		if ($i >= $this->minRows) {
+			for ($i = count($content); $i < $settings['rows']; $i++)
+				if ($settings['size'] == 'small')
+					$content[] = array('&nbsp;', '', '');
+				elseif ($settings['size'] == 'large')
+					$content[] = array('&nbsp;', '', '', '');
 
-		if (!empty($queries[1])) {
-			$query = @mysqli_query($this->mysqli, $queries[1]);
-			$result = mysqli_fetch_object($query);
+			if (isset($settings['query_total'])) {
+				$query_total = @mysqli_query($this->mysqli, $settings['query_total']) or exit;
+				$result_total = mysqli_fetch_object($query_total);
+			}
+
+			$output = '';
+
+			if ($settings['size'] == 'small') {
+				$output .= '<table class="small">'
+					.  '<tr><th colspan="3"><span class="left">'.$settings['head'].'</span>'.(empty($result_total->total) ? '' : '<span class="right">'.number_format($result_total->total).' total</span>').'</th></tr>'
+					.  '<tr><td class="k1">'.$settings['key1'].'</td><td class="pos"></td><td class="k2">'.$settings['key2'].'</td></tr>';
+
+				foreach ($content as $row)
+					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
+
+				$output .= '</table>'."\n";
+			} elseif ($settings['size'] == 'large') {
+				$output .= '<table class="large">'
+					.  '<tr><th colspan="4"><span class="left">'.$settings['head'].'</span>'.(empty($result_total->total) ? '' : '<span class="right">'.number_format($result_total->total).' total</span>').'</th></tr>'
+				        .  '<tr><td class="k1">'.$settings['key1'].'</td><td class="pos"></td><td class="k2">'.$settings['key2'].'</td><td class="k3">'.$settings['key3'].'</td></tr>';
+
+				foreach ($content as $row)
+					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+
+				$output .= '</table>'."\n";
+			}
 		}
 
-		if ($size == 'small') {
-			$output = '<table class="small">';
-			$output .= '<tr><th colspan="3"><span class="left">'.$head.'</span>'.(empty($result->v0) ? '' : '<span class="right">'.number_format($result->v0).' total</span>').'</th></tr>';
-			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td></tr>';
-
-			foreach ($data as $row)
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
-
-			$this->contents .= $output.'</table>'."\n";
-		} elseif ($size == 'large') {
-			$output = '<table class="large">';
-			$output .= '<tr><th colspan="4"><span class="left">'.$head.'</span>'.(empty($result->v0) ? '' : '<span class="right">'.number_format($result->v0).' total</span>').'</th></tr>';
-			$output .= '<tr><td class="k1">'.$keys[1].'</td><td class="pos">'.$keys[0].'</td><td class="k2">'.$keys[2].'</td><td class="k3">'.$keys[3].'</td></tr>';
-
-			foreach ($data as $row)
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
-
-			$this->contents .= $output.'</table>'."\n";
-		}
+		return $output;
 	}
 
 	//maketable most active times from file needs review
@@ -484,7 +434,7 @@ final class HTML_MySQL
 			else
 				$output .= '<td>'.$hour.'h</td>';
 
-		$this->contents .= $output.'</tr></table>'."\n";
+		$this->output .= $output.'</tr></table>'."\n";
 	}
 
 	//maketable most active ppl from file needs review
@@ -623,7 +573,7 @@ final class HTML_MySQL
 			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.$result->csNick.'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($result->quote).$hover.'</td></tr>';
 		}
 
-		$this->contents .= $output.'</table>'."\n";
+		$this->output .= $output.'</table>'."\n";
 	}
 
 	//makeTable_Activity from file needs review
@@ -803,7 +753,7 @@ final class HTML_MySQL
 			}
 		}
 
-		$this->contents .= $output.'</tr></table>'."\n";
+		$this->output .= $output.'</tr></table>'."\n";
 	}
 
 	//makeTable_mostactivedays from file needs review
@@ -880,7 +830,7 @@ final class HTML_MySQL
 			else
 				$output .= '<td>'.ucfirst($day).'</td>';
 
-		$this->contents .= $output.'</tr></table>'."\n";
+		$this->output .= $output.'</tr></table>'."\n";
 	}
 
 	// I'm too stupid to come up with a cool SQL query that does half the below work for me, so here's a less elegant solution.
