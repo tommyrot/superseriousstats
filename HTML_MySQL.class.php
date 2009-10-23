@@ -27,26 +27,22 @@ final class HTML_MySQL
 {
 	// The correct way for changing the variables below is from the startup script.
 	private $channel = '#example';
-	private $decimals = 2;
-	private $minRows = 3; //ok
+	private $minLines = 500;
+	private $minRows = 3;
 	private $stylesheet = 'default.css';
 
 	// The following variables shouldn't be tampered with.
-	private $contents = '';
 	private $date_first = '';
 	private $date_last = '';
-	private $day_of_month = 0;
-	private $day_of_year = 0;
+	private $day_of_month = '';
+	private $day_of_year = '';
 	private $days = 0;
-	private $minLines = 500; //ok
 	private $l_total = 0;
-	private $mysqli; //ok
-	private $month = 0;
+	private $month = '';
 	private $month_name = '';
-	private $output = ''; //ok
-	private $year = 0;
-	private $category_list = array();//ok
-
+	private $mysqli;
+	private $output = '';
+	private $year = '';
 	//
 	private $bar_night = 'b.png';
 	private $bar_morning = 'g.png';
@@ -60,29 +56,32 @@ final class HTML_MySQL
 
 	public function makeHTML()
 	{
-		$this->mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit('MySQL: '.mysqli_connect_error()."\n");
-		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
+		$this->mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit;
+		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit;
 		$result_l_total = mysqli_fetch_object($query_l_total);
 		$this->l_total = $result_l_total->l_total;
 
 		if (empty($this->l_total))
-			exit('The database is empty. Nothing to do!'."\n");
+			exit('The database for '.$channel.' is empty.'."\n");
 
 		/**
-		 *  This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
-		 *  500 is the default minimum so tables will still look interesting on low volume channels.
+		 * This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
+		 * 500 is the default minimum so tables will still look interesting on low volume channels.
 		 */
 		if (round($this->l_total / 1000) >= 500)
 			$this->minLines = round($this->l_total / 1000);
 
-		$query_days = @mysqli_query($this->mysqli, 'SELECT COUNT(*) AS `days` FROM `channel`') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
+		/**
+		 * Date and time variables used throughout the script.
+		 */
+		$query_days = @mysqli_query($this->mysqli, 'SELECT COUNT(*) AS `days` FROM `channel`') or exit;
 		$result_days = mysqli_fetch_object($query_days);
-		$this->days = $result_days->days;
-		$query_date_first = @mysqli_query($this->mysqli, 'SELECT MIN(`date`) AS `date` FROM `channel`') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
+		$query_date_first = @mysqli_query($this->mysqli, 'SELECT MIN(`date`) AS `date` FROM `channel`') or exit;
 		$result_date_first = mysqli_fetch_object($query_date_first);
-		$this->date_first = $result_date_first->date;
-		$query_date_last = @mysqli_query($this->mysqli, 'SELECT MAX(`date`) AS `date` FROM `channel`') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
+		$query_date_last = @mysqli_query($this->mysqli, 'SELECT MAX(`date`) AS `date` FROM `channel`') or exit;
 		$result_date_last = mysqli_fetch_object($query_date_last);
+		$this->days = $result_days->days;
+		$this->date_first = $result_date_first->date;
 		$this->date_last = $result_date_last->date;
 		$this->year = date('Y', strtotime('yesterday'));
 		$this->month = date('m', strtotime('yesterday'));
@@ -90,41 +89,39 @@ final class HTML_MySQL
 		$this->day_of_month = date('d', strtotime('yesterday'));
 		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
 
-		// Build the HTML page.
+		/**
+		 * HTML Head
+		 */
+		$query_years = @mysqli_query($this->mysqli, 'SELECT COUNT(DISTINCT YEAR(`date`)) AS `years` FROM `channel`') or exit;
+		$result_years = mysqli_fetch_object($query_years);
+		$query_avg = @mysqli_query($this->mysqli, 'SELECT AVG(`l_total`) AS `avg` FROM `channel` LIMIT 1') or exit;
+		$result_avg = mysqli_fetch_object($query_avg);
+		$query_max = @mysqli_query($this->mysqli, 'SELECT `l_total` AS `max`, `date` FROM `channel` ORDER BY `l_total` DESC LIMIT 1') or exit;
+		$result_max = mysqli_fetch_object($query_max);
+		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit;
+		$result_l_total = mysqli_fetch_object($query_l_total);
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
-				. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
-				. '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n"
-				. '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
-				. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
-				. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
-				. '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n";
-		$query = @mysqli_query($this->mysqli, 'SELECT COUNT(DISTINCT YEAR(`date`)) AS `total` FROM `channel`');
+			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
+			      . '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n"
+			      . '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
+			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
+			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
+			      . '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n"
+			      . '<style type="text/css">'."\n".'  table.yearly {width:'.(2 + ($result_years->years * 34)).'px}'."\n".'</style>'."\n"
+			      . '</head>'."\n\n".'<body>'."\n"
+		              . '<div class="box">'."\n\n"
+			      . '<div class="info">'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />'
+			      . '<br />Logs contain '.number_format($result_l_total->l_total).' lines, an average of '.number_format($result_avg->avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
 
-		$result = mysqli_fetch_object($query);
-		if ($result->total > 0) {
-			$width = 2 + ($result->total * 34);
-			$this->output .= '<style type="text/css">'."\n".'  table.yearly {width:'.$width.'px}'."\n".'</style>'."\n";
-		}
-		$this->output .= '</head>'."\n\n".'<body>'."\n";
-		$this->output .= '<div class="box">'."\n\n";
-		$this->output .= '<div class="info">'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />';
+		/**
+		 * Bots are excluded from statistics unless stated otherwise.
+		 * They are, however, included in the (channel) totals.
+		 */
 
-		$query = @mysqli_query($this->mysqli, 'select avg(`l_total`) as `avg` from `channel` limit 1');
-		$result = mysqli_fetch_object($query);
-		$avg = $result->avg;
-
-		$query = @mysqli_query($this->mysqli, 'select `l_total` as `max`, `date` from `channel` order by `l_total` desc limit 1');
-		$result = mysqli_fetch_object($query);
-		$max = $result->max;
-		$maxdate = $result->date;
-
-		$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `sum` from `channel` limit 1');
-		$result = mysqli_fetch_object($query);
-		$sum = number_format($result->sum);
-
-		$this->output .= '<br />Logs contain '.$sum.' lines, an average of '.number_format($avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($maxdate)).' with a total of '.number_format($max).' lines typed.</div>'."\n";
+		/**
+		 * Activity section
+		 */
 		$this->output .= '<div class="head">Activity</div>'."\n";
-
 		$this->makeTable_MostActiveTimes('Most Active Times');
 		$this->makeTable_Activity('days', 'Daily Activity');
 		$this->makeTable_Activity('months', 'Monthly Activity');
@@ -141,11 +138,6 @@ final class HTML_MySQL
 		$this->makeTable_TimeOfDay('Activity, by Time of Day', array('Nightcrawlers<br />0h - 5h', 'Early Birds<br />6h - 11h', 'Afternoon Shift<br />12h - 17h', 'Evening Chatters<br />18h - 23h'));
 
 		/**
-		Bots are excluded from statistics unless stated otherwise.
-		They are, however, included in the (channel) totals.
-		*/
-
-		/**
 		 * General Chat section
 		 */
 		$output = '';
@@ -154,13 +146,13 @@ final class HTML_MySQL
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Tedious Chatters', 'key1' => 'Chars/Line', 'key2' => 'User', 'decimals' => 1, 'percentage' => FALSE, 'query' => 'SELECT (`characters` / `l_total`) AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, Alltime', 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
 
-		if (date('m') != 1)
+		if ($this->month != 1)
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
 
 		$output	.= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->month_name.' '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, Alltime', 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`activeDays` / '.$this->days.') * 100 AS `v1`, `csNick` AS `v2` FROM `user_status` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`UID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `status` != 3 ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 
-		if (date('m') != 1)
+		if ($this->month != 1)
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, '.$this->year, 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_year.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25'));
 
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, '.$this->month_name.' '.$this->year, 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_month.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25'));
@@ -252,7 +244,7 @@ final class HTML_MySQL
 			$this->output .= '<div class="head">Smileys</div>'."\n".$output;
 
 		/**
-		 * Foot
+		 * HTML Foot
 		 */
 		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
 		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
