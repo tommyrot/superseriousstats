@@ -322,19 +322,19 @@ final class HTML_MySQL
 
 			if (isset($settings['getDetails'])) {
 				$details = $this->getDetails($result->$settings['getDetails']);
+				$result->v2 = $details['csNick'];
+				$status = $details['status'];
+			} else
+				$status = 1;
 
-				if ($details['status'] == 3)
-					break;
-				else
-					$result->v2 = $details['csNick'];
+			if ($status != 3) {
+				$i++;
+
+				if ($settings['size'] == 'small')
+					$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2));
+				elseif ($settings['size'] == 'large')
+					$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			}
-
-			$i++;
-
-			if ($settings['size'] == 'small')
-				$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2));
-			elseif ($settings['size'] == 'large')
-				$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 		}
 
 		$output = '';
