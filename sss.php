@@ -37,11 +37,11 @@ if (substr(phpversion(), 0, 3) != '5.3')
 if (!@include('settings.php'))
 	exit('cannot open: '.dirname(__FILE__).'/settings.php'."\n");
 
-if (!(count($argv) == 2 && $argv[1] == '-m') && !(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')) && !(count($argv) == 5 && $argv[1] == '-i' && $argv[3] == '-o'))
-	exit('usage: php '.basename(__FILE__).' {-i <log_file> [-o <html_file>] | -m | -o <html_file>}'."\n");
-
 if ($cfg['database_server'] == 'MySQL' && !extension_loaded('mysqli'))
 	exit('the mysqli extension isn\'t loaded'."\n");
+
+if (!(count($argv) == 2 && $argv[1] == '-m') && !(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')) && !(count($argv) == 5 && $argv[1] == '-i' && $argv[3] == '-o'))
+	exit('usage: php '.basename(__FILE__).' {-i <log_file> [-o <html_file>] | -m | -o <html_file>}'."\n");
 
 define('DB_HOST', $cfg['db_host']);
 define('DB_PORT', $cfg['db_port']);
