@@ -34,11 +34,14 @@ if (substr(phpversion(), 0, 3) != '5.3')
 if (!@include('settings.php'))
 	exit('cannot open: '.dirname(__FILE__).'/settings.php'."\n");
 
-if (!(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')))
-	exit('usage: php '.basename(__FILE__).' {-i <nicks_file> | -o <nicks_file>}'."\n");
-
 if ($cfg['database_server'] != 'MySQL')
 	exit('unsupported database server: '.$cfg['database_server']."\n");
+
+if ($cfg['database_server'] == 'MySQL' && !extension_loaded('mysqli'))
+	exit('the mysqli extension isn\'t loaded'."\n");
+
+if (!(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')))
+	exit('usage: php '.basename(__FILE__).' {-i <nicks_file> | -o <nicks_file>}'."\n");
 
 define('DB_HOST', $cfg['db_host']);
 define('DB_PORT', $cfg['db_port']);
