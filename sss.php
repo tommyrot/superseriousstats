@@ -70,6 +70,18 @@ function input($cfg, $log_file)
 {
 	$logfile = preg_replace('/yesterday$/', date($cfg['date_format'], strtotime('yesterday')), $log_file);
 	$tmp = substr($logfile, strlen($logfile) - 8);
+
+	if (date('Ymd', strtotime($tmp)) == date('Ymd')) {
+		echo 'The logfile you are trying to parse appears to be of today. If logging'."\n"
+		   . 'hasn\'t completed for today it is advisable to skip parsing this file'."\n"
+		   . 'until tomorrow, when it is complete.'."\n"
+		   . 'Skip \''.$log_file.'\'? [yes] ';
+		$yn = trim(fgets(STDIN));
+
+		if (empty($yn) || $yn == 'y' || $yn == 'yes')
+			break;
+	}
+	
 	define('DATE', date('Y-m-d', strtotime($tmp)));
 	define('DAY', strtolower(date('D', strtotime($tmp))));
 	$tmp = 'Parser_'.$cfg['logfile_format'];
