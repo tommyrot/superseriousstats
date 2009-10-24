@@ -79,7 +79,7 @@ function input($cfg, $log_file)
 		$yn = trim(fgets(STDIN));
 
 		if (empty($yn) || $yn == 'y' || $yn == 'yes')
-			break;
+			exit;
 	}
 	
 	define('DATE', date('Y-m-d', strtotime($tmp)));
