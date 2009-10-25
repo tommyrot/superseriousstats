@@ -124,7 +124,7 @@ final class HTML_MySQL
 		$this->output .= $this->makeTable_MostActiveTimes('Most Active Times');
 		$this->makeTable_Activity('days', 'Daily Activity');
 		$this->makeTable_Activity('months', 'Monthly Activity');
-		$this->makeTable_MostActiveDays('Most Active Days');
+		$this->output .= $this->makeTable_MostActiveDays('Most Active Days');
 		$this->makeTable_Activity('years', 'Yearly Activity');
 		$this->makeTable_MostActivePeople('alltime', 30, 'Most Active People, Alltime', array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'));
 
@@ -744,26 +744,24 @@ final class HTML_MySQL
 		$this->output .= $output.'</tr></table>'."\n";
 	}
 
-	//makeTable_mostactivedays from file needs review
 	private function makeTable_MostActiveDays($head)
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines`') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
+		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines`') or exit;
 		$result = mysqli_fetch_object($query);
 		$l_total_high = 0;
 		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
 
 		foreach ($days as $day) {
-			$l_total[$day] = $result->{'l_'.$day.'_night'} + $result->{'l_'.$day.'_morning'} + $result->{'l_'.$day.'_afternoon'} + $result->{'l_'.$day.'_evening'};
+			$l_night[$day] = $result->{'l_'.$day.'_night'};
+			$l_morning[$day] = $result->{'l_'.$day.'_morning'};
+			$l_afternoon[$day] = $result->{'l_'.$day.'_afternoon'};
+			$l_evening[$day] = $result->{'l_'.$day.'_evening'};
+			$l_total[$day] = $l_night[$day] + $l_morning[$day] + $l_afternoon[$day] + $l_evening[$day];
 
 			if ($l_total[$day] > $l_total_high) {
 				$l_total_high = $l_total[$day];
 				$l_total_high_day = $day;
 			}
-
-			$l_night[$day] = $result->{'l_'.$day.'_night'};
-			$l_morning[$day] = $result->{'l_'.$day.'_morning'};
-			$l_afternoon[$day] = $result->{'l_'.$day.'_afternoon'};
-			$l_evening[$day] = $result->{'l_'.$day.'_evening'};
 		}
 
 		$output = '<table class="mad"><tr><th colspan="7">'.$head.'</th></tr><tr class="bars">';
@@ -777,33 +775,15 @@ final class HTML_MySQL
 				else
 					$output .= number_format(($l_total[$day] / $this->l_total) * 100, 1).'%';
 
-				if ($l_evening[$day] != 0) {
-					$l_evening_barHeight = round(($l_evening[$day] / $l_total_high) * 100);
+				$times = array('evening', 'afternoon', 'morning', 'night');
 
-					if ($l_evening_barHeight != 0)
-						$output .= '<img src="r.png" height="'.$l_evening_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
-				}
+				foreach ($times as $time)
+					if (${'l_'.$time}[$day] != 0) {
+						${'l_'.$time.'_height'} = round((${'l_'.$time}[$day] / $l_total_high) * 100);
 
-				if ($l_afternoon[$day] != 0) {
-					$l_afternoon_barHeight = round(($l_afternoon[$day] / $l_total_high) * 100);
-
-					if ($l_afternoon_barHeight != 0)
-						$output .= '<img src="y.png" height="'.$l_afternoon_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
-				}
-
-				if ($l_morning[$day] != 0) {
-					$l_morning_barHeight = round(($l_morning[$day] / $l_total_high) * 100);
-
-					if ($l_morning_barHeight != 0)
-						$output .= '<img src="g.png" height="'.$l_morning_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
-				}
-
-				if ($l_night[$day] != 0) {
-					$l_night_barHeight = round(($l_night[$day] / $l_total_high) * 100);
-
-					if ($l_night_barHeight != 0)
-						$output .= '<img src="b.png" height="'.$l_night_barHeight.'" alt="" title="'.number_format($l_total[$day]).'" />';
-				}
+						if (${'l_'.$time.'_height'} != 0)
+							$output .= '<img src="'.$this->{'bar_'.$time}.'" height="'.${'l_'.$time.'_height'}.'" alt="" title="'.number_format($l_total[$day]).'" />';
+					}
 
 				$output .= '</td>';
 			} else
@@ -818,7 +798,7 @@ final class HTML_MySQL
 			else
 				$output .= '<td>'.ucfirst($day).'</td>';
 
-		$this->output .= $output.'</tr></table>'."\n";
+		return $output.'</tr></table>'."\n";
 	}
 
 	// I'm too stupid to come up with a cool SQL query that does half the below work for me, so here's a less elegant solution.
