@@ -26,10 +26,14 @@
 final class HTML_MySQL
 {
 	// The correct way for changing the variables below is from the startup script.
-	private $channel = '#example';
+	private $channel = '#superseriousstats';
 	private $minLines = 500;
 	private $minRows = 3;
 	private $stylesheet = 'default.css';
+	private $bar_night = 'b.png';
+	private $bar_morning = 'g.png';
+	private $bar_afternoon = 'y.png';
+	private $bar_evening = 'r.png';
 
 	// The following variables shouldn't be tampered with.
 	private $date_first = '';
@@ -43,11 +47,6 @@ final class HTML_MySQL
 	private $mysqli;
 	private $output = '';
 	private $year = '';
-	//
-	private $bar_night = 'b.png';
-	private $bar_morning = 'g.png';
-	private $bar_afternoon = 'y.png';
-	private $bar_evening = 'r.png';
 
 	public function setValue($var, $value)
 	{
@@ -122,7 +121,7 @@ final class HTML_MySQL
 		 * Activity section
 		 */
 		$this->output .= '<div class="head">Activity</div>'."\n";
-		$this->makeTable_MostActiveTimes('Most Active Times');
+		$this->output .= $this->makeTable_MostActiveTimes('Most Active Times');
 		$this->makeTable_Activity('days', 'Daily Activity');
 		$this->makeTable_Activity('months', 'Monthly Activity');
 		$this->makeTable_MostActiveDays('Most Active Days');
@@ -231,7 +230,7 @@ final class HTML_MySQL
 				,'Happy' => array(':)', 's_17')
 				,'Sad' => array(':(', 's_18')
 				,'Cheer' => array('\\o/', 's_19'));
-		
+
 		foreach ($smileys as $k => $v) {
 			$query = @mysqli_query($this->mysqli, 'SELECT SUM(`'.$v[1].'`) AS `total` FROM `query_smileys`') or exit;
 			$result = mysqli_fetch_object($query);
@@ -346,8 +345,6 @@ final class HTML_MySQL
 				$result_total = mysqli_fetch_object($query_total);
 			}
 
-			$output = '';
-
 			if ($settings['size'] == 'small') {
 				$output .= '<table class="small">'
 					.  '<tr><th colspan="3"><span class="left">'.$settings['head'].'</span>'.(empty($result_total->total) ? '' : '<span class="right">'.number_format($result_total->total).' total</span>').'</th></tr>'
@@ -372,10 +369,9 @@ final class HTML_MySQL
 		return $output;
 	}
 
-	//maketable most active times from file needs review
 	private function makeTable_MostActiveTimes($head)
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
+		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or exit;
 		$result = mysqli_fetch_object($query);
 		$l_total_high = 0;
 
@@ -402,16 +398,16 @@ final class HTML_MySQL
 				else
 					$output .= number_format(($l_total[$hour] / $this->l_total) * 100, 1).'%';
 
-				$barHeight = round(($l_total[$hour] / $l_total_high) * 100);
+				$height = round(($l_total[$hour] / $l_total_high) * 100);
 
-				if ($barHeight != 0 && $hour >= 0 && $hour <= 5)
-					$output .= '<img src="b.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($barHeight != 0 && $hour >= 6 && $hour <= 11)
-					$output .= '<img src="g.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($barHeight != 0 && $hour >= 12 && $hour <= 17)
-					$output .= '<img src="y.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($barHeight != 0 && $hour >= 18 && $hour <= 23)
-					$output .= '<img src="r.png" height="'.$barHeight.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				if ($height != 0 && $hour >= 0 && $hour <= 5)
+					$output .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				elseif ($height != 0 && $hour >= 6 && $hour <= 11)
+					$output .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				elseif ($height != 0 && $hour >= 12 && $hour <= 17)
+					$output .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				elseif ($height != 0 && $hour >= 18 && $hour <= 23)
+					$output .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
 
 				$output .= '</td>';
 			} else
@@ -426,7 +422,7 @@ final class HTML_MySQL
 			else
 				$output .= '<td>'.$hour.'h</td>';
 
-		$this->output .= $output.'</tr></table>'."\n";
+		return $output.'</tr></table>'."\n";
 	}
 
 	//maketable most active ppl from file needs review
