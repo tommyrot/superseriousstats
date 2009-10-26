@@ -121,10 +121,10 @@ final class HTML_MySQL
 		 * Activity section
 		 */
 		$this->output .= '<div class="head">Activity</div>'."\n";
-		$this->output .= $this->makeTable_MostActiveTimes('Most Active Times');
+		$this->output .= $this->makeTable_MostActiveTimes(array('head' => 'Most Active Times'));
 		$this->makeTable_Activity('days', 'Daily Activity');
 		$this->makeTable_Activity('months', 'Monthly Activity');
-		$this->output .= $this->makeTable_MostActiveDays('Most Active Days');
+		$this->output .= $this->makeTable_MostActiveDays(array('head' => 'Most Active Days'));
 		$this->makeTable_Activity('years', 'Yearly Activity');
 		$this->makeTable_MostActivePeople('alltime', 30, 'Most Active People, Alltime', array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'));
 
@@ -134,7 +134,7 @@ final class HTML_MySQL
 			$this->makeTable_MostActivePeople('year', 10, 'Most Active People, '.$this->year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->year);
 
 		$this->makeTable_MostActivePeople('month', 10, 'Most Active People, '.$this->month_name.' '.$this->year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->year, $this->month);
-		$this->makeTable_TimeOfDay('Activity, by Time of Day', array('Nightcrawlers<br />0h - 5h', 'Early Birds<br />6h - 11h', 'Afternoon Shift<br />12h - 17h', 'Evening Chatters<br />18h - 23h'));
+		$this->output .= $this->makeTable_TimeOfDay(array('head' => 'Activity, by Time of Day', 'key1' => 'Nightcrawlers', 'key2' => 'Early Birds', 'key3' => 'Afternoon Shift', 'key4' => 'Evening Chatters'));
 
 		/**
 		 * General Chat section
@@ -253,7 +253,7 @@ final class HTML_MySQL
 		return $this->output;
 	}
 
-	private function makeTable_TimeOfDay($head, $keys)
+	private function makeTable_TimeOfDay($settings)
 	{
 		$l_total_high = 0;
 		$times = array('night', 'morning', 'afternoon', 'evening');
@@ -272,25 +272,28 @@ final class HTML_MySQL
 			}
 		}
 
-		$barWidth = (190 / $l_total_high);
-		$output = '<table class="tod"><tr><th colspan="5">'.$head.'</th></tr><tr><td class="pos"></td><td class="k">'.$keys[0].'</td><td class="k">'.$keys[1].'</td><td class="k">'.$keys[2].'</td><td class="k">'.$keys[3].'</td></tr>';
+		$width = (190 / $l_total_high);
+		$output = '<table class="tod"><tr><th colspan="5">'.$settings['head'].'</th></tr><tr><td class="pos"></td><td class="k">'.$settings['key1'].'<br />0h - 5h</td><td class="k">'.$settings['key2'].'<br />6h - 11h</td><td class="k">'.$settings['key3'].'<br />12h - 17h</td><td class="k">'.$settings['key4'].'<br />18h - 23h</td></tr>';
 
 		for ($i = 1; $i <= 10; $i++) {
+			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines']))
+				break;
+
 			$output .= '<tr><td class="pos">'.$i.'</td>';
 
 			foreach ($times as $time)
 				if (isset(${$time}[$i]['lines'])) {
-					if (round(${$time}[$i]['lines'] * $barWidth) == 0)
+					if (round(${$time}[$i]['lines'] * $width) == 0)
 						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'</td>';
 					else
-						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br /><img src="'.$this->{'bar_'.$time}.'" width="'.round(${$time}[$i]['lines'] * $barWidth).'" alt="" /></td>';
+						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br /><img src="'.$this->{'bar_'.$time}.'" width="'.round(${$time}[$i]['lines'] * $width).'" alt="" /></td>';
 				} else
 					$output .= '<td class="v"></td>';
 
 			$output .= '</tr>';
 		}
 
-		$this->output .= $output.'</table>'."\n";
+		return $output.'</table>'."\n";
 	}
 
 	private function getDetails($UID)
@@ -369,7 +372,7 @@ final class HTML_MySQL
 		return $output;
 	}
 
-	private function makeTable_MostActiveTimes($head)
+	private function makeTable_MostActiveTimes($settings)
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or exit;
 		$result = mysqli_fetch_object($query);
@@ -387,7 +390,7 @@ final class HTML_MySQL
 			}
 		}
 
-		$output = '<table class="graph"><tr><th colspan="24">'.$head.'</th></tr><tr class="bars">';
+		$output = '<table class="graph"><tr><th colspan="24">'.$settings['head'].'</th></tr><tr class="bars">';
 
 		for ($hour = 0; $hour < 24; $hour++) {
 			if ($l_total[$hour] != 0) {
@@ -599,7 +602,7 @@ final class HTML_MySQL
 					$minus = $result->total - 1;
 
 				if ($minus < 1)
-					break;
+					break; //return!
 
 				$startDate = date('Y-01-01', mktime(0, 0, 0, date('m'), date('j'), date('Y') - $minus));
 				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' GROUP BY YEAR(`date`) ORDER BY `date` ASC') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
@@ -634,7 +637,8 @@ final class HTML_MySQL
 		}
 
 		$tmp = $cols;
-		$output = '<table class="'.$table_class.'"><tr><th colspan="'.$cols.'">'.$head.'</th></tr><tr class="bars">';
+//////////////table_class	undef var
+	$output = '<table class="'.$table_class.'"><tr><th colspan="'.$cols.'">'.$head.'</th></tr><tr class="bars">';
 
 		for ($i = $minus; $i >= 0; $i--) {
 			if ($tmp == 0)
@@ -744,7 +748,7 @@ final class HTML_MySQL
 		$this->output .= $output.'</tr></table>'."\n";
 	}
 
-	private function makeTable_MostActiveDays($head)
+	private function makeTable_MostActiveDays($settings)
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines`') or exit;
 		$result = mysqli_fetch_object($query);
@@ -764,7 +768,7 @@ final class HTML_MySQL
 			}
 		}
 
-		$output = '<table class="mad"><tr><th colspan="7">'.$head.'</th></tr><tr class="bars">';
+		$output = '<table class="mad"><tr><th colspan="7">'.$settings['head'].'</th></tr><tr class="bars">';
 
 		foreach ($days as $day) {
 			if ($l_total[$day] != 0) {
