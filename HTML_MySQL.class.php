@@ -201,8 +201,7 @@ final class HTML_MySQL
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Nick Changes', 'key1' => 'Nick Changes', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `nickChanges` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `nickChanges` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`nickChanges`) AS `total` FROM `query_events`'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Aliases', 'key1' => 'Aliases', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT COUNT(*) AS `v1`, `csNick` AS `v2` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `status` != 3 GROUP BY `RUID` ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT COUNT(*) AS `total` FROM `user_status`'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Topics', 'key1' => 'Topics', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `topics` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topics` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`topics`) AS `total` FROM `query_events`'));
-
-		//$this->table_topics();
+		$output .= $this->table_topics(array('rows' => 5, 'head' => 'Longest Standing Topics', 'key1' => 'Days', 'key2' => 'User', 'key3' => 'Topic'));
 
 		if (!empty($output))
 			$this->output .= '<div class="head">Events</div>'."\n".$output;
@@ -805,33 +804,67 @@ final class HTML_MySQL
 		return $output.'</tr></table>'."\n";
 	}
 
-	// I'm too stupid to come up with a cool SQL query that does half the below work for me, so here's a less elegant solution.
-	private function table_topics()
+	private function table_topics($settings)
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT `csTopic`, `setDate`, `csNick` FROM `user_topics` JOIN `user_details` ON `user_topics`.`UID` = `user_details`.`UID` ORDER BY `setDate` ASC');
+		$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_topics` ORDER BY `setDate` ASC');
+		$rows = mysqli_num_rows($query);
+		$output = '';
 
-		while ($result = mysqli_fetch_object($query)) {
-			if (isset($lastDate)) {
-				$days = floor((strtotime($result->setDate) - strtotime($lastDate)) / 86400);
-				$topics[] = array($days, $lastUser, $lastTopic);
+		if (!empty($rows)) {
+			$prevTID = 0;
+			$prevDate = $this->date_first;
+			$TIDs = array();
+
+			while ($result = mysqli_fetch_object($query)) {
+				$hours = floor((strtotime($result->setDate) - strtotime($prevDate)) / 3600);
+
+				if ($prevTID != 0)
+					$topics[$prevTID] += $hours;
+
+				if (!in_array($result->TID, $TIDs)) {
+					$TIDs[] = $result->TID;
+					$topics[$result->TID] = 0;
+				}
+
+				$prevTID = $result->TID;
+				$prevDate = $result->setDate;
 			}
 
-			$lastTopic = $result->csTopic;
-			$lastUser = $result->csNick;
-			$lastDate = $result->setDate;
+			arsort($topics);
+			$i = 0;
+
+			foreach ($topics as $TID => $hours) {
+				if ($i >= $settings['rows'])
+					break;
+
+				$i++;
+				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$TID.' ORDER BY `setDate` DESC LIMIT 1') or exit;
+				$result_csTopic = mysqli_fetch_object($query_csTopic);
+				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
+				$result_csNick = mysqli_fetch_object($query_csNick);
+				$content[] = array($i, number_format(floor($hours / 24)), $result_csNick->csNick, $result_csTopic->csTopic);
+			}
+
+			/**
+			* If there are less rows to display than the desired minimum amount of rows we skip this table.
+			*/
+			if ($i >= $this->minRows) {
+				for ($i = count($content); $i < $settings['rows']; $i++)
+					$content[] = array('&nbsp;', '', '', '');
+
+				$output .= '<table class="large">'
+					.  '<tr><th colspan="4"><span class="left">'.$settings['head'].'</span></th></tr>'
+				        .  '<tr><td class="k1">'.$settings['key1'].'</td><td class="pos"></td><td class="k2">'.$settings['key2'].'</td><td class="k3">'.$settings['key3'].'</td></tr>';
+
+				foreach ($content as $row)
+					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+
+				$output .= '</table>'."\n";
+			}
+
 		}
 
-		$days = floor((strtotime('yesterday') - strtotime($lastDate)) / 86400);
-		$topics[] = array($days, $lastUser, $lastTopic);
-		rsort($topics);
-
-		for ($i = 1; $i <= 5; $i++) {
-			$rows[] = array('v1' => $topics[$i-1][0]
-				       ,'v2' => $topics[$i-1][1]
-				       ,'v3' => $topics[$i-1][2]);
-		}
-
-		$this->makeTable2('large', 5, 'Longest Standing Topics', array('', 'Days', 'User', 'Topic'), 0, FALSE, $rows);
+		return $output;
 	}
 }
 
