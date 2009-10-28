@@ -21,6 +21,8 @@
  * HTML_MySQL.class.php
  *
  * Class for building a fancy webpage out of stored channel data.
+ *
+ * SUPER IMPORTANT, SERIOUSLY: data is at least one day old in our database!!
  */
 
 final class HTML_MySQL
@@ -47,6 +49,7 @@ final class HTML_MySQL
 	private $mysqli;
 	private $output = '';
 	private $year = '';
+	private $years = 0;
 
 	public function setValue($var, $value)
 	{
@@ -82,10 +85,15 @@ final class HTML_MySQL
 		$this->days = $result_days->days;
 		$this->date_first = $result_date_first->date;
 		$this->date_last = $result_date_last->date;
+		$this->day = date('j', strtotime('yesterday'));
 		$this->year = date('Y', strtotime('yesterday'));
 		$this->month = date('m', strtotime('yesterday'));
 		$this->month_name = date('F', strtotime('yesterday'));
 		$this->day_of_month = date('d', strtotime('yesterday'));
+
+		/**
+		 * For whatever reason PHP starts counting days from 0.. so we add 1 to fix this absurdity.
+		 */
 		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
 
 		/**
@@ -99,6 +107,8 @@ final class HTML_MySQL
 		$result_max = mysqli_fetch_object($query_max);
 		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit;
 		$result_l_total = mysqli_fetch_object($query_l_total);
+		$this->years = $result_years->years;
+//////yearswidth min 3 cols
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
 			      . '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n"
@@ -106,7 +116,7 @@ final class HTML_MySQL
 			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			      . '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n"
-			      . '<style type="text/css">'."\n".'  table.yearly {width:'.(2 + ($result_years->years * 34)).'px}'."\n".'</style>'."\n"
+			      . '<style type="text/css">'."\n".'  table.yearly {width:'.(2 + ($this->years * 34)).'px}'."\n".'</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
 		              . '<div class="box">'."\n\n"
 			      . '<div class="info">'.$this->channel.', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />'
@@ -122,13 +132,13 @@ final class HTML_MySQL
 		 */
 		$this->output .= '<div class="head">Activity</div>'."\n";
 		$this->output .= $this->makeTable_MostActiveTimes(array('head' => 'Most Active Times'));
-		$this->makeTable_Activity('days', 'Daily Activity');
-		$this->makeTable_Activity('months', 'Monthly Activity');
+		$this->output .= $this->makeTable_Activity(array('type' => 'days', 'head' => 'Daily Activity'));
+		$this->output .= $this->makeTable_Activity(array('type' => 'months', 'head' => 'Monthly Activity'));
 		$this->output .= $this->makeTable_MostActiveDays(array('head' => 'Most Active Days'));
-		$this->makeTable_Activity('years', 'Yearly Activity');
+		$this->output .= $this->makeTable_Activity(array('type' => 'years', 'head' => 'Yearly Activity'));
 		$this->makeTable_MostActivePeople('alltime', 30, 'Most Active People, Alltime', array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'));
-
-		if (date('m') == 1)
+//month = != 1
+		if ($this->month == 1)
 			$this->makeTable_MostActivePeople('year', 10, 'Most Active People, '.($this->year - 1), array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), ($this->year - 1));
 		else
 			$this->makeTable_MostActivePeople('year', 10, 'Most Active People, '.$this->year, array('Percentage', 'Lines', 'User', 'When?', 'Last Seen', 'Quote'), $this->year);
@@ -144,16 +154,10 @@ final class HTML_MySQL
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Fluent Chatters', 'key1' => 'Words/Line', 'key2' => 'User', 'decimals' => 1, 'percentage' => FALSE, 'query' => 'SELECT (`words` / `l_total`) AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Tedious Chatters', 'key1' => 'Chars/Line', 'key2' => 'User', 'decimals' => 1, 'percentage' => FALSE, 'query' => 'SELECT (`characters` / `l_total`) AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, Alltime', 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
-
-		if ($this->month != 1)
-			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
-
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
 		$output	.= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->month_name.' '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `date`, `RUID` ORDER BY `v1` DESC LIMIT 100) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, Alltime', 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`activeDays` / '.$this->days.') * 100 AS `v1`, `csNick` AS `v2` FROM `user_status` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`UID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `status` != 3 ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
-
-		if ($this->month != 1)
-			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, '.$this->year, 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_year.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25'));
-
+		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, '.$this->year, 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_year.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, '.$this->month_name.' '.$this->year, 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_month.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25'));
 		$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most Exclamations', 'key1' => 'Percentage', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`exclamations` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_exclamations` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `exclamations` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 		$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most Questions', 'key1' => 'Percentage', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`questions` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_questions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `questions` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
@@ -201,7 +205,7 @@ final class HTML_MySQL
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Nick Changes', 'key1' => 'Nick Changes', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `nickChanges` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `nickChanges` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`nickChanges`) AS `total` FROM `query_events`'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Aliases', 'key1' => 'Aliases', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT COUNT(*) AS `v1`, `csNick` AS `v2` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `status` != 3 GROUP BY `RUID` ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT COUNT(*) AS `total` FROM `user_status`'));
 		$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Topics', 'key1' => 'Topics', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `topics` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topics` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`topics`) AS `total` FROM `query_events`'));
-		$output .= $this->table_topics(array('rows' => 5, 'head' => 'Longest Standing Topics', 'key1' => 'Days', 'key2' => 'User', 'key3' => 'Topic'));
+		$output .= $this->makeTable_Topics(array('rows' => 5, 'head' => 'Longest Standing Topics', 'key1' => 'Days', 'key2' => 'User', 'key3' => 'Topic'));
 
 		if (!empty($output))
 			$this->output .= '<div class="head">Events</div>'."\n".$output;
@@ -566,46 +570,23 @@ final class HTML_MySQL
 		$this->output .= $output.'</table>'."\n";
 	}
 
-	//makeTable_Activity from file needs review
-	private function makeTable_Activity($type, $head)
+	private function makeTable_Activity($settings)
 	{
-		// Remember that log data is _always_ one day old!
-		switch ($type) {
+		switch ($settings['type']) {
 			case 'days':
-				$cols = 24;
-				$minus = 24;
-				$startDate = date('Y-m-d', mktime(0, 0, 0, date('m'), date('j') - $minus, date('Y')));
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' ORDER BY `date` ASC') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
 				$table_class = 'graph';
+				$cols = 24;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` ORDER BY `date` DESC LIMIT 24') or exit;
 				break;
 			case 'months':
-				$cols = 24;
-
-				if (date('j') == 1)
-					$minus = 24;
-				else
-					$minus = 23;
-
-				$startDate = date('Y-m-01', mktime(0, 0, 0, date('m') - $minus, date('j'), date('Y')));
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' GROUP BY YEAR(`date`), MONTH(`date`) ORDER BY `date` ASC') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
 				$table_class = 'graph';
+				$cols = 24;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` GROUP BY YEAR(`date`), MONTH(`date`) ORDER BY `date` DESC LIMIT 24') or exit;
 				break;
 			case 'years':
-				$query = @mysqli_query($this->mysqli, 'SELECT COUNT(DISTINCT YEAR(`date`)) AS `total` FROM `channel`');
-				$result = mysqli_fetch_object($query);
-				$cols = $result->total;
-
-				if (date('jn') == 11)
-					$minus = $result->total;
-				else
-					$minus = $result->total - 1;
-
-				if ($minus < 1)
-					break; //return!
-
-				$startDate = date('Y-01-01', mktime(0, 0, 0, date('m'), date('j'), date('Y') - $minus));
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE `date` >= \''.$startDate.'\' GROUP BY YEAR(`date`) ORDER BY `date` ASC') or exit('MySQL: '.mysqli_error($this->mysqli)."\n");
 				$table_class = 'yearly';
+				$cols = $this->years;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` GROUP BY YEAR(`date`) ORDER BY `date` DESC') or exit;
 				break;
 		}
 
@@ -614,50 +595,49 @@ final class HTML_MySQL
 		$l_total_high_date = '';
 
 		while ($result = mysqli_fetch_object($query)) {
-			$year = date('Y', strtotime($result->date));
-
-			if ($type == 'years')
-				$month = 1;
-			else
-				$month = date('n', strtotime($result->date));
-
-			if ($type == 'months' || $type == 'years')
-				$day = 1;
-			else
-				$day = date('j', strtotime($result->date));
+			switch ($settings['type']) {
+				case 'days':
+					$year = date('Y', strtotime($result->date));
+					$month = date('n', strtotime($result->date));
+					$day = date('j', strtotime($result->date));
+					break;
+				case 'months':
+					$year = date('Y', strtotime($result->date));
+					$month = date('n', strtotime($result->date));
+					$day = 1;
+					break;
+				case 'years':
+					$year = date('Y', strtotime($result->date));
+					$month = 1;
+					$day = 1;
+					break;
+			}
 
 			foreach ($sums as $sum)
 				$activity[$year][$month][$day][$sum] = $result->$sum;
 
 			if ($result->l_total > $l_total_high) {
 				$l_total_high = $result->l_total;
-				$l_total_high_date = $result->date;
+				$l_total_high_date = date('Y-m-d', mktime(0, 0, 0, $month, $day, $year));
 			}
 		}
 
-		$tmp = $cols;
-//////////////table_class	undef var
-	$output = '<table class="'.$table_class.'"><tr><th colspan="'.$cols.'">'.$head.'</th></tr><tr class="bars">';
+		$output = '<table class="'.$table_class.'"><tr><th colspan="'.$cols.'">'.$settings['head'].'</th></tr><tr class="bars">';
 
-		for ($i = $minus; $i >= 0; $i--) {
-			if ($tmp == 0)
-				break;
-
-			$tmp--;
-
-			switch ($type) {
+		for ($i = $cols - 1; $i >= 0; $i--) {
+			switch ($settings['type']) {
 				case 'days':
-					$year = date('Y', mktime(0, 0, 0, date('m'), date('j') - $i, date('Y')));
-					$month = date('n', mktime(0, 0, 0, date('m'), date('j') - $i, date('Y')));
-					$day = date('j', mktime(0, 0, 0, date('m'), date('j') - $i, date('Y')));
+					$year = date('Y', mktime(0, 0, 0, $this->month, $this->day - $i, $this->year));
+					$month = date('n', mktime(0, 0, 0, $this->month, $this->day - $i, $this->year));
+					$day = date('j', mktime(0, 0, 0, $this->month, $this->day - $i, $this->year));
 					break;
 				case 'months':
-					$year = date('Y', mktime(0, 0, 0, date('m') - $i, date('j'), date('Y')));
-					$month = date('n', mktime(0, 0, 0, date('m') - $i, date('j'), date('Y')));
+					$year = date('Y', mktime(0, 0, 0, $this->month - $i, $this->day, $this->year));
+					$month = date('n', mktime(0, 0, 0, $this->month - $i, $this->day, $this->year));
 					$day = 1;
 					break;
 				case 'years':
-					$year = date('Y', mktime(0, 0, 0, date('m'), date('j'), date('Y') - $i));
+					$year = date('Y', mktime(0, 0, 0, $this->month, $this->day, $this->year - $i));
 					$month = 1;
 					$day = 1;
 					break;
@@ -672,31 +652,31 @@ final class HTML_MySQL
 					$output .= $activity[$year][$month][$day]['l_total'];
 
 				if ($activity[$year][$month][$day]['l_evening'] != 0) {
-					$l_evening_barHeight = round(($activity[$year][$month][$day]['l_evening'] / $l_total_high) * 100);
+					$l_evening_height = round(($activity[$year][$month][$day]['l_evening'] / $l_total_high) * 100);
 
-					if ($l_evening_barHeight != 0)
-						$output .= '<img src="r.png" height="'.$l_evening_barHeight.'" alt="" title="" />';
+					if ($l_evening_height != 0)
+						$output .= '<img src="'.$this->bar_evening.'" height="'.$l_evening_height.'" alt="" title="" />';
 				}
 
 				if ($activity[$year][$month][$day]['l_afternoon'] != 0) {
-					$l_afternoon_barHeight = round(($activity[$year][$month][$day]['l_afternoon'] / $l_total_high) * 100);
+					$l_afternoon_height = round(($activity[$year][$month][$day]['l_afternoon'] / $l_total_high) * 100);
 
-					if ($l_afternoon_barHeight != 0)
-						$output .= '<img src="y.png" height="'.$l_afternoon_barHeight.'" alt="" title="" />';
+					if ($l_afternoon_height != 0)
+						$output .= '<img src="'.$this->bar_afternoon.'" height="'.$l_afternoon_height.'" alt="" title="" />';
 				}
 
 				if ($activity[$year][$month][$day]['l_morning'] != 0) {
-					$l_morning_barHeight = round(($activity[$year][$month][$day]['l_morning'] / $l_total_high) * 100);
+					$l_morning_height = round(($activity[$year][$month][$day]['l_morning'] / $l_total_high) * 100);
 
-					if ($l_morning_barHeight != 0)
-						$output .= '<img src="g.png" height="'.$l_morning_barHeight.'" alt="" title="" />';
+					if ($l_morning_height != 0)
+						$output .= '<img src="'.$this->bar_morning.'" height="'.$l_morning_height.'" alt="" title="" />';
 				}
 
 				if ($activity[$year][$month][$day]['l_night'] != 0) {
-					$l_night_barHeight = round(($activity[$year][$month][$day]['l_night'] / $l_total_high) * 100);
+					$l_night_height = round(($activity[$year][$month][$day]['l_night'] / $l_total_high) * 100);
 
-					if ($l_night_barHeight != 0)
-						$output .= '<img src="b.png" height="'.$l_night_barHeight.'" alt="" title="" />';
+					if ($l_night_height != 0)
+						$output .= '<img src="'.$this->bar_night.'" height="'.$l_night_height.'" alt="" title="" />';
 				}
 
 				$output .= '</td>';
@@ -704,18 +684,12 @@ final class HTML_MySQL
 				$output .= '<td><span class="grey">n/a</span></td>';
 		}
 
-		$tmp = $cols;
 		$output .= '</tr><tr class="sub">';
 
-		for ($i = $minus; $i >= 0; $i--) {
-			if ($tmp == 0)
-				break;
-
-			$tmp--;
-
-			switch ($type) {
+		for ($i = $cols - 1; $i >= 0; $i--)
+			switch ($settings['type']) {
 				case 'days':
-					$date = date('Y-m-d', mktime(0, 0, 0, date('m'), date('j') - $i, date('Y')));
+					$date = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day - $i, $this->year));
 
 					if ($l_total_high_date == $date)
 						$output .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
@@ -724,7 +698,7 @@ final class HTML_MySQL
 
 					break;
 				case 'months':
-					$date = date('Y-m-01', mktime(0, 0, 0, date('m') - $i, date('j'), date('Y')));
+					$date = date('Y-m-01', mktime(0, 0, 0, $this->month - $i, $this->day, $this->year));
 
 					if ($l_total_high_date == $date)
 						$output .= '<td class="bold">'.date('M', strtotime($date)).'<br />'.date('\'y', strtotime($date)).'</td>';
@@ -733,7 +707,7 @@ final class HTML_MySQL
 
 					break;
 				case 'years':
-					$date = date('Y-01-01', mktime(0, 0, 0, date('m'), date('j'), date('Y') - $i));
+					$date = date('Y-01-01', mktime(0, 0, 0, $this->month, $this->day, $this->year - $i));
 
 					if ($l_total_high_date == $date)
 						$output .= '<td class="bold">'.date('\'y', strtotime($date)).'</td>';
@@ -742,9 +716,8 @@ final class HTML_MySQL
 
 					break;
 			}
-		}
 
-		$this->output .= $output.'</tr></table>'."\n";
+		return $output.'</tr></table>'."\n";
 	}
 
 	private function makeTable_MostActiveDays($settings)
@@ -804,7 +777,7 @@ final class HTML_MySQL
 		return $output.'</tr></table>'."\n";
 	}
 
-	private function table_topics($settings)
+	private function makeTable_Topics($settings)
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_topics` ORDER BY `setDate` ASC');
 		$rows = mysqli_num_rows($query);
