@@ -107,8 +107,7 @@ final class HTML_MySQL
 		$result_max = mysqli_fetch_object($query_max);
 		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit;
 		$result_l_total = mysqli_fetch_object($query_l_total);
-		$this->years = $result_years->years;
-//////yearswidth min 3 cols
+		$this->years = ($result_years->years < 3 ? 3 : $result_years->years);
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
 			      . '<head>'."\n".'<title>'.$this->channel.', seriously.</title>'."\n"
