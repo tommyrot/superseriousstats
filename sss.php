@@ -124,6 +124,9 @@ function output($cfg, $html_file)
 		exit('cannot open: '.$html_file."\n");
 }
 
+/**
+ * Simple checks suffice below because we already validated user input by regexp at the beginning of the script.
+ */
 if (count($argv) == 2)
 	doMaintenance($cfg);
 elseif (count($argv) == 3) {
