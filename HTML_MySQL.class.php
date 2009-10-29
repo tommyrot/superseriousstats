@@ -427,7 +427,7 @@ final class HTML_MySQL
 	{
 		switch ($settings['type']) {
 			case 'alltime':
-				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `csNick`, `quote`, `lastSeen`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` != 0 ORDER BY `l_total` DESC, `csNick` DESC LIMIT '.$settings['rows']) or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `csNick`, `quote`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` != 0 ORDER BY `l_total` DESC, `csNick` DESC LIMIT '.$settings['rows']) or exit;
 				$l_total = $this->l_total;
 				$skipDetails = TRUE;
 				break;
@@ -459,17 +459,15 @@ final class HTML_MySQL
 			if ($skipDetails) {
 				$csNick = $result->csNick;
 				$quote = $result->quote;
-				$lastSeen = $result->lastSeen;
 			} else {
 				$query_details = @mysqli_query($this->mysqli, 'SELECT `csNick`, `quote` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` WHERE `query_lines`.`UID` = '.$result->RUID) or exit;
-				$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$result->RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or exit;
 				$result_details = mysqli_fetch_object($query_details);
-				$result_lastSeen = mysqli_fetch_object($query_lastSeen);
 				$csNick = $result_details->csNick;
 				$quote = $result_details->quote;
-				$lastSeen = $result_lastSeen->lastSeen;
 			}
 
+			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$result->RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or exit;
+			$result_lastSeen = mysqli_fetch_object($query_lastSeen);
 			$l_total_percentage = number_format(($result->l_total / $l_total) * 100, 2);
 
 			/**
@@ -508,7 +506,7 @@ final class HTML_MySQL
 				$hover = '';
 			// fixfixfixfixfix end
 
-			$lastSeen = substr($lastSeen, 0, 10);
+			$lastSeen = substr($result_lastSeen->lastSeen, 0, 10);
 			$lastSeen = round((strtotime('today') - strtotime($lastSeen)) / 86400);
 
 			if (($lastSeen / 365) >= 1) {
