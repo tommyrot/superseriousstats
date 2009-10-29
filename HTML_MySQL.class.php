@@ -320,9 +320,9 @@ final class HTML_MySQL
 				$i++;
 
 				if ($settings['size'] == 'small')
-					$content[] = array($i, $result->v1, $result->v2);
+					$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2));
 				elseif ($settings['size'] == 'large')
-					$content[] = array($i, $result->v1, $result->v2, $result->v3);
+					$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			}
 		}
 
@@ -334,9 +334,9 @@ final class HTML_MySQL
 		if ($i >= $this->minRows) {
 			for ($i = count($content); $i < $settings['rows']; $i++)
 				if ($settings['size'] == 'small')
-					$content[] = array('&nbsp;', '', '');
+					$content[] = array('&nbsp;', 0, '');
 				elseif ($settings['size'] == 'large')
-					$content[] = array('&nbsp;', '', '', '');
+					$content[] = array('&nbsp;', 0, '', '');
 
 			if (isset($settings['query_total'])) {
 				$query_total = @mysqli_query($this->mysqli, $settings['query_total']) or exit;
@@ -349,7 +349,7 @@ final class HTML_MySQL
 					.  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td></tr>';
 
 				foreach ($content as $row)
-					$output .= '<tr><td class="v1">'.number_format($row[1], $settings['decimals']).($settings['percentage'] ? '%' : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.htmlspecialchars($row[2]).'</td></tr>';
+					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
 
 				$output .= '</table>'."\n";
 			} elseif ($settings['size'] == 'large') {
@@ -358,7 +358,7 @@ final class HTML_MySQL
 				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
 				foreach ($content as $row)
-					$output .= '<tr><td class="v1">'.number_format($row[1], $settings['decimals']).($settings['percentage'] ? '%' : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.htmlspecialchars($row[2]).'</td><td class="v3">'.htmlspecialchars($row[3]).'</td></tr>';
+					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 
 				$output .= '</table>'."\n";
 			}
@@ -811,7 +811,7 @@ final class HTML_MySQL
 				$result_csTopic = mysqli_fetch_object($query_csTopic);
 				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
 				$result_csNick = mysqli_fetch_object($query_csNick);
-				$content[] = array($i, $hours, $result_csNick->csNick, $result_csTopic->csTopic);
+				$content[] = array($i, number_format(floor($hours / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
 			}
 
 			/**
@@ -826,7 +826,7 @@ final class HTML_MySQL
 				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
 				foreach ($content as $row)
-					$output .= '<tr><td class="v1">'.number_format(floor($row[1] / 24)).'</td><td class="pos">'.$row[0].'</td><td class="v2">'.htmlspecialchars($row[2]).'</td><td class="v3">'.htmlspecialchars($row[3]).'</td></tr>';
+					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 
 				$output .= '</table>'."\n";
 			}
