@@ -99,13 +99,15 @@ final class HTML_MySQL
 		/**
 		 * HTML Head
 		 */
-		$query_years = @mysqli_query($this->mysqli, 'SELECT COUNT(DISTINCT YEAR(`date`)) AS `years` FROM `channel`') or exit;
-		$result_years = mysqli_fetch_object($query_years);
 		$query_avg = @mysqli_query($this->mysqli, 'SELECT AVG(`l_total`) AS `avg` FROM `channel` LIMIT 1') or exit;
 		$result_avg = mysqli_fetch_object($query_avg);
 		$query_max = @mysqli_query($this->mysqli, 'SELECT `l_total` AS `max`, `date` FROM `channel` ORDER BY `l_total` DESC LIMIT 1') or exit;
 		$result_max = mysqli_fetch_object($query_max);
-		$this->years = ($result_years->years < 3 ? 3 : $result_years->years);
+		$this->years = $this->year - date('Y', strtotime($this->date_first)) + 1;
+
+		if ($this->years < 3)
+			$this->years = 3;
+
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
 			      . '<head>'."\n".'<title>'.htmlspecialchars($this->channel).', seriously.</title>'."\n"
@@ -116,7 +118,7 @@ final class HTML_MySQL
 			      . '<style type="text/css">'."\n".'  table.yearly {width:'.(2 + ($this->years * 34)).'px}'."\n".'</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
 		              . '<div class="box">'."\n\n"
-			      . '<div class="info">'.htmlspecialchars($this->channel).', seriously.<br /><br />'.number_format($this->days).' days logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)).'.<br />'
+			      . '<div class="info">'.htmlspecialchars($this->channel).', seriously.<br /><br />'.number_format($this->days).' day'.($this->days > 1 ? 's logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)) : ' logged on '.date('M j, Y', strtotime($this->date_first))).'.<br />'
 			      . '<br />Logs contain '.number_format($this->l_total).' lines, an average of '.number_format($result_avg->avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
 
 		/**
@@ -334,9 +336,9 @@ final class HTML_MySQL
 		if ($i >= $this->minRows) {
 			for ($i = count($content); $i < $settings['rows']; $i++)
 				if ($settings['size'] == 'small')
-					$content[] = array('&nbsp;', 0, '');
+					$content[] = array('&nbsp;', '', '');
 				elseif ($settings['size'] == 'large')
-					$content[] = array('&nbsp;', 0, '', '');
+					$content[] = array('&nbsp;', '', '', '');
 
 			if (isset($settings['query_total'])) {
 				$query_total = @mysqli_query($this->mysqli, $settings['query_total']) or exit;
@@ -572,12 +574,12 @@ final class HTML_MySQL
 			case 'days':
 				$table_class = 'graph';
 				$cols = 24;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` ORDER BY `date` DESC LIMIT 24') or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day - 24, $this->year)).'\'') or exit;
 				break;
 			case 'months':
 				$table_class = 'graph';
 				$cols = 24;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` GROUP BY YEAR(`date`), MONTH(`date`) ORDER BY `date` DESC LIMIT 24') or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month - 24, $this->day, $this->year)).'\' GROUP BY YEAR(`date`), MONTH(`date`)') or exit;
 				break;
 			case 'years':
 				$table_class = 'yearly';
@@ -617,6 +619,9 @@ final class HTML_MySQL
 				$l_total_high_date = date('Y-m-d', mktime(0, 0, 0, $month, $day, $year));
 			}
 		}
+
+		if ($l_total_high == 0)
+			return;
 
 		$output = '<table class="'.$table_class.'"><tr><th colspan="'.$cols.'">'.htmlspecialchars($settings['head']).'</th></tr><tr class="bars">';
 
