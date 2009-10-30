@@ -573,7 +573,7 @@ final class HTML_MySQL
 				if (!empty(${'when_'.$time}))
 					$when_output .= ${'when_'.$time};
 
-			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$RUID.'>'.htmlspecialchars($csNick).'</a>' : htmlspecialchars($csNick)).'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($quote).$hover.'</td></tr>';
+			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$RUID.'">'.htmlspecialchars($csNick).'</a>' : htmlspecialchars($csNick)).'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($quote).$hover.'</td></tr>';
 		}
 
 		return $output.'</table>'."\n";
