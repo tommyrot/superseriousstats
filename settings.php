@@ -99,4 +99,13 @@ $cfg['doMaintenance'] = TRUE;
  */
 $cfg['sanitisationDay'] = 'mon';
 
+/**
+ * Include links to userstats on the main HTML page. Your webserver needs to
+ * be able to server PHP content and the user.php file must be in the same
+ * directory as the HTML output.
+ *
+ * Options: TRUE, FALSE
+ */
+$cfg['userstats'] = FALSE;
+
 ?>

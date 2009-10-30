@@ -110,6 +110,7 @@ function output($cfg, $html_file)
 	$tmp = 'HTML_'.$cfg['database_server'];
 	$sss_output = new $tmp();
 	$sss_output->setValue('channel', $cfg['channel']);
+	$sss_output->setValue('userstats', $cfg['userstats']);
 
 	/**
 	 * Place your own $sss_output->setValue lines here
