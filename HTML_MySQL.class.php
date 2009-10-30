@@ -27,17 +27,22 @@
 
 final class HTML_MySQL
 {
-	// The correct way for changing the variables below is from the startup script.
+	/**
+	 * The correct way for changing the variables below is from the startup script.
+	 */
 	private $channel = '#superseriousstats';
 	private $minLines = 500;
 	private $minRows = 3;
+	private $userstats = FALSE;
 	private $stylesheet = 'default.css';
 	private $bar_night = 'b.png';
 	private $bar_morning = 'g.png';
 	private $bar_afternoon = 'y.png';
 	private $bar_evening = 'r.png';
 
-	// The following variables shouldn't be tampered with.
+	/**
+	 * The following variables shouldn't be tampered with.
+	 */
 	private $date_first = '';
 	private $date_last = '';
 	private $day_of_month = '';
@@ -60,10 +65,15 @@ final class HTML_MySQL
 	{
 		$this->mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit;
 		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit;
+		$rows = mysqli_num_rows($query_l_total);
+
+		if (empty($rows))
+			exit('The database for '.$channel.' is empty.'."\n");
+
 		$result_l_total = mysqli_fetch_object($query_l_total);
 		$this->l_total = $result_l_total->l_total;
 
-		if (empty($this->l_total))
+		if ($this->l_total == 0)
 			exit('The database for '.$channel.' is empty.'."\n");
 
 		/**
@@ -99,7 +109,7 @@ final class HTML_MySQL
 		/**
 		 * HTML Head
 		 */
-		$query_avg = @mysqli_query($this->mysqli, 'SELECT AVG(`l_total`) AS `avg` FROM `channel` LIMIT 1') or exit;
+		$query_avg = @mysqli_query($this->mysqli, 'SELECT AVG(`l_total`) AS `avg` FROM `channel`') or exit;
 		$result_avg = mysqli_fetch_object($query_avg);
 		$query_max = @mysqli_query($this->mysqli, 'SELECT `l_total` AS `max`, `date` FROM `channel` ORDER BY `l_total` DESC LIMIT 1') or exit;
 		$result_max = mysqli_fetch_object($query_max);
@@ -457,19 +467,18 @@ final class HTML_MySQL
 
 		while ($result = mysqli_fetch_object($query)) {
 			$i++;
+			$RUID = $result->RUID;
 
 			if ($skipDetails) {
 				$csNick = $result->csNick;
 				$quote = $result->quote;
 			} else {
-				$query_details = @mysqli_query($this->mysqli, 'SELECT `csNick`, `quote` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` WHERE `query_lines`.`UID` = '.$result->RUID) or exit;
+				$query_details = @mysqli_query($this->mysqli, 'SELECT `csNick`, `quote` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` WHERE `query_lines`.`UID` = '.$RUID) or exit;
 				$result_details = mysqli_fetch_object($query_details);
 				$csNick = $result_details->csNick;
 				$quote = $result_details->quote;
 			}
 
-			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$result->RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or exit;
-			$result_lastSeen = mysqli_fetch_object($query_lastSeen);
 			$l_total_percentage = number_format(($result->l_total / $l_total) * 100, 2);
 
 			/**
@@ -508,6 +517,8 @@ final class HTML_MySQL
 				$hover = '';
 			// fixfixfixfixfix end
 
+			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or exit;
+			$result_lastSeen = mysqli_fetch_object($query_lastSeen);
 			$lastSeen = substr($result_lastSeen->lastSeen, 0, 10);
 			$lastSeen = round((strtotime('today') - strtotime($lastSeen)) / 86400);
 
@@ -562,7 +573,7 @@ final class HTML_MySQL
 				if (!empty(${'when_'.$time}))
 					$when_output .= ${'when_'.$time};
 
-			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.htmlspecialchars($csNick).'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($quote).$hover.'</td></tr>';
+			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$RUID.'>'.htmlspecialchars($csNick).'</a>' : htmlspecialchars($csNick)).'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($quote).$hover.'</td></tr>';
 		}
 
 		return $output.'</table>'."\n";
@@ -579,12 +590,12 @@ final class HTML_MySQL
 			case 'months':
 				$table_class = 'graph';
 				$cols = 24;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month - 24, $this->day, $this->year)).'\' GROUP BY YEAR(`date`), MONTH(`date`)') or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE DATE_FORMAT(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' GROUP BY YEAR(`date`), MONTH(`date`)') or exit;
 				break;
 			case 'years':
 				$table_class = 'yearly';
 				$cols = $this->years;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` GROUP BY YEAR(`date`) ORDER BY `date` DESC') or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` GROUP BY YEAR(`date`)') or exit;
 				break;
 		}
 
@@ -633,12 +644,12 @@ final class HTML_MySQL
 					$day = date('j', mktime(0, 0, 0, $this->month, $this->day - $i, $this->year));
 					break;
 				case 'months':
-					$year = date('Y', mktime(0, 0, 0, $this->month - $i, $this->day, $this->year));
-					$month = date('n', mktime(0, 0, 0, $this->month - $i, $this->day, $this->year));
+					$year = date('Y', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
+					$month = date('n', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
 					$day = 1;
 					break;
 				case 'years':
-					$year = date('Y', mktime(0, 0, 0, $this->month, $this->day, $this->year - $i));
+					$year = date('Y', mktime(0, 0, 0, 1, 1, $this->year - $i));
 					$month = 1;
 					$day = 1;
 					break;
@@ -699,7 +710,7 @@ final class HTML_MySQL
 
 					break;
 				case 'months':
-					$date = date('Y-m-01', mktime(0, 0, 0, $this->month - $i, $this->day, $this->year));
+					$date = date('Y-m-d', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
 
 					if ($l_total_high_date == $date)
 						$output .= '<td class="bold">'.date('M', strtotime($date)).'<br />'.date('\'y', strtotime($date)).'</td>';
@@ -708,7 +719,7 @@ final class HTML_MySQL
 
 					break;
 				case 'years':
-					$date = date('Y-01-01', mktime(0, 0, 0, $this->month, $this->day, $this->year - $i));
+					$date = date('Y-m-d', mktime(0, 0, 0, 1, 1, $this->year - $i));
 
 					if ($l_total_high_date == $date)
 						$output .= '<td class="bold">'.date('\'y', strtotime($date)).'</td>';
