@@ -414,7 +414,7 @@ final class User
 	}
 }
 
-if (preg_match('/[1-9][0-9]{0,5}/', $_GET['uid'])) {
+if (preg_match('/^[1-9][0-9]{0,5}$/', $_GET['uid'])) {
 	$user = new User($_GET['uid']);
 	echo $user->makeHTML();
 } else
