@@ -191,16 +191,20 @@ final class Maintenance_MySQL
 		if (!empty($rows))
 			while ($result_valid_RUIDs = mysqli_fetch_object($query_valid_RUIDs)) {
 				$query_aliases = @mysqli_query($this->mysqli, 'SELECT `user_status`.`UID` FROM `user_status` JOIN `user_lines` ON `user_status`.`UID` = `user_lines`.`UID` WHERE `RUID` = '.$result_valid_RUIDs->RUID.' ORDER BY `l_total` DESC, `user_status`.`UID` ASC LIMIT 1') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-				$result_aliases = mysqli_fetch_object($query_aliases);
+				$rows = mysqli_num_rows($query_aliases);
+				
+				if (!empty($rows)) {
+					$result_aliases = mysqli_fetch_object($query_aliases);
 
-				if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
-					/**
-					 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old RUID has.
-					 * Update all aliases linked to the old RUID and make them point to the new registered nick, including the old RUID.
-					 */
-					@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-					@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-					$this->output('debug', 'registerMostActiveAlias(): UID '.$result_aliases->UID.' set to new registered');
+					if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
+						/**
+						 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old RUID has.
+						 * Update all aliases linked to the old RUID and make them point to the new registered nick, including the old RUID.
+						 */
+						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+						$this->output('debug', 'registerMostActiveAlias(): UID '.$result_aliases->UID.' set to new registered');
+					}
 				}
 			}
 	}
