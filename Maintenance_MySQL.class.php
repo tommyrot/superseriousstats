@@ -102,7 +102,7 @@ final class Maintenance_MySQL
 	 *
 	 * The possible statusses for nicks are:
 	 * 0. Unlinked
-	 * 1. Nomal user (registered)
+	 * 1. Normal user (registered)
 	 * 2. Alias
 	 * 3. Bot (registered)
 	 *
