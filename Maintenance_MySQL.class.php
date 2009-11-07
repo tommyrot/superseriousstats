@@ -124,7 +124,7 @@ final class Maintenance_MySQL
 			}
 
 		/**
-		 * Nicks with UID != RUID can only have status = 2. Set back to 0 if status != 2 and set RUID = UID.
+		 * Nicks with UID != RUID can only have status = 2. Set back to 0 if status != 2 and set UID = RUID accordingly.
 		 */
 		$query = @mysqli_query($this->mysqli, 'SELECT `UID` FROM `user_status` WHERE `UID` != `RUID` AND `status` != 2 ORDER BY `UID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 		$rows = mysqli_num_rows($query);
@@ -136,7 +136,7 @@ final class Maintenance_MySQL
 			}
 
 		/**
-		 * Every alias must have a RUID which has UID = RUID and status = 1 or 3. Unlink aliases pointing to invalid RUIDs.
+		 * Every alias must have their RUID set to the UID of a registered nick. Which in turn has UID = RUID and status = 1 or 3. Unlink aliases pointing to invalid RUIDs.
 		 */
 		$query_valid_RUIDs = @mysqli_query($this->mysqli, 'SELECT `RUID` FROM `user_status` WHERE `UID` = `RUID` AND (`status` = 1 OR `status` = 3) ORDER BY `RUID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 		$rows = mysqli_num_rows($query_valid_RUIDs);
@@ -192,14 +192,14 @@ final class Maintenance_MySQL
 			while ($result_valid_RUIDs = mysqli_fetch_object($query_valid_RUIDs)) {
 				$query_aliases = @mysqli_query($this->mysqli, 'SELECT `user_status`.`UID` FROM `user_status` JOIN `user_lines` ON `user_status`.`UID` = `user_lines`.`UID` WHERE `RUID` = '.$result_valid_RUIDs->RUID.' ORDER BY `l_total` DESC, `user_status`.`UID` ASC LIMIT 1') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 				$rows = mysqli_num_rows($query_aliases);
-				
+
 				if (!empty($rows)) {
 					$result_aliases = mysqli_fetch_object($query_aliases);
 
 					if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
 						/**
-						 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old RUID has.
-						 * Update all aliases linked to the old RUID and make them point to the new registered nick, including the old RUID.
+						 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old registered nick had.
+						 * Update all nicks linked to the old registered nick and make their RUID point to the new one.
 						 */
 						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
@@ -210,7 +210,7 @@ final class Maintenance_MySQL
 	}
 
 	/**
-	 * Query tables are generated daily and contain accumulated stats per nick.
+	 * Query tables are generated daily and contain accumulated stats per RUID.
 	 */
 	private function makeQuerytables()
 	{
@@ -227,7 +227,7 @@ final class Maintenance_MySQL
 
 			while ($result_RUIDs = mysqli_fetch_object($query_RUIDs)) {
 				/**
-				 * Check if the specific registered nick has any event data linked to it.
+				 * Check if the RUID has any event data linked to it.
 				 */
 				$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_events` JOIN `user_status` ON `user_events`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$result_RUIDs->RUID.' LIMIT 1') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 				$rows = mysqli_num_rows($query);
@@ -250,7 +250,7 @@ final class Maintenance_MySQL
 				}
 
 				/**
-				 * Check if the specific registered nick has any line data linked to it.
+				 * Check if the RUID has any line data linked to it.
 				 */
 				$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_lines` JOIN `user_status` ON `user_lines`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$result_RUIDs->RUID.' LIMIT 1') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 				$rows = mysqli_num_rows($query);
@@ -285,7 +285,7 @@ final class Maintenance_MySQL
 				}
 
 				/**
-				 * Check if the specific registered nick has any smiley data linked to it.
+				 * Check if the RUID has any smiley data linked to it.
 				 */
 				$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_smileys` JOIN `user_status` ON `user_smileys`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$result_RUIDs->RUID.' LIMIT 1') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 				$rows = mysqli_num_rows($query);
