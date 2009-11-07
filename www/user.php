@@ -43,6 +43,12 @@ final class User
 	private $bar_evening = 'r.png';
 
 	/**
+	 * Debug
+	 */
+
+	private $debug = FALSE;
+
+	/**
 	 * The following variables shouldn't be tampered with.
 	 */
 	private $UID = 0;
@@ -64,10 +70,16 @@ final class User
 		date_default_timezone_set($this->timezone);
 	}
 
+	private function fail($msg)
+	{
+		if ($this->debug)
+			exit($msg."\n");
+	}
+
 	public function makeHTML()
 	{
-		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or exit;
-		$query_RUID = @mysqli_query($this->mysqli, 'SELECT `RUID` FROM `user_status` WHERE `UID` = '.$this->UID) or exit;
+		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->fail(mysqli_connect_error());
+		$query_RUID = @mysqli_query($this->mysqli, 'SELECT `RUID` FROM `user_status` WHERE `UID` = '.$this->UID) or $this->fail(mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query_RUID);
 
 		if (empty($rows))
