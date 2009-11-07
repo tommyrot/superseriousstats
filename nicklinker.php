@@ -75,7 +75,7 @@ if ($argv[1] == '-i') {
 				 * Only lines starting with the numer 1 (normal user) or 3 (bot) will be used when updating the user records.
 				 * The first nick on each line will initially be used as the "main" nick, and gets the status 1 or 3, as specified.
 				 * Additional nicks on the same line will be linked to this "main" nick and get the status 2, indicating it being an alias.
-				 * The database maintenance routine "registerMostActiveAlias()" should be ran to make the most active alias the "main" nick for each user.
+				 * The database maintenance routine "registerMostActiveAlias()" should be run to make the most active alias the "main" nick for each user.
 				 * This routine is normally automatically invoked after parsing a logfile (see: settings.php and sss.php).
 				 */
 				if ($status == 1 || $status == 3) {
@@ -116,9 +116,11 @@ if ($argv[1] == '-i') {
 			foreach ($RUIDs as $RUID) {
 				$output .= $status[$RUID];
 				$query = mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` AND `RUID` = '.$RUID.' ORDER BY `csNick` ASC');
+				$rows = mysqli_num_rows($query);
 
-				while ($result = mysqli_fetch_object($query))
-					$output .= ','.$result->csNick;
+				if (!empty($rows))
+					while ($result = mysqli_fetch_object($query))
+						$output .= ','.$result->csNick;
 
 				$output .= "\n";
 			}
