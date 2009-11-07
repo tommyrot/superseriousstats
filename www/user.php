@@ -282,7 +282,9 @@ final class User
 			if (!empty($activity[$year][$month][$day]['l_total'])) {
 				$output .= '<td>';
 
-				if ($activity[$year][$month][$day]['l_total'] >= 10000)
+				if ($activity[$year][$month][$day]['l_total'] >= 999500)
+					$output .= number_format(($activity[$year][$month][$day]['l_total'] / 1000000), 1).'M';
+				elseif ($activity[$year][$month][$day]['l_total'] >= 10000)
 					$output .= round($activity[$year][$month][$day]['l_total'] / 1000).'K';
 				else
 					$output .= $activity[$year][$month][$day]['l_total'];
