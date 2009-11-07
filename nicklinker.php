@@ -72,7 +72,7 @@ if ($argv[1] == '-i') {
 				$status = trim($lineParts[0]);
 
 				/**
-				 * Only lines starting with the numer 1 (normal user) or 3 (bot) will be used when updating the user records.
+				 * Only lines starting with the number 1 (normal user) or 3 (bot) will be used when updating the user records.
 				 * The first nick on each line will initially be used as the "main" nick, and gets the status 1 or 3, as specified.
 				 * Additional nicks on the same line will be linked to this "main" nick and get the status 2, indicating it being an alias.
 				 * The database maintenance routine "registerMostActiveAlias()" should be run to make the most active alias the "main" nick for each user.
