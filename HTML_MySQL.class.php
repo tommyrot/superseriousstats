@@ -794,7 +794,7 @@ final class HTML_MySQL
 
 	private function makeTable_Topics($settings)
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_topics` ORDER BY `setDate` ASC');
+		$query = @mysqli_query($this->mysqli, 'SELECT `TID`, `setDate` FROM `user_topics` ORDER BY `setDate` ASC, `TID` ASC');
 		$rows = mysqli_num_rows($query);
 		$output = '';
 
@@ -804,33 +804,42 @@ final class HTML_MySQL
 			$TIDs = array();
 
 			while ($result = mysqli_fetch_object($query)) {
-				$hours = floor((strtotime($result->setDate) - strtotime($prevDate)) / 3600);
+				$hoursPassed = floor((strtotime($result->setDate) - strtotime($prevDate)) / 3600);
 
 				if ($prevTID != 0)
-					$topics[$prevTID] += $hours;
+					$topicTime[$prevTID] += $hoursPassed;
 
 				if (!in_array($result->TID, $TIDs)) {
 					$TIDs[] = $result->TID;
-					$topics[$result->TID] = 0;
+					$topicTime[$result->TID] = 0;
 				}
 
 				$prevTID = $result->TID;
 				$prevDate = $result->setDate;
 			}
 
-			arsort($topics);
+			/**
+			 * Time between yesterday midnight and setDate from last topic will be added to the last topic.
+			 */
+			$hoursPassed = floor(((strtotime('yesterday') + 86400) - strtotime($prevDate)) / 3600);
+			$topicTime[$prevTID] += $hoursPassed;
+
+			/**
+			 * Order the results and fill the output table.
+			 */
+			arsort($topicTime);
 			$i = 0;
 
-			foreach ($topics as $TID => $hours) {
+			foreach ($topicTime as $TID => $hoursPassed) {
 				if ($i >= $settings['rows'])
 					break;
 
 				$i++;
-				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$TID.' ORDER BY `setDate` DESC LIMIT 1') or exit;
+				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
 				$result_csTopic = mysqli_fetch_object($query_csTopic);
 				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
 				$result_csNick = mysqli_fetch_object($query_csNick);
-				$content[] = array($i, number_format(floor($hours / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
+				$content[] = array($i, number_format(floor($hoursPassed / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
 			}
 
 			/**
