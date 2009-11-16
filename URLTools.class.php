@@ -48,26 +48,26 @@ final class URLTools
 	/**
 	 * Character groups as described in RFC 3986.
 	 */
-	private $unreserved = '';
-	private $pct_encoded = '';
 	private $gen_delims = '';
-	private $sub_delims = '';
-	private $reserved = '';
 	private $pchar = '';
+	private $pct_encoded = '';
+	private $reserved = '';
+	private $sub_delims = '';
+	private $unreserved = '';
 
 	/**
 	 * Elements of the regular expression.
 	 */
-	private $scheme = '';
 	private $IPv4address = '';
-	private $port = '';
-	private $domain = '';
-	private $tld = '';
-	private $fqdn = '';
 	private $authority = '';
-	private $path = '';
-	private $query = '';
+	private $domain = '';
+	private $fqdn = '';
 	private $fragment = '';
+	private $path = '';
+	private $port = '';
+	private $query = '';
+	private $scheme = '';
+	private $tld = '';
 
 	/**
 	 * The regular expression itself.
@@ -142,14 +142,6 @@ final class URLTools
 		$this->regexp = '/^'.$this->scheme.$this->authority.$this->path.$this->query.$this->fragment.'$/i';
 	}
 
-	public function validateURL($csURL)
-	{
-		if (preg_match($this->regexp, $csURL))
-			return TRUE;
-		else
-			return FALSE;
-	}
-
 	public function normalizeURL($csURL)
 	{
 		/**
@@ -158,6 +150,14 @@ final class URLTools
 		 */
 		$csURL = preg_replace(array('/^'.$this->scheme.$this->authority.'/ei', '/^'.$this->scheme.$this->authority.$this->path.'/ei'), array("strtolower('$0')", "rtrim('$0', '/')"), $csURL);
 		return $csURL;
+	}
+
+	public function validateURL($csURL)
+	{
+		if (preg_match($this->regexp, $csURL))
+			return TRUE;
+		else
+			return FALSE;
 	}
 }
 

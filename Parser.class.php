@@ -29,14 +29,14 @@ abstract class Parser extends Parser_MySQL
 	 * Don't change any of the default settings below unless you know what you're doing!
 	 * Documented changes can be made from the startup script.
 	 */
-	private $maxStreak = 5;
-	private $nick_minLen = 1;
-	private $nick_maxLen = 255;
-	private $host_maxLen = 255;
 	private $URL_maxLen = 255;
-	private $quote_minLen = 25;
-	private $quote_maxLen = 255;
+	private $host_maxLen = 255;
+	private $maxStreak = 5;
+	private $nick_maxLen = 255;
+	private $nick_minLen = 1;
 	private $outputLevel = 1;
+	private $quote_maxLen = 255;
+	private $quote_minLen = 25;
 	private $wordTracking = FALSE;
 
 	/**
@@ -81,12 +81,7 @@ abstract class Parser extends Parser_MySQL
 	/**
 	 * Other variables.
 	 */
-	protected $nicks_list = array();
-	protected $nicks_objs = array();
-	protected $prevLine = '';
-	protected $lineNum = 0;
 	private $URLTools;
-	private $streak = 0;
 	private $prevNick = '';
 	private $prevOutput = array();
 	private $smileys = array('=]' => 's_01'
@@ -108,6 +103,11 @@ abstract class Parser extends Parser_MySQL
 				,':)' => 's_17'
 				,':(' => 's_18'
 				,'\\o/' => 's_19');
+	private $streak = 0;
+	protected $lineNum = 0;
+	protected $nicks_list = array();
+	protected $nicks_objs = array();
+	protected $prevLine = '';
 
 	final public function __construct()
 	{
@@ -115,11 +115,39 @@ abstract class Parser extends Parser_MySQL
 	}
 
 	/**
-	 * Function to change and set variables. Used only from the startup script.
+	 * Create an object of the nick if it doesn't already exist.
+	 * Return the lowercase nick for further referencing by the calling function.
 	 */
-	final public function setValue($var, $value)
+	final private function addNick($csNick, $dateTime)
 	{
-		$this->$var = $value;
+		$nick = strtolower($csNick);
+
+		if (!in_array($nick, $this->nicks_list)) {
+			$this->nicks_list[] = $nick;
+			$this->nicks_objs[$nick] = new Nick($csNick);
+		} else
+			$this->nicks_objs[$nick]->setValue('csNick', $csNick);
+
+		if (!is_null($dateTime))
+			$this->nicks_objs[$nick]->lastSeen($dateTime);
+
+		return $nick;
+	}
+
+	/**
+	 * Function for the global word tracking. Word tracking can be turned off by setting $wordTracking to FALSE from the startup script.
+	 * Due to the in_array() function being shitty inefficient, searching large arrays is a big performance hit.
+	 */
+	final private function addWord($csWord)
+	{
+		$word = strtolower($csWord);
+
+		if (!in_array($word, $this->words_list)) {
+			$this->words_list[] = $word;
+			$this->words_objs[$word] = new Word($word);
+		}
+
+		$this->words_objs[$word]->addValue('total', 1);
 	}
 
 	/**
@@ -189,89 +217,117 @@ abstract class Parser extends Parser_MySQL
 	}
 
 	/**
-	 * Validate a given nick.
-	 * Check on syntax and variable length.
+	 * Do stuff with "action" lines data.
 	 */
-	final private function validateNick($csNick)
+	final protected function setAction($dateTime, $csNick, $line)
 	{
-		if (preg_match('/^[]\[\^\{}\|\\\`_0-9a-z-]{'.$this->nick_minLen.','.$this->nick_maxLen.'}$/i', $csNick))
-			return TRUE;
-		else
-			return FALSE;
-	}
+		if ($this->validateNick($csNick)) {
+			$nick = $this->addNick($csNick, $dateTime);
+			$this->nicks_objs[$nick]->addValue('actions', 1);
 
-	/**
-	 * Validate a given host.
-	 * Only check for length since standards don't apply to network specific spoofed hosts.
-	 * These are needed for nicklinking however.
-	 */
-	final private function validateHost($csHost)
-	{
-		if (strlen($csHost) <= $this->host_maxLen)
-			return TRUE;
-		else
-			return FALSE;
-	}
+			if ($this->validateQuote($line)) {
+				$this->nicks_objs[$nick]->setQuote('ex_actions', $line);
 
-	/**
-	 * Validate a given quote.
-	 * Since all non printable ISO-8859-1 characters are stripped from the lines we can suffice with checking on min and max length.
-	 */
-	final private function validateQuote($line)
-	{
-		if (strlen($line) <= $this->quote_maxLen)
-			return TRUE;
-		else
-			return FALSE;
-	}
-
-	/**
-	 * Validate a given URL.
-	 * The max length variable is used to keep stored URLs within boundaries of our database field.
-	 * URL validation is done by an external class.
-	 */
-	final private function validateURL($csURL)
-	{
-		if (strlen($csURL) <= $this->URL_maxLen && $this->URLTools->validateURL($csURL))
-			return TRUE;
-		else
-			return FALSE;
-	}
-
-	/**
-	 * Function for the global word tracking. Word tracking can be turned off by setting $wordTracking to FALSE from the startup script.
-	 * Due to the in_array() function being shitty inefficient, searching large arrays is a big performance hit.
-	 */
-	final private function addWord($csWord)
-	{
-		$word = strtolower($csWord);
-
-		if (!in_array($word, $this->words_list)) {
-			$this->words_list[] = $word;
-			$this->words_objs[$word] = new Word($word);
-		}
-
-		$this->words_objs[$word]->addValue('total', 1);
-	}
-
-	/**
-	 * Create an object of the nick if it doesn't already exist.
-	 * Return the lowercase nick for further referencing by the calling function.
-	 */
-	final private function addNick($csNick, $dateTime)
-	{
-		$nick = strtolower($csNick);
-
-		if (!in_array($nick, $this->nicks_list)) {
-			$this->nicks_list[] = $nick;
-			$this->nicks_objs[$nick] = new Nick($csNick);
+				if (strlen($line) >= $this->quote_minLen)
+					$this->nicks_objs[$nick]->addQuote('ex_actions', $line);
+			}
 		} else
-			$this->nicks_objs[$nick]->setValue('csNick', $csNick);
+			$this->output('warning', 'setAction(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+	}
 
-		if (!is_null($dateTime))
-			$this->nicks_objs[$nick]->lastSeen($dateTime);
+	/**
+	 * Do stuff with "join" lines data.
+	 */
+	final protected function setJoin($dateTime, $csNick, $csHost)
+	{
+		if ($this->validateNick($csNick)) {
+			$nick = $this->addNick($csNick, $dateTime);
+			$this->nicks_objs[$nick]->addValue('joins', 1);
 
-		return $nick;
+			if ($this->validateHost($csHost))
+				$this->nicks_objs[$nick]->addHost($csHost);
+			else
+				$this->output('warning', 'setJoin(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+		} else
+			$this->output('warning', 'setJoin(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+	}
+
+	/**
+	 * Do stuff with "kick" lines data.
+	 */
+	final protected function setKick($dateTime, $csNick_performing, $csNick_undergoing, $line)
+	{
+		if ($this->validateNick($csNick_performing)) {
+			if ($this->validateNick($csNick_undergoing)) {
+				$nick_performing = $this->addNick($csNick_performing, $dateTime);
+				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
+				$this->nicks_objs[$nick_performing]->addValue('kicks', 1);
+				$this->nicks_objs[$nick_undergoing]->addValue('kicked', 1);
+
+				if ($this->validateQuote($line)) {
+					$this->nicks_objs[$nick_performing]->setValue('ex_kicks', $line);
+					$this->nicks_objs[$nick_undergoing]->setValue('ex_kicked', $line);
+				}
+			} else
+				$this->output('warning', 'setKick(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+		} else
+			$this->output('warning', 'setKick(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+	}
+
+	/**
+	 * Do stuff with "mode" lines data.
+	 */
+	final protected function setMode($dateTime, $csNick_performing, $csNick_undergoing, $mode, $csHost)
+	{
+		if ($this->validateNick($csNick_performing)) {
+			if ($this->validateNick($csNick_undergoing)) {
+				$nick_performing = $this->addNick($csNick_performing, $dateTime);
+				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
+
+				switch ($mode) {
+					case '+o':
+						$this->nicks_objs[$nick_performing]->addValue('m_op', 1);
+						$this->nicks_objs[$nick_undergoing]->addValue('m_opped', 1);
+						break;
+					case '+v':
+						$this->nicks_objs[$nick_performing]->addValue('m_voice', 1);
+						$this->nicks_objs[$nick_undergoing]->addValue('m_voiced', 1);
+						break;
+					case '-o':
+						$this->nicks_objs[$nick_performing]->addValue('m_deOp', 1);
+						$this->nicks_objs[$nick_undergoing]->addValue('m_deOpped', 1);
+						break;
+					case '-v':
+						$this->nicks_objs[$nick_performing]->addValue('m_deVoice', 1);
+						$this->nicks_objs[$nick_undergoing]->addValue('m_deVoiced', 1);
+						break;
+				}
+
+				if (!is_null($csHost))
+					if ($this->validateHost($csHost))
+						$this->nicks_objs[$nick_performing]->addHost($csHost);
+					else
+						$this->output('warning', 'setMode(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+			} else
+				$this->output('warning', 'setMode(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+		} else
+			$this->output('warning', 'setMode(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+	}
+
+	/**
+	 * Do stuff with "nickchange" lines data.
+	 */
+	final protected function setNickchange($dateTime, $csNick_performing, $csNick_undergoing)
+	{
+		if ($this->validateNick($csNick_performing)) {
+			if ($this->validateNick($csNick_undergoing)) {
+				$nick_performing = $this->addNick($csNick_performing, $dateTime);
+				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
+				$this->nicks_objs[$nick_performing]->addValue('nickchanges', 1);
+			} else
+				$this->output('warning', 'setNickchange(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+		} else
+			$this->output('warning', 'setNickchange(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
 	}
 
 	/**
@@ -398,63 +454,6 @@ abstract class Parser extends Parser_MySQL
 	}
 
 	/**
-	 * Do stuff with "mode" lines data.
-	 */
-	final protected function setMode($dateTime, $csNick_performing, $csNick_undergoing, $mode, $csHost)
-	{
-		if ($this->validateNick($csNick_performing)) {
-			if ($this->validateNick($csNick_undergoing)) {
-				$nick_performing = $this->addNick($csNick_performing, $dateTime);
-				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
-
-				switch ($mode) {
-					case '+o':
-						$this->nicks_objs[$nick_performing]->addValue('m_op', 1);
-						$this->nicks_objs[$nick_undergoing]->addValue('m_opped', 1);
-						break;
-					case '+v':
-						$this->nicks_objs[$nick_performing]->addValue('m_voice', 1);
-						$this->nicks_objs[$nick_undergoing]->addValue('m_voiced', 1);
-						break;
-					case '-o':
-						$this->nicks_objs[$nick_performing]->addValue('m_deOp', 1);
-						$this->nicks_objs[$nick_undergoing]->addValue('m_deOpped', 1);
-						break;
-					case '-v':
-						$this->nicks_objs[$nick_performing]->addValue('m_deVoice', 1);
-						$this->nicks_objs[$nick_undergoing]->addValue('m_deVoiced', 1);
-						break;
-				}
-
-				if (!is_null($csHost))
-					if ($this->validateHost($csHost))
-						$this->nicks_objs[$nick_performing]->addHost($csHost);
-					else
-						$this->output('warning', 'setMode(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
-			} else
-				$this->output('warning', 'setMode(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-		} else
-			$this->output('warning', 'setMode(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
-	}
-
-	/**
-	 * Do stuff with "join" lines data.
-	 */
-	final protected function setJoin($dateTime, $csNick, $csHost)
-	{
-		if ($this->validateNick($csNick)) {
-			$nick = $this->addNick($csNick, $dateTime);
-			$this->nicks_objs[$nick]->addValue('joins', 1);
-
-			if ($this->validateHost($csHost))
-				$this->nicks_objs[$nick]->addHost($csHost);
-			else
-				$this->output('warning', 'setJoin(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
-		} else
-			$this->output('warning', 'setJoin(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
-	}
-
-	/**
 	 * Do stuff with "part" lines data.
 	 */
 	final protected function setPart($dateTime, $csNick, $csHost)
@@ -489,87 +488,6 @@ abstract class Parser extends Parser_MySQL
 	}
 
 	/**
-	 * Do stuff with "kick" lines data.
-	 */
-	final protected function setKick($dateTime, $csNick_performing, $csNick_undergoing, $line)
-	{
-		if ($this->validateNick($csNick_performing)) {
-			if ($this->validateNick($csNick_undergoing)) {
-				$nick_performing = $this->addNick($csNick_performing, $dateTime);
-				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
-				$this->nicks_objs[$nick_performing]->addValue('kicks', 1);
-				$this->nicks_objs[$nick_undergoing]->addValue('kicked', 1);
-
-				if ($this->validateQuote($line)) {
-					$this->nicks_objs[$nick_performing]->setValue('ex_kicks', $line);
-					$this->nicks_objs[$nick_undergoing]->setValue('ex_kicked', $line);
-				}
-			} else
-				$this->output('warning', 'setKick(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-		} else
-			$this->output('warning', 'setKick(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
-	}
-
-	/**
-	 * Do stuff with "nickchange" lines data.
-	 */
-	final protected function setNickchange($dateTime, $csNick_performing, $csNick_undergoing)
-	{
-		if ($this->validateNick($csNick_performing)) {
-			if ($this->validateNick($csNick_undergoing)) {
-				$nick_performing = $this->addNick($csNick_performing, $dateTime);
-				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
-				$this->nicks_objs[$nick_performing]->addValue('nickchanges', 1);
-			} else
-				$this->output('warning', 'setNickchange(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-		} else
-			$this->output('warning', 'setNickchange(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
-	}
-
-	/**
-	 * Do stuff with "topic" lines data.
-	 */
-	final protected function setTopic($dateTime, $csNick, $csHost, $line)
-	{
-		if ($this->validateNick($csNick)) {
-			$nick = $this->addNick($csNick, $dateTime);
-			$this->nicks_objs[$nick]->addValue('topics', 1);
-
-			if (!is_null($csHost))
-				if ($this->validateHost($csHost))
-					$this->nicks_objs[$nick]->addHost($csHost);
-				else
-					$this->output('warning', 'setTopic(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
-
-			/**
-			 * Keep track of every single topic set.
-			 */
-			if (!is_null($line))
-				$this->nicks_objs[$nick]->addTopic($line, $dateTime);
-		} else
-			$this->output('warning', 'setTopic(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
-	}
-
-	/**
-	 * Do stuff with "action" lines data.
-	 */
-	final protected function setAction($dateTime, $csNick, $line)
-	{
-		if ($this->validateNick($csNick)) {
-			$nick = $this->addNick($csNick, $dateTime);
-			$this->nicks_objs[$nick]->addValue('actions', 1);
-			
-			if ($this->validateQuote($line)) {
-				$this->nicks_objs[$nick]->setQuote('ex_actions', $line);
-
-				if (strlen($line) >= $this->quote_minLen)
-					$this->nicks_objs[$nick]->addQuote('ex_actions', $line);
-			}
-		} else
-			$this->output('warning', 'setAction(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
-	}
-
-	/**
 	 * Do stuff with "slap" lines data.
 	 */
 	final protected function setSlap($dateTime, $csNick_performing, $csNick_undergoing)
@@ -600,6 +518,88 @@ abstract class Parser extends Parser_MySQL
 			}
 		} else
 			$this->output('warning', 'setSlap(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+	}
+
+	/**
+	 * Do stuff with "topic" lines data.
+	 */
+	final protected function setTopic($dateTime, $csNick, $csHost, $line)
+	{
+		if ($this->validateNick($csNick)) {
+			$nick = $this->addNick($csNick, $dateTime);
+			$this->nicks_objs[$nick]->addValue('topics', 1);
+
+			if (!is_null($csHost))
+				if ($this->validateHost($csHost))
+					$this->nicks_objs[$nick]->addHost($csHost);
+				else
+					$this->output('warning', 'setTopic(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+
+			/**
+			 * Keep track of every single topic set.
+			 */
+			if (!is_null($line))
+				$this->nicks_objs[$nick]->addTopic($line, $dateTime);
+		} else
+			$this->output('warning', 'setTopic(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+	}
+
+	/**
+	 * Function to change and set variables. Used only from the startup script.
+	 */
+	final public function setValue($var, $value)
+	{
+		$this->$var = $value;
+	}
+
+	/**
+	 * Validate a given host.
+	 * Only check for length since standards don't apply to network specific spoofed hosts.
+	 * These are needed for nicklinking however.
+	 */
+	final private function validateHost($csHost)
+	{
+		if (strlen($csHost) <= $this->host_maxLen)
+			return TRUE;
+		else
+			return FALSE;
+	}
+
+	/**
+	 * Validate a given nick.
+	 * Check on syntax and variable length.
+	 */
+	final private function validateNick($csNick)
+	{
+		if (preg_match('/^[]\[\^\{}\|\\\`_0-9a-z-]{'.$this->nick_minLen.','.$this->nick_maxLen.'}$/i', $csNick))
+			return TRUE;
+		else
+			return FALSE;
+	}
+
+	/**
+	 * Validate a given quote.
+	 * Since all non printable ISO-8859-1 characters are stripped from the lines we can suffice with checking on min and max length.
+	 */
+	final private function validateQuote($line)
+	{
+		if (strlen($line) <= $this->quote_maxLen)
+			return TRUE;
+		else
+			return FALSE;
+	}
+
+	/**
+	 * Validate a given URL.
+	 * The max length variable is used to keep stored URLs within boundaries of our database field.
+	 * URL validation is done by an external class.
+	 */
+	final private function validateURL($csURL)
+	{
+		if (strlen($csURL) <= $this->URL_maxLen && $this->URLTools->validateURL($csURL))
+			return TRUE;
+		else
+			return FALSE;
 	}
 }
 
