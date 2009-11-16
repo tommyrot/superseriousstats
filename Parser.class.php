@@ -73,12 +73,6 @@ abstract class Parser extends Parser_MySQL
 	protected $l_total = 0;
 
 	/**
-	 * Variables used in database table "words".
-	 */
-	protected $words_list = array();
-	protected $words_objs = array();
-
-	/**
 	 * Other variables.
 	 */
 	private $URLTools;
@@ -108,6 +102,8 @@ abstract class Parser extends Parser_MySQL
 	protected $nicks_list = array();
 	protected $nicks_objs = array();
 	protected $prevLine = '';
+	protected $words_list = array();
+	protected $words_objs = array();
 
 	final public function __construct()
 	{
