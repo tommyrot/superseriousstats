@@ -30,15 +30,15 @@ final class HTML_MySQL
 	/**
 	 * The correct way for changing the variables below is from the startup script.
 	 */
+	private $bar_afternoon = 'y.png';
+	private $bar_evening = 'r.png';
+	private $bar_morning = 'g.png';
+	private $bar_night = 'b.png';
 	private $channel = '#superseriousstats';
 	private $minLines = 500;
 	private $minRows = 3;
-	private $userstats = FALSE;
 	private $stylesheet = 'default.css';
-	private $bar_night = 'b.png';
-	private $bar_morning = 'g.png';
-	private $bar_afternoon = 'y.png';
-	private $bar_evening = 'r.png';
+	private $userstats = FALSE;
 
 	/**
 	 * The following variables shouldn't be tampered with.
@@ -56,9 +56,13 @@ final class HTML_MySQL
 	private $year = '';
 	private $years = 0;
 
-	public function setValue($var, $value)
+	private function getDetails($UID)
 	{
-		$this->$var = $value;
+		$query = mysqli_query($this->mysqli, 'SELECT `csNick`, `status` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `user_details`.`UID` = '.$UID) or exit;
+		$result = mysqli_fetch_object($query);
+
+		return array('csNick' => $result->csNick
+			    ,'status' => $result->status);
 	}
 
 	public function makeHTML()
@@ -261,58 +265,6 @@ final class HTML_MySQL
 		return $this->output;
 	}
 
-	private function makeTable_TimeOfDay($settings)
-	{
-		$l_total_high = 0;
-		$times = array('night', 'morning', 'afternoon', 'evening');
-
-		foreach ($times as $time) {
-			$query = @mysqli_query($this->mysqli, 'SELECT `csNick`, `l_'.$time.'` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_'.$time.'` != 0 ORDER BY `l_'.$time.'` DESC, `csNick` ASC LIMIT 10');
-			$i = 0;
-
-			while ($result = mysqli_fetch_object($query)) {
-				$i++;
-				${$time}[$i]['user'] = $result->csNick;
-				${$time}[$i]['lines'] = $result->{'l_'.$time};
-
-				if ($i == 1 && ${$time}[$i]['lines'] > $l_total_high)
-					$l_total_high = ${$time}[$i]['lines'];
-			}
-		}
-
-		$width = (190 / $l_total_high);
-		$output = '<table class="tod"><tr><th colspan="5">'.htmlspecialchars($settings['head']).'</th></tr><tr><td class="pos"></td><td class="k">'.htmlspecialchars($settings['key1']).'<br />0h - 5h</td><td class="k">'.htmlspecialchars($settings['key2']).'<br />6h - 11h</td><td class="k">'.htmlspecialchars($settings['key3']).'<br />12h - 17h</td><td class="k">'.htmlspecialchars($settings['key4']).'<br />18h - 23h</td></tr>';
-
-		for ($i = 1; $i <= 10; $i++) {
-			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines']))
-				break;
-
-			$output .= '<tr><td class="pos">'.$i.'</td>';
-
-			foreach ($times as $time)
-				if (isset(${$time}[$i]['lines'])) {
-					if (round(${$time}[$i]['lines'] * $width) == 0)
-						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'</td>';
-					else
-						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br /><img src="'.$this->{'bar_'.$time}.'" width="'.round(${$time}[$i]['lines'] * $width).'" alt="" /></td>';
-				} else
-					$output .= '<td class="v"></td>';
-
-			$output .= '</tr>';
-		}
-
-		return $output.'</table>'."\n";
-	}
-
-	private function getDetails($UID)
-	{
-		$query = mysqli_query($this->mysqli, 'SELECT `csNick`, `status` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `user_details`.`UID` = '.$UID) or exit;
-		$result = mysqli_fetch_object($query);
-
-		return array('csNick' => $result->csNick
-			    ,'status' => $result->status);
-	}
-
 	private function makeTable($settings)
 	{
 		$query = @mysqli_query($this->mysqli, $settings['query']) or exit;
@@ -378,206 +330,6 @@ final class HTML_MySQL
 		}
 
 		return $output;
-	}
-
-	private function makeTable_MostActiveTimes($settings)
-	{
-		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or exit;
-		$result = mysqli_fetch_object($query);
-		$l_total_high = 0;
-
-		for ($hour = 0; $hour < 24; $hour++) {
-			if ($hour < 10)
-				$l_total[$hour] = $result->{'l_0'.$hour};
-			else
-				$l_total[$hour] = $result->{'l_'.$hour};
-
-			if ($l_total[$hour] > $l_total_high) {
-				$l_total_high = $l_total[$hour];
-				$l_total_high_hour = $hour;
-			}
-		}
-
-		$output = '<table class="graph"><tr><th colspan="24">'.htmlspecialchars($settings['head']).'</th></tr><tr class="bars">';
-
-		for ($hour = 0; $hour < 24; $hour++) {
-			if ($l_total[$hour] != 0) {
-				$output .= '<td>';
-
-				if ((($l_total[$hour] / $this->l_total) * 100) >= 9.95)
-					$output .= round(($l_total[$hour] / $this->l_total) * 100).'%';
-				else
-					$output .= number_format(($l_total[$hour] / $this->l_total) * 100, 1).'%';
-
-				$height = round(($l_total[$hour] / $l_total_high) * 100);
-
-				if ($height != 0 && $hour >= 0 && $hour <= 5)
-					$output .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($height != 0 && $hour >= 6 && $hour <= 11)
-					$output .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($height != 0 && $hour >= 12 && $hour <= 17)
-					$output .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($height != 0 && $hour >= 18 && $hour <= 23)
-					$output .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-
-				$output .= '</td>';
-			} else
-				$output .= '<td><span class="grey">n/a</span></td>';
-		}
-
-		$output .= '</tr><tr class="sub">';
-
-		for ($hour = 0; $hour < 24; $hour++)
-			if ($l_total_high != 0 && $l_total_high_hour == $hour)
-				$output .= '<td class="bold">'.$hour.'h</td>';
-			else
-				$output .= '<td>'.$hour.'h</td>';
-
-		return $output.'</tr></table>'."\n";
-	}
-
-	private function makeTable_MostActivePeople($settings)
-	{
-		switch ($settings['type']) {
-			case 'alltime':
-				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `csNick`, `quote`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` != 0 ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or exit;
-				$l_total = $this->l_total;
-				$skipDetails = TRUE;
-				break;
-			case 'year':
-				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE (SELECT `status` FROM `user_status` AS `t1` WHERE `UID` = `user_status`.`RUID`) != 3 AND YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or exit;
-				$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `user_activity` WHERE YEAR(`date`) = '.$this->year) or exit;
-				$result_l_total = mysqli_fetch_object($query_l_total);
-				$l_total = $result_l_total->l_total;
-				$skipDetails = FALSE;
-				break;
-			case 'month':
-				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE (SELECT `status` FROM `user_status` AS `t1` WHERE `UID` = `user_status`.`RUID`) != 3 AND YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or exit;
-				$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `user_activity` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month) or exit;
-				$result_l_total = mysqli_fetch_object($query_l_total);
-				$l_total = $result_l_total->l_total;
-				$skipDetails = FALSE;
-				break;
-		}
-
-		if (empty($l_total))
-			return;
-
-		$output = '<table class="map"><tr><th colspan="7">'.htmlspecialchars($settings['head']).'</th></tr><tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="pos"></td><td class="k3">'.htmlspecialchars($settings['key3']).'</td><td class="k4">'.htmlspecialchars($settings['key4']).'</td><td class="k5">'.htmlspecialchars($settings['key5']).'</td><td class="k6">'.htmlspecialchars($settings['key6']).'</td></tr>';
-		$i = 0;
-
-		while ($result = mysqli_fetch_object($query)) {
-			$i++;
-			$RUID = $result->RUID;
-
-			if ($skipDetails) {
-				$csNick = $result->csNick;
-				$quote = $result->quote;
-			} else {
-				$query_details = @mysqli_query($this->mysqli, 'SELECT `csNick`, `quote` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` WHERE `query_lines`.`UID` = '.$RUID) or exit;
-				$result_details = mysqli_fetch_object($query_details);
-				$csNick = $result_details->csNick;
-				$quote = $result_details->quote;
-			}
-
-			$l_total_percentage = number_format(($result->l_total / $l_total) * 100, 2);
-
-			/**
-			 * Make sure that quotes don't exceed the limit of 300px in width.
-			 * Below is the old and crappy way of doing so, i'd love to have this tidied up one day.
-			 */
-
-			// fixfixfixfixfix begin
-			$chars_lower = strlen($quote) - strlen(preg_replace('/[a-z]/', '', $quote));
-			$chars_upper = strlen($quote) - strlen(preg_replace('/[A-Z0-9]/', '', $quote));
-			$chars_other = strlen($quote) - $chars_upper - $chars_lower;
-
-			if ((($chars_upper * 7) + ($chars_lower * 6) + ($chars_other * 7)) > 300) {
-				$chars_length = 0;
-				$chars_str = '';
-
-				for ($g = 0; $g < strlen($quote); $g++) {
-					if (preg_match('/[a-z]/', $quote[$g])) {
-						$chars_length += 6;
-						$chars_str .= $quote[$g];
-					} elseif (preg_match('/[A-Z0-9]/', $quote[$g])) {
-						$chars_length += 7;
-						$chars_str .= $quote[$g];
-					} else {
-						$chars_length += 7;
-						$chars_str .= $quote[$g];
-					}
-
-					if ($chars_length >= 300)
-						break;
-				}
-
-				$hover = '<a title="'.htmlspecialchars($quote).'">...</a>';
-				$quote = rtrim($chars_str);
-			} else
-				$hover = '';
-			// fixfixfixfixfix end
-
-			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or exit;
-			$result_lastSeen = mysqli_fetch_object($query_lastSeen);
-			$lastSeen = substr($result_lastSeen->lastSeen, 0, 10);
-			$lastSeen = round((strtotime('today') - strtotime($lastSeen)) / 86400);
-
-			if (($lastSeen / 365) >= 1) {
-				$lastSeen = rtrim(number_format($lastSeen / 365, 1), '.0');
-				$lastSeen = $lastSeen.' Year'.($lastSeen > 1 ? 's' : '').' Ago';
-			} elseif (($lastSeen / 30.42) >= 1) {
-				$lastSeen = rtrim(number_format($lastSeen / 30.42, 1), '.0');
-				$lastSeen = $lastSeen.' Month'.($lastSeen > 1 ? 's' : '').' Ago';
-			} elseif ($lastSeen == 1)
-				$lastSeen = 'Yesterday';
-			else
-				$lastSeen = $lastSeen.' Days Ago';
-
-			$when_width = 50;
-			$times = array('night', 'morning', 'afternoon', 'evening');
-			unset($l_night_width_real, $l_night_width, $l_morning_width_real, $l_morning_width, $l_afternoon_width_real, $l_afternoon_width, $l_evening_width_real, $l_evening_width, $remainders, $when_night, $when_morning, $when_afternoon, $when_evening);
-
-			foreach ($times as $time) {
-				if ($result->{'l_'.$time} != 0) {
-					${'l_'.$time.'_width_real'} = ($result->{'l_'.$time} / $result->l_total) * 50;
-
-					if (is_int(${'l_'.$time.'_width_real'})) {
-						${'l_'.$time.'_width'} = ${'l_'.$time.'_width_real'};
-						$when_width -= ${'l_'.$time.'_width'};
-					} else {
-						${'l_'.$time.'_width'} = floor(${'l_'.$time.'_width_real'});
-						$when_width -= ${'l_'.$time.'_width'};
-						$remainders[$time] = round((number_format(${'l_'.$time.'_width_real'}, 2) - ${'l_'.$time.'_width'}) * 100);
-					}
-				}
-			}
-
-			if (!empty($remainders)) {
-				arsort($remainders);
-
-				foreach ($remainders as $time => $remainder) {
-					if ($when_width != 0) {
-						$when_width--;
-						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.++${'l_'.$time.'_width'}.'" alt="" />';
-					} else
-						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
-				}
-			} else
-				foreach ($times as $time)
-					if (!empty(${'l_'.$time.'_width'}))
-						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
-
-			$when_output = '';
-
-			foreach ($times as $time)
-				if (!empty(${'when_'.$time}))
-					$when_output .= ${'when_'.$time};
-
-			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$RUID.'">'.htmlspecialchars($csNick).'</a>' : htmlspecialchars($csNick)).'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($quote).$hover.'</td></tr>';
-		}
-
-		return $output.'</table>'."\n";
 	}
 
 	private function makeTable_Activity($settings)
@@ -792,6 +544,249 @@ final class HTML_MySQL
 		return $output.'</tr></table>'."\n";
 	}
 
+	private function makeTable_MostActivePeople($settings)
+	{
+		switch ($settings['type']) {
+			case 'alltime':
+				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `csNick`, `quote`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` != 0 ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or exit;
+				$l_total = $this->l_total;
+				$skipDetails = TRUE;
+				break;
+			case 'year':
+				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE (SELECT `status` FROM `user_status` AS `t1` WHERE `UID` = `user_status`.`RUID`) != 3 AND YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or exit;
+				$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `user_activity` WHERE YEAR(`date`) = '.$this->year) or exit;
+				$result_l_total = mysqli_fetch_object($query_l_total);
+				$l_total = $result_l_total->l_total;
+				$skipDetails = FALSE;
+				break;
+			case 'month':
+				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE (SELECT `status` FROM `user_status` AS `t1` WHERE `UID` = `user_status`.`RUID`) != 3 AND YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or exit;
+				$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `user_activity` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month) or exit;
+				$result_l_total = mysqli_fetch_object($query_l_total);
+				$l_total = $result_l_total->l_total;
+				$skipDetails = FALSE;
+				break;
+		}
+
+		if (empty($l_total))
+			return;
+
+		$output = '<table class="map"><tr><th colspan="7">'.htmlspecialchars($settings['head']).'</th></tr><tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="pos"></td><td class="k3">'.htmlspecialchars($settings['key3']).'</td><td class="k4">'.htmlspecialchars($settings['key4']).'</td><td class="k5">'.htmlspecialchars($settings['key5']).'</td><td class="k6">'.htmlspecialchars($settings['key6']).'</td></tr>';
+		$i = 0;
+
+		while ($result = mysqli_fetch_object($query)) {
+			$i++;
+			$RUID = $result->RUID;
+
+			if ($skipDetails) {
+				$csNick = $result->csNick;
+				$quote = $result->quote;
+			} else {
+				$query_details = @mysqli_query($this->mysqli, 'SELECT `csNick`, `quote` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` WHERE `query_lines`.`UID` = '.$RUID) or exit;
+				$result_details = mysqli_fetch_object($query_details);
+				$csNick = $result_details->csNick;
+				$quote = $result_details->quote;
+			}
+
+			$l_total_percentage = number_format(($result->l_total / $l_total) * 100, 2);
+
+			/**
+			 * Make sure that quotes don't exceed the limit of 300px in width.
+			 * Below is the old and crappy way of doing so, i'd love to have this tidied up one day.
+			 */
+
+			// fixfixfixfixfix begin
+			$chars_lower = strlen($quote) - strlen(preg_replace('/[a-z]/', '', $quote));
+			$chars_upper = strlen($quote) - strlen(preg_replace('/[A-Z0-9]/', '', $quote));
+			$chars_other = strlen($quote) - $chars_upper - $chars_lower;
+
+			if ((($chars_upper * 7) + ($chars_lower * 6) + ($chars_other * 7)) > 300) {
+				$chars_length = 0;
+				$chars_str = '';
+
+				for ($g = 0; $g < strlen($quote); $g++) {
+					if (preg_match('/[a-z]/', $quote[$g])) {
+						$chars_length += 6;
+						$chars_str .= $quote[$g];
+					} elseif (preg_match('/[A-Z0-9]/', $quote[$g])) {
+						$chars_length += 7;
+						$chars_str .= $quote[$g];
+					} else {
+						$chars_length += 7;
+						$chars_str .= $quote[$g];
+					}
+
+					if ($chars_length >= 300)
+						break;
+				}
+
+				$hover = '<a title="'.htmlspecialchars($quote).'">...</a>';
+				$quote = rtrim($chars_str);
+			} else
+				$hover = '';
+			// fixfixfixfixfix end
+
+			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or exit;
+			$result_lastSeen = mysqli_fetch_object($query_lastSeen);
+			$lastSeen = substr($result_lastSeen->lastSeen, 0, 10);
+			$lastSeen = round((strtotime('today') - strtotime($lastSeen)) / 86400);
+
+			if (($lastSeen / 365) >= 1) {
+				$lastSeen = rtrim(number_format($lastSeen / 365, 1), '.0');
+				$lastSeen = $lastSeen.' Year'.($lastSeen > 1 ? 's' : '').' Ago';
+			} elseif (($lastSeen / 30.42) >= 1) {
+				$lastSeen = rtrim(number_format($lastSeen / 30.42, 1), '.0');
+				$lastSeen = $lastSeen.' Month'.($lastSeen > 1 ? 's' : '').' Ago';
+			} elseif ($lastSeen == 1)
+				$lastSeen = 'Yesterday';
+			else
+				$lastSeen = $lastSeen.' Days Ago';
+
+			$when_width = 50;
+			$times = array('night', 'morning', 'afternoon', 'evening');
+			unset($l_night_width_real, $l_night_width, $l_morning_width_real, $l_morning_width, $l_afternoon_width_real, $l_afternoon_width, $l_evening_width_real, $l_evening_width, $remainders, $when_night, $when_morning, $when_afternoon, $when_evening);
+
+			foreach ($times as $time) {
+				if ($result->{'l_'.$time} != 0) {
+					${'l_'.$time.'_width_real'} = ($result->{'l_'.$time} / $result->l_total) * 50;
+
+					if (is_int(${'l_'.$time.'_width_real'})) {
+						${'l_'.$time.'_width'} = ${'l_'.$time.'_width_real'};
+						$when_width -= ${'l_'.$time.'_width'};
+					} else {
+						${'l_'.$time.'_width'} = floor(${'l_'.$time.'_width_real'});
+						$when_width -= ${'l_'.$time.'_width'};
+						$remainders[$time] = round((number_format(${'l_'.$time.'_width_real'}, 2) - ${'l_'.$time.'_width'}) * 100);
+					}
+				}
+			}
+
+			if (!empty($remainders)) {
+				arsort($remainders);
+
+				foreach ($remainders as $time => $remainder) {
+					if ($when_width != 0) {
+						$when_width--;
+						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.++${'l_'.$time.'_width'}.'" alt="" />';
+					} else
+						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
+				}
+			} else
+				foreach ($times as $time)
+					if (!empty(${'l_'.$time.'_width'}))
+						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
+
+			$when_output = '';
+
+			foreach ($times as $time)
+				if (!empty(${'when_'.$time}))
+					$when_output .= ${'when_'.$time};
+
+			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$RUID.'">'.htmlspecialchars($csNick).'</a>' : htmlspecialchars($csNick)).'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($quote).$hover.'</td></tr>';
+		}
+
+		return $output.'</table>'."\n";
+	}
+
+	private function makeTable_MostActiveTimes($settings)
+	{
+		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or exit;
+		$result = mysqli_fetch_object($query);
+		$l_total_high = 0;
+
+		for ($hour = 0; $hour < 24; $hour++) {
+			if ($hour < 10)
+				$l_total[$hour] = $result->{'l_0'.$hour};
+			else
+				$l_total[$hour] = $result->{'l_'.$hour};
+
+			if ($l_total[$hour] > $l_total_high) {
+				$l_total_high = $l_total[$hour];
+				$l_total_high_hour = $hour;
+			}
+		}
+
+		$output = '<table class="graph"><tr><th colspan="24">'.htmlspecialchars($settings['head']).'</th></tr><tr class="bars">';
+
+		for ($hour = 0; $hour < 24; $hour++) {
+			if ($l_total[$hour] != 0) {
+				$output .= '<td>';
+
+				if ((($l_total[$hour] / $this->l_total) * 100) >= 9.95)
+					$output .= round(($l_total[$hour] / $this->l_total) * 100).'%';
+				else
+					$output .= number_format(($l_total[$hour] / $this->l_total) * 100, 1).'%';
+
+				$height = round(($l_total[$hour] / $l_total_high) * 100);
+
+				if ($height != 0 && $hour >= 0 && $hour <= 5)
+					$output .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				elseif ($height != 0 && $hour >= 6 && $hour <= 11)
+					$output .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				elseif ($height != 0 && $hour >= 12 && $hour <= 17)
+					$output .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				elseif ($height != 0 && $hour >= 18 && $hour <= 23)
+					$output .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+
+				$output .= '</td>';
+			} else
+				$output .= '<td><span class="grey">n/a</span></td>';
+		}
+
+		$output .= '</tr><tr class="sub">';
+
+		for ($hour = 0; $hour < 24; $hour++)
+			if ($l_total_high != 0 && $l_total_high_hour == $hour)
+				$output .= '<td class="bold">'.$hour.'h</td>';
+			else
+				$output .= '<td>'.$hour.'h</td>';
+
+		return $output.'</tr></table>'."\n";
+	}
+
+	private function makeTable_TimeOfDay($settings)
+	{
+		$l_total_high = 0;
+		$times = array('night', 'morning', 'afternoon', 'evening');
+
+		foreach ($times as $time) {
+			$query = @mysqli_query($this->mysqli, 'SELECT `csNick`, `l_'.$time.'` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_'.$time.'` != 0 ORDER BY `l_'.$time.'` DESC, `csNick` ASC LIMIT 10');
+			$i = 0;
+
+			while ($result = mysqli_fetch_object($query)) {
+				$i++;
+				${$time}[$i]['user'] = $result->csNick;
+				${$time}[$i]['lines'] = $result->{'l_'.$time};
+
+				if ($i == 1 && ${$time}[$i]['lines'] > $l_total_high)
+					$l_total_high = ${$time}[$i]['lines'];
+			}
+		}
+
+		$width = (190 / $l_total_high);
+		$output = '<table class="tod"><tr><th colspan="5">'.htmlspecialchars($settings['head']).'</th></tr><tr><td class="pos"></td><td class="k">'.htmlspecialchars($settings['key1']).'<br />0h - 5h</td><td class="k">'.htmlspecialchars($settings['key2']).'<br />6h - 11h</td><td class="k">'.htmlspecialchars($settings['key3']).'<br />12h - 17h</td><td class="k">'.htmlspecialchars($settings['key4']).'<br />18h - 23h</td></tr>';
+
+		for ($i = 1; $i <= 10; $i++) {
+			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines']))
+				break;
+
+			$output .= '<tr><td class="pos">'.$i.'</td>';
+
+			foreach ($times as $time)
+				if (isset(${$time}[$i]['lines'])) {
+					if (round(${$time}[$i]['lines'] * $width) == 0)
+						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'</td>';
+					else
+						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br /><img src="'.$this->{'bar_'.$time}.'" width="'.round(${$time}[$i]['lines'] * $width).'" alt="" /></td>';
+				} else
+					$output .= '<td class="v"></td>';
+
+			$output .= '</tr>';
+		}
+
+		return $output.'</table>'."\n";
+	}
+
 	private function makeTable_Topics($settings)
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT `TID`, `setDate` FROM `user_topics` ORDER BY `setDate` ASC, `TID` ASC');
@@ -862,6 +857,11 @@ final class HTML_MySQL
 		}
 
 		return $output;
+	}
+
+	public function setValue($var, $value)
+	{
+		$this->$var = $value;
 	}
 }
 
