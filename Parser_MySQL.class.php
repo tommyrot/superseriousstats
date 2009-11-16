@@ -43,9 +43,10 @@ abstract class Parser_MySQL
 			 * Write user data to database.
 			 */
 			foreach ($this->nicks_list as $nick)
-				if ($this->nicks_objs[$nick]->getValue('firstSeen') != '')
+				if ($this->nicks_objs[$nick]->getValue('firstSeen') != '') {
+					$this->nicks_objs[$nick]->randomizeQuotes();
 					$this->nicks_objs[$nick]->writeData($mysqli) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-				else
+				} else
 					$this->output('notice', 'writeData(): skipping empty nick: \''.$this->nicks_objs[$nick]->getValue('csNick').'\'');
 
 			/**
