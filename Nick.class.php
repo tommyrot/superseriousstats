@@ -176,19 +176,56 @@ final class Nick extends Nick_MySQL
 	protected $s_18 = 0;
 	protected $s_19 = 0;
 
+	/**
+	 * Other variables.
+	 */
+	private $ex_actions_list = array();
+	private $ex_exclamations_list = array();
+	private $ex_questions_list = array();
+	private $ex_uppercased_list = array();
+	private $quote_list = array();
+
 	public function __construct($csNick)
 	{
 		$this->csNick = $csNick;
 	}
 
+	public function addHost($csHost)
+	{
+		$host = strtolower($csHost);
+
+		if (!in_array($host, $this->hosts_list))
+			$this->hosts_list[] = $host;
+	}
+
+	public function addQuote($type, $line)
+	{
+		$this->{$type.'_list'}[] = $line;
+	}
+
+	public function addTopic($csTopic, $dateTime)
+	{
+		$this->topics_list[] = array('csTopic' => $csTopic
+					    ,'setDate' => $dateTime);
+	}
+
+	public function addURL($csURL, $dateTime)
+	{
+		$URL = strtolower($csURL);
+
+		if (!in_array($URL, $this->URLs_list)) {
+			$this->URLs_list[] = $URL;
+			$this->URLs_objs[$URL] = new URL($csURL);
+		} else
+			$this->URLs_objs[$URL]->setValue('csURL', $csURL);
+
+		$this->URLs_objs[$URL]->addValue('total', 1);
+		$this->URLs_objs[$URL]->lastUsed($dateTime);
+	}
+
 	public function addValue($var, $value)
 	{
 		$this->$var += $value;
-	}
-
-	public function setValue($var, $value)
-	{
-		$this->$var = $value;
 	}
 
 	public function getValue($var)
@@ -211,32 +248,36 @@ final class Nick extends Nick_MySQL
 			$this->lastTalked = $dateTime;
 	}
 
-	public function addHost($csHost)
+	/**
+	 * For each type of quote we keep an array with all lines that match a certain minimum length.
+	 * These tend to look better on the statspage and give more clues on what the subject was.
+	 * On index 0 of the array we put the last line that validates for that type of quote regardless
+	 * of length. This ensures there is pretty much always a quote for the user and we won't end up
+	 * with an empty field on the statspage. After parsing the logfile we randomly pick a quote from
+	 * the array, or, if it has no values, we use the line on index 0 as the specific quote.
+	 */
+	public function randomizeQuotes()
 	{
-		$host = strtolower($csHost);
+		$types = array('ex_actions', 'ex_exclamations', 'ex_questions', 'ex_uppercased', 'quote');
 
-		if (!in_array($host, $this->hosts_list))
-			$this->hosts_list[] = $host;
+		foreach ($types as $type) {
+			$quoteTotal = count($this->{$type.'_list'});
+
+			if ($quoteTotal > 1)
+				$this->$type = $this->{$type.'_list'}[mt_rand(1, $quoteTotal - 1)];
+			elseif (!empty($this->{$type.'_list'}[0]))
+				$this->$type = $this->{$type.'_list'}[0];
+		}
 	}
 
-	public function addURL($csURL, $dateTime)
+	public function setQuote($type, $line)
 	{
-		$URL = strtolower($csURL);
-
-		if (!in_array($URL, $this->URLs_list)) {
-			$this->URLs_list[] = $URL;
-			$this->URLs_objs[$URL] = new URL($csURL);
-		} else
-			$this->URLs_objs[$URL]->setValue('csURL', $csURL);
-
-		$this->URLs_objs[$URL]->addValue('total', 1);
-		$this->URLs_objs[$URL]->lastUsed($dateTime);
+		$this->{$type.'_list'}[0] = $line;
 	}
 
-	public function addTopic($csTopic, $dateTime)
+	public function setValue($var, $value)
 	{
-		$this->topics_list[] = array('csTopic' => $csTopic
-					    ,'setDate' => $dateTime);
+		$this->$var = $value;
 	}
 }
 

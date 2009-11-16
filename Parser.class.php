@@ -35,18 +35,9 @@ abstract class Parser extends Parser_MySQL
 	private $host_maxLen = 255;
 	private $URL_maxLen = 255;
 	private $quote_minLen = 25;
-	private $quote_maxLen = 120;
+	private $quote_maxLen = 255;
 	private $outputLevel = 1;
 	private $wordTracking = FALSE;
-
-	/**
-	 * Default percentages used by the randomizer.
-	 */
-	private $random_actions = 50;
-	private $random_exclamations = 40;
-	private $random_questions = 20;
-	private $random_quote = 5;
-	private $random_uppercased = 50;
 
 	/**
 	 * Variables used in database table "channel".
@@ -228,7 +219,7 @@ abstract class Parser extends Parser_MySQL
 	 */
 	final private function validateQuote($line)
 	{
-		if (strlen($line) >= $this->quote_minLen && strlen($line) <= $this->quote_maxLen)
+		if (strlen($line) <= $this->quote_maxLen)
 			return TRUE;
 		else
 			return FALSE;
@@ -242,18 +233,6 @@ abstract class Parser extends Parser_MySQL
 	final private function validateURL($csURL)
 	{
 		if (strlen($csURL) <= $this->URL_maxLen && $this->URLTools->validateURL($csURL))
-			return TRUE;
-		else
-			return FALSE;
-	}
-
-	/**
-	 * An $int percent chance to return TRUE.
-	 * Used for making the selection of quotes more dynamic.
-	 */
-	final private function random($int)
-	{
-		if (mt_rand(1, 100) <= $int)
 			return TRUE;
 		else
 			return FALSE;
@@ -346,27 +325,43 @@ abstract class Parser extends Parser_MySQL
 			$this->nicks_objs[$nick]->addValue('l_total', 1);
 			$validateQuote = $this->validateQuote($line);
 
+			if ($validateQuote) {
+				$this->nicks_objs[$nick]->setQuote('quote', $line);
+
+				if (strlen($line) >= $this->quote_minLen)
+					$this->nicks_objs[$nick]->addQuote('quote', $line);
+			}
+
 			if (strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
 				$this->nicks_objs[$nick]->addValue('uppercased', 1);
 
-				if ($validateQuote && $this->random($this->random_uppercased))
-					$this->nicks_objs[$nick]->setValue('ex_uppercased', $line);
+				if ($validateQuote) {
+					$this->nicks_objs[$nick]->setQuote('ex_uppercased', $line);
+
+					if (strlen($line) >= $this->quote_minLen)
+						$this->nicks_objs[$nick]->addQuote('ex_uppercased', $line);
+				}
 			}
 
 			if (preg_match('/!$/', $line)) {
 				$this->nicks_objs[$nick]->addValue('exclamations', 1);
 
-				if ($validateQuote && $this->random($this->random_exclamations))
-					$this->nicks_objs[$nick]->setValue('ex_exclamations', $line);
+				if ($validateQuote) {
+					$this->nicks_objs[$nick]->setQuote('ex_exclamations', $line);
+
+					if (strlen($line) >= $this->quote_minLen)
+						$this->nicks_objs[$nick]->addQuote('ex_exclamations', $line);
+				}
 			} elseif (preg_match('/\?$/', $line)) {
 				$this->nicks_objs[$nick]->addValue('questions', 1);
 
-				if ($validateQuote && $this->random($this->random_questions))
-					$this->nicks_objs[$nick]->setValue('ex_questions', $line);
-			}
+				if ($validateQuote) {
+					$this->nicks_objs[$nick]->setQuote('ex_questions', $line);
 
-			if ($validateQuote && $this->random($this->random_quote))
-				$this->nicks_objs[$nick]->setValue('quote', $line);
+					if (strlen($line) >= $this->quote_minLen)
+						$this->nicks_objs[$nick]->addQuote('ex_questions', $line);
+				}
+			}
 
 			$lineParts = explode(' ', $line);
 
@@ -563,9 +558,13 @@ abstract class Parser extends Parser_MySQL
 		if ($this->validateNick($csNick)) {
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('actions', 1);
+			
+			if ($this->validateQuote($line)) {
+				$this->nicks_objs[$nick]->setQuote('ex_actions', $line);
 
-			if ($this->validateQuote($line) && $this->random($this->random_actions))
-				$this->nicks_objs[$nick]->setValue('ex_actions', $line);
+				if (strlen($line) >= $this->quote_minLen)
+					$this->nicks_objs[$nick]->addQuote('ex_actions', $line);
+			}
 		} else
 			$this->output('warning', 'setAction(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 	}
