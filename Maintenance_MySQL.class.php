@@ -45,39 +45,6 @@ final class Maintenance_MySQL
 	 */
 	private $mysqli;
 
-	/**
-	 * Function to change and set variables. Should only be used from the startup script.
-	 */
-	public function setValue($var, $value)
-	{
-		$this->$var = $value;
-	}
-
-	/**
-	 * Output given messages to the console.
-	 */
-	private function output($type, $msg)
-	{
-		switch ($type) {
-			case 'debug':
-				if ($this->outputLevel >= 4)
-					echo '   Debug ['.date('H:i.s').'] '.$msg."\n";
-				break;
-			case 'notice':
-				if ($this->outputLevel >= 3)
-					echo '  Notice ['.date('H:i.s').'] '.$msg."\n";
-				break;
-			case 'warning':
-				if ($this->outputLevel >= 2)
-					echo ' Warning ['.date('H:i.s').'] '.$msg."\n";
-				break;
-			case 'critical':
-				if ($this->outputLevel >= 1)
-					echo 'Critical ['.date('H:i.s').'] '.$msg."\n";
-				exit;
-		}
-	}
-
 	public function doMaintenance()
 	{
 		$this->output('notice', 'doMaintenance(): performing database maintenance routines');
@@ -174,39 +141,6 @@ final class Maintenance_MySQL
 					}
 			}
 		}
-	}
-
-	/**
-	 * Make the alias with the most lines the new registered nick for the user or bot it is linked to.
-	 */
-	private function registerMostActiveAlias()
-	{
-		/**
-		 * First get all valid RUIDs (UID = RUID and status = 1 or 3). Then check for aliases pointing to those RUIDs and determine the one with most lines.
-		 * Finally change the registered nick.
-		 */
-		$query_valid_RUIDs = @mysqli_query($this->mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `UID` = `RUID` AND (`status` = 1 OR `status` = 3) ORDER BY `RUID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-		$rows = mysqli_num_rows($query_valid_RUIDs);
-
-		if (!empty($rows))
-			while ($result_valid_RUIDs = mysqli_fetch_object($query_valid_RUIDs)) {
-				$query_aliases = @mysqli_query($this->mysqli, 'SELECT `user_status`.`UID` FROM `user_status` JOIN `user_lines` ON `user_status`.`UID` = `user_lines`.`UID` WHERE `RUID` = '.$result_valid_RUIDs->RUID.' ORDER BY `l_total` DESC, `user_status`.`UID` ASC LIMIT 1') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-				$rows = mysqli_num_rows($query_aliases);
-
-				if (!empty($rows)) {
-					$result_aliases = mysqli_fetch_object($query_aliases);
-
-					if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
-						/**
-						 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old registered nick had.
-						 * Update all nicks linked to the old registered nick and make their RUID point to the new one.
-						 */
-						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-						$this->output('debug', 'registerMostActiveAlias(): UID '.$result_aliases->UID.' set to new registered');
-					}
-				}
-			}
 	}
 
 	/**
@@ -315,6 +249,72 @@ final class Maintenance_MySQL
 			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `channel`, `user_activity`, `user_details`, `user_events`, `user_hosts`, `user_lines`, `user_smileys`, `user_status`, `user_topics`, `user_URLs`, `words`, `query_events`, `query_lines`, `query_smileys`') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 		else
 			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `query_events`, `query_lines`, `query_smileys`') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+	}
+
+	/**
+	 * Output given messages to the console.
+	 */
+	private function output($type, $msg)
+	{
+		switch ($type) {
+			case 'debug':
+				if ($this->outputLevel >= 4)
+					echo '   Debug ['.date('H:i.s').'] '.$msg."\n";
+				break;
+			case 'notice':
+				if ($this->outputLevel >= 3)
+					echo '  Notice ['.date('H:i.s').'] '.$msg."\n";
+				break;
+			case 'warning':
+				if ($this->outputLevel >= 2)
+					echo ' Warning ['.date('H:i.s').'] '.$msg."\n";
+				break;
+			case 'critical':
+				if ($this->outputLevel >= 1)
+					echo 'Critical ['.date('H:i.s').'] '.$msg."\n";
+				exit;
+		}
+	}
+
+	/**
+	 * Make the alias with the most lines the new registered nick for the user or bot it is linked to.
+	 */
+	private function registerMostActiveAlias()
+	{
+		/**
+		 * First get all valid RUIDs (UID = RUID and status = 1 or 3). Then check for aliases pointing to those RUIDs and determine the one with most lines.
+		 * Finally change the registered nick.
+		 */
+		$query_valid_RUIDs = @mysqli_query($this->mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `UID` = `RUID` AND (`status` = 1 OR `status` = 3) ORDER BY `RUID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+		$rows = mysqli_num_rows($query_valid_RUIDs);
+
+		if (!empty($rows))
+			while ($result_valid_RUIDs = mysqli_fetch_object($query_valid_RUIDs)) {
+				$query_aliases = @mysqli_query($this->mysqli, 'SELECT `user_status`.`UID` FROM `user_status` JOIN `user_lines` ON `user_status`.`UID` = `user_lines`.`UID` WHERE `RUID` = '.$result_valid_RUIDs->RUID.' ORDER BY `l_total` DESC, `user_status`.`UID` ASC LIMIT 1') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+				$rows = mysqli_num_rows($query_aliases);
+
+				if (!empty($rows)) {
+					$result_aliases = mysqli_fetch_object($query_aliases);
+
+					if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
+						/**
+						 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old registered nick had.
+						 * Update all nicks linked to the old registered nick and make their RUID point to the new one.
+						 */
+						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+						$this->output('debug', 'registerMostActiveAlias(): UID '.$result_aliases->UID.' set to new registered');
+					}
+				}
+			}
+	}
+
+	/**
+	 * Function to change and set variables. Should only be used from the startup script.
+	 */
+	public function setValue($var, $value)
+	{
+		$this->$var = $value;
 	}
 }
 

@@ -43,11 +43,6 @@ final class URL extends URL_MySQL
 		$this->$var += $value;
 	}
 
-	public function setValue($var, $value)
-	{
-		$this->$var = $value;
-	}
-
 	public function lastUsed($dateTime)
 	{
 		if ($this->firstUsed == '' || $dateTime < $this->firstUsed)
@@ -55,6 +50,11 @@ final class URL extends URL_MySQL
 
 		if ($this->lastUsed == '' || $dateTime > $this->lastUsed)
 			$this->lastUsed = $dateTime;
+	}
+
+	public function setValue($var, $value)
+	{
+		$this->$var = $value;
 	}
 }
 
