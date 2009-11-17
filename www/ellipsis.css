@@ -1,6 +1,7 @@
 /* Crop quotes and add ellipsis... experimental and ahead of final css3 spec */
 .large div,.map div {
 	-moz-binding:url('ellipsis.xml#ellipsis');
+	-ms-text-overflow:ellipsis;
 	-o-text-overflow:ellipsis;
 	overflow:hidden;
         text-overflow:ellipsis;
