@@ -12,14 +12,6 @@ body {
 .grey {
 	color:#999;
 }
-.left {
-	float:left;
-}
-.right {
-	color:#999;
-	float:right;
-	font-weight:normal;
-}
 .head {
 	background-color:#EEE;
 	color:#666;
@@ -39,6 +31,14 @@ body {
 	font-weight:bold;
 	margin:15px 22px 7px 0;
 	width:818px;
+}
+.left {
+	float:left;
+}
+.right {
+	color:#999;
+	float:right;
+	font-weight:normal;
 }
 
 /* Global table styling */
@@ -72,7 +72,7 @@ body {
 .mad {
 	width:240px;
 }
-.yearly { 
+.yearly {
 	/* Variable width, specified in HTML */
 }
 .graph th,.mad th,.yearly th {
@@ -83,9 +83,9 @@ body {
 }
 .graph tr.bars td,.mad tr.bars td,.yearly tr.bars td {
 	height:125px;
+	padding:0;
 	vertical-align:bottom;
 	width:34px;
-	padding:0;
 }
 .graph tr.sub td,.mad tr.sub td,.yearly tr.sub td {
 	background-color:#E0E0E0;
@@ -122,31 +122,31 @@ body {
 	font-weight:bold;
 }
 .map td.k1,.map td.v1 {
-	width:80px;
 	text-align:right;
+	width:80px;
 }
 .map td.k2,.map td.v2 {
-	width:78px;
 	padding-right:2px;
 	text-align:right;
+	width:78px;
 }
 .map td.k3,.map td.v3 {
-	width:148px;
 	padding-left:2px;
+	width:148px;
 }
 .map td.k4,.map td.v4 {
 	width:54px;
 }
 .map td.k5,.map td.v5 {
-	width:98px;
 	padding-left:2px;
+	width:98px;
 }
 .map td.k6,.map td.v6 {
 	width:327px;
 }
 .map td.pos {
-	width:25px;
 	text-align:center;
+	width:25px;
 }
 
 /* Specific table styling: time of day */
@@ -174,12 +174,12 @@ body {
 	font-weight:bold;
 }
 .tod td.k,.tod td.v {
-	width:195px;
 	padding-right:2px;
+	width:195px;
 }
 .tod td.pos {
-	width:28px;
 	text-align:center;
+	width:28px;
 }
 
 /* Specific table styling: small, large */
@@ -207,18 +207,18 @@ body {
 	font-weight:bold;
 }
 .small td.k1,.small td.v1,.large td.k1,.large td.v1 {
-	width:78px;
 	padding-right:2px;
 	text-align:right;
+	width:78px;
 }
 .small td.k2,.small td.v2,.large td.k2,.large td.v2 {
-	width:148px;
 	padding-left:2px;
+	width:148px;
 }
 .large td.k3,.large td.v3 {
 	width:560px;
 }
 .small td.pos,.large td.pos {
-	width:26px;
 	text-align:center;
+	width:26px;
 }

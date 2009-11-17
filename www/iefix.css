@@ -2,6 +2,6 @@
 html {
 	border:0;
 }
-table.graph,table.mad,table.yearly,table.map,table.tod,table.small,table.large {
+.graph,.mad,.yearly,.map,.tod,.small,.large {
 	border-collapse:collapse;
 }
