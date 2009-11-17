@@ -128,6 +128,7 @@ final class HTML_MySQL
 			      . '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
 			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
+			      . '<link rel="stylesheet" type="text/css" href="ellipsis.css" />'."\n"
 			      . '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n"
 			      . '<style type="text/css">'."\n".'  table.yearly {width:'.(2 + ($this->years * 34)).'px}'."\n".'</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
@@ -323,7 +324,7 @@ final class HTML_MySQL
 				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
 				foreach ($content as $row)
-					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
 
 				$output .= '</table>'."\n";
 			}
@@ -589,43 +590,6 @@ final class HTML_MySQL
 			}
 
 			$l_total_percentage = number_format(($result->l_total / $l_total) * 100, 2);
-
-			/**
-			 * Make sure that quotes don't exceed the limit of 300px in width.
-			 * Below is the old and crappy way of doing so, i'd love to have this tidied up one day.
-			 */
-
-			// fixfixfixfixfix begin
-			$chars_lower = strlen($quote) - strlen(preg_replace('/[a-z]/', '', $quote));
-			$chars_upper = strlen($quote) - strlen(preg_replace('/[A-Z0-9]/', '', $quote));
-			$chars_other = strlen($quote) - $chars_upper - $chars_lower;
-
-			if ((($chars_upper * 7) + ($chars_lower * 6) + ($chars_other * 7)) > 300) {
-				$chars_length = 0;
-				$chars_str = '';
-
-				for ($g = 0; $g < strlen($quote); $g++) {
-					if (preg_match('/[a-z]/', $quote[$g])) {
-						$chars_length += 6;
-						$chars_str .= $quote[$g];
-					} elseif (preg_match('/[A-Z0-9]/', $quote[$g])) {
-						$chars_length += 7;
-						$chars_str .= $quote[$g];
-					} else {
-						$chars_length += 7;
-						$chars_str .= $quote[$g];
-					}
-
-					if ($chars_length >= 300)
-						break;
-				}
-
-				$hover = '<a title="'.htmlspecialchars($quote).'">...</a>';
-				$quote = rtrim($chars_str);
-			} else
-				$hover = '';
-			// fixfixfixfixfix end
-
 			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or exit;
 			$result_lastSeen = mysqli_fetch_object($query_lastSeen);
 			$lastSeen = substr($result_lastSeen->lastSeen, 0, 10);
@@ -682,7 +646,7 @@ final class HTML_MySQL
 				if (!empty(${'when_'.$time}))
 					$when_output .= ${'when_'.$time};
 
-			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$RUID.'">'.htmlspecialchars($csNick).'</a>' : htmlspecialchars($csNick)).'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6">'.htmlspecialchars($quote).$hover.'</td></tr>';
+			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$RUID.'">'.htmlspecialchars($csNick).'</a>' : htmlspecialchars($csNick)).'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6"><div>'.htmlspecialchars($quote).'</div></td></tr>';
 		}
 
 		return $output.'</table>'."\n";
