@@ -17,9 +17,6 @@
  */
 
 /**
- * Super Serious Stats
- * Nick.class.php
- *
  * Class for handling user data.
  */
 
@@ -179,17 +176,28 @@ final class Nick extends Nick_MySQL
 	/**
 	 * Other variables.
 	 */
-	private $ex_actions_list = array();
-	private $ex_exclamations_list = array();
-	private $ex_questions_list = array();
-	private $ex_uppercased_list = array();
-	private $quote_list = array();
+	private $ex_actions_list_long = array();
+        private $ex_actions_list_short = array();
+	private $ex_exclamations_list_long = array();
+        private $ex_exclamations_list_short = array();
+	private $ex_questions_list_long = array();
+        private $ex_questions_list_short = array();
+	private $ex_uppercased_list_long = array();
+        private $ex_uppercased_list_short = array();
+	private $quote_list_long = array();
+        private $quote_list_short = array();
 
+        /**
+         * Constructor.
+         */
 	public function __construct($csNick)
 	{
 		$this->csNick = $csNick;
 	}
 
+        /**
+         * Keep a list of hosts this user has been seen using.
+         */
 	public function addHost($csHost)
 	{
 		$host = strtolower($csHost);
@@ -198,17 +206,26 @@ final class Nick extends Nick_MySQL
 			$this->hosts_list[] = $host;
 	}
 
-	public function addQuote($type, $line)
+        /**
+         * Keep two lists of the various types of quotes for the user; one with short quotes and one with long quotes.
+         */
+	public function addQuote($type, $length, $line)
 	{
-		$this->{$type.'_list'}[] = $line;
+		$this->{$length.'_'.$type.'_list'}[] = $line;
 	}
 
+        /**
+         * Keep a list of topics set by the user.
+         */
 	public function addTopic($csTopic, $dateTime)
 	{
 		$this->topics_list[] = array('csTopic' => $csTopic
 					    ,'setDate' => $dateTime);
 	}
 
+        /**
+         * Keep a list of URLs pasted by the user. The case of the last mentioned version of the URL will be stored.
+         */
 	public function addURL($csURL, $dateTime)
 	{
 		$URL = strtolower($csURL);
@@ -223,16 +240,25 @@ final class Nick extends Nick_MySQL
 		$this->URLs_objs[$URL]->lastUsed($dateTime);
 	}
 
+        /**
+         * Add a value to a variable.
+         */
 	public function addValue($var, $value)
 	{
 		$this->$var += $value;
 	}
 
+        /**
+         * Get the value of a variable.
+         */
 	public function getValue($var)
 	{
 		return $this->$var;
 	}
 
+        /**
+         * Store the date and time the user was first and last seen.
+         */
 	public function lastSeen($dateTime)
 	{
 		if ($this->firstSeen == '' || $dateTime < $this->firstSeen)
@@ -242,6 +268,9 @@ final class Nick extends Nick_MySQL
 			$this->lastSeen = $dateTime;
 	}
 
+        /**
+         * Store the date and time the user last typed a "normal" line.
+         */
 	public function lastTalked($dateTime)
 	{
 		if ($this->lastTalked == '' || $dateTime > $this->lastTalked)
@@ -249,32 +278,24 @@ final class Nick extends Nick_MySQL
 	}
 
 	/**
-	 * For each type of quote we keep an array with all lines that match a certain minimum length.
-	 * These tend to look better on the statspage and give more clues on what the subject was.
-	 * On index 0 of the array we put the last line that validates for that type of quote regardless
-	 * of length. This ensures there is pretty much always a quote for the user and we won't end up
-	 * with an empty field on the statspage. After parsing the logfile we randomly pick a quote from
-	 * the array, or, if it has no values, we use the line on index 0 as the specific quote.
+	 * Pick a random line from either the list of long quotes or, when there are no long quotes, from the list of short quotes.
+	 * Long quotes are preferred since these look better on the statspage and give away more about the subject.
 	 */
 	public function randomizeQuotes()
 	{
 		$types = array('ex_actions', 'ex_exclamations', 'ex_questions', 'ex_uppercased', 'quote');
 
 		foreach ($types as $type) {
-			$quoteTotal = count($this->{$type.'_list'});
-
-			if ($quoteTotal > 1)
-				$this->$type = $this->{$type.'_list'}[mt_rand(1, $quoteTotal - 1)];
-			elseif (!empty($this->{$type.'_list'}[0]))
-				$this->$type = $this->{$type.'_list'}[0];
+			if (!empty($this->{'long_'.$type.'_list'}))
+				$this->$type = $this->{'long_'.$type.'_list'}[mt_rand(0, count($this->{'long_'.$type.'_list'}) - 1)];
+			elseif (!empty($this->{'short_'.$type.'_list'}))
+				$this->$type = $this->{'short_'.$type.'_list'}[mt_rand(0, count($this->{'short_'.$type.'_list'}) - 1)];
 		}
 	}
 
-	public function setQuote($type, $line)
-	{
-		$this->{$type.'_list'}[0] = $line;
-	}
-
+        /**
+         * Set the value of a variable.
+         */
 	public function setValue($var, $value)
 	{
 		$this->$var = $value;

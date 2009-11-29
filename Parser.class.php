@@ -17,9 +17,6 @@
  */
 
 /**
- * Super Serious Stats
- * Parser.class.php
- *
  * General parse instructions. This class will be extended by a class with logfile format specific parse instructions.
  */
 
@@ -27,7 +24,7 @@ abstract class Parser extends Parser_MySQL
 {
 	/**
 	 * Don't change any of the default settings below unless you know what you're doing!
-	 * Documented changes can be made from the startup script.
+	 * It is recommended to makes changes only from the startup script.
 	 */
 	private $URL_maxLen = 255;
 	private $host_maxLen = 255;
@@ -105,6 +102,9 @@ abstract class Parser extends Parser_MySQL
 	protected $words_list = array();
 	protected $words_objs = array();
 
+	/**
+	 * Constructor.
+	 */
 	final public function __construct()
 	{
 		$this->URLTools = new URLTools();
@@ -131,7 +131,7 @@ abstract class Parser extends Parser_MySQL
 	}
 
 	/**
-	 * Function for the global word tracking. Word tracking can be turned off by setting $wordTracking to FALSE from the startup script.
+	 * Function for the global word tracking. This feature can be enabled or disabled in the settings file.
 	 * Due to the in_array() function being shitty inefficient, searching large arrays is a big performance hit.
 	 */
 	final private function addWord($csWord)
@@ -222,10 +222,10 @@ abstract class Parser extends Parser_MySQL
 			$this->nicks_objs[$nick]->addValue('actions', 1);
 
 			if ($this->validateQuote($line)) {
-				$this->nicks_objs[$nick]->setQuote('ex_actions', $line);
-
 				if (strlen($line) >= $this->quote_minLen)
-					$this->nicks_objs[$nick]->addQuote('ex_actions', $line);
+					$this->nicks_objs[$nick]->addQuote('ex_actions', 'long', $line);
+				else
+					$this->nicks_objs[$nick]->addQuote('ex_actions', 'short', $line);
 			}
 		} else
 			$this->output('warning', 'setAction(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
@@ -378,20 +378,20 @@ abstract class Parser extends Parser_MySQL
 			$validateQuote = $this->validateQuote($line);
 
 			if ($validateQuote) {
-				$this->nicks_objs[$nick]->setQuote('quote', $line);
-
 				if (strlen($line) >= $this->quote_minLen)
-					$this->nicks_objs[$nick]->addQuote('quote', $line);
+					$this->nicks_objs[$nick]->addQuote('quote', 'long', $line);
+				else
+					$this->nicks_objs[$nick]->addQuote('quote', 'short', $line);
 			}
 
 			if (strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
 				$this->nicks_objs[$nick]->addValue('uppercased', 1);
 
 				if ($validateQuote) {
-					$this->nicks_objs[$nick]->setQuote('ex_uppercased', $line);
-
 					if (strlen($line) >= $this->quote_minLen)
-						$this->nicks_objs[$nick]->addQuote('ex_uppercased', $line);
+						$this->nicks_objs[$nick]->addQuote('ex_uppercased', 'long', $line);
+					else
+						$this->nicks_objs[$nick]->addQuote('ex_uppercased', 'short', $line);
 				}
 			}
 
@@ -399,19 +399,19 @@ abstract class Parser extends Parser_MySQL
 				$this->nicks_objs[$nick]->addValue('exclamations', 1);
 
 				if ($validateQuote) {
-					$this->nicks_objs[$nick]->setQuote('ex_exclamations', $line);
-
 					if (strlen($line) >= $this->quote_minLen)
-						$this->nicks_objs[$nick]->addQuote('ex_exclamations', $line);
+						$this->nicks_objs[$nick]->addQuote('ex_exclamations', 'long', $line);
+					else
+						$this->nicks_objs[$nick]->addQuote('ex_exclamations', 'short', $line);
 				}
 			} elseif (preg_match('/\?$/', $line)) {
 				$this->nicks_objs[$nick]->addValue('questions', 1);
 
 				if ($validateQuote) {
-					$this->nicks_objs[$nick]->setQuote('ex_questions', $line);
-
 					if (strlen($line) >= $this->quote_minLen)
-						$this->nicks_objs[$nick]->addQuote('ex_questions', $line);
+						$this->nicks_objs[$nick]->addQuote('ex_questions', 'long', $line);
+					else
+						$this->nicks_objs[$nick]->addQuote('ex_questions', 'short', $line);
 				}
 			}
 
@@ -551,7 +551,7 @@ abstract class Parser extends Parser_MySQL
 	/**
 	 * Validate a given host.
 	 * Only check for length since standards don't apply to network specific spoofed hosts.
-	 * These are needed for nicklinking however.
+	 * These can be used for nicklinking.
 	 */
 	final private function validateHost($csHost)
 	{
@@ -563,7 +563,7 @@ abstract class Parser extends Parser_MySQL
 
 	/**
 	 * Validate a given nick.
-	 * Check on syntax and variable length.
+	 * Check on syntax and variable length. Set the maximum length to the maximum supported nick length on your network if you want to do strict validation.
 	 */
 	final private function validateNick($csNick)
 	{
@@ -575,7 +575,7 @@ abstract class Parser extends Parser_MySQL
 
 	/**
 	 * Validate a given quote.
-	 * Since all non printable ISO-8859-1 characters are stripped from the lines we can suffice with checking on min and max length.
+	 * Since all non printable ISO-8859-1 characters are stripped from the lines we can suffice with checking on minimum and maximum length.
 	 */
 	final private function validateQuote($line)
 	{
@@ -587,7 +587,7 @@ abstract class Parser extends Parser_MySQL
 
 	/**
 	 * Validate a given URL.
-	 * The max length variable is used to keep stored URLs within boundaries of our database field.
+	 * The maximum length variable is used to keep stored URLs within boundaries of our database field.
 	 * URL validation is done by an external class.
 	 */
 	final private function validateURL($csURL)
