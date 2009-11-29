@@ -17,16 +17,13 @@
  */
 
 /**
- * Super Serious Stats
- * Nick_MySQL.class.php
- *
  * Class for writing user data to the database.
  */
 
 abstract class Nick_MySQL
 {
 	/**
-	 * The array below should contain "user_details" as its first element.
+	 * The array $user_tables should contain "user_details" as its first element.
 	 */
 	private $user_tables = array('user_details', 'user_events', 'user_lines', 'user_smileys');
 	private $user_details = array('UID', 'csNick', 'firstSeen', 'lastSeen');
