@@ -50,11 +50,17 @@ define('DB_PASS', $cfg['db_pass']);
 define('DB_NAME', $cfg['db_name']);
 date_default_timezone_set($cfg['timezone']);
 
+/**
+ * Class autoloader, handy!
+ */
 function __autoload($class)
 {
 	require_once($class.'.class.php');
 }
 
+/**
+ * Run the database maintenance scripts. Userstats for all linked nicks will be accumulated, sanity checks will be done on the userstatuses and more.
+ */
 function doMaintenance($cfg)
 {
 	$tmp = 'Maintenance_'.$cfg['database_server'];
@@ -69,6 +75,9 @@ function doMaintenance($cfg)
 	$sss_maintenance->doMaintenance();
 }
 
+/**
+ * Parse a logfile.
+ */
 function input($cfg, $log_file)
 {
 	$logfile = preg_replace('/yesterday$/', date($cfg['date_format'], strtotime('yesterday')), $log_file);
@@ -105,6 +114,9 @@ function input($cfg, $log_file)
 		doMaintenance($cfg);
 }
 
+/**
+ * Create the statspage.
+ */
 function output($cfg, $html_file)
 {
 	$tmp = 'HTML_'.$cfg['database_server'];

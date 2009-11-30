@@ -17,14 +17,13 @@
  */
 
 /**
- * Super Serious Stats
- * Parser_Irssi.class.php
- *
  * Parse instructions for Irssi logfile format.
  */
-
 final class Parser_Irssi extends Parser
 {
+	/**
+	 * Parse a line for various chat data.
+	 */
 	protected function parseLine($line)
 	{
 		/**

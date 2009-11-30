@@ -17,12 +17,8 @@
  */
 
 /**
- * Super Serious Stats
- * Word.class.php
- *
  * Class for handling word data.
  */
-
 final class Word extends Word_MySQL
 {
 	/**
@@ -31,11 +27,17 @@ final class Word extends Word_MySQL
 	protected $word = '';
 	protected $total = 0;
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct($word)
 	{
 		$this->word = $word;
 	}
 
+        /**
+         * Add a value to a variable.
+         */
 	public function addValue($var, $value)
 	{
 		$this->$var += $value;

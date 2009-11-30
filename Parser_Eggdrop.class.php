@@ -17,12 +17,8 @@
  */
 
 /**
- * Super Serious Stats
- * Parser_Eggdrop.class.php
- *
  * Parse instructions for Eggdrop logfile format.
  */
-
 final class Parser_Eggdrop extends Parser
 {
 	/**
@@ -30,6 +26,9 @@ final class Parser_Eggdrop extends Parser
 	 */
 	private $repeating = FALSE;
 
+	/**
+	 * Parse a line for various chat data.
+	 */
 	protected function parseLine($line)
 	{
 		/**

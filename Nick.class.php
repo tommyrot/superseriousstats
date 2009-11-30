@@ -19,7 +19,6 @@
 /**
  * Class for handling user data.
  */
-
 final class Nick extends Nick_MySQL
 {
 	/**

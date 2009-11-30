@@ -17,14 +17,13 @@
  */
 
 /**
- * Super Serious Stats
- * Word_MySQL.class.php
- *
  * Class for writing word data to the database.
  */
-
 abstract class Word_MySQL
 {
+	/**
+	 * Write word data to the database.
+	 */
 	final public function writeData($mysqli)
 	{
 		/**
