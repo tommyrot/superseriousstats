@@ -17,14 +17,13 @@
  */
 
 /**
- * Super Serious Stats
- * URL_MySQL.class.php
- *
  * Class for writing URL data to the database.
  */
-
 abstract class URL_MySQL
 {
+	/**
+	 * Write URL data to the database.
+	 */
 	final public function writeData($mysqli, $UID)
 	{
 		/**

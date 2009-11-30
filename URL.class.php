@@ -17,12 +17,8 @@
  */
 
 /**
- * Super Serious Stats
- * URL.class.php
- *
  * Class for handling URL data.
  */
-
 final class URL extends URL_MySQL
 {
 	/**
@@ -33,16 +29,25 @@ final class URL extends URL_MySQL
 	protected $firstUsed = '';
 	protected $lastUsed = '';
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct($csURL)
 	{
 		$this->csURL = $csURL;
 	}
 
+        /**
+         * Add a value to a variable.
+         */
 	public function addValue($var, $value)
 	{
 		$this->$var += $value;
 	}
 
+        /**
+         * Store the date and time the URL was first and last typed in the channel.
+         */
 	public function lastUsed($dateTime)
 	{
 		if ($this->firstUsed == '' || $dateTime < $this->firstUsed)
@@ -52,6 +57,9 @@ final class URL extends URL_MySQL
 			$this->lastUsed = $dateTime;
 	}
 
+        /**
+         * Set the value of a variable.
+         */
 	public function setValue($var, $value)
 	{
 		$this->$var = $value;

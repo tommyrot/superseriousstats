@@ -19,7 +19,6 @@
 /**
  * General parse instructions. This class will be extended by a class with logfile format specific parse instructions.
  */
-
 abstract class Parser extends Parser_MySQL
 {
 	/**

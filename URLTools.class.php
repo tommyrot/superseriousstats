@@ -17,9 +17,6 @@
  */
 
 /**
- * Super Serious Stats
- * URLTools.class.php
- *
  * Various functions for URLs following RFC 3986 and others.
  *
  * Scheme:
@@ -42,7 +39,6 @@
  * Other:
  * - Square brackets must be percent encoded
  */
-
 final class URLTools
 {
 	/**
@@ -74,6 +70,9 @@ final class URLTools
 	 */
 	private $regexp = '';
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct()
 	{
 		/**
@@ -142,6 +141,9 @@ final class URLTools
 		$this->regexp = '/^'.$this->scheme.$this->authority.$this->path.$this->query.$this->fragment.'$/i';
 	}
 
+	/**
+	 * Normalize a URL.
+	 */
 	public function normalizeURL($csURL)
 	{
 		/**
@@ -152,6 +154,9 @@ final class URLTools
 		return $csURL;
 	}
 
+	/**
+	 * Validate a URL.
+	 */
 	public function validateURL($csURL)
 	{
 		if (preg_match($this->regexp, $csURL))
