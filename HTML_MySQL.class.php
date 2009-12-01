@@ -17,14 +17,9 @@
  */
 
 /**
- * Super Serious Stats
- * HTML_MySQL.class.php
- *
  * Class for building a fancy webpage out of stored channel data.
- *
- * SUPER IMPORTANT, SERIOUSLY: data is at least one day old in our database!!
+ * Note: data is always one day old (we are generating stats from data up to and including yesterday).
  */
-
 final class HTML_MySQL
 {
 	/**
@@ -56,6 +51,9 @@ final class HTML_MySQL
 	private $year = '';
 	private $years = 0;
 
+	/**
+	 * Get the case sensitive nick and status for a given UID.
+	 */
 	private function getDetails($UID)
 	{
 		$query = mysqli_query($this->mysqli, 'SELECT `csNick`, `status` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `user_details`.`UID` = '.$UID) or exit;
@@ -65,6 +63,9 @@ final class HTML_MySQL
 			    ,'status' => $result->status);
 	}
 
+	/**
+	 * Generate the HTML page.
+	 */
 	public function makeHTML()
 	{
 		$this->mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit;
@@ -266,6 +267,9 @@ final class HTML_MySQL
 		return $this->output;
 	}
 
+	/**
+	 * Create a small or large generic table.
+	 */
 	private function makeTable($settings)
 	{
 		$query = @mysqli_query($this->mysqli, $settings['query']) or exit;
@@ -333,6 +337,9 @@ final class HTML_MySQL
 		return $output;
 	}
 
+	/**
+	 * Create activity tables.
+	 */
 	private function makeTable_Activity($settings)
 	{
 		switch ($settings['type']) {
@@ -488,6 +495,9 @@ final class HTML_MySQL
 		return $output.'</tr></table>'."\n";
 	}
 
+	/**
+	 * Create the most active days table.
+	 */
 	private function makeTable_MostActiveDays($settings)
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines`') or exit;
@@ -545,6 +555,9 @@ final class HTML_MySQL
 		return $output.'</tr></table>'."\n";
 	}
 
+	/**
+	 * Create most active people tables.
+	 */
 	private function makeTable_MostActivePeople($settings)
 	{
 		switch ($settings['type']) {
@@ -652,6 +665,9 @@ final class HTML_MySQL
 		return $output.'</table>'."\n";
 	}
 
+	/**
+	 * Create the most active times table.
+	 */
 	private function makeTable_MostActiveTimes($settings)
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or exit;
@@ -708,6 +724,9 @@ final class HTML_MySQL
 		return $output.'</tr></table>'."\n";
 	}
 
+	/**
+	 * Create the time of day table.
+	 */
 	private function makeTable_TimeOfDay($settings)
 	{
 		$l_total_high = 0;
@@ -751,6 +770,9 @@ final class HTML_MySQL
 		return $output.'</table>'."\n";
 	}
 
+	/**
+	 * Create the topics table.
+	 */
 	private function makeTable_Topics($settings)
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT `TID`, `setDate` FROM `user_topics` ORDER BY `setDate` ASC, `TID` ASC');
@@ -823,6 +845,9 @@ final class HTML_MySQL
 		return $output;
 	}
 
+        /**
+         * Set the value of a variable.
+         */
 	public function setValue($var, $value)
 	{
 		$this->$var = $value;
