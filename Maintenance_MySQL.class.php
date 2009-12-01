@@ -17,9 +17,6 @@
  */
 
 /**
- * Super Serious Stats
- * Maintenance_MySQL.class.php
- *
  * Class for performing database maintenance.
  *
  * One should understand the following basic variables before continuing to read through this file.
@@ -31,7 +28,6 @@
  * The registered user has the same RUID as UID and can be identified accordingly.
  * Its aliases have their own unique UIDs and a RUID which is set to the UID of the registered user.
  */
-
 final class Maintenance_MySQL
 {
 	/**
@@ -45,6 +41,9 @@ final class Maintenance_MySQL
 	 */
 	private $mysqli;
 
+	/**
+	 * Run the maintenance routines.
+	 */
 	public function doMaintenance()
 	{
 		$this->output('notice', 'doMaintenance(): performing database maintenance routines');
@@ -65,6 +64,8 @@ final class Maintenance_MySQL
 	}
 
 	/**
+	 * Fix userstatus errors.
+	 *
 	 * Nicks are stored with their UID, RUID and status. For new nicks the UID = RUID and status = 0.
 	 *
 	 * The possible statusses for nicks are:
@@ -144,6 +145,7 @@ final class Maintenance_MySQL
 	}
 
 	/**
+	 * Make query tables.
 	 * Query tables are generated daily and contain accumulated stats per RUID.
 	 */
 	private function makeQuerytables()
