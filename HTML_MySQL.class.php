@@ -609,10 +609,18 @@ final class HTML_MySQL
 			$lastSeen = round((strtotime('today') - strtotime($lastSeen)) / 86400);
 
 			if (($lastSeen / 365) >= 1) {
-				$lastSeen = rtrim(number_format($lastSeen / 365, 1), '.0');
+				$lastSeen = number_format($lastSeen / 365, 1);
+
+				if (substr($lastSeen, -2) == '.0')
+					$lastSeen = substr($lastSeen, 0, strlen($lastSeen) - 2);
+
 				$lastSeen = $lastSeen.' Year'.($lastSeen > 1 ? 's' : '').' Ago';
 			} elseif (($lastSeen / 30.42) >= 1) {
-				$lastSeen = rtrim(number_format($lastSeen / 30.42, 1), '.0');
+				$lastSeen = number_format($lastSeen / 30.42, 1);
+
+				if (substr($lastSeen, -2) == '.0')
+					$lastSeen = substr($lastSeen, 0, strlen($lastSeen) - 2);
+
 				$lastSeen = $lastSeen.' Month'.($lastSeen > 1 ? 's' : '').' Ago';
 			} elseif ($lastSeen == 1)
 				$lastSeen = 'Yesterday';
