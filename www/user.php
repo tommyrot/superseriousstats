@@ -17,90 +17,101 @@
  */
 
 /**
- * Super Serious Stats
- * user.php
- *
  * Class for building a fancy webpage out of stored user data.
- *
- * SUPER IMPORTANT, SERIOUSLY: data is at least one day old in our database!!
+ * Note: data is always one day old (we are generating stats from data up to and including yesterday).
  */
-
 final class User
 {
-	/**
-	 * Make sure this first block of variables are set correctly.
-	 */
+	// EDIT EDIT EDIT EDIT EDIT EDIT EDIT EDIT
 	private $db_host = '127.0.0.1';
 	private $db_port = 3306;
 	private $db_user = 'user';
 	private $db_pass = 'pass';
 	private $db_name = 'superseriousstats';
 	private $timezone = 'Europe/Amsterdam';
-	private $stylesheet = 'default.css';
-	private $bar_night = 'b.png';
-	private $bar_morning = 'g.png';
-	private $bar_afternoon = 'y.png';
-	private $bar_evening = 'r.png';
+	// EDIT EDIT EDIT EDIT EDIT EDIT EDIT EDIT
 
 	/**
-	 * Debug
+	 * Change only if you know what you're doing.
 	 */
+	private $bar_afternoon = 'y.png';
+	private $bar_evening = 'r.png';
+	private $bar_morning = 'g.png';
+	private $bar_night = 'b.png';
+	private $stylesheet = 'default.css';
 
+	/**
+	 * Output debug/error messages on the userstats page. Useful to troubleshoot problems with your webserver configuration.
+	 */
 	private $debug = FALSE;
 
 	/**
 	 * The following variables shouldn't be tampered with.
 	 */
-	private $UID = 0;
-	private $RUID = 0;
-	private $csNick = '';
-	private $firstSeen = '';
-	private $lastSeen = '';
-	private $l_total = 0;
-	private $month = '';
-	private $mysqli;
-	private $output = '';
-	private $year = '';
-	private $years = 0;
-	private $avg = 0;
+        private $RUID = 0;
+        private $UID = 0;
+        private $avg = 0;
+        private $csNick = '';
+        private $firstSeen = '';
+        private $l_total = 0;
+        private $lastSeen = '';
+        private $month = '';
+        private $mysqli;
+        private $output = '';
+        private $year = '';
+        private $years = 0;
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct($UID)
 	{
 		$this->UID = $UID;
 		date_default_timezone_set($this->timezone);
 	}
 
+	/**
+	 * If something fails we exit with an error message. Used when debugging.
+	 */
 	private function fail($msg)
 	{
 		if ($this->debug)
 			exit($msg."\n");
 	}
 
+	/**
+	 * Generate the HTML page.
+	 */
 	public function makeHTML()
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->fail(mysqli_connect_error());
-		$query_RUID = @mysqli_query($this->mysqli, 'SELECT `RUID` FROM `user_status` WHERE `UID` = '.$this->UID) or $this->fail(mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query_RUID);
-
-		if (empty($rows))
-			exit('This user doesn\'t exist.'."\n");
-
-		$result_RUID = mysqli_fetch_object($query_RUID);
-		$this->RUID = $result_RUID->RUID;
-		$query = @mysqli_query($this->mysqli, 'SELECT `csNick`, `l_total`, `firstSeen`, `lastSeen`, (`l_total` / `activeDays`) AS `avg` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` WHERE `query_lines`.`UID` = '.$this->RUID) or exit;
+		$query = @mysqli_query($this->mysqli, 'SELECT `RUID` FROM `user_status` WHERE `UID` = '.$this->UID) or $this->fail(mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
-		if (empty($rows))
-			exit('This user has no lines.'."\n");
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
+			$this->RUID = $result->RUID;
+			$query = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` WHERE `UID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
+			$result = mysqli_fetch_object($query);
+			$this->csNick = $result->csNick;
+			$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
+			$result = mysqli_fetch_object($query);
+			$this->firstSeen = $result->firstSeen;
+			$this->lastSeen = $result->lastSeen;
+		} else
+			exit('This user doesn\'t exist.'."\n");
 
-		$result = mysqli_fetch_object($query);
-		$this->csNick = $result->csNick;
-		$this->l_total = $result->l_total;
-		$this->firstSeen = $result->firstSeen;
-		$this->lastSeen = $result->lastSeen;
-		$this->avg = $result->avg;
+		$query = @mysqli_query($this->mysqli, 'SELECT `l_total`, (`l_total` / `activeDays`) AS `avg` FROM `query_lines` WHERE `UID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
 
-		if ($this->l_total == 0)
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
+			$this->avg = $result->avg;
+			$this->l_total = $result->l_total;
+
+			if ($this->l_total == 0)
+				exit('This user has no lines.'."\n");
+		} else
 			exit('This user has no lines.'."\n");
 
 		/**
@@ -113,7 +124,7 @@ final class User
 		/**
 		 * HTML Head
 		 */
-		$query_max = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `max`, `date` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$this->RUID.' GROUP BY `date` ORDER BY `max` DESC LIMIT 10') or exit;
+		$query_max = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `max`, `date` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$this->RUID.' GROUP BY `date` ORDER BY `max` DESC LIMIT 1') or exit;
 		$result_max = mysqli_fetch_object($query_max);
 		$this->years = $this->year - date('Y', strtotime($this->firstSeen)) + 1;
 
@@ -132,11 +143,6 @@ final class User
 		              . '<div class="box">'."\n\n"
 			      . '<div class="info">'.htmlspecialchars($this->csNick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstSeen)).' and last seen on '.date('M j, Y', strtotime($this->lastSeen)).'.<br />'
 			      . '<br />'.htmlspecialchars($this->csNick).' typed '.number_format($this->l_total).' lines, an average of '.number_format($this->avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
-
-		/**
-		 * Bots are excluded from statistics unless stated otherwise.
-		 * They are, however, included in the (channel) totals.
-		 */
 
 		/**
 		 * Activity section
@@ -159,6 +165,9 @@ final class User
 		return $this->output;
 	}
 
+	/**
+	 * Create the most active times table.
+	 */
 	private function makeTable_MostActiveTimes($settings)
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23` FROM `query_lines` WHERE `UID` = '.$this->RUID) or exit;
@@ -215,6 +224,9 @@ final class User
 		return $output.'</tr></table>'."\n";
 	}
 
+	/**
+	 * Create activity tables.
+	 */
 	private function makeTable_Activity($settings)
 	{
 		switch ($settings['type']) {
@@ -370,6 +382,9 @@ final class User
 		return $output.'</tr></table>'."\n";
 	}
 
+	/**
+	 * Create the most active days table.
+	 */
 	private function makeTable_MostActiveDays($settings)
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines` WHERE `UID` = '.$this->RUID) or exit;
