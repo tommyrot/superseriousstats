@@ -17,10 +17,26 @@ $cfg['channel'] = '#superseriousstats';
 $cfg['timezone'] = 'Europe/Amsterdam';
 
 /**
- * Format of the date string suffixed to the logfiles.
+ * Format of the logfile filename.
  *
- * Options (most common): Ymd, dmY
+ * logfile_prefix - the part before the date in the filename
+ * logfile_suffix - the part after the date in the filename
+ * date_format - the format of the date in the filename
+ *
+ * Example #1 filename: #superseriousstats.2009-12-31.log
+ *
+ * logfile_prefix = '#superseriousstats.'
+ * logfile_suffix = '.log'
+ * date_format = 'Y-m-d'
+ *
+ * Example #2 filename: sss-31122009
+ *
+ * logfile_prefix = 'sss-'
+ * logfile_suffix = ''
+ * date_format = 'dmY'
  */
+$cfg['logfile_prefix'] = '#superseriousstats.';
+$cfg['logfile_suffix'] = '';
 $cfg['date_format'] = 'Ymd';
 
 /**
