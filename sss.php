@@ -80,8 +80,8 @@ function doMaintenance($cfg)
  */
 function input($cfg, $log_file)
 {
-	$logfile = preg_replace('/yesterday/', date($cfg['date_format'], strtotime('yesterday')), $log_file);
-	$date = preg_replace(array('/^'.$cfg['logfile_prefix'].'/', '/'.$cfg['logfile_suffix'].'$/'), '', $logfile);
+	$logfile = preg_replace('/YESTERDAY/', date($cfg['date_format'], strtotime('yesterday')), $log_file);
+	$date = preg_replace(array('/^'.$cfg['logfile_prefix'].'/', '/'.$cfg['logfile_suffix'].'$/'), '', basename($logfile));
 
 	if (date('Ymd', strtotime($date)) == date('Ymd')) {
 		echo 'The logfile you are trying to parse appears to be of today. If logging'."\n"
