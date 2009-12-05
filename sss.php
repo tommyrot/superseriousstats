@@ -63,8 +63,8 @@ function __autoload($class)
  */
 function doMaintenance($cfg)
 {
-	$tmp = 'Maintenance_'.$cfg['database_server'];
-	$sss_maintenance = new $tmp();
+	$maintenanceClass = 'Maintenance_'.$cfg['database_server'];
+	$sss_maintenance = new $maintenanceClass();
 	$sss_maintenance->setValue('outputLevel', $cfg['outputLevel']);
 	$sss_maintenance->setValue('sanitisationDay', $cfg['sanitisationDay']);
 
@@ -80,10 +80,10 @@ function doMaintenance($cfg)
  */
 function input($cfg, $log_file)
 {
-	$logfile = preg_replace('/yesterday$/', date($cfg['date_format'], strtotime('yesterday')), $log_file);
-	$tmp = substr($logfile, strlen($logfile) - 8);
+	$logfile = preg_replace('/yesterday/', date($cfg['date_format'], strtotime('yesterday')), $log_file);
+	$date = preg_replace(array('/^'.$cfg['logfile_prefix'].'/', '/'.$cfg['logfile_suffix'].'$/'), '', $logfile);
 
-	if (date('Ymd', strtotime($tmp)) == date('Ymd')) {
+	if (date('Ymd', strtotime($date)) == date('Ymd')) {
 		echo 'The logfile you are trying to parse appears to be of today. If logging'."\n"
 		   . 'hasn\'t completed for today it is advisable to skip parsing this file'."\n"
 		   . 'until tomorrow, when it is complete.'."\n"
@@ -94,10 +94,10 @@ function input($cfg, $log_file)
 			exit;
 	}
 
-	define('DATE', date('Y-m-d', strtotime($tmp)));
-	define('DAY', strtolower(date('D', strtotime($tmp))));
-	$tmp = 'Parser_'.$cfg['logfile_format'];
-	$sss_parser = new $tmp();
+	define('DATE', date('Y-m-d', strtotime($date)));
+	define('DAY', strtolower(date('D', strtotime($date))));
+	$parserClass = 'Parser_'.$cfg['logfile_format'];
+	$sss_parser = new $parserClass();
 	$sss_parser->setValue('outputLevel', $cfg['outputLevel']);
 	$sss_parser->setValue('wordTracking', $cfg['wordTracking']);
 
@@ -119,8 +119,8 @@ function input($cfg, $log_file)
  */
 function output($cfg, $html_file)
 {
-	$tmp = 'HTML_'.$cfg['database_server'];
-	$sss_output = new $tmp();
+	$HTMLClass = 'HTML_'.$cfg['database_server'];
+	$sss_output = new $HTMLClass();
 	$sss_output->setValue('channel', $cfg['channel']);
 	$sss_output->setValue('userstats', $cfg['userstats']);
 
