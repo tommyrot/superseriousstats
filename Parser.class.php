@@ -32,7 +32,7 @@ abstract class Parser extends Parser_MySQL
 	private $nick_minLen = 1;
 	private $outputLevel = 1;
 	private $quote_maxLen = 255;
-	private $quote_minLen = 25;
+	private $quote_prefLen = 25;
 	private $wordTracking = FALSE;
 
 	/**
@@ -221,7 +221,7 @@ abstract class Parser extends Parser_MySQL
 			$this->nicks_objs[$nick]->addValue('actions', 1);
 
 			if ($this->validateQuote($line)) {
-				if (strlen($line) >= $this->quote_minLen)
+				if (strlen($line) >= $this->quote_prefLen)
 					$this->nicks_objs[$nick]->addQuote('ex_actions', 'long', $line);
 				else
 					$this->nicks_objs[$nick]->addQuote('ex_actions', 'short', $line);
@@ -377,7 +377,7 @@ abstract class Parser extends Parser_MySQL
 			$validateQuote = $this->validateQuote($line);
 
 			if ($validateQuote) {
-				if (strlen($line) >= $this->quote_minLen)
+				if (strlen($line) >= $this->quote_prefLen)
 					$this->nicks_objs[$nick]->addQuote('quote', 'long', $line);
 				else
 					$this->nicks_objs[$nick]->addQuote('quote', 'short', $line);
@@ -387,7 +387,7 @@ abstract class Parser extends Parser_MySQL
 				$this->nicks_objs[$nick]->addValue('uppercased', 1);
 
 				if ($validateQuote) {
-					if (strlen($line) >= $this->quote_minLen)
+					if (strlen($line) >= $this->quote_prefLen)
 						$this->nicks_objs[$nick]->addQuote('ex_uppercased', 'long', $line);
 					else
 						$this->nicks_objs[$nick]->addQuote('ex_uppercased', 'short', $line);
@@ -398,7 +398,7 @@ abstract class Parser extends Parser_MySQL
 				$this->nicks_objs[$nick]->addValue('exclamations', 1);
 
 				if ($validateQuote) {
-					if (strlen($line) >= $this->quote_minLen)
+					if (strlen($line) >= $this->quote_prefLen)
 						$this->nicks_objs[$nick]->addQuote('ex_exclamations', 'long', $line);
 					else
 						$this->nicks_objs[$nick]->addQuote('ex_exclamations', 'short', $line);
@@ -407,7 +407,7 @@ abstract class Parser extends Parser_MySQL
 				$this->nicks_objs[$nick]->addValue('questions', 1);
 
 				if ($validateQuote) {
-					if (strlen($line) >= $this->quote_minLen)
+					if (strlen($line) >= $this->quote_prefLen)
 						$this->nicks_objs[$nick]->addQuote('ex_questions', 'long', $line);
 					else
 						$this->nicks_objs[$nick]->addQuote('ex_questions', 'short', $line);
