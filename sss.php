@@ -19,11 +19,19 @@
 /**
  * This script should be called from the commandline with PHP version 5.3.0 or up.
  *
- * usage: php sss.php {-i <log_file> [-o <html_file>] | -m | -o <html_file>}
+ * usage: php sss.php {-i <log_file> [-o <html_file> [-b <bits>]] | -m | -o <html_file> [-b <bits>]}
  *
  * Make sure to use absolute paths when specifying either <log_file> or <html_file>.
  *
  * The options are:
+ *	-b	set the output bits, add up the digits below corresponding to
+ *		the sections you want to be included on the statspage:
+ *			 1 - activity
+ *			 2 - general chat
+ *			 4 - modes
+ *			 8 - events
+ *			16 - smileys
+ *		if this option is omitted then all sections will be included
  *	-i	parse <log_file>
  *		this includes performing maintenance routines on the database if
  *		the "doMaintenance" option is set to TRUE in settings.php
@@ -40,8 +48,11 @@ if (!@include('settings.php'))
 if ($cfg['database_server'] == 'MySQL' && !extension_loaded('mysqli'))
 	exit('the mysqli extension isn\'t loaded'."\n");
 
-if (!(count($argv) == 2 && $argv[1] == '-m') && !(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')) && !(count($argv) == 5 && $argv[1] == '-i' && $argv[3] == '-o'))
-	exit('usage: php '.basename(__FILE__).' {-i <log_file> [-o <html_file>] | -m | -o <html_file>}'."\n");
+if (!(count($argv) == 2 && $argv[1] == '-m') &&
+    !(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')) &&
+    !(count($argv) == 5 && (($argv[1] == '-i' && $argv[3] == '-o') || ($argv[1] == '-o' && $argv[3] == '-b'))) &&
+    !(count($argv) == 7 && $argv[1] == '-i' && $argv[3] == '-o' && $argv[5] == '-b'))
+	exit('usage: php '.basename(__FILE__).' {-i <log_file> [-o <html_file> [-b <bits>]] | -m | -o <html_file> [-b <bits>]}'."\n");
 
 define('DB_HOST', $cfg['db_host']);
 define('DB_PORT', $cfg['db_port']);
@@ -117,12 +128,17 @@ function input($cfg, $log_file)
 /**
  * Create the statspage.
  */
-function output($cfg, $html_file)
+function output($cfg, $html_file, $outputBits = NULL)
 {
 	$HTMLClass = 'HTML_'.$cfg['database_server'];
 	$sss_output = new $HTMLClass();
 	$sss_output->setValue('channel', $cfg['channel']);
 	$sss_output->setValue('userstats', $cfg['userstats']);
+
+	if (is_numeric($outputBits)) {
+		$outputBits = intval($outputBits);
+		$sss_output->setValue('outputBits', $outputBits);
+	}
 
 	/**
 	 * Place your own $sss_output->setValue lines here
@@ -138,19 +154,26 @@ function output($cfg, $html_file)
 }
 
 /**
- * Simple checks suffice below because we already validated user input by regexp at the beginning of the script.
+ * Same checks we already used at the beginning of the script.
  */
-if (count($argv) == 2)
+if (count($argv) == 2 && $argv[1] == '-m') {
 	doMaintenance($cfg);
-elseif (count($argv) == 3) {
+} elseif (count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')) {
 	if ($argv[1] == '-i') {
 		input($cfg, $argv[2]);
-	} elseif ($argv[1] == '-o') {
+	} else {
 		output($cfg, $argv[2]);
 	}
-} elseif (count($argv) == 5) {
+} elseif (count($argv) == 5 && (($argv[1] == '-i' && $argv[3] == '-o') || ($argv[1] == '-o' && $argv[3] == '-b'))) {
+	if ($argv[1] == '-i') {
+		input($cfg, $argv[2]);
+		output($cfg, $argv[4]);
+	} else {
+		output($cfg, $argv[2], $argv[4]);
+	}
+} elseif (count($argv) == 7 && $argv[1] == '-i' && $argv[3] == '-o' && $argv[5] == '-b') {
 	input($cfg, $argv[2]);
-	output($cfg, $argv[4]);
+	output($cfg, $argv[2], $argv[4]);
 }
 
 ?>
