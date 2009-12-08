@@ -175,16 +175,16 @@ final class Nick extends Nick_MySQL
 	/**
 	 * Other variables.
 	 */
-	private $ex_actions_list_long = array();
-        private $ex_actions_list_short = array();
-	private $ex_exclamations_list_long = array();
-        private $ex_exclamations_list_short = array();
-	private $ex_questions_list_long = array();
-        private $ex_questions_list_short = array();
-	private $ex_uppercased_list_long = array();
-        private $ex_uppercased_list_short = array();
-	private $quote_list_long = array();
-        private $quote_list_short = array();
+	private $long_ex_actions_list = array();
+	private $long_ex_exclamations_list = array();
+	private $long_ex_questions_list = array();
+	private $long_ex_uppercased_list = array();
+	private $long_quote_list = array();
+	private $short_ex_actions_list = array();
+	private $short_ex_exclamations_list = array();
+	private $short_ex_questions_list = array();
+	private $short_ex_uppercased_list = array();
+	private $short_quote_list = array();
 
         /**
          * Constructor.
