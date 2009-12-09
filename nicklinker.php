@@ -64,7 +64,7 @@ if ($argv[1] == '-i') {
 
 		if (!empty($rows)) {
 			while ($result = mysqli_fetch_object($query)) {
-				$csNick2UID[$result->csNick] = $result->UID;
+				$nick2UID[strtolower($result->csNick)] = $result->UID;
 			}
 
 			/**
@@ -74,7 +74,7 @@ if ($argv[1] == '-i') {
 
 			while (!feof($fp)) {
 				$line = fgets($fp);
-				$lineParts = explode(',', $line);
+				$lineParts = explode(',', strtolower($line));
 				$status = trim($lineParts[0]);
 
 				/**
@@ -85,16 +85,16 @@ if ($argv[1] == '-i') {
 				 * More info on http://code.google.com/p/superseriousstats/wiki/Nicklinker
 				 */
 				if ($status == 1 || $status == 3) {
-					$csNick_main = trim($lineParts[1]);
+					$nick_main = trim($lineParts[1]);
 
-					if (!empty($csNick_main)) {
-						@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$csNick2UID[$csNick_main]) or exit('MySQL: '.mysqli_error($mysqli)."\n");
+					if (!empty($nick_main)) {
+						@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$nick2UID[$nick_main]) or exit('MySQL: '.mysqli_error($mysqli)."\n");
 
 						for ($i = 2; $i < count($lineParts); $i++) {
-							$csNick = trim($lineParts[$i]);
+							$nick = trim($lineParts[$i]);
 
-							if (!empty($csNick)) {
-								@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$csNick2UID[$csNick_main].', `status` = 2 WHERE `UID` = '.$csNick2UID[$csNick]) or exit('MySQL: '.mysqli_error($mysqli)."\n");
+							if (!empty($nick)) {
+								@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$nick2UID[$nick_main].', `status` = 2 WHERE `UID` = '.$nick2UID[$nick]) or exit('MySQL: '.mysqli_error($mysqli)."\n");
 							}
 						}
 					}
