@@ -75,8 +75,9 @@ final class User
 	 */
 	private function fail($msg)
 	{
-		if ($this->debug)
+		if ($this->debug) {
 			exit($msg."\n");
+		}
 	}
 
 	/**
@@ -98,8 +99,9 @@ final class User
 			$result = mysqli_fetch_object($query);
 			$this->firstSeen = $result->firstSeen;
 			$this->lastSeen = $result->lastSeen;
-		} else
+		} else {
 			exit('This user doesn\'t exist.'."\n");
+		}
 
 		$query = @mysqli_query($this->mysqli, 'SELECT `l_total`, (`l_total` / `activeDays`) AS `avg` FROM `query_lines` WHERE `UID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
@@ -109,10 +111,12 @@ final class User
 			$this->avg = $result->avg;
 			$this->l_total = $result->l_total;
 
-			if ($this->l_total == 0)
+			if ($this->l_total == 0) {
 				exit('This user has no lines.'."\n");
-		} else
+			}
+		} else {
 			exit('This user has no lines.'."\n");
+		}
 
 		/**
 		 * Date and time variables used throughout the script.
@@ -128,8 +132,9 @@ final class User
 		$result_max = mysqli_fetch_object($query_max);
 		$this->years = $this->year - date('Y', strtotime($this->firstSeen)) + 1;
 
-		if ($this->years < 3)
+		if ($this->years < 3) {
 			$this->years = 3;
+		}
 
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
@@ -159,10 +164,9 @@ final class User
 		 */
 		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
 		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		return $this->output;
 
 		@mysqli_close($this->mysqli);
-
-		return $this->output;
 	}
 
 	/**
@@ -175,10 +179,11 @@ final class User
 		$l_total_high = 0;
 
 		for ($hour = 0; $hour < 24; $hour++) {
-			if ($hour < 10)
+			if ($hour < 10) {
 				$l_total[$hour] = $result->{'l_0'.$hour};
-			else
+			} else {
 				$l_total[$hour] = $result->{'l_'.$hour};
+			}
 
 			if ($l_total[$hour] > $l_total_high) {
 				$l_total_high = $l_total[$hour];
@@ -192,34 +197,39 @@ final class User
 			if ($l_total[$hour] != 0) {
 				$output .= '<td>';
 
-				if ((($l_total[$hour] / $this->l_total) * 100) >= 9.95)
+				if ((($l_total[$hour] / $this->l_total) * 100) >= 9.95) {
 					$output .= round(($l_total[$hour] / $this->l_total) * 100).'%';
-				else
+				} else {
 					$output .= number_format(($l_total[$hour] / $this->l_total) * 100, 1).'%';
+				}
 
 				$height = round(($l_total[$hour] / $l_total_high) * 100);
 
-				if ($height != 0 && $hour >= 0 && $hour <= 5)
+				if ($height != 0 && $hour >= 0 && $hour <= 5) {
 					$output .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($height != 0 && $hour >= 6 && $hour <= 11)
+				} elseif ($height != 0 && $hour >= 6 && $hour <= 11) {
 					$output .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($height != 0 && $hour >= 12 && $hour <= 17)
+				} elseif ($height != 0 && $hour >= 12 && $hour <= 17) {
 					$output .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($height != 0 && $hour >= 18 && $hour <= 23)
+				} elseif ($height != 0 && $hour >= 18 && $hour <= 23) {
 					$output .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				}
 
 				$output .= '</td>';
-			} else
+			} else {
 				$output .= '<td><span class="grey">n/a</span></td>';
+			}
 		}
 
 		$output .= '</tr><tr class="sub">';
 
-		for ($hour = 0; $hour < 24; $hour++)
-			if ($l_total_high != 0 && $l_total_high_hour == $hour)
+		for ($hour = 0; $hour < 24; $hour++) {
+			if ($l_total_high != 0 && $l_total_high_hour == $hour) {
 				$output .= '<td class="bold">'.$hour.'h</td>';
-			else
+			} else {
 				$output .= '<td>'.$hour.'h</td>';
+			}
+		}
 
 		return $output.'</tr></table>'."\n";
 	}
@@ -270,8 +280,9 @@ final class User
 					break;
 			}
 
-			foreach ($sums as $sum)
+			foreach ($sums as $sum) {
 				$activity[$year][$month][$day][$sum] = $result->$sum;
+			}
 
 			if ($result->l_total > $l_total_high) {
 				$l_total_high = $result->l_total;
@@ -279,8 +290,9 @@ final class User
 			}
 		}
 
-		if ($l_total_high == 0)
+		if ($l_total_high == 0) {
 			return;
+		}
 
 		$output = '<table class="'.$table_class.'"><tr><th colspan="'.$cols.'">'.htmlspecialchars($settings['head']).'</th></tr><tr class="bars">';
 
@@ -306,78 +318,88 @@ final class User
 			if (!empty($activity[$year][$month][$day]['l_total'])) {
 				$output .= '<td>';
 
-				if ($activity[$year][$month][$day]['l_total'] >= 999500)
+				if ($activity[$year][$month][$day]['l_total'] >= 999500) {
 					$output .= number_format(($activity[$year][$month][$day]['l_total'] / 1000000), 1).'M';
-				elseif ($activity[$year][$month][$day]['l_total'] >= 10000)
+				} elseif ($activity[$year][$month][$day]['l_total'] >= 10000) {
 					$output .= round($activity[$year][$month][$day]['l_total'] / 1000).'K';
-				else
+				} else {
 					$output .= $activity[$year][$month][$day]['l_total'];
+				}
 
 				if ($activity[$year][$month][$day]['l_evening'] != 0) {
 					$l_evening_height = round(($activity[$year][$month][$day]['l_evening'] / $l_total_high) * 100);
 
-					if ($l_evening_height != 0)
+					if ($l_evening_height != 0) {
 						$output .= '<img src="'.$this->bar_evening.'" height="'.$l_evening_height.'" alt="" title="" />';
+					}
 				}
 
 				if ($activity[$year][$month][$day]['l_afternoon'] != 0) {
 					$l_afternoon_height = round(($activity[$year][$month][$day]['l_afternoon'] / $l_total_high) * 100);
 
-					if ($l_afternoon_height != 0)
+					if ($l_afternoon_height != 0) {
 						$output .= '<img src="'.$this->bar_afternoon.'" height="'.$l_afternoon_height.'" alt="" title="" />';
+					}
 				}
 
 				if ($activity[$year][$month][$day]['l_morning'] != 0) {
 					$l_morning_height = round(($activity[$year][$month][$day]['l_morning'] / $l_total_high) * 100);
 
-					if ($l_morning_height != 0)
+					if ($l_morning_height != 0) {
 						$output .= '<img src="'.$this->bar_morning.'" height="'.$l_morning_height.'" alt="" title="" />';
+					}
 				}
 
 				if ($activity[$year][$month][$day]['l_night'] != 0) {
 					$l_night_height = round(($activity[$year][$month][$day]['l_night'] / $l_total_high) * 100);
 
-					if ($l_night_height != 0)
+					if ($l_night_height != 0) {
 						$output .= '<img src="'.$this->bar_night.'" height="'.$l_night_height.'" alt="" title="" />';
+					}
 				}
 
 				$output .= '</td>';
-			} else
+			} else {
 				$output .= '<td><span class="grey">n/a</span></td>';
+			}
 		}
 
 		$output .= '</tr><tr class="sub">';
 
-		for ($i = $cols - 1; $i >= 0; $i--)
+		for ($i = $cols - 1; $i >= 0; $i--) {
 			switch ($settings['type']) {
 				case 'days':
 					$date = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day - $i, $this->year));
 
-					if ($l_total_high_date == $date)
+					if ($l_total_high_date == $date) {
 						$output .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
-					else
+					} else {
 						$output .= '<td>'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+					}
 
 					break;
 				case 'months':
 					$date = date('Y-m-d', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
 
-					if ($l_total_high_date == $date)
+					if ($l_total_high_date == $date) {
 						$output .= '<td class="bold">'.date('M', strtotime($date)).'<br />'.date('\'y', strtotime($date)).'</td>';
-					else
+					} else {
 						$output .= '<td>'.date('M', strtotime($date)).'<br />'.date('\'y', strtotime($date)).'</td>';
+					}
 
 					break;
 				case 'years':
 					$date = date('Y-m-d', mktime(0, 0, 0, 1, 1, $this->year - $i));
 
-					if ($l_total_high_date == $date)
+					if ($l_total_high_date == $date) {
 						$output .= '<td class="bold">'.date('\'y', strtotime($date)).'</td>';
-					else
+					} else {
 						$output .= '<td>'.date('\'y', strtotime($date)).'</td>';
+					}
 
 					break;
 			}
+		}
 
 		return $output.'</tr></table>'."\n";
 	}
@@ -411,33 +433,39 @@ final class User
 			if ($l_total[$day] != 0) {
 				$output .= '<td>';
 
-				if ((($l_total[$day] / $this->l_total) * 100) >= 9.95)
+				if ((($l_total[$day] / $this->l_total) * 100) >= 9.95) {
 					$output .= round(($l_total[$day] / $this->l_total) * 100).'%';
-				else
+				} else {
 					$output .= number_format(($l_total[$day] / $this->l_total) * 100, 1).'%';
+				}
 
 				$times = array('evening', 'afternoon', 'morning', 'night');
 
-				foreach ($times as $time)
+				foreach ($times as $time) {
 					if (${'l_'.$time}[$day] != 0) {
 						${'l_'.$time.'_height'} = round((${'l_'.$time}[$day] / $l_total_high) * 100);
 
-						if (${'l_'.$time.'_height'} != 0)
+						if (${'l_'.$time.'_height'} != 0) {
 							$output .= '<img src="'.$this->{'bar_'.$time}.'" height="'.${'l_'.$time.'_height'}.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						}
 					}
+				}
 
 				$output .= '</td>';
-			} else
+			} else {
 				$output .= '<td><span class="grey">n/a</span></td>';
+			}
 		}
 
 		$output .= '</tr><tr class="sub">';
 
-		foreach ($days as $day)
-			if ($l_total_high != 0 && $l_total_high_day == $day)
+		foreach ($days as $day) {
+			if ($l_total_high != 0 && $l_total_high_day == $day) {
 				$output .= '<td class="bold">'.ucfirst($day).'</td>';
-			else
+			} else {
 				$output .= '<td>'.ucfirst($day).'</td>';
+			}
+		}
 
 		return $output.'</tr></table>'."\n";
 	}
@@ -446,7 +474,8 @@ final class User
 if (preg_match('/^[1-9][0-9]{0,5}$/', $_GET['uid'])) {
 	$user = new User($_GET['uid']);
 	echo $user->makeHTML();
-} else
+} else {
 	echo 'FAIL';
+}
 
 ?>
