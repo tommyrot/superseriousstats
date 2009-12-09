@@ -50,11 +50,13 @@ final class URL extends URL_MySQL
          */
 	public function lastUsed($dateTime)
 	{
-		if ($this->firstUsed == '' || $dateTime < $this->firstUsed)
+		if ($this->firstUsed == '' || $dateTime < $this->firstUsed) {
 			$this->firstUsed = $dateTime;
+		}
 
-		if ($this->lastUsed == '' || $dateTime > $this->lastUsed)
+		if ($this->lastUsed == '' || $dateTime > $this->lastUsed) {
 			$this->lastUsed = $dateTime;
+		}
 	}
 
         /**

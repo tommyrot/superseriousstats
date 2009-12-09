@@ -120,11 +120,13 @@ abstract class Parser extends Parser_MySQL
 		if (!in_array($nick, $this->nicks_list)) {
 			$this->nicks_list[] = $nick;
 			$this->nicks_objs[$nick] = new Nick($csNick);
-		} else
+		} else {
 			$this->nicks_objs[$nick]->setValue('csNick', $csNick);
+		}
 
-		if (!is_null($dateTime))
+		if (!is_null($dateTime)) {
 			$this->nicks_objs[$nick]->lastSeen($dateTime);
+		}
 
 		return $nick;
 	}
@@ -156,16 +158,22 @@ abstract class Parser extends Parser_MySQL
 		if (!in_array($msg, $this->prevOutput)) {
 			switch ($type) {
 				case 'notice':
-					if ($this->outputLevel >= 3)
+					if ($this->outputLevel >= 3) {
 						echo '  Notice ['.date('H:i.s').'] '.$msg."\n";
+					}
+
 					break;
 				case 'warning':
-					if ($this->outputLevel >= 2)
+					if ($this->outputLevel >= 2) {
 						echo ' Warning ['.date('H:i.s').'] '.$msg."\n";
+					}
+
 					break;
 				case 'critical':
-					if ($this->outputLevel >= 1)
+					if ($this->outputLevel >= 1) {
 						echo 'Critical ['.date('H:i.s').'] '.$msg."\n";
+					}
+
 					exit;
 			}
 
@@ -205,10 +213,12 @@ abstract class Parser extends Parser_MySQL
 
 				fclose($fp);
 				$this->output('notice', 'parseLog(): parsing completed');
-			} else
+			} else {
 				$this->output('critical', 'parseLog(): failed to open file: \''.$logfile.'\'');
-		} else
+			}
+		} else {
 			$this->output('critical', 'parseLog(): no such file: \''.$logfile.'\'');
+		}
 	}
 
 	/**
@@ -221,13 +231,15 @@ abstract class Parser extends Parser_MySQL
 			$this->nicks_objs[$nick]->addValue('actions', 1);
 
 			if ($this->validateQuote($line)) {
-				if (strlen($line) >= $this->quote_prefLen)
+				if (strlen($line) >= $this->quote_prefLen) {
 					$this->nicks_objs[$nick]->addQuote('ex_actions', 'long', $line);
-				else
+				} else {
 					$this->nicks_objs[$nick]->addQuote('ex_actions', 'short', $line);
+				}
 			}
-		} else
+		} else {
 			$this->output('warning', 'setAction(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -239,12 +251,14 @@ abstract class Parser extends Parser_MySQL
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('joins', 1);
 
-			if ($this->validateHost($csHost))
+			if ($this->validateHost($csHost)) {
 				$this->nicks_objs[$nick]->addHost($csHost);
-			else
+			} else {
 				$this->output('warning', 'setJoin(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
-		} else
+			}
+		} else {
 			$this->output('warning', 'setJoin(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -263,10 +277,12 @@ abstract class Parser extends Parser_MySQL
 					$this->nicks_objs[$nick_performing]->setValue('ex_kicks', $line);
 					$this->nicks_objs[$nick_undergoing]->setValue('ex_kicked', $line);
 				}
-			} else
+			} else {
 				$this->output('warning', 'setKick(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-		} else
+			}
+		} else {
 			$this->output('warning', 'setKick(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -298,15 +314,19 @@ abstract class Parser extends Parser_MySQL
 						break;
 				}
 
-				if (!is_null($csHost))
-					if ($this->validateHost($csHost))
+				if (!is_null($csHost)) {
+					if ($this->validateHost($csHost)) {
 						$this->nicks_objs[$nick_performing]->addHost($csHost);
-					else
+					} else {
 						$this->output('warning', 'setMode(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
-			} else
+					}
+				}
+			} else {
 				$this->output('warning', 'setMode(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-		} else
+			}
+		} else {
 			$this->output('warning', 'setMode(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -319,10 +339,12 @@ abstract class Parser extends Parser_MySQL
 				$nick_performing = $this->addNick($csNick_performing, $dateTime);
 				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
 				$this->nicks_objs[$nick_performing]->addValue('nickchanges', 1);
-			} else
+			} else {
 				$this->output('warning', 'setNickchange(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-		} else
+			}
+		} else {
 			$this->output('warning', 'setNickchange(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -336,14 +358,15 @@ abstract class Parser extends Parser_MySQL
 			$this->nicks_objs[$nick]->setValue('activeDays', 1);
 			$this->nicks_objs[$nick]->addValue('characters', strlen($line));
 
-			if ($nick == $this->prevNick)
+			if ($nick == $this->prevNick) {
 				$this->streak++;
-			else {
+			} else {
 				if ($this->streak >= $this->maxStreak) {
 					$this->nicks_objs[$this->prevNick]->addValue('monologues', 1);
 
-					if ($this->streak > $this->nicks_objs[$this->prevNick]->getValue('topMonologue'))
+					if ($this->streak > $this->nicks_objs[$this->prevNick]->getValue('topMonologue')) {
 						$this->nicks_objs[$this->prevNick]->setValue('topMonologue', $this->streak);
+					}
 				}
 
 				$this->streak = 1;
@@ -377,20 +400,22 @@ abstract class Parser extends Parser_MySQL
 			$validateQuote = $this->validateQuote($line);
 
 			if ($validateQuote) {
-				if (strlen($line) >= $this->quote_prefLen)
+				if (strlen($line) >= $this->quote_prefLen) {
 					$this->nicks_objs[$nick]->addQuote('quote', 'long', $line);
-				else
+				} else {
 					$this->nicks_objs[$nick]->addQuote('quote', 'short', $line);
+				}
 			}
 
 			if (strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
 				$this->nicks_objs[$nick]->addValue('uppercased', 1);
 
 				if ($validateQuote) {
-					if (strlen($line) >= $this->quote_prefLen)
+					if (strlen($line) >= $this->quote_prefLen) {
 						$this->nicks_objs[$nick]->addQuote('ex_uppercased', 'long', $line);
-					else
+					} else {
 						$this->nicks_objs[$nick]->addQuote('ex_uppercased', 'short', $line);
+					}
 				}
 			}
 
@@ -398,19 +423,21 @@ abstract class Parser extends Parser_MySQL
 				$this->nicks_objs[$nick]->addValue('exclamations', 1);
 
 				if ($validateQuote) {
-					if (strlen($line) >= $this->quote_prefLen)
+					if (strlen($line) >= $this->quote_prefLen) {
 						$this->nicks_objs[$nick]->addQuote('ex_exclamations', 'long', $line);
-					else
+					} else {
 						$this->nicks_objs[$nick]->addQuote('ex_exclamations', 'short', $line);
+					}
 				}
 			} elseif (preg_match('/\?$/', $line)) {
 				$this->nicks_objs[$nick]->addValue('questions', 1);
 
 				if ($validateQuote) {
-					if (strlen($line) >= $this->quote_prefLen)
+					if (strlen($line) >= $this->quote_prefLen) {
 						$this->nicks_objs[$nick]->addQuote('ex_questions', 'long', $line);
-					else
+					} else {
 						$this->nicks_objs[$nick]->addQuote('ex_questions', 'short', $line);
+					}
 				}
 			}
 
@@ -423,9 +450,9 @@ abstract class Parser extends Parser_MySQL
 				 */
 				$this->nicks_objs[$nick]->addValue('words', 1);
 
-				if (preg_match('/^(=[]\)]|;([]\(\)xp]|-\))|:([]\/\(\)\\\>xpd]|-\))|\\\o\/)$/i', $csWord))
+				if (preg_match('/^(=[]\)]|;([]\(\)xp]|-\))|:([]\/\(\)\\\>xpd]|-\))|\\\o\/)$/i', $csWord)) {
 					$this->nicks_objs[$nick]->addValue($this->smileys[strtolower($csWord)], 1);
-				elseif (preg_match('/^(www\.|https?:\/\/)/i', $csWord)) {
+				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csWord)) {
 					/**
 					 * Put "http://" scheme in front of all URLs beginning with just "www.".
 					 */
@@ -435,17 +462,20 @@ abstract class Parser extends Parser_MySQL
 						$csURL = $this->URLTools->normalizeURL($csURL);
 						$this->nicks_objs[$nick]->addURL($csURL, $dateTime);
 						$this->nicks_objs[$nick]->addValue('URLs', 1);
-					} else
+					} else {
 						$this->output('notice', 'setNormal(): invalid URL: \''.$csWord.'\' on line '.$this->lineNum);
-				} elseif ($this->wordTracking && preg_match('/^[a-z]{1,255}$/i', $csWord))
+					}
+				} elseif ($this->wordTracking && preg_match('/^[a-z]{1,255}$/i', $csWord)) {
 					/**
 					 * To keep it simple we only track words composed of the characters A through Z.
 					 * Words of 30+ characters are most likely not real words but then again we're not a dictionary.
 					 */
 					$this->addWord($csWord);
+				}
 			}
-		} else
+		} else {
 			$this->output('warning', 'setNormal(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -457,12 +487,14 @@ abstract class Parser extends Parser_MySQL
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('parts', 1);
 
-			if ($this->validateHost($csHost))
+			if ($this->validateHost($csHost)) {
 				$this->nicks_objs[$nick]->addHost($csHost);
-			else
+			} else {
 				$this->output('warning', 'setPart(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
-		} else
+			}
+		} else {
 			$this->output('warning', 'setPart(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -474,12 +506,14 @@ abstract class Parser extends Parser_MySQL
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('quits', 1);
 
-			if ($this->validateHost($csHost))
+			if ($this->validateHost($csHost)) {
 				$this->nicks_objs[$nick]->addHost($csHost);
-			else
+			} else {
 				$this->output('warning', 'setQuit(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
-		} else
+			}
+		} else {
 			$this->output('warning', 'setQuit(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -508,11 +542,13 @@ abstract class Parser extends Parser_MySQL
 					$dateTime = NULL;
 					$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
 					$this->nicks_objs[$nick_undergoing]->addValue('slapped', 1);
-				} else
+				} else {
 					$this->output('warning', 'setSlap(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+				}
 			}
-		} else
+		} else {
 			$this->output('warning', 'setSlap(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -524,19 +560,23 @@ abstract class Parser extends Parser_MySQL
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('topics', 1);
 
-			if (!is_null($csHost))
-				if ($this->validateHost($csHost))
+			if (!is_null($csHost)) {
+				if ($this->validateHost($csHost)) {
 					$this->nicks_objs[$nick]->addHost($csHost);
-				else
+				} else {
 					$this->output('warning', 'setTopic(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+				}
+			}
 
 			/**
 			 * Keep track of every single topic set.
 			 */
-			if (!is_null($line))
+			if (!is_null($line)) {
 				$this->nicks_objs[$nick]->addTopic($line, $dateTime);
-		} else
+			}
+		} else {
 			$this->output('warning', 'setTopic(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		}
 	}
 
 	/**
@@ -554,10 +594,11 @@ abstract class Parser extends Parser_MySQL
 	 */
 	final private function validateHost($csHost)
 	{
-		if (strlen($csHost) <= $this->host_maxLen)
+		if (strlen($csHost) <= $this->host_maxLen) {
 			return TRUE;
-		else
+		} else {
 			return FALSE;
+		}
 	}
 
 	/**
@@ -566,10 +607,11 @@ abstract class Parser extends Parser_MySQL
 	 */
 	final private function validateNick($csNick)
 	{
-		if (preg_match('/^[]\[\^\{}\|\\\`_0-9a-z-]{'.$this->nick_minLen.','.$this->nick_maxLen.'}$/i', $csNick))
+		if (preg_match('/^[]\[\^\{}\|\\\`_0-9a-z-]{'.$this->nick_minLen.','.$this->nick_maxLen.'}$/i', $csNick)) {
 			return TRUE;
-		else
+		} else {
 			return FALSE;
+		}
 	}
 
 	/**
@@ -578,10 +620,11 @@ abstract class Parser extends Parser_MySQL
 	 */
 	final private function validateQuote($line)
 	{
-		if (strlen($line) <= $this->quote_maxLen)
+		if (strlen($line) <= $this->quote_maxLen) {
 			return TRUE;
-		else
+		} else {
 			return FALSE;
+		}
 	}
 
 	/**
@@ -591,10 +634,11 @@ abstract class Parser extends Parser_MySQL
 	 */
 	final private function validateURL($csURL)
 	{
-		if (strlen($csURL) <= $this->URL_maxLen && $this->URLTools->validateURL($csURL))
+		if (strlen($csURL) <= $this->URL_maxLen && $this->URLTools->validateURL($csURL)) {
 			return TRUE;
-		else
+		} else {
 			return FALSE;
+		}
 	}
 }
 

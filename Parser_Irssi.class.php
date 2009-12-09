@@ -67,10 +67,11 @@ final class Parser_Irssi extends Parser
 					 * There doesn't have to be an "undergoing" nick for a slap to count.
 					 */
 					if (strtolower($lineParts[2]) == 'slaps') {
-						if (isset($lineParts[3]))
+						if (isset($lineParts[3])) {
 							$csNick_undergoing = $lineParts[3];
-						else
+						} else {
 							$csNick_undergoing = NULL;
+						}
 
 						$this->setSlap($dateTime, $csNick, $csNick_undergoing);
 					}
@@ -105,15 +106,16 @@ final class Parser_Irssi extends Parser
 					for ($i = 0; $i < strlen($modes); $i++) {
 						$mode = substr($modes, $i, 1);
 
-						if ($mode == '-' || $mode == '+')
+						if ($mode == '-' || $mode == '+') {
 							$modeSign = $mode;
-						else {
+						} else {
 							$modeNum++;
 
-							if ($modeNum == $modesTotal)
+							if ($modeNum == $modesTotal) {
 								$csNick_undergoing = rtrim($lineParts[2 + $modeNum], ']');
-							else
+							} else {
 								$csNick_undergoing = $lineParts[2 + $modeNum];
+							}
 
 							$this->setMode($dateTime, $csNick_performing, $csNick_undergoing, $modeSign.$mode, $csHost);
 						}
@@ -166,10 +168,11 @@ final class Parser_Irssi extends Parser
 				/**
 				 * If the topic is empty we pass on NULL to setTopic().
 				 */
-				if (isset($lineParts[8]))
+				if (isset($lineParts[8])) {
 					$line = implode(' ', array_slice($lineParts, 8));
-				else
+				} else {
 					$line = NULL;
+				}
 
 				$this->setTopic($dateTime, $csNick, $csHost, $line);
 
@@ -185,8 +188,9 @@ final class Parser_Irssi extends Parser
 			/**
 			 * Skip everything else.
 			 */
-			} else
+			} else {
 				$this->output('notice', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
+			}
 		}
 	}
 }

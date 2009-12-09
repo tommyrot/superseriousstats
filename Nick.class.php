@@ -201,8 +201,9 @@ final class Nick extends Nick_MySQL
 	{
 		$host = strtolower($csHost);
 
-		if (!in_array($host, $this->hosts_list))
+		if (!in_array($host, $this->hosts_list)) {
 			$this->hosts_list[] = $host;
+		}
 	}
 
         /**
@@ -232,8 +233,9 @@ final class Nick extends Nick_MySQL
 		if (!in_array($URL, $this->URLs_list)) {
 			$this->URLs_list[] = $URL;
 			$this->URLs_objs[$URL] = new URL($csURL);
-		} else
+		} else {
 			$this->URLs_objs[$URL]->setValue('csURL', $csURL);
+		}
 
 		$this->URLs_objs[$URL]->addValue('total', 1);
 		$this->URLs_objs[$URL]->lastUsed($dateTime);
@@ -260,11 +262,13 @@ final class Nick extends Nick_MySQL
          */
 	public function lastSeen($dateTime)
 	{
-		if ($this->firstSeen == '' || $dateTime < $this->firstSeen)
+		if ($this->firstSeen == '' || $dateTime < $this->firstSeen) {
 			$this->firstSeen = $dateTime;
+		}
 
-		if ($this->lastSeen == '' || $dateTime > $this->lastSeen)
+		if ($this->lastSeen == '' || $dateTime > $this->lastSeen) {
 			$this->lastSeen = $dateTime;
+		}
 	}
 
         /**
@@ -272,8 +276,9 @@ final class Nick extends Nick_MySQL
          */
 	public function lastTalked($dateTime)
 	{
-		if ($this->lastTalked == '' || $dateTime > $this->lastTalked)
+		if ($this->lastTalked == '' || $dateTime > $this->lastTalked) {
 			$this->lastTalked = $dateTime;
+		}
 	}
 
 	/**
@@ -285,10 +290,11 @@ final class Nick extends Nick_MySQL
 		$types = array('ex_actions', 'ex_exclamations', 'ex_questions', 'ex_uppercased', 'quote');
 
 		foreach ($types as $type) {
-			if (!empty($this->{'long_'.$type.'_list'}))
+			if (!empty($this->{'long_'.$type.'_list'})) {
 				$this->$type = $this->{'long_'.$type.'_list'}[mt_rand(0, count($this->{'long_'.$type.'_list'}) - 1)];
-			elseif (!empty($this->{'short_'.$type.'_list'}))
+			} elseif (!empty($this->{'short_'.$type.'_list'})) {
 				$this->$type = $this->{'short_'.$type.'_list'}[mt_rand(0, count($this->{'short_'.$type.'_list'}) - 1)];
+			}
 		}
 	}
 

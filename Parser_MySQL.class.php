@@ -42,24 +42,28 @@ abstract class Parser_MySQL
 			/**
 			 * Write user data to the database.
 			 */
-			foreach ($this->nicks_list as $nick)
+			foreach ($this->nicks_list as $nick) {
 				if ($this->nicks_objs[$nick]->getValue('firstSeen') != '') {
 					$this->nicks_objs[$nick]->randomizeQuotes();
 					$this->nicks_objs[$nick]->writeData($mysqli) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-				} else
+				} else {
 					$this->output('notice', 'writeData(): skipping empty nick: \''.$this->nicks_objs[$nick]->getValue('csNick').'\'');
+				}
+			}
 
 			/**
 			 * Write word data to the database.
 			 * To keep our database sane words are not linked to users.
 			 */
-			foreach ($this->words_list as $word)
+			foreach ($this->words_list as $word) {
 				$this->words_objs[$word]->writeData($mysqli) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+			}
 
 			@mysqli_close($mysqli);
 			$this->output('notice', 'writeData(): writing completed');
-		} else
+		} else {
 			$this->output('notice', 'writeData(): no data to write to database');
+		}
 	}
 }
 
