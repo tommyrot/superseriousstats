@@ -39,20 +39,24 @@
  *	-o	generate statistics and output to <html_file>
  */
 
-if (substr(phpversion(), 0, 3) != '5.3')
+if (substr(phpversion(), 0, 3) != '5.3') {
 	exit('unsupported php version: '.phpversion()."\n");
+}
 
-if (!@include('settings.php'))
+if (!@include('settings.php')) {
 	exit('cannot open: '.dirname(__FILE__).'/settings.php'."\n");
+}
 
-if ($cfg['database_server'] == 'MySQL' && !extension_loaded('mysqli'))
+if ($cfg['database_server'] == 'MySQL' && !extension_loaded('mysqli')) {
 	exit('the mysqli extension isn\'t loaded'."\n");
+}
 
 if (!(count($argv) == 2 && $argv[1] == '-m') &&
     !(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')) &&
     !(count($argv) == 5 && (($argv[1] == '-i' && $argv[3] == '-o') || ($argv[1] == '-o' && $argv[3] == '-b'))) &&
-    !(count($argv) == 7 && $argv[1] == '-i' && $argv[3] == '-o' && $argv[5] == '-b'))
+    !(count($argv) == 7 && $argv[1] == '-i' && $argv[3] == '-o' && $argv[5] == '-b')) {
 	exit('usage: php '.basename(__FILE__).' {-i <log_file> [-o <html_file> [-b <bits>]] | -m | -o <html_file> [-b <bits>]}'."\n");
+}
 
 define('DB_HOST', $cfg['db_host']);
 define('DB_PORT', $cfg['db_port']);
@@ -101,8 +105,9 @@ function input($cfg, $log_file)
 		   . 'Skip \''.$log_file.'\'? [yes] ';
 		$yn = trim(fgets(STDIN));
 
-		if (empty($yn) || $yn == 'y' || $yn == 'yes')
+		if (empty($yn) || $yn == 'y' || $yn == 'yes') {
 			exit;
+		}
 	}
 
 	define('DATE', date('Y-m-d', strtotime($date)));
@@ -118,11 +123,13 @@ function input($cfg, $log_file)
 
 	$sss_parser->parseLog($logfile);
 
-	if ($cfg['writeData'])
+	if ($cfg['writeData']) {
 		$sss_parser->writeData();
+	}
 
-	if ($cfg['doMaintenance'])
+	if ($cfg['doMaintenance']) {
 		doMaintenance($cfg);
+	}
 }
 
 /**

@@ -73,21 +73,24 @@ final class HTML_MySQL
 		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit;
 		$rows = mysqli_num_rows($query_l_total);
 
-		if (empty($rows))
+		if (empty($rows)) {
 			exit('The database for '.$this->channel.' is empty.'."\n");
+		}
 
 		$result_l_total = mysqli_fetch_object($query_l_total);
 		$this->l_total = $result_l_total->l_total;
 
-		if ($this->l_total == 0)
+		if ($this->l_total == 0) {
 			exit('The database for '.$this->channel.' is empty.'."\n");
+		}
 
 		/**
 		 * This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
 		 * 500 is the default minimum so tables will still look interesting on low volume channels.
 		 */
-		if (round($this->l_total / 1000) >= 500)
+		if (round($this->l_total / 1000) >= 500) {
 			$this->minLines = round($this->l_total / 1000);
+		}
 
 		/**
 		 * Date and time variables used throughout the script.
@@ -121,8 +124,9 @@ final class HTML_MySQL
 		$result_max = mysqli_fetch_object($query_max);
 		$this->years = $this->year - date('Y', strtotime($this->date_first)) + 1;
 
-		if ($this->years < 3)
+		if ($this->years < 3) {
 			$this->years = 3;
+		}
 
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
@@ -186,8 +190,9 @@ final class HTML_MySQL
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Mentioned Nicks', 'key1' => 'Mentioned', 'key2' => 'Nick', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `total` AS `v1`, `csNick` AS `v2` FROM `user_details` JOIN `words` ON `user_details`.`csNick` = `words`.`word` JOIN `user_activity` ON `user_details`.`UID` = `user_activity`.`UID` GROUP BY `user_details`.`UID` HAVING SUM(`l_total`) >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Chatty Bots', 'key1' => 'Lines', 'key2' => 'Bot', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `l_total` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` = 3 AND `l_total` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 
-			if (!empty($output))
+			if (!empty($output)) {
 				$this->output .= '<div class="head">General Chat</div>'."\n".$output;
+			}
 		}
 
 		/**
@@ -204,11 +209,13 @@ final class HTML_MySQL
 				      ,'Most deVoices \'-v\', Given' => array('deVoices', 'm_deVoice')
 				      ,'Most deVoices \'-v\', Received' => array('deVoices', 'm_deVoiced'));
 
-			foreach ($modes as $k => $v)
+			foreach ($modes as $k => $v) {
 				$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => $k, 'key1' => $v[0], 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `'.$v[1].'` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `'.$v[1].'` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`'.$v[1].'`) AS `total` FROM `query_events`'));
+			}
 
-			if (!empty($output))
+			if (!empty($output)) {
 				$this->output .= '<div class="head">Modes</div>'."\n".$output;
+			}
 		}
 
 		/**
@@ -226,8 +233,9 @@ final class HTML_MySQL
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Topics', 'key1' => 'Topics', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `topics` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topics` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`topics`) AS `total` FROM `query_events`'));
 			$output .= $this->makeTable_Topics(array('rows' => 5, 'head' => 'Longest Standing Topics', 'key1' => 'Days', 'key2' => 'User', 'key3' => 'Topic'));
 
-			if (!empty($output))
+			if (!empty($output)) {
 				$this->output .= '<div class="head">Events</div>'."\n".$output;
+			}
 		}
 
 		/**
@@ -259,12 +267,14 @@ final class HTML_MySQL
 				$query = @mysqli_query($this->mysqli, 'SELECT SUM(`'.$v[1].'`) AS `total` FROM `query_smileys`') or exit;
 				$result = mysqli_fetch_object($query);
 
-				if ($result->total >= $this->minLines)
+				if ($result->total >= $this->minLines) {
 					$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => $k, 'key1' => $v[0], 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `'.$v[1].'` AS `v1`, `csNick` AS `v2` FROM `query_smileys` JOIN `user_details` ON `query_smileys`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_smileys`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `'.$v[1].'` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`'.$v[1].'`) AS `total` FROM `query_smileys`'));
+				}
 			}
 
-			if (!empty($output))
+			if (!empty($output)) {
 				$this->output .= '<div class="head">Smileys</div>'."\n".$output;
+			}
 		}
 
 		/**
@@ -272,10 +282,9 @@ final class HTML_MySQL
 		 */
 		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
 		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		return $this->output;
 
 		@mysqli_close($this->mysqli);
-
-		return $this->output;
 	}
 
 	/**
@@ -287,23 +296,26 @@ final class HTML_MySQL
 		$i = 0;
 
 		while ($result = mysqli_fetch_object($query)) {
-			if  ($i >= $settings['rows'])
+			if  ($i >= $settings['rows']) {
 				break;
+			}
 
 			if (isset($settings['getDetails'])) {
 				$details = $this->getDetails($result->$settings['getDetails']);
 				$result->v2 = $details['csNick'];
 				$status = $details['status'];
-			} else
+			} else {
 				$status = 1;
+			}
 
 			if ($status != 3) {
 				$i++;
 
-				if ($settings['size'] == 'small')
+				if ($settings['size'] == 'small') {
 					$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2));
-				elseif ($settings['size'] == 'large')
+				} elseif ($settings['size'] == 'large') {
 					$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
+				}
 			}
 		}
 
@@ -313,11 +325,13 @@ final class HTML_MySQL
 		 * If there are less rows to display than the desired minimum amount of rows we skip this table.
 		 */
 		if ($i >= $this->minRows) {
-			for ($i = count($content); $i < $settings['rows']; $i++)
-				if ($settings['size'] == 'small')
+			for ($i = count($content); $i < $settings['rows']; $i++) {
+				if ($settings['size'] == 'small') {
 					$content[] = array('&nbsp;', '', '');
-				elseif ($settings['size'] == 'large')
+				} elseif ($settings['size'] == 'large') {
 					$content[] = array('&nbsp;', '', '', '');
+				}
+			}
 
 			if (isset($settings['query_total'])) {
 				$query_total = @mysqli_query($this->mysqli, $settings['query_total']) or exit;
@@ -329,8 +343,9 @@ final class HTML_MySQL
 					.  '<tr><th colspan="3"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($result_total->total) ? '' : '<span class="right">'.number_format($result_total->total).' total</span>').'</th></tr>'
 					.  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td></tr>';
 
-				foreach ($content as $row)
+				foreach ($content as $row) {
 					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
+				}
 
 				$output .= '</table>'."\n";
 			} elseif ($settings['size'] == 'large') {
@@ -338,8 +353,9 @@ final class HTML_MySQL
 					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($result_total->total) ? '' : '<span class="right">'.number_format($result_total->total).' total</span>').'</th></tr>'
 				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
-				foreach ($content as $row)
+				foreach ($content as $row) {
 					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
+				}
 
 				$output .= '</table>'."\n";
 			}
@@ -394,8 +410,9 @@ final class HTML_MySQL
 					break;
 			}
 
-			foreach ($sums as $sum)
+			foreach ($sums as $sum) {
 				$activity[$year][$month][$day][$sum] = $result->$sum;
+			}
 
 			if ($result->l_total > $l_total_high) {
 				$l_total_high = $result->l_total;
@@ -403,8 +420,9 @@ final class HTML_MySQL
 			}
 		}
 
-		if ($l_total_high == 0)
+		if ($l_total_high == 0) {
 			return;
+		}
 
 		$output = '<table class="'.$table_class.'"><tr><th colspan="'.$cols.'">'.htmlspecialchars($settings['head']).'</th></tr><tr class="bars">';
 
@@ -430,78 +448,88 @@ final class HTML_MySQL
 			if (!empty($activity[$year][$month][$day]['l_total'])) {
 				$output .= '<td>';
 
-				if ($activity[$year][$month][$day]['l_total'] >= 999500)
+				if ($activity[$year][$month][$day]['l_total'] >= 999500) {
 					$output .= number_format(($activity[$year][$month][$day]['l_total'] / 1000000), 1).'M';
-				elseif ($activity[$year][$month][$day]['l_total'] >= 10000)
+				} elseif ($activity[$year][$month][$day]['l_total'] >= 10000) {
 					$output .= round($activity[$year][$month][$day]['l_total'] / 1000).'K';
-				else
+				} else {
 					$output .= $activity[$year][$month][$day]['l_total'];
+				}
 
 				if ($activity[$year][$month][$day]['l_evening'] != 0) {
 					$l_evening_height = round(($activity[$year][$month][$day]['l_evening'] / $l_total_high) * 100);
 
-					if ($l_evening_height != 0)
+					if ($l_evening_height != 0) {
 						$output .= '<img src="'.$this->bar_evening.'" height="'.$l_evening_height.'" alt="" title="" />';
+					}
 				}
 
 				if ($activity[$year][$month][$day]['l_afternoon'] != 0) {
 					$l_afternoon_height = round(($activity[$year][$month][$day]['l_afternoon'] / $l_total_high) * 100);
 
-					if ($l_afternoon_height != 0)
+					if ($l_afternoon_height != 0) {
 						$output .= '<img src="'.$this->bar_afternoon.'" height="'.$l_afternoon_height.'" alt="" title="" />';
+					}
 				}
 
 				if ($activity[$year][$month][$day]['l_morning'] != 0) {
 					$l_morning_height = round(($activity[$year][$month][$day]['l_morning'] / $l_total_high) * 100);
 
-					if ($l_morning_height != 0)
+					if ($l_morning_height != 0) {
 						$output .= '<img src="'.$this->bar_morning.'" height="'.$l_morning_height.'" alt="" title="" />';
+					}
 				}
 
 				if ($activity[$year][$month][$day]['l_night'] != 0) {
 					$l_night_height = round(($activity[$year][$month][$day]['l_night'] / $l_total_high) * 100);
 
-					if ($l_night_height != 0)
+					if ($l_night_height != 0) {
 						$output .= '<img src="'.$this->bar_night.'" height="'.$l_night_height.'" alt="" title="" />';
+					}
 				}
 
 				$output .= '</td>';
-			} else
+			} else {
 				$output .= '<td><span class="grey">n/a</span></td>';
+			}
 		}
 
 		$output .= '</tr><tr class="sub">';
 
-		for ($i = $cols - 1; $i >= 0; $i--)
+		for ($i = $cols - 1; $i >= 0; $i--) {
 			switch ($settings['type']) {
 				case 'days':
 					$date = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day - $i, $this->year));
 
-					if ($l_total_high_date == $date)
+					if ($l_total_high_date == $date) {
 						$output .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
-					else
+					} else {
 						$output .= '<td>'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+					}
 
 					break;
 				case 'months':
 					$date = date('Y-m-d', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
 
-					if ($l_total_high_date == $date)
+					if ($l_total_high_date == $date) {
 						$output .= '<td class="bold">'.date('M', strtotime($date)).'<br />'.date('\'y', strtotime($date)).'</td>';
-					else
+					} else {
 						$output .= '<td>'.date('M', strtotime($date)).'<br />'.date('\'y', strtotime($date)).'</td>';
+					}
 
 					break;
 				case 'years':
 					$date = date('Y-m-d', mktime(0, 0, 0, 1, 1, $this->year - $i));
 
-					if ($l_total_high_date == $date)
+					if ($l_total_high_date == $date) {
 						$output .= '<td class="bold">'.date('\'y', strtotime($date)).'</td>';
-					else
+					} else {
 						$output .= '<td>'.date('\'y', strtotime($date)).'</td>';
+					}
 
 					break;
 			}
+		}
 
 		return $output.'</tr></table>'."\n";
 	}
@@ -535,33 +563,39 @@ final class HTML_MySQL
 			if ($l_total[$day] != 0) {
 				$output .= '<td>';
 
-				if ((($l_total[$day] / $this->l_total) * 100) >= 9.95)
+				if ((($l_total[$day] / $this->l_total) * 100) >= 9.95) {
 					$output .= round(($l_total[$day] / $this->l_total) * 100).'%';
-				else
+				} else {
 					$output .= number_format(($l_total[$day] / $this->l_total) * 100, 1).'%';
+				}
 
 				$times = array('evening', 'afternoon', 'morning', 'night');
 
-				foreach ($times as $time)
+				foreach ($times as $time) {
 					if (${'l_'.$time}[$day] != 0) {
 						${'l_'.$time.'_height'} = round((${'l_'.$time}[$day] / $l_total_high) * 100);
 
-						if (${'l_'.$time.'_height'} != 0)
+						if (${'l_'.$time.'_height'} != 0) {
 							$output .= '<img src="'.$this->{'bar_'.$time}.'" height="'.${'l_'.$time.'_height'}.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						}
 					}
+				}
 
 				$output .= '</td>';
-			} else
+			} else {
 				$output .= '<td><span class="grey">n/a</span></td>';
+			}
 		}
 
 		$output .= '</tr><tr class="sub">';
 
-		foreach ($days as $day)
-			if ($l_total_high != 0 && $l_total_high_day == $day)
+		foreach ($days as $day) {
+			if ($l_total_high != 0 && $l_total_high_day == $day) {
 				$output .= '<td class="bold">'.ucfirst($day).'</td>';
-			else
+			} else {
 				$output .= '<td>'.ucfirst($day).'</td>';
+			}
+		}
 
 		return $output.'</tr></table>'."\n";
 	}
@@ -593,8 +627,9 @@ final class HTML_MySQL
 				break;
 		}
 
-		if (empty($l_total))
+		if (empty($l_total)) {
 			return;
+		}
 
 		$output = '<table class="map"><tr><th colspan="7">'.htmlspecialchars($settings['head']).'</th></tr><tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="pos"></td><td class="k3">'.htmlspecialchars($settings['key3']).'</td><td class="k4">'.htmlspecialchars($settings['key4']).'</td><td class="k5">'.htmlspecialchars($settings['key5']).'</td><td class="k6">'.htmlspecialchars($settings['key6']).'</td></tr>';
 		$i = 0;
@@ -625,10 +660,11 @@ final class HTML_MySQL
 			} elseif (($lastSeen / 30.42) >= 1) {
 				$lastSeen = str_replace('.0', '', number_format($lastSeen / 30.42, 1));
 				$lastSeen = $lastSeen.' Month'.($lastSeen > 1 ? 's' : '').' Ago';
-			} elseif ($lastSeen == 1)
+			} elseif ($lastSeen == 1) {
 				$lastSeen = 'Yesterday';
-			else
+			} else {
 				$lastSeen = $lastSeen.' Days Ago';
+			}
 
 			$when_width = 50;
 			$times = array('night', 'morning', 'afternoon', 'evening');
@@ -656,19 +692,25 @@ final class HTML_MySQL
 					if ($when_width != 0) {
 						$when_width--;
 						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.++${'l_'.$time.'_width'}.'" alt="" />';
-					} else
+					} else {
 						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
+					}
 				}
-			} else
-				foreach ($times as $time)
-					if (!empty(${'l_'.$time.'_width'}))
+			} else {
+				foreach ($times as $time) {
+					if (!empty(${'l_'.$time.'_width'})) {
 						${'when_'.$time} = '<img src="'.$this->{'bar_'.$time}.'" width="'.${'l_'.$time.'_width'}.'" alt="" />';
+					}
+				}
+			}
 
 			$when_output = '';
 
-			foreach ($times as $time)
-				if (!empty(${'when_'.$time}))
+			foreach ($times as $time) {
+				if (!empty(${'when_'.$time})) {
 					$when_output .= ${'when_'.$time};
+				}
+			}
 
 			$output .= '<tr><td class="v1">'.$l_total_percentage.'%</td><td class="v2">'.number_format($result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$RUID.'">'.htmlspecialchars($csNick).'</a>' : htmlspecialchars($csNick)).'</td><td class="v4">'.$when_output.'</td><td class="v5">'.$lastSeen.'</td><td class="v6"><div>'.htmlspecialchars($quote).'</div></td></tr>';
 		}
@@ -686,10 +728,11 @@ final class HTML_MySQL
 		$l_total_high = 0;
 
 		for ($hour = 0; $hour < 24; $hour++) {
-			if ($hour < 10)
+			if ($hour < 10) {
 				$l_total[$hour] = $result->{'l_0'.$hour};
-			else
+			} else {
 				$l_total[$hour] = $result->{'l_'.$hour};
+			}
 
 			if ($l_total[$hour] > $l_total_high) {
 				$l_total_high = $l_total[$hour];
@@ -703,34 +746,39 @@ final class HTML_MySQL
 			if ($l_total[$hour] != 0) {
 				$output .= '<td>';
 
-				if ((($l_total[$hour] / $this->l_total) * 100) >= 9.95)
+				if ((($l_total[$hour] / $this->l_total) * 100) >= 9.95) {
 					$output .= round(($l_total[$hour] / $this->l_total) * 100).'%';
-				else
+				} else {
 					$output .= number_format(($l_total[$hour] / $this->l_total) * 100, 1).'%';
+				}
 
 				$height = round(($l_total[$hour] / $l_total_high) * 100);
 
-				if ($height != 0 && $hour >= 0 && $hour <= 5)
+				if ($height != 0 && $hour >= 0 && $hour <= 5) {
 					$output .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($height != 0 && $hour >= 6 && $hour <= 11)
+				} elseif ($height != 0 && $hour >= 6 && $hour <= 11) {
 					$output .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($height != 0 && $hour >= 12 && $hour <= 17)
+				} elseif ($height != 0 && $hour >= 12 && $hour <= 17) {
 					$output .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				elseif ($height != 0 && $hour >= 18 && $hour <= 23)
+				} elseif ($height != 0 && $hour >= 18 && $hour <= 23) {
 					$output .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				}
 
 				$output .= '</td>';
-			} else
+			} else {
 				$output .= '<td><span class="grey">n/a</span></td>';
+			}
 		}
 
 		$output .= '</tr><tr class="sub">';
 
-		for ($hour = 0; $hour < 24; $hour++)
-			if ($l_total_high != 0 && $l_total_high_hour == $hour)
+		for ($hour = 0; $hour < 24; $hour++) {
+			if ($l_total_high != 0 && $l_total_high_hour == $hour) {
 				$output .= '<td class="bold">'.$hour.'h</td>';
-			else
+			} else {
 				$output .= '<td>'.$hour.'h</td>';
+			}
+		}
 
 		return $output.'</tr></table>'."\n";
 	}
@@ -752,8 +800,9 @@ final class HTML_MySQL
 				${$time}[$i]['user'] = $result->csNick;
 				${$time}[$i]['lines'] = $result->{'l_'.$time};
 
-				if ($i == 1 && ${$time}[$i]['lines'] > $l_total_high)
+				if ($i == 1 && ${$time}[$i]['lines'] > $l_total_high) {
 					$l_total_high = ${$time}[$i]['lines'];
+				}
 			}
 		}
 
@@ -761,19 +810,23 @@ final class HTML_MySQL
 		$output = '<table class="tod"><tr><th colspan="5">'.htmlspecialchars($settings['head']).'</th></tr><tr><td class="pos"></td><td class="k">'.htmlspecialchars($settings['key1']).'<br />0h - 5h</td><td class="k">'.htmlspecialchars($settings['key2']).'<br />6h - 11h</td><td class="k">'.htmlspecialchars($settings['key3']).'<br />12h - 17h</td><td class="k">'.htmlspecialchars($settings['key4']).'<br />18h - 23h</td></tr>';
 
 		for ($i = 1; $i <= 10; $i++) {
-			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines']))
+			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
 				break;
+			}
 
 			$output .= '<tr><td class="pos">'.$i.'</td>';
 
-			foreach ($times as $time)
+			foreach ($times as $time) {
 				if (isset(${$time}[$i]['lines'])) {
-					if (round(${$time}[$i]['lines'] * $width) == 0)
+					if (round(${$time}[$i]['lines'] * $width) == 0) {
 						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'</td>';
-					else
+					} else {
 						$output .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br /><img src="'.$this->{'bar_'.$time}.'" width="'.round(${$time}[$i]['lines'] * $width).'" alt="" /></td>';
-				} else
+					}
+				} else {
 					$output .= '<td class="v"></td>';
+				}
+			}
 
 			$output .= '</tr>';
 		}
@@ -798,8 +851,9 @@ final class HTML_MySQL
 			while ($result = mysqli_fetch_object($query)) {
 				$hoursPassed = floor((strtotime($result->setDate) - strtotime($prevDate)) / 3600);
 
-				if ($prevTID != 0)
+				if ($prevTID != 0) {
 					$topicTime[$prevTID] += $hoursPassed;
+				}
 
 				if (!in_array($result->TID, $TIDs)) {
 					$TIDs[] = $result->TID;
@@ -823,8 +877,9 @@ final class HTML_MySQL
 			$i = 0;
 
 			foreach ($topicTime as $TID => $hoursPassed) {
-				if ($i >= $settings['rows'])
+				if ($i >= $settings['rows']) {
 					break;
+				}
 
 				$i++;
 				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
@@ -838,15 +893,17 @@ final class HTML_MySQL
 			* If there are less rows to display than the desired minimum amount of rows we skip this table.
 			*/
 			if ($i >= $this->minRows) {
-				for ($i = count($content); $i < $settings['rows']; $i++)
+				for ($i = count($content); $i < $settings['rows']; $i++) {
 					$content[] = array('&nbsp;', '', '', '');
+				}
 
 				$output .= '<table class="large">'
 					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head']).'</span></th></tr>'
 				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
-				foreach ($content as $row)
+				foreach ($content as $row) {
 					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+				}
 
 				$output .= '</table>'."\n";
 			}

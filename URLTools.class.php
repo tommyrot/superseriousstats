@@ -159,10 +159,11 @@ final class URLTools
 	 */
 	public function validateURL($csURL)
 	{
-		if (preg_match($this->regexp, $csURL))
+		if (preg_match($this->regexp, $csURL)) {
 			return TRUE;
-		else
+		} else {
 			return FALSE;
+		}
 	}
 }
 

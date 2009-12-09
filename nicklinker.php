@@ -28,20 +28,25 @@
  *	-o	export all users from the database to <nicks_file>
  */
 
-if (substr(phpversion(), 0, 3) != '5.3')
+if (substr(phpversion(), 0, 3) != '5.3') {
 	exit('unsupported php version: '.phpversion()."\n");
+}
 
-if (!@include('settings.php'))
+if (!@include('settings.php')) {
 	exit('cannot open: '.dirname(__FILE__).'/settings.php'."\n");
+}
 
-if ($cfg['database_server'] != 'MySQL')
+if ($cfg['database_server'] != 'MySQL') {
 	exit('unsupported database server: '.$cfg['database_server']."\n");
+}
 
-if ($cfg['database_server'] == 'MySQL' && !extension_loaded('mysqli'))
+if ($cfg['database_server'] == 'MySQL' && !extension_loaded('mysqli')) {
 	exit('the mysqli extension isn\'t loaded'."\n");
+}
 
-if (!(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')))
+if (!(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o'))) {
 	exit('usage: php '.basename(__FILE__).' {-i <nicks_file> | -o <nicks_file>}'."\n");
+}
 
 define('DB_HOST', $cfg['db_host']);
 define('DB_PORT', $cfg['db_port']);
@@ -58,8 +63,9 @@ if ($argv[1] == '-i') {
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
-			while ($result = mysqli_fetch_object($query))
+			while ($result = mysqli_fetch_object($query)) {
 				$csNick2UID[$result->csNick] = $result->UID;
+			}
 
 			/**
 			 * Set all nicks to their default status before updating any records from the input file.
@@ -87,8 +93,9 @@ if ($argv[1] == '-i') {
 						for ($i = 2; $i < count($lineParts); $i++) {
 							$csNick = trim($lineParts[$i]);
 
-							if (!empty($csNick))
+							if (!empty($csNick)) {
 								@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$csNick2UID[$csNick_main].', `status` = 2 WHERE `UID` = '.$csNick2UID[$csNick]) or exit('MySQL: '.mysqli_error($mysqli)."\n");
+							}
 						}
 					}
 				}
@@ -96,8 +103,9 @@ if ($argv[1] == '-i') {
 		}
 
 		fclose($fp);
-	} else
+	} else {
 		exit('cannot open: '.$argv[2]."\n");
+	}
 } elseif ($argv[1] == '-o') {
 	$fp = @fopen($argv[2], 'wb');
 
@@ -118,9 +126,11 @@ if ($argv[1] == '-i') {
 				$query = mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` AND `RUID` = '.$RUID.' ORDER BY `csNick` ASC');
 				$rows = mysqli_num_rows($query);
 
-				if (!empty($rows))
-					while ($result = mysqli_fetch_object($query))
+				if (!empty($rows)) {
+					while ($result = mysqli_fetch_object($query)) {
 						$output .= ','.$result->csNick;
+					}
+				}
 
 				$output .= "\n";
 			}
@@ -132,16 +142,18 @@ if ($argv[1] == '-i') {
 		if (!empty($rows)) {
 			$output .= '*';
 
-			while ($result = mysqli_fetch_object($query))
+			while ($result = mysqli_fetch_object($query)) {
 				$output .= ','.$result->csNick;
+			}
 
 			$output .= "\n";
 		}
 
 		fwrite($fp, $output);
 		fclose($fp);
-	} else
+	} else {
 		exit('cannot open: '.$argv[2]."\n");
+	}
 }
 
 ?>

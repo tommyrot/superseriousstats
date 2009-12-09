@@ -40,11 +40,14 @@ abstract class Nick_MySQL
 		 */
 		foreach ($this->user_tables as $table) {
 			if ($table == 'user_details') {
-				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `csNick` = \''.mysqli_real_escape_string($mysqli, $this->csNick).'\' LIMIT 1'))
+				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `csNick` = \''.mysqli_real_escape_string($mysqli, $this->csNick).'\' LIMIT 1')) {
 					return FALSE;
-			} else
-				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `UID` = '.$this->UID.' LIMIT 1'))
+				}
+			} else {
+				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `UID` = '.$this->UID.' LIMIT 1')) {
 					return FALSE;
+				}
+			}
 
 			$rows = mysqli_num_rows($query);
 
@@ -56,74 +59,86 @@ abstract class Nick_MySQL
 			if (empty($rows)) {
 				$query = 'INSERT INTO `'.$table.'` SET';
 
-				foreach ($this->{$table} as $key)
-					if ($key == 'UID' && $this->UID != 0)
+				foreach ($this->{$table} as $key) {
+					if ($key == 'UID' && $this->UID != 0) {
 						$query .= ' `UID` = '.$this->UID.',';
-					elseif (is_int($this->$key) && $this->$key != 0) {
+					} elseif (is_int($this->$key) && $this->$key != 0) {
 						$query .= ' `'.$key.'` = '.$this->$key.',';
 						$submit = TRUE;
 					} elseif (is_string($this->$key) && $this->$key != '') {
 						$query .= ' `'.$key.'` = \''.mysqli_real_escape_string($mysqli, $this->$key).'\',';
 						$submit = TRUE;
 					}
+				}
 
 				$query = rtrim($query, ',');
 
 				if ($submit) {
-					if (!@mysqli_query($mysqli, $query))
+					if (!@mysqli_query($mysqli, $query)) {
 						return FALSE;
+					}
 
 					if ($table == 'user_details') {
 						$this->UID = mysqli_insert_id($mysqli);
 
-						if (!@mysqli_query($mysqli, 'INSERT INTO `user_status` (`UID`, `RUID`, `status`) VALUES ('.$this->UID.', '.$this->UID.', 0)'))
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_status` (`UID`, `RUID`, `status`) VALUES ('.$this->UID.', '.$this->UID.', 0)')) {
 							return FALSE;
+						}
 					}
 				}
 			} else {
 				$result = mysqli_fetch_object($query);
 
-				if ($table == 'user_details')
+				if ($table == 'user_details') {
 					$this->UID = $result->UID;
+				}
 
 				$query = 'UPDATE `'.$table.'` SET';
 
-				foreach ($this->{$table} as $key)
+				foreach ($this->{$table} as $key) {
 					if (is_int($this->$key) && $this->$key != 0 && $key != 'UID') {
 						if ($key == 'topMonologue') {
-							if ($this->topMonologue > $result->topMonologue)
+							if ($this->topMonologue > $result->topMonologue) {
 								$query .= ' `topMonologue` = '.$this->topMonologue.',';
-						} else
+							}
+						} else {
 							$query .= ' `'.$key.'` = '.($this->$key + $result->$key).',';
+						}
 
 						$submit = TRUE;
 					} elseif (is_string($this->$key) && $this->$key != '' && $this->$key != $result->$key && !($key == 'firstSeen' && $this->$key.':00' >= $result->$key) && !(($key == 'lastSeen' || $key == 'lastTalked') && $this->$key.':00' <= $result->$key)) {
 						$query .= ' `'.$key.'` = \''.mysqli_real_escape_string($mysqli, $this->$key).'\',';
 						$submit = TRUE;
 					}
+				}
 
 				$query = rtrim($query, ',').' WHERE `UID` = '.$this->UID;
 
-				if ($submit)
-					if (!@mysqli_query($mysqli, $query))
+				if ($submit) {
+					if (!@mysqli_query($mysqli, $query)) {
 						return FALSE;
+					}
+				}
 			}
 		}
 
 		/**
 		 * Write data to database table "user_activity".
 		 */
-		if ($this->l_total != 0)
-			if (!@mysqli_query($mysqli, 'INSERT INTO `user_activity` (`UID`, `date`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, DATE).'\', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')'))
+		if ($this->l_total != 0) {
+			if (!@mysqli_query($mysqli, 'INSERT INTO `user_activity` (`UID`, `date`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, DATE).'\', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')')) {
 				return FALSE;
+			}
+		}
 
 		/**
 		 * Write data to database table "user_hosts".
 		 */
 		if (!empty($this->hosts_list)) {
 			foreach ($this->hosts_list as $host) {
-				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `UID` = '.$this->UID.' AND `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1'))
+				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `UID` = '.$this->UID.' AND `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1')) {
 					return FALSE;
+				}
 
 				$rows = mysqli_num_rows($query);
 
@@ -134,19 +149,22 @@ abstract class Nick_MySQL
 					/**
 					 * Check if the host exists in the database paired with an UID other than mine and if it does, use its HID in my own insert query.
 					 */
-					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1'))
+					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1')) {
 						return FALSE;
+					}
 
 					$rows = mysqli_num_rows($query);
 
 					if (empty($rows)) {
-						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`UID`, `host`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')'))
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`UID`, `host`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')')) {
 							return FALSE;
+						}
 					} else {
 						$result = mysqli_fetch_object($query);
 
-						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`HID`, `UID`, `host`) VALUES ('.$result->HID.', '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')'))
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`HID`, `UID`, `host`) VALUES ('.$result->HID.', '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')')) {
 							return FALSE;
+						}
 					}
 				}
 			}
@@ -157,8 +175,9 @@ abstract class Nick_MySQL
 		 */
 		if (!empty($this->topics_list)) {
 			foreach ($this->topics_list as $topic) {
-				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `UID` = '.$this->UID.' AND `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' AND `setDate` = \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\' LIMIT 1'))
+				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `UID` = '.$this->UID.' AND `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' AND `setDate` = \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\' LIMIT 1')) {
 					return FALSE;
+				}
 
 				$rows = mysqli_num_rows($query);
 
@@ -170,19 +189,22 @@ abstract class Nick_MySQL
 					/**
 					 * Check if the topic exists in the database and if it does, use its TID in the insert query.
 					 */
-					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' LIMIT 1'))
+					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' LIMIT 1')) {
 						return FALSE;
+					}
 
 					$rows = mysqli_num_rows($query);
 
 					if (empty($rows)) {
-						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`UID`, `csTopic`, `setDate`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')'))
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`UID`, `csTopic`, `setDate`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')')) {
 							return FALSE;
+						}
 					} else {
 						$result = mysqli_fetch_object($query);
 
-						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`TID`, `UID`, `csTopic`, `setDate`) VALUES ('.$result->TID.', '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')'))
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`TID`, `UID`, `csTopic`, `setDate`) VALUES ('.$result->TID.', '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')')) {
 							return FALSE;
+						}
 					}
 				}
 			}
@@ -191,9 +213,11 @@ abstract class Nick_MySQL
 		/**
 		 * Write data to database table "user_URLs".
 		 */
-		foreach ($this->URLs_list as $URL)
-			if (!$this->URLs_objs[$URL]->writeData($mysqli, $this->UID))
+		foreach ($this->URLs_list as $URL) {
+			if (!$this->URLs_objs[$URL]->writeData($mysqli, $this->UID)) {
 				return FALSE;
+			}
+		}
 
 		return TRUE;
 	}

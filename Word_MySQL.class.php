@@ -29,8 +29,9 @@ abstract class Word_MySQL
 		/**
 		 * Write data to database table "words".
 		 */
-		if (!@mysqli_query($mysqli, 'INSERT INTO `words` (`word`, `total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->word).'\', '.$this->total.') ON DUPLICATE KEY UPDATE `total` = `total` + '.$this->total))
+		if (!@mysqli_query($mysqli, 'INSERT INTO `words` (`word`, `total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->word).'\', '.$this->total.') ON DUPLICATE KEY UPDATE `total` = `total` + '.$this->total)) {
 			return FALSE;
+		}
 
 		return TRUE;
 	}

@@ -68,10 +68,11 @@ final class Parser_Eggdrop extends Parser
 					 * There doesn't have to be an "undergoing" nick for a slap to count.
 					 */
 					if (strtolower($lineParts[2]) == 'slaps') {
-						if (isset($lineParts[3]))
+						if (isset($lineParts[3])) {
 							$csNick_undergoing = $lineParts[3];
-						else
+						} else {
 							$csNick_undergoing = NULL;
+						}
 
 						$this->setSlap($dateTime, $csNick, $csNick_undergoing);
 					}
@@ -103,10 +104,11 @@ final class Parser_Eggdrop extends Parser
 				$csNick = $lineParts[0];
 				$csHost = trim($lineParts[1], '(~)');
 
-				if ($lineParts[3] == 'irc:')
+				if ($lineParts[3] == 'irc:') {
 					$this->setQuit($dateTime, $csNick, $csHost);
-				else
+				} else {
 					$this->setPart($dateTime, $csNick, $csHost);
+				}
 
 			/**
 			 * "Mode" lines. Format: "CHAN: mode change '+o-v NICK NICK' by NICK!HOST".
@@ -134,15 +136,16 @@ final class Parser_Eggdrop extends Parser
 					for ($i = 0; $i < strlen($modes); $i++) {
 						$mode = substr($modes, $i, 1);
 
-						if ($mode == '-' || $mode == '+')
+						if ($mode == '-' || $mode == '+') {
 							$modeSign = $mode;
-						else {
+						} else {
 							$modeNum++;
 
-							if ($modeNum == $modesTotal)
+							if ($modeNum == $modesTotal) {
 								$csNick_undergoing = rtrim($lineParts[3 + $modeNum], '\'');
-							else
+							} else {
 								$csNick_undergoing = $lineParts[3 + $modeNum];
+							}
 
 							$this->setMode($dateTime, $csNick_performing, $csNick_undergoing, $modeSign.$mode, $csHost);
 						}
@@ -160,10 +163,11 @@ final class Parser_Eggdrop extends Parser
 				/**
 				 * If the topic is empty we pass on NULL to setTopic().
 				 */
-				if (isset($lineParts[6]))
+				if (isset($lineParts[6])) {
 					$line = implode(' ', array_slice($lineParts, 6));
-				else
+				} else {
 					$line = NULL;
+				}
 
 				$this->setTopic($dateTime, $csNick, $csHost, $line);
 
@@ -188,8 +192,9 @@ final class Parser_Eggdrop extends Parser
 					$this->lineNum--;
 					$this->output('notice', 'parseLine(): repeating line '.$this->lineNum.': '.$lineParts[3].' '.(($lineParts[3] == 1) ? 'time' : 'times'));
 
-					for ($i = $lineParts[3]; $i > 0; $i--)
+					for ($i = $lineParts[3]; $i > 0; $i--) {
 						$this->parseLine($this->prevLine);
+					}
 
 					$this->lineNum++;
 					$this->repeating = FALSE;
@@ -198,8 +203,9 @@ final class Parser_Eggdrop extends Parser
 			/**
 			 * Skip everything else.
 			 */
-			} else
+			} else {
 				$this->output('notice', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
+			}
 		}
 	}
 }
