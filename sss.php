@@ -156,8 +156,9 @@ function output($cfg, $html_file, $outputBits = NULL)
 	if ($fp) {
 		fwrite($fp, $sss_output->makeHTML());
 		fclose($fp);
-	} else
+	} else {
 		exit('cannot open: '.$html_file."\n");
+	}
 }
 
 /**
