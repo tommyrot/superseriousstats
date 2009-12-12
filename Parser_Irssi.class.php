@@ -33,9 +33,9 @@ final class Parser_Irssi extends Parser
 			$dateTime = DATE.' '.substr($line, 0, 5);
 
 			/**
-			 * Normalize the nick in a "normal" line. Irssi logs a user's status and we don't want nor use that info.
+			 * Normalize the nick in a "normal" line. Irssi logs nicknames with a mode prefix by default. We don't want nor use that info.
 			 */
-			$line = preg_replace('/^<[\x20\+@](.+)>/', '<$1>', substr($line, 6));
+			$line = preg_replace('/^<[\x20\+@%~&](.+)>/', '<$1>', substr($line, 6));
 			$lineParts = explode(' ', $line);
 
 			/**
