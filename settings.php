@@ -1,3 +1,5 @@
+<?php
+
 $cfg['HTML']['channel'] = '#yourchan';
 $cfg['dateFormat'] = 'Ymd';
 $cfg['db_host'] = '127.0.0.1';
@@ -12,3 +14,5 @@ $cfg['logfilePrefix'] = '#yourchan.';
 $cfg['logfileSuffix'] = '.log';
 $cfg['timezone'] = 'Europe/Amsterdam';
 $cfg['writeData'] = TRUE;
+
+?>
