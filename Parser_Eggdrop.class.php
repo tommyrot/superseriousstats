@@ -35,7 +35,7 @@ final class Parser_Eggdrop extends Parser
 		 * Only process lines beginning with a timestamp.
 		 */
 		if (preg_match('/^\[([01][0-9]|2[0-3]):[0-5][0-9]\]/', $line)) {
-			$dateTime = DATE.' '.substr($line, 1, 5);
+			$dateTime = $this->date.' '.substr($line, 1, 5);
 			$line = substr($line, 8);
 			$lineParts = explode(' ', $line);
 

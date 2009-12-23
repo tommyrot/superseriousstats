@@ -90,29 +90,33 @@ function doMaintenance($cfg)
  */
 function input($cfg, $logfile)
 {
-	if (($logfile = realpath($logfile)) !== FALSE) {
-		if (is_dir($logfile)) {
-			if (($dh = @opendir($logfile)) !== FALSE) {
+	if (($path = realpath($logfile)) !== FALSE) {
+		if (is_dir($path)) {
+			if (($dh = @opendir($path)) !== FALSE) {
 				while (($file = readdir($dh)) !== FALSE) {
-					$logfiles[] = realpath($logfile.'/'.$file);
+					$logfiles[] = realpath($path.'/'.$file);
 				}
 
 				closedir($dh);
 			} else {
-				exit('cannot open: '.$logfile."\n");
+				exit('cannot open: '.$path."\n");
 			}
 		} else {
-			$logfiles[] = $logfile;
+			$logfiles[] = $path;
 		}
 
 		sort($logfiles);
 
 		foreach ($logfiles as $logfile) {
-			if (stripos($logfile, $cfg['logfilePrefix']) !== FALSE && stripos($logfile, $cfg['logfileSuffix']) !== FALSE) {
+			echo $logfile."\n";
+			if ((empty($cfg['logfilePrefix']) || stripos(basename($logfile), $cfg['logfilePrefix']) !== FALSE) && (empty($cfg['logfileSuffix']) || stripos(basename($logfile), $cfg['logfileSuffix']) !== FALSE)) {
+				echo 'ja'."\n";
 				$logfile = preg_replace('/YESTERDAY/', date($cfg['dateFormat'], strtotime('yesterday')), $logfile);
 				$date = str_replace(array($cfg['logfilePrefix'], $cfg['logfileSuffix']), '', basename($logfile));
+				$date = date('Y-m-d', strtotime($date));
+				$day = strtolower(date('D', strtotime($date)));
 
-				if (date('Ymd', strtotime($date)) == date('Ymd')) {
+				if ($date == date('Y-m-d')) {
 					echo 'The logfile you are trying to parse appears to be of today. If logging'."\n"
 					   . 'hasn\'t completed for today it is advisable to skip parsing this file'."\n"
 					   . 'until tomorrow, when it is complete.'."\n"
@@ -124,10 +128,10 @@ function input($cfg, $logfile)
 					}
 				}
 
-				define('DATE', date('Y-m-d', strtotime($date)));
-				define('DAY', strtolower(date('D', strtotime($date))));
 				$parser_class = 'Parser_'.$cfg['logfileFormat'];
 				$parser = new $parser_class();
+				$parser->setValue('date', $date);
+				$parser->setValue('day', $day);
 
 				if (isset($cfg['parser'])) {
 					foreach ($cfg['parser'] as $key => $value) {

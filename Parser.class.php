@@ -22,8 +22,7 @@
 abstract class Parser extends Parser_MySQL
 {
 	/**
-	 * Don't change any of the default settings below unless you know what you're doing!
-	 * It is recommended to makes changes only from the startup script.
+	 * The following variables can be set from settings.php, see documentation.
 	 */
 	private $URL_maxLen = 255;
 	private $host_maxLen = 255;
@@ -94,6 +93,8 @@ abstract class Parser extends Parser_MySQL
 				,':(' => 's_18'
 				,'\\o/' => 's_19');
 	private $streak = 0;
+	protected $date = '';
+	protected $day = '';
 	protected $lineNum = 0;
 	protected $nicks_list = array();
 	protected $nicks_objs = array();
@@ -372,19 +373,19 @@ abstract class Parser extends Parser_MySQL
 			if (preg_match('/^0[0-5]$/', $hour)) {
 				$this->l_night++;
 				$this->nicks_objs[$nick]->addValue('l_night', 1);
-				$this->nicks_objs[$nick]->addValue('l_'.DAY.'_night', 1);
+				$this->nicks_objs[$nick]->addValue('l_'.$this->day.'_night', 1);
 			} elseif (preg_match('/^(0[6-9]|1[01])$/', $hour)) {
 				$this->l_morning++;
 				$this->nicks_objs[$nick]->addValue('l_morning', 1);
-				$this->nicks_objs[$nick]->addValue('l_'.DAY.'_morning', 1);
+				$this->nicks_objs[$nick]->addValue('l_'.$this->day.'_morning', 1);
 			} elseif (preg_match('/^1[2-7]$/', $hour)) {
 				$this->l_afternoon++;
 				$this->nicks_objs[$nick]->addValue('l_afternoon', 1);
-				$this->nicks_objs[$nick]->addValue('l_'.DAY.'_afternoon', 1);
+				$this->nicks_objs[$nick]->addValue('l_'.$this->day.'_afternoon', 1);
 			} elseif (preg_match('/^(1[89]|2[0-3])$/', $hour)) {
 				$this->l_evening++;
 				$this->nicks_objs[$nick]->addValue('l_evening', 1);
-				$this->nicks_objs[$nick]->addValue('l_'.DAY.'_evening', 1);
+				$this->nicks_objs[$nick]->addValue('l_'.$this->day.'_evening', 1);
 			}
 
 			$this->{'l_'.$hour}++;

@@ -29,7 +29,7 @@ final class HTML_MySQL
 	private $bar_evening = 'r.png';
 	private $bar_morning = 'g.png';
 	private $bar_night = 'b.png';
-	private $channel = '#superseriousstats';
+	private $channel = '#yourchan';
 	private $minLines = 500;
 	private $minRows = 3;
 	private $stylesheet = 'default.css';
@@ -40,6 +40,7 @@ final class HTML_MySQL
 	 */
 	private $date_first = '';
 	private $date_last = '';
+	private $day = '';
 	private $day_of_month = '';
 	private $day_of_year = '';
 	private $days = 0;
