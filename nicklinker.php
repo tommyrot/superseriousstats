@@ -36,11 +36,11 @@ if (!@include('settings.php')) {
 	exit('cannot open: '.dirname(__FILE__).'/settings.php'."\n");
 }
 
-if ($cfg['database_server'] != 'MySQL') {
-	exit('unsupported database server: '.$cfg['database_server']."\n");
+if ($cfg['db_server'] != 'MySQL') {
+	exit('unsupported database server: '.$cfg['db_server']."\n");
 }
 
-if ($cfg['database_server'] == 'MySQL' && !extension_loaded('mysqli')) {
+if ($cfg['db_server'] == 'MySQL' && !extension_loaded('mysqli')) {
 	exit('the mysqli extension isn\'t loaded'."\n");
 }
 

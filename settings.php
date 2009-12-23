@@ -1,127 +1,14 @@
-<?php
-
-/**
- * For more details on how to set up sss consult the wiki:
- * http://code.google.com/p/superseriousstats/wiki/SetupGuide
- */
-
-/**
- * Name of the IRC channel you are generating stats for.
- */
-$cfg['channel'] = '#superseriousstats';
-
-/**
- * Your timezone. A list of supported timezones can be found at
- * http://php.net/manual/en/timezones.php
- */
-$cfg['timezone'] = 'Europe/Amsterdam';
-
-/**
- * Format of the logfile filename.
- *
- * logfile_prefix - the part before the date in the filename
- * logfile_suffix - the part after the date in the filename
- * date_format - the format of the date in the filename
- *
- * Example #1, filename: #superseriousstats.2009-12-31.log
- *
- * logfile_prefix = '#superseriousstats.'
- * logfile_suffix = '.log'
- * date_format = 'Y-m-d'
- *
- * Example #2, filename: sss-31122009
- *
- * logfile_prefix = 'sss-'
- * logfile_suffix = ''
- * date_format = 'dmY'
- */
-$cfg['logfile_prefix'] = '#superseriousstats.log.';
-$cfg['logfile_suffix'] = '';
-$cfg['date_format'] = 'Ymd';
-
-/**
- * Logfile format.
- *
- * Options: Eggdrop, Irssi
- */
-$cfg['logfile_format'] = 'Eggdrop';
-
-/**
- * Database server. Currently only 'MySQL' is supported.
- *
- * Options: MySQL
- */
-$cfg['database_server'] = 'MySQL';
-
-/**
- * Database connection variables.
- *
- * db_host - IP address of the database server
- * db_port - Port number the database server is running on
- * db_user - Username
- * db_pass - Password
- * db_name - Database used when performing queries
- */
+$cfg['HTML']['channel'] = '#yourchan';
+$cfg['dateFormat'] = 'Ymd';
 $cfg['db_host'] = '127.0.0.1';
-$cfg['db_port'] = 3306;
-$cfg['db_user'] = 'user';
-$cfg['db_pass'] = 'pass';
 $cfg['db_name'] = 'superseriousstats';
-
-/**
- * Output level for event messages.
- *
- * 0 - Don't output anything
- * 1 - Critical events only (default)
- * 2 - Critical events and warnings
- * 3 - Critical events, warnings and notices
- * 4 - Critical events, warnings, notices and debug messages
- *
- * Options: 0, 1, 2, 3, 4
- */
-$cfg['outputLevel'] = 1;
-
-/**
- * Word tracking. Enabling this feature increases parsetimes substantially.
- * Currently the words data is only used to create the "Most Mentioned Nicks"
- * table.
- *
- * Options: TRUE, FALSE
- */
-$cfg['wordTracking'] = FALSE;
-
-/**
- * Write data to the database. Disabling this may sometimes be preferred when
- * debugging or developing.
- *
- * Options: TRUE, FALSE
- */
-$cfg['writeData'] = TRUE;
-
-/**
- * Perform maintenance routines on the database tables. Generates query tables
- * used by the HTML output functions. Required before every daily HTML output.
- *
- * Options: TRUE, FALSE
- */
+$cfg['db_pass'] = 'secret';
+$cfg['db_port'] = 3306;
+$cfg['db_server'] = 'MySQL';
+$cfg['db_user'] = 'root';
 $cfg['doMaintenance'] = TRUE;
-
-/**
- * The day on which to perform extended database maintenance. This will run
- * the OPTIMIZE command on all tables which takes slightly longer to complete
- * and is only necessary once a week.
- *
- * Options: mon, tue, wed, thu, fri, sat, sun
- */
-$cfg['sanitisationDay'] = 'mon';
-
-/**
- * Include links to userstats on the main HTML page. Your webserver needs to
- * be able to server PHP content and the user.php file must be in the same
- * directory as the HTML output.
- *
- * Options: TRUE, FALSE
- */
-$cfg['userstats'] = FALSE;
-
-?>
+$cfg['logfileFormat'] = 'Eggdrop';
+$cfg['logfilePrefix'] = '#yourchan.';
+$cfg['logfileSuffix'] = '.log';
+$cfg['timezone'] = 'Europe/Amsterdam';
+$cfg['writeData'] = TRUE;

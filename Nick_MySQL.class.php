@@ -40,11 +40,11 @@ abstract class Nick_MySQL
 		 */
 		foreach ($this->user_tables as $table) {
 			if ($table == 'user_details') {
-				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `csNick` = \''.mysqli_real_escape_string($mysqli, $this->csNick).'\' LIMIT 1')) {
+				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `csNick` = \''.mysqli_real_escape_string($mysqli, $this->csNick).'\' LIMIT 1')) === FALSE) {
 					return FALSE;
 				}
 			} else {
-				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `UID` = '.$this->UID.' LIMIT 1')) {
+				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `UID` = '.$this->UID.' LIMIT 1')) === FALSE) {
 					return FALSE;
 				}
 			}
@@ -136,7 +136,7 @@ abstract class Nick_MySQL
 		 */
 		if (!empty($this->hosts_list)) {
 			foreach ($this->hosts_list as $host) {
-				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `UID` = '.$this->UID.' AND `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1')) {
+				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `UID` = '.$this->UID.' AND `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1')) === FALSE) {
 					return FALSE;
 				}
 
@@ -149,7 +149,7 @@ abstract class Nick_MySQL
 					/**
 					 * Check if the host exists in the database paired with an UID other than mine and if it does, use its HID in my own insert query.
 					 */
-					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1')) {
+					if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1')) === FALSE) {
 						return FALSE;
 					}
 
@@ -175,7 +175,7 @@ abstract class Nick_MySQL
 		 */
 		if (!empty($this->topics_list)) {
 			foreach ($this->topics_list as $topic) {
-				if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `UID` = '.$this->UID.' AND `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' AND `setDate` = \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\' LIMIT 1')) {
+				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `UID` = '.$this->UID.' AND `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' AND `setDate` = \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\' LIMIT 1')) === FALSE) {
 					return FALSE;
 				}
 
@@ -189,7 +189,7 @@ abstract class Nick_MySQL
 					/**
 					 * Check if the topic exists in the database and if it does, use its TID in the insert query.
 					 */
-					if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' LIMIT 1')) {
+					if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' LIMIT 1')) === FALSE) {
 						return FALSE;
 					}
 

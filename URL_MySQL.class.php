@@ -29,7 +29,7 @@ abstract class URL_MySQL
 		/**
 		 * Write data to database table "user_URLs".
 		 */
-		if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `UID` = '.$UID.' AND `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1')) {
+		if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `UID` = '.$UID.' AND `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1')) === FALSE) {
 			return FALSE;
 		}
 
@@ -39,7 +39,7 @@ abstract class URL_MySQL
 			/**
 			 * Check if the URL exists in the database paired with an UID other than mine and if it does, use its LID in my own insert query.
 			 */
-			if (!$query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1')) {
+			if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1')) === FALSE) {
 				return FALSE;
 			}
 

@@ -16,38 +16,33 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/**
- * This script should be called from the commandline with PHP version 5.3.0 or up.
- *
- * usage: php sss.php {-i <log_file> [-o <html_file> [-b <bits>]] | -m | -o <html_file> [-b <bits>]}
- *
- * Make sure to use absolute paths when specifying either <log_file> or <html_file>.
- *
- * The options are:
- *	-b	set the output bits, add up the digits below corresponding to
- *		the sections you want to be included on the statspage:
- *			 1 - activity
- *			 2 - general chat
- *			 4 - modes
- *			 8 - events
- *			16 - smileys
- *		if this option is omitted then all sections will be included
- *	-i	parse <log_file>
- *		this includes performing maintenance routines on the database if
- *		the "doMaintenance" option is set to TRUE in settings.php
- *	-m	perform maintenance routines on the database
- *	-o	generate statistics and output to <html_file>
- */
+$man = 'usage: php sss.php [-i <logfile|logdir> [-o <statspage> [-b <outputbits>]]]'."\n"
+     . '       php sss.php [-o <statspage> [-b <outputbits>]]'."\n"
+     . '       php sss.php [-m]'."\n\n"
+     . 'the options are:'."\n"
+     . '       -b	set <outputbits>, add up the bits corresponding to the sections'."\n"
+     . '		you want to be included on the statspage:'."\n"
+     . '		     1  activity'."\n"
+     . '		     2  general chat'."\n"
+     . '		     4  modes'."\n"
+     . '		     8  events'."\n"
+     . '		    16  smileys'."\n"
+     . '		if this option is omitted all sections will be included'."\n"
+     . '	-i	input <logfile>, or all logfiles in <logdir>'."\n"
+     . '		database maintenance will be run after parsing the last logfile'."\n"
+     . '		unless "doMaintenance" is set to FALSE in settings.php'."\n"
+     . '	-m	perform maintenance routines on the database'."\n"
+     . '	-o	generate statistics and output to <statspage>'."\n";
 
 if (substr(phpversion(), 0, 3) != '5.3') {
 	exit('unsupported php version: '.phpversion()."\n");
 }
 
 if (!@include('settings.php')) {
-	exit('cannot open: '.dirname(__FILE__).'/settings.php'."\n");
+	exit('cannot open: '.realpath(dirname(__FILE__).'/settings.php')."\n");
 }
 
-if ($cfg['database_server'] == 'MySQL' && !extension_loaded('mysqli')) {
+if ($cfg['db_server'] == 'MySQL' && !extension_loaded('mysqli')) {
 	exit('the mysqli extension isn\'t loaded'."\n");
 }
 
@@ -55,7 +50,7 @@ if (!(count($argv) == 2 && $argv[1] == '-m') &&
     !(count($argv) == 3 && ($argv[1] == '-i' || $argv[1] == '-o')) &&
     !(count($argv) == 5 && (($argv[1] == '-i' && $argv[3] == '-o') || ($argv[1] == '-o' && $argv[3] == '-b'))) &&
     !(count($argv) == 7 && $argv[1] == '-i' && $argv[3] == '-o' && $argv[5] == '-b')) {
-	exit('usage: php '.basename(__FILE__).' {-i <log_file> [-o <html_file> [-b <bits>]] | -m | -o <html_file> [-b <bits>]}'."\n");
+	exit($man);
 }
 
 define('DB_HOST', $cfg['db_host']);
@@ -66,7 +61,7 @@ define('DB_NAME', $cfg['db_name']);
 date_default_timezone_set($cfg['timezone']);
 
 /**
- * Class autoloader, handy!
+ * Class autoloader.
  */
 function __autoload($class)
 {
@@ -74,90 +69,110 @@ function __autoload($class)
 }
 
 /**
- * Run the database maintenance scripts. Userstats for all linked nicks will be accumulated, sanity checks will be done on the userstatuses and more.
+ * Run the database maintenance scripts. Userstats of all linked nicks will be accumulated, sanity checks will be done on the userstatuses and more.
  */
 function doMaintenance($cfg)
 {
-	$maintenanceClass = 'Maintenance_'.$cfg['database_server'];
-	$sss_maintenance = new $maintenanceClass();
-	$sss_maintenance->setValue('outputLevel', $cfg['outputLevel']);
-	$sss_maintenance->setValue('sanitisationDay', $cfg['sanitisationDay']);
+	$maintenance_class = 'Maintenance_'.$cfg['db_server'];
+	$maintenance = new $maintenance_class();
 
-	/**
-	 * Place your own $sss_maintenance->setValue lines here
-	 */
-
-	$sss_maintenance->doMaintenance();
-}
-
-/**
- * Parse a logfile.
- */
-function input($cfg, $log_file)
-{
-	$logfile = preg_replace('/YESTERDAY/', date($cfg['date_format'], strtotime('yesterday')), $log_file);
-	$date = preg_replace(array('/^'.$cfg['logfile_prefix'].'/', '/'.$cfg['logfile_suffix'].'$/'), '', basename($logfile));
-
-	if (date('Ymd', strtotime($date)) == date('Ymd')) {
-		echo 'The logfile you are trying to parse appears to be of today. If logging'."\n"
-		   . 'hasn\'t completed for today it is advisable to skip parsing this file'."\n"
-		   . 'until tomorrow, when it is complete.'."\n"
-		   . 'Skip \''.$log_file.'\'? [yes] ';
-		$yn = trim(fgets(STDIN));
-
-		if (empty($yn) || $yn == 'y' || $yn == 'yes') {
-			exit;
+	if (isset($cfg['maintenance'])) {
+		foreach ($cfg['maintenance'] as $key => $value) {
+			$maintenance->setValue($key, $value);
 		}
 	}
 
-	define('DATE', date('Y-m-d', strtotime($date)));
-	define('DAY', strtolower(date('D', strtotime($date))));
-	$parserClass = 'Parser_'.$cfg['logfile_format'];
-	$sss_parser = new $parserClass();
-	$sss_parser->setValue('outputLevel', $cfg['outputLevel']);
-	$sss_parser->setValue('wordTracking', $cfg['wordTracking']);
+	$maintenance->doMaintenance();
+}
 
-	/**
-	 * Place your own $sss_parser->setValue lines here
-	 */
+/**
+ * Parse a logfile, or all logfiles in the given logdir.
+ */
+function input($cfg, $logfile)
+{
+	if (($logfile = realpath($logfile)) !== FALSE) {
+		if (is_dir($logfile)) {
+			if (($dh = @opendir($logfile)) !== FALSE) {
+				while (($file = readdir($dh)) !== FALSE) {
+					$logfiles[] = realpath($logfile.'/'.$file);
+				}
 
-	$sss_parser->parseLog($logfile);
+				closedir($dh);
+			} else {
+				exit('cannot open: '.$logfile."\n");
+			}
+		} else {
+			$logfiles[] = $logfile;
+		}
 
-	if ($cfg['writeData']) {
-		$sss_parser->writeData();
-	}
+		sort($logfiles);
 
-	if ($cfg['doMaintenance']) {
-		doMaintenance($cfg);
+		foreach ($logfiles as $logfile) {
+			if (stripos($logfile, $cfg['logfilePrefix']) !== FALSE && stripos($logfile, $cfg['logfileSuffix']) !== FALSE) {
+				$logfile = preg_replace('/YESTERDAY/', date($cfg['dateFormat'], strtotime('yesterday')), $logfile);
+				$date = str_replace(array($cfg['logfilePrefix'], $cfg['logfileSuffix']), '', basename($logfile));
+
+				if (date('Ymd', strtotime($date)) == date('Ymd')) {
+					echo 'The logfile you are trying to parse appears to be of today. If logging'."\n"
+					   . 'hasn\'t completed for today it is advisable to skip parsing this file'."\n"
+					   . 'until tomorrow, when it is complete.'."\n"
+					   . 'Skip \''.basename($logfile).'\'? [yes] ';
+					$yn = trim(fgets(STDIN));
+
+					if (empty($yn) || $yn == 'y' || $yn == 'yes') {
+						break;
+					}
+				}
+
+				define('DATE', date('Y-m-d', strtotime($date)));
+				define('DAY', strtolower(date('D', strtotime($date))));
+				$parser_class = 'Parser_'.$cfg['logfileFormat'];
+				$parser = new $parser_class();
+
+				if (isset($cfg['parser'])) {
+					foreach ($cfg['parser'] as $key => $value) {
+						$parser->setValue($key, $value);
+					}
+				}
+
+				$parser->parseLog($logfile);
+
+				if ($cfg['writeData']) {
+					$parser->writeData();
+				}
+			}
+		}
+
+		if ($cfg['doMaintenance']) {
+			doMaintenance($cfg);
+		}
+	} else {
+		exit('no such file: '.$logfile."\n");
 	}
 }
 
 /**
  * Create the statspage.
  */
-function output($cfg, $html_file, $outputBits = NULL)
+function output($cfg, $statspage, $outputbits = NULL)
 {
-	$HTMLClass = 'HTML_'.$cfg['database_server'];
-	$sss_output = new $HTMLClass();
-	$sss_output->setValue('channel', $cfg['channel']);
-	$sss_output->setValue('userstats', $cfg['userstats']);
+	$HTML_class = 'HTML_'.$cfg['db_server'];
+	$HTML = new $HTML_class();
 
-	if (is_numeric($outputBits)) {
-		$outputBits = intval($outputBits);
-		$sss_output->setValue('outputBits', $outputBits);
+	foreach ($cfg['HTML'] as $key => $value) {
+		$HTML->setValue($key, $value);
 	}
 
-	/**
-	 * Place your own $sss_output->setValue lines here
-	 */
+	if (is_numeric($outputbits)) {
+		$outputbits = intval($outputbits);
+		$HTML->setValue('outputbits', $outputbits);
+	}
 
-	$fp = @fopen($html_file, 'wb');
-
-	if ($fp) {
-		fwrite($fp, $sss_output->makeHTML());
+	if (($fp = @fopen($statspage, 'wb')) !== FALSE) {
+		fwrite($fp, $HTML->makeHTML());
 		fclose($fp);
 	} else {
-		exit('cannot open: '.$html_file."\n");
+		exit('cannot open: '.$statspage."\n");
 	}
 }
 
