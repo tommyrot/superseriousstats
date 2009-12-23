@@ -289,7 +289,7 @@ final class Maintenance_MySQL
 				if ($this->outputLevel >= 1) {
 					echo 'Critical ['.date('H:i.s').'] '.$msg."\n";
 				}
-				
+
 				exit;
 		}
 	}
