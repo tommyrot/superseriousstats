@@ -121,6 +121,7 @@ abstract class Parser extends Parser_MySQL
 		if (!in_array($nick, $this->nicks_list)) {
 			$this->nicks_list[] = $nick;
 			$this->nicks_objs[$nick] = new Nick($csNick);
+			$this->nicks_objs[$nick]->setValue('date', $this->date);
 		} else {
 			$this->nicks_objs[$nick]->setValue('csNick', $csNick);
 		}
