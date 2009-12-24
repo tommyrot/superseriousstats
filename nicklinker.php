@@ -16,8 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-$man = 'usage: php sss.php [-i <file>]'."\n"
-     . '       php sss.php [-o <file>]'."\n\n"
+$man = 'usage: php nicklinker.php [-i <file>]'."\n"
+     . '       php nicklinker.php [-o <file>]'."\n\n"
      . 'the options are:'."\n"
      . '	-i	import all users from <file> to the database'."\n"
      . '	-o	export all users from the database to <file>'."\n";
