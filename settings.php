@@ -6,7 +6,6 @@ $cfg['db_host'] = '127.0.0.1';
 $cfg['db_name'] = 'superseriousstats';
 $cfg['db_pass'] = 'secret';
 $cfg['db_port'] = 3306;
-$cfg['db_server'] = 'MySQL';
 $cfg['db_user'] = 'root';
 $cfg['doMaintenance'] = TRUE;
 $cfg['logfileFormat'] = 'Eggdrop';
