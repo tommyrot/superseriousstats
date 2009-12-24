@@ -39,7 +39,7 @@ final class Maintenance_MySQL
 	/**
 	 * Other variables that shouldn't be tampered with.
 	 */
-	private $this->mysqli;
+	private $mysqli;
 
 	/**
 	 * Run the maintenance routines.
