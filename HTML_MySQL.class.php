@@ -58,7 +58,7 @@ final class HTML_MySQL
 	 */
 	private function getDetails($UID)
 	{
-		$query = mysqli_query($this->mysqli, 'SELECT `csNick`, `status` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `user_details`.`UID` = '.$UID) or exit;
+		$query = @mysqli_query($this->mysqli, 'SELECT `csNick`, `status` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `user_details`.`UID` = '.$UID) or exit;
 		$result = mysqli_fetch_object($query);
 
 		return array('csNick' => $result->csNick

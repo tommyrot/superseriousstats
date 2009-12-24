@@ -101,7 +101,7 @@ if ($argv[1] == '-i') {
 } elseif ($argv[1] == '-o') {
 	if (($fp = @fopen($argv[2], 'wb')) !== FALSE) {
 		$mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit('MySQL: '.mysqli_connect_error()."\n");
-		$query = mysqli_query($mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC');
+		$query = @mysqli_query($mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC') or exit('MySQL: '.mysqli_error($mysqli)."\n");
 		$rows = mysqli_num_rows($query);
 		$output = '';
 
@@ -113,7 +113,7 @@ if ($argv[1] == '-i') {
 
 			foreach ($RUIDs as $RUID) {
 				$output .= $status[$RUID];
-				$query = mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` AND `RUID` = '.$RUID.' ORDER BY `csNick` ASC');
+				$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` AND `RUID` = '.$RUID.' ORDER BY `csNick` ASC') or exit('MySQL: '.mysqli_error($mysqli)."\n");
 				$rows = mysqli_num_rows($query);
 
 				if (!empty($rows)) {
@@ -126,7 +126,7 @@ if ($argv[1] == '-i') {
 			}
 		}
 
-		$query = mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE STATUS = 0 ORDER BY `csNick` ASC');
+		$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE STATUS = 0 ORDER BY `csNick` ASC') or exit('MySQL: '.mysqli_error($mysqli)."\n");
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
