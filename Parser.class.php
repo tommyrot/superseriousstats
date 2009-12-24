@@ -68,7 +68,7 @@ abstract class Parser extends Parser_MySQL
 	protected $l_total = 0;
 
 	/**
-	 * Other variables.
+	 * Other variables that shouldn't be tampered with.
 	 */
 	private $URLTools;
 	private $prevNick = '';

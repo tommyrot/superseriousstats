@@ -22,11 +22,6 @@
 final class Nick extends Nick_MySQL
 {
 	/**
-	 * User ID. Should be 0, don't touch.
-	 */
-	protected $UID = 0;
-
-	/**
 	 * Variables used in database table "user_details".
 	 */
 	protected $csNick = '';
@@ -173,7 +168,7 @@ final class Nick extends Nick_MySQL
 	protected $s_19 = 0;
 
 	/**
-	 * Other variables.
+	 * Other variables that shouldn't be tampered with.
 	 */
 	private $long_ex_actions_list = array();
 	private $long_ex_exclamations_list = array();
@@ -185,6 +180,8 @@ final class Nick extends Nick_MySQL
 	private $short_ex_questions_list = array();
 	private $short_ex_uppercased_list = array();
 	private $short_quote_list = array();
+	protected $UID = 0;
+	protected $date = '';
 
         /**
          * Constructor.
