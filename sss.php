@@ -108,18 +108,15 @@ function input($cfg, $logfile)
 		sort($logfiles);
 
 		foreach ($logfiles as $logfile) {
-			echo $logfile."\n";
 			if ((empty($cfg['logfilePrefix']) || stripos(basename($logfile), $cfg['logfilePrefix']) !== FALSE) && (empty($cfg['logfileSuffix']) || stripos(basename($logfile), $cfg['logfileSuffix']) !== FALSE)) {
-				echo 'ja'."\n";
 				$logfile = preg_replace('/YESTERDAY/', date($cfg['dateFormat'], strtotime('yesterday')), $logfile);
 				$date = str_replace(array($cfg['logfilePrefix'], $cfg['logfileSuffix']), '', basename($logfile));
 				$date = date('Y-m-d', strtotime($date));
 				$day = strtolower(date('D', strtotime($date)));
 
 				if ($date == date('Y-m-d')) {
-					echo 'The logfile you are trying to parse appears to be of today. If logging'."\n"
-					   . 'hasn\'t completed for today it is advisable to skip parsing this file'."\n"
-					   . 'until tomorrow, when it is complete.'."\n"
+					echo 'The logfile you are about to parse appears to be of today. It is recommended'."\n"
+					   . 'to skip this file until tomorrow when logging will be completed.'."\n"
 					   . 'Skip \''.basename($logfile).'\'? [yes] ';
 					$yn = trim(fgets(STDIN));
 
