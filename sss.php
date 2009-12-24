@@ -90,6 +90,8 @@ function doMaintenance($cfg)
  */
 function input($cfg, $logfile)
 {
+	$logfile = preg_replace('/YESTERDAY/', date($cfg['dateFormat'], strtotime('yesterday')), $logfile);
+
 	if (($path = realpath($logfile)) !== FALSE) {
 		if (is_dir($path)) {
 			if (($dh = @opendir($path)) !== FALSE) {
@@ -109,7 +111,6 @@ function input($cfg, $logfile)
 
 		foreach ($logfiles as $logfile) {
 			if ((empty($cfg['logfilePrefix']) || stripos(basename($logfile), $cfg['logfilePrefix']) !== FALSE) && (empty($cfg['logfileSuffix']) || stripos(basename($logfile), $cfg['logfileSuffix']) !== FALSE)) {
-				$logfile = preg_replace('/YESTERDAY/', date($cfg['dateFormat'], strtotime('yesterday')), $logfile);
 				$date = str_replace(array($cfg['logfilePrefix'], $cfg['logfileSuffix']), '', basename($logfile));
 				$date = date('Y-m-d', strtotime($date));
 				$day = strtolower(date('D', strtotime($date)));
