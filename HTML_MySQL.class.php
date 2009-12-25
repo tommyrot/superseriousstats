@@ -872,40 +872,6 @@ final class HTML_MySQL
 			$topicTime[$prevTID] += $hoursPassed;
 
 			/**
-			 * Most recent topics table.
-			 */
-			$query = @mysqli_query($this->mysqli, 'SELECT DISTINCT(`TID`) FROM `user_topics` ORDER BY `setDate` DESC LIMIT 5') or exit;
-			$i = 0;
-
-			while ($result = mysqli_fetch_object($query)) {
-				$i++;
-				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
-				$result_csTopic = mysqli_fetch_object($query_csTopic);
-				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
-				$result_csNick = mysqli_fetch_object($query_csNick);
-				$content1[] = array($i, number_format(floor($topicTime[$result->TID] / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
-			}
-
-			/**
-			* If there are less rows to display than the desired minimum amount of rows we skip this table.
-			*/
-			if ($i >= $this->minRows) {
-				for ($i = count($content1); $i < $settings['rows']; $i++) {
-					$content1[] = array('&nbsp;', '', '', '');
-				}
-
-				$output .= '<table class="large">'
-					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head1']).'</span></th></tr>'
-				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
-
-				foreach ($content1 as $row) {
-					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
-				}
-
-				$output .= '</table>'."\n";
-			}
-
-			/**
 			 * Order the results and fill the longest standing topics table.
 			 */
 			arsort($topicTime);
@@ -937,6 +903,40 @@ final class HTML_MySQL
 				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
 				foreach ($content2 as $row) {
+					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+				}
+
+				$output .= '</table>'."\n";
+			}
+
+			/**
+			 * Most recent topics table.
+			 */
+			$query = @mysqli_query($this->mysqli, 'SELECT DISTINCT(`TID`) FROM `user_topics` ORDER BY `setDate` DESC LIMIT 5') or exit;
+			$i = 0;
+
+			while ($result = mysqli_fetch_object($query)) {
+				$i++;
+				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
+				$result_csTopic = mysqli_fetch_object($query_csTopic);
+				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
+				$result_csNick = mysqli_fetch_object($query_csNick);
+				$content1[] = array($i, number_format(floor($topicTime[$result->TID] / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
+			}
+
+			/**
+			* If there are less rows to display than the desired minimum amount of rows we skip this table.
+			*/
+			if ($i >= $this->minRows) {
+				for ($i = count($content1); $i < $settings['rows']; $i++) {
+					$content1[] = array('&nbsp;', '', '', '');
+				}
+
+				$output .= '<table class="large">'
+					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head1']).'</span></th></tr>'
+				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
+
+				foreach ($content1 as $row) {
 					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 				}
 
