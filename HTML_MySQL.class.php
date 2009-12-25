@@ -232,7 +232,7 @@ final class HTML_MySQL
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Nick Changes', 'key1' => 'Nick Changes', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `nickChanges` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `nickChanges` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`nickChanges`) AS `total` FROM `query_events`'));
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Aliases', 'key1' => 'Aliases', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT COUNT(*) AS `v1`, `csNick` AS `v2` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `status` != 3 GROUP BY `RUID` ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT COUNT(*) AS `total` FROM `user_status`'));
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Topics', 'key1' => 'Topics', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `topics` AS `v1`, `csNick` AS `v2` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `topics` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`topics`) AS `total` FROM `query_events`'));
-			$output .= $this->makeTable_Topics(array('rows' => 5, 'head' => 'Longest Standing Topics', 'key1' => 'Days', 'key2' => 'User', 'key3' => 'Topic'));
+			$output .= $this->makeTable_Topics(array('rows' => 5, 'head1' => 'Most Recent Topics', 'head2' => 'Longest Standing Topics', 'key1' => 'Days', 'key2' => 'User', 'key3' => 'Topic'));
 
 			if (!empty($output)) {
 				$this->output .= '<div class="head">Events</div>'."\n".$output;
@@ -872,7 +872,41 @@ final class HTML_MySQL
 			$topicTime[$prevTID] += $hoursPassed;
 
 			/**
-			 * Order the results and fill the output table.
+			 * Most recent topics table.
+			 */
+			$query = @mysqli_query($this->mysqli, 'SELECT DISTINCT(`TID`) FROM `user_topics` ORDER BY `setDate` DESC LIMIT 5') or exit;
+			$i = 0;
+
+			while ($result = mysqli_fetch_object($query)) {
+				$i++;
+				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
+				$result_csTopic = mysqli_fetch_object($query_csTopic);
+				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
+				$result_csNick = mysqli_fetch_object($query_csNick);
+				$content1[] = array($i, number_format(floor($topicTime[$result->TID] / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
+			}
+
+			/**
+			* If there are less rows to display than the desired minimum amount of rows we skip this table.
+			*/
+			if ($i >= $this->minRows) {
+				for ($i = count($content1); $i < $settings['rows']; $i++) {
+					$content1[] = array('&nbsp;', '', '', '');
+				}
+
+				$output .= '<table class="large">'
+					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head1']).'</span></th></tr>'
+				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
+
+				foreach ($content1 as $row) {
+					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+				}
+
+				$output .= '</table>'."\n";
+			}
+
+			/**
+			 * Order the results and fill the longest standing topics table.
 			 */
 			arsort($topicTime);
 			$i = 0;
@@ -887,22 +921,22 @@ final class HTML_MySQL
 				$result_csTopic = mysqli_fetch_object($query_csTopic);
 				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
 				$result_csNick = mysqli_fetch_object($query_csNick);
-				$content[] = array($i, number_format(floor($hoursPassed / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
+				$content2[] = array($i, number_format(floor($hoursPassed / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
 			}
 
 			/**
 			* If there are less rows to display than the desired minimum amount of rows we skip this table.
 			*/
 			if ($i >= $this->minRows) {
-				for ($i = count($content); $i < $settings['rows']; $i++) {
-					$content[] = array('&nbsp;', '', '', '');
+				for ($i = count($content2); $i < $settings['rows']; $i++) {
+					$content2[] = array('&nbsp;', '', '', '');
 				}
 
 				$output .= '<table class="large">'
-					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head']).'</span></th></tr>'
+					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head2']).'</span></th></tr>'
 				        .  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
-				foreach ($content as $row) {
+				foreach ($content2 as $row) {
 					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 				}
 
