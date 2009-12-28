@@ -1,5 +1,7 @@
 <?php
 
+# http://code.google.com/p/superseriousstats/wiki/Settings
+
 $cfg['HTML']['channel'] = '#yourchan';
 $cfg['dateFormat'] = 'Ymd';
 $cfg['db_host'] = '127.0.0.1';
