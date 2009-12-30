@@ -26,7 +26,7 @@ abstract class Parser extends Parser_MySQL
 	 */
 	private $URL_maxLen = 255;
 	private $host_maxLen = 255;
-	private $maxStreak = 5;
+	private $minStreak = 5;
 	private $nick_maxLen = 255;
 	private $nick_minLen = 1;
 	private $outputLevel = 1;
@@ -357,7 +357,7 @@ abstract class Parser extends Parser_MySQL
 			if ($nick == $this->prevNick) {
 				$this->streak++;
 			} else {
-				if ($this->streak >= $this->maxStreak) {
+				if ($this->streak >= $this->minStreak) {
 					$this->nicks_objs[$this->prevNick]->addValue('monologues', 1);
 
 					if ($this->streak > $this->nicks_objs[$this->prevNick]->getValue('topMonologue')) {
