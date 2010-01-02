@@ -158,22 +158,28 @@ abstract class Parser extends Parser_MySQL
 		 * Don't output the same thing twice, like mode errors and repeated lines.
 		 */
 		if (!in_array($msg, $this->prevOutput)) {
+			$dateTime = date('M d H:i:s');
+
+			if (substr($dateTime, 4, 1) === '0') {
+				$dateTime = substr_replace($dateTime, ' ', 4, 1);
+			}
+
 			switch ($type) {
 				case 'notice':
 					if ($this->outputLevel >= 3) {
-						echo '  Notice ['.date('H:i.s').'] '.$msg."\n";
+						echo $dateTime.' [notice] '.$msg."\n";
 					}
 
 					break;
 				case 'warning':
 					if ($this->outputLevel >= 2) {
-						echo ' Warning ['.date('H:i.s').'] '.$msg."\n";
+						echo $dateTime.' [warning] '.$msg."\n";
 					}
 
 					break;
 				case 'critical':
 					if ($this->outputLevel >= 1) {
-						echo 'Critical ['.date('H:i.s').'] '.$msg."\n";
+						echo $dateTime.' [critical] '.$msg."\n";
 					}
 
 					exit;

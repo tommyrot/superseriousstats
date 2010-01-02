@@ -266,28 +266,34 @@ final class Maintenance_MySQL
 	 */
 	private function output($type, $msg)
 	{
+		$dateTime = date('M d H:i:s');
+
+		if (substr($dateTime, 4, 1) === '0') {
+			$dateTime = substr_replace($dateTime, ' ', 4, 1);
+		}
+
 		switch ($type) {
 			case 'debug':
 				if ($this->outputLevel >= 4) {
-					echo '   Debug ['.date('H:i.s').'] '.$msg."\n";
+					echo $dateTime.' [debug] '.$msg."\n";
 				}
 
 				break;
 			case 'notice':
 				if ($this->outputLevel >= 3) {
-					echo '  Notice ['.date('H:i.s').'] '.$msg."\n";
+					echo $dateTime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
 				if ($this->outputLevel >= 2) {
-					echo ' Warning ['.date('H:i.s').'] '.$msg."\n";
+					echo $dateTime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
 				if ($this->outputLevel >= 1) {
-					echo 'Critical ['.date('H:i.s').'] '.$msg."\n";
+					echo $dateTime.' [critical] '.$msg."\n";
 				}
 
 				exit;
