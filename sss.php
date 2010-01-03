@@ -175,7 +175,6 @@ final class sss
 				if ((empty($this->settings['logfilePrefix']) || stripos(basename($logfile), $this->settings['logfilePrefix']) !== FALSE) && (empty($this->settings['logfileSuffix']) || stripos(basename($logfile), $this->settings['logfileSuffix']) !== FALSE)) {
 					$date = str_replace(array($cfg['logfilePrefix'], $cfg['logfileSuffix']), '', basename($logfile));
 					$date = date('Y-m-d', strtotime($date));
-					$day = strtolower(date('D', strtotime($date)));
 
 					if ($date == date('Y-m-d')) {
 						echo 'The logfile you are about to parse appears to be of today. It is recommended'."\n"
@@ -192,7 +191,6 @@ final class sss
 					require(realpath(dirname(__FILE__).'/'.$parser_class));
 					$parser = new $parser_class($this->settings);
 					$parser->setValue('date', $date);
-					$parser->setValue('day', $day);
 					$parser->parseLog($logfile);
 
 					if ($this->settings['writeData']) {
