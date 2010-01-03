@@ -23,15 +23,21 @@
 final class HTML_MySQL
 {
 	/**
-	 * The following variables can be set from settings.php, see documentation.
+	 * Default settings, can be overridden in the config file.
 	 */
 	private $bar_afternoon = 'y.png';
 	private $bar_evening = 'r.png';
 	private $bar_morning = 'g.png';
 	private $bar_night = 'b.png';
 	private $channel = '#yourchan';
+	private $db_host = '';
+        private $db_name = '';
+        private $db_pass = '';
+        private $db_port = '';
+        private $db_user = '';
 	private $minLines = 500;
 	private $minRows = 3;
+	private $outputbits = 31;
 	private $stylesheet = 'default.css';
 	private $userstats = FALSE;
 
@@ -49,9 +55,21 @@ final class HTML_MySQL
 	private $month_name = '';
 	private $mysqli;
 	private $output = '';
-	private $outputbits = 31;
+	private $settings_list = array('bar_afternoon', 'bar_evening', 'bar_morning', 'bar_night', 'channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'minLines', 'minRows', 'outputbits', 'stylesheet', 'userstats');
 	private $year = '';
 	private $years = 0;
+
+	/**
+	 * Constructor.
+	 */
+	final public function __construct($settings)
+	{
+		foreach ($this->settings_list as $key) {
+			if (array_key_exists($key, $settings)) {
+				$this->$key = $settings[$key];
+			}
+		}
+	}
 
 	/**
 	 * Get the case sensitive nick and status for a given UID.
@@ -70,7 +88,7 @@ final class HTML_MySQL
 	 */
 	public function makeHTML()
 	{
-		$this->mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or exit;
+		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or exit;
 		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit;
 		$rows = mysqli_num_rows($query_l_total);
 
