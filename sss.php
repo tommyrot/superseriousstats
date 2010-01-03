@@ -21,13 +21,16 @@ final class sss
 	/**
 	 * Default settings, can be overridden in the config file.
 	 */
-	private $settings = array('doMaintenance' => TRUE
-				 ,'outputLevel' => 1
-				 ,'writeDate' => TRUE);
+	private $doMaintenance = TRUE;
+	private $outputLevel = 1;
+	private $writeData = TRUE;
+
 	/**
-	 * Required settings, script will exit if these options aren't present in the config file.
+	 * Other variables that shouldn't be tampered with.
 	 */
-	private $settings_required = array('channel', 'timezone', 'db_server', 'db_host', 'db_port', 'db_user', 'db_pass', 'db_name', 'logfileFormat', 'logfilePrefix', 'logfileDateFormat', 'logfileSuffix');
+	private $settings = array();
+	private $settings_list = array('doMaintenance', 'outputLevel', 'writeData');
+	private $settings_required_list = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_server', 'db_user', 'logfileDateFormat', 'logfileFormat', 'logfilePrefix', 'logfileSuffix', 'timezone');
 
 	/**
 	 * Constructor.
@@ -120,26 +123,20 @@ final class sss
 		}
 
 		switch ($type) {
-			case 'debug':
-				if ($this->settings['outputLevel'] >= 4) {
-					echo $dateTime.' [debug] '.$msg."\n";
-				}
-
-				break;
 			case 'notice':
-				if ($this->settings['outputLevel'] >= 3) {
+				if ($this->outputLevel >= 3) {
 					echo $dateTime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
-				if ($this->settings['outputLevel'] >= 2) {
+				if ($this->outputLevel >= 2) {
 					echo $dateTime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
-				if ($this->settings['outputLevel'] >= 1) {
+				if ($this->outputLevel >= 1) {
 					echo $dateTime.' [critical] '.$msg."\n";
 				}
 
@@ -240,8 +237,6 @@ final class sss
 	{
 		if (($rp = realpath($path)) !== FALSE) {
 			if (($fp = @fopen($rp, 'rb')) !== FALSE) {
-				$this->output('notice', 'readConfig(): reading settings from config: \''.$fp.'\'');
-
 				while (!feof($fp)) {
 					$line = fgets($fp);
 					$line = trim($line);
@@ -256,9 +251,15 @@ final class sss
 				/**
 				 * Exit if any crucial settings aren't present in the config file.
 				 */
-				foreach ($this->settings_required as $key) {
+				foreach ($this->settings_required_list as $key) {
 					if (!array_key_exists($key, $this->settings)) {
 						$this->output('critical', 'readConfig(): missing setting: \''.$key.'\'');
+					}
+				}
+
+				foreach ($this->settings_list as $key) {
+					if (array_key_exists($key, $this->settings)) {
+						$this->$key = $this->settings[$key];
 					}
 				}
 
