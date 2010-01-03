@@ -33,6 +33,11 @@ abstract class Parser extends Parser_MySQL
 	private $quote_maxLen = 255;
 	private $quote_prefLen = 25;
 	private $wordTracking = FALSE;
+	protected $db_host = '';
+        protected $db_name = '';
+        protected $db_pass = '';
+        protected $db_port = '';
+        protected $db_user = '';
 
 	/**
 	 * Variables used in database table "channel".
@@ -73,7 +78,7 @@ abstract class Parser extends Parser_MySQL
 	private $URLTools;
 	private $prevNick = '';
 	private $prevOutput = array();
-	private $settings_list = array('URL_maxLen', 'host_maxLen', 'minStreak', 'nick_maxLen', 'nick_minLen', 'outputLevel', 'quote_maxLen', 'quote_prefLen', 'wordTracking');
+	private $settings_list = array('URL_maxLen', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'host_maxLen', 'minStreak', 'nick_maxLen', 'nick_minLen', 'outputLevel', 'quote_maxLen', 'quote_prefLen', 'wordTracking');
 	private $smileys = array('=]' => 's_01'
 				,'=)' => 's_02'
 				,';x' => 's_03'
