@@ -22,7 +22,7 @@
 abstract class Parser extends Parser_MySQL
 {
 	/**
-	 * The following variables can be set from settings.php, see documentation.
+	 * Default settings, can be overridden in the config file.
 	 */
 	private $URL_maxLen = 255;
 	private $host_maxLen = 255;
@@ -73,6 +73,7 @@ abstract class Parser extends Parser_MySQL
 	private $URLTools;
 	private $prevNick = '';
 	private $prevOutput = array();
+	private $settings_list = array('URL_maxLen', 'host_maxLen', 'minStreak', 'nick_maxLen', 'nick_minLen', 'outputLevel', 'quote_maxLen', 'quote_prefLen', 'wordTracking');
 	private $smileys = array('=]' => 's_01'
 				,'=)' => 's_02'
 				,';x' => 's_03'
@@ -105,8 +106,14 @@ abstract class Parser extends Parser_MySQL
 	/**
 	 * Constructor.
 	 */
-	final public function __construct()
+	final public function __construct($settings)
 	{
+		foreach ($this->settings_list as $key) {
+			if (array_key_exists($key, $settings)) {
+				$this->$key = $settings[$key];
+			}
+		}
+
 		$this->URLTools = new URLTools();
 	}
 
