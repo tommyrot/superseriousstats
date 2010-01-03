@@ -32,8 +32,8 @@ abstract class Parser_MySQL
 		 * If there are no nicks there is no data. Don't write channel data so the log can be parsed at a later time.
 		 */
 		if (!empty($this->nicks_list)) {
-			$this->output('notice', 'writeData(): writing data to database: \''.DB_NAME.'\'');
-			$this->mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
+			$this->output('notice', 'writeData(): writing data to database: \''.$this->db_name.'\'');
+			$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
 
 			/**
 			 * Write channel totals to the database.
