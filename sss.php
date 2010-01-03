@@ -22,6 +22,7 @@ final class sss
 	 * Default settings, can be overridden in the config file.
 	 */
 	private $settings = array('doMaintenance' => TRUE
+				 ,'outputLevel' => 1
 				 ,'writeDate' => TRUE);
 	/**
 	 * Required settings, script will exit if these options aren't present in the config file.
@@ -78,7 +79,14 @@ final class sss
 	private function doMaintenance()
 	{
 		$maintenance_class = 'Maintenance_'.$this->settings['db_server'];
-		require(realpath(dirname(__FILE__).'/'.$maintenance_class));
+		$path = dirname(__FILE__).'/'.$maintenance_class.'.class.php';
+
+		if (($rp = realpath($path)) !== FALSE) {
+			require($rp);
+		} else {
+			$this->output('critical', 'doMaintenance(): no such file: \''.$path.'\'');
+		}
+
 		$maintenance = new $maintenance_class($this->settings);
 		$maintenance->doMaintenance();
 	}
@@ -113,25 +121,25 @@ final class sss
 
 		switch ($type) {
 			case 'debug':
-				if ($this->outputLevel >= 4) {
+				if ($this->settings['outputLevel'] >= 4) {
 					echo $dateTime.' [debug] '.$msg."\n";
 				}
 
 				break;
 			case 'notice':
-				if ($this->outputLevel >= 3) {
+				if ($this->settings['outputLevel'] >= 3) {
 					echo $dateTime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
-				if ($this->outputLevel >= 2) {
+				if ($this->settings['outputLevel'] >= 2) {
 					echo $dateTime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
-				if ($this->outputLevel >= 1) {
+				if ($this->settings['outputLevel'] >= 1) {
 					echo $dateTime.' [critical] '.$msg."\n";
 				}
 
@@ -240,7 +248,7 @@ final class sss
 					$line = fgets($fp);
 					$line = trim($line);
 
-					if (preg_match('/^(\w+)\s*=\s*"(\S+)"$/', $line, $matches)) {
+					if (preg_match('/^(\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
 						$this->settings[$matches[1]] = $matches[2];
 					}
 				}
