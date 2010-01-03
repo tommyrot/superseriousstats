@@ -100,7 +100,14 @@ final class sss
 	private function makeHTML($file)
 	{
 		$HTML_class = 'HTML_'.$this->settings['db_server'];
-		require(realpath(dirname(__FILE__).'/'.$HTML_class));
+		$path = dirname(__FILE__).'/'.$HTML_class.'.class.php';
+
+		if (($rp = realpath($path)) !== FALSE) {
+			require($rp);
+		} else {
+			$this->output('critical', 'makeHTML(): no such file: \''.$path.'\'');
+		}
+
 		$HTML = new $HTML_class($this->settings);
 
 		if (($fp = @fopen($file, 'wb')) !== FALSE) {
