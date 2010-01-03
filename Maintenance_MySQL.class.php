@@ -31,15 +31,33 @@
 final class Maintenance_MySQL
 {
 	/**
-	 * The following variables can be set from settings.php, see documentation.
+	 * Default settings, can be overridden in the config file.
 	 */
-	private $outputLevel = 1;
-	private $sanitisationDay = 'mon';
+        private $db_host = '';
+        private $db_name = '';
+        private $db_pass = '';
+        private $db_port = '';
+        private $db_user = '';
+        private $outputLevel = 1;
+        private $sanitisationDay = 'mon';
 
 	/**
 	 * Other variables that shouldn't be tampered with.
 	 */
 	private $mysqli;
+	private $settings_list = array('db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'outputLevel', 'sanitisationDay');
+
+	/**
+	 * Constructor.
+	 */
+	public function __construct($settings)
+	{
+		foreach ($this->settings_list as $key) {
+			if (array_key_exists($key, $settings)) {
+				$this->$key = $settings[$key];
+			}
+		}
+	}
 
 	/**
 	 * Run the maintenance routines.
@@ -47,7 +65,7 @@ final class Maintenance_MySQL
 	public function doMaintenance()
 	{
 		$this->output('notice', 'doMaintenance(): performing database maintenance routines');
-		$this->mysqli = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
+		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
 		$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_status` LIMIT 1') or $this->output('critical', 'MySQL: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
