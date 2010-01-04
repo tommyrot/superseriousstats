@@ -29,7 +29,9 @@ final class sss
 	 * Other variables that shouldn't be tampered with.
 	 */
 	private $settings = array();
-	private $settings_list = array('doMaintenance', 'outputLevel', 'writeData');
+	private $settings_list = array('doMaintenance' => 'bool'
+				      ,'outputLevel' => 'int'
+				      ,'writeData' => 'bool');
 	private $settings_required_list = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_server', 'db_user', 'logfileDateFormat', 'logfileFormat', 'logfilePrefix', 'logfileSuffix', 'timezone');
 
 	/**
@@ -82,14 +84,6 @@ final class sss
 	private function doMaintenance()
 	{
 		$maintenance_class = 'Maintenance_'.$this->settings['db_server'];
-		$path = dirname(__FILE__).'/'.$maintenance_class.'.class.php';
-
-		if (($rp = realpath($path)) !== FALSE) {
-			require($rp);
-		} else {
-			$this->output('critical', 'doMaintenance(): no such file: \''.$path.'\'');
-		}
-
 		$maintenance = new $maintenance_class($this->settings);
 		$maintenance->doMaintenance();
 	}
@@ -100,14 +94,6 @@ final class sss
 	private function makeHTML($file)
 	{
 		$HTML_class = 'HTML_'.$this->settings['db_server'];
-		$path = dirname(__FILE__).'/'.$HTML_class.'.class.php';
-
-		if (($rp = realpath($path)) !== FALSE) {
-			require($rp);
-		} else {
-			$this->output('critical', 'makeHTML(): no such file: \''.$path.'\'');
-		}
-
 		$HTML = new $HTML_class($this->settings);
 
 		if (($fp = @fopen($file, 'wb')) !== FALSE) {
@@ -156,7 +142,7 @@ final class sss
 	 */
 	private function parseLog($path)
 	{
-		$path = preg_replace('/YESTERDAY/', date($cfg['dateFormat'], strtotime('yesterday')), $path);
+		$path = preg_replace('/YESTERDAY/', date($this->settings['logfileDateFormat'], strtotime('yesterday')), $path);
 
 		if (($rp = realpath($path)) !== FALSE) {
 			if (is_dir($rp)) {
@@ -177,7 +163,7 @@ final class sss
 
 			foreach ($logfiles as $logfile) {
 				if ((empty($this->settings['logfilePrefix']) || stripos(basename($logfile), $this->settings['logfilePrefix']) !== FALSE) && (empty($this->settings['logfileSuffix']) || stripos(basename($logfile), $this->settings['logfileSuffix']) !== FALSE)) {
-					$date = str_replace(array($cfg['logfilePrefix'], $cfg['logfileSuffix']), '', basename($logfile));
+					$date = str_replace(array($this->settings['logfilePrefix'], $this->settings['logfileSuffix']), '', basename($logfile));
 					$date = date('Y-m-d', strtotime($date));
 
 					if ($date == date('Y-m-d')) {
@@ -192,18 +178,17 @@ final class sss
 					}
 
 					$parser_class = 'Parser_'.$this->settings['logfileFormat'];
-					require(realpath(dirname(__FILE__).'/'.$parser_class));
 					$parser = new $parser_class($this->settings);
 					$parser->setValue('date', $date);
 					$parser->parseLog($logfile);
 
-					if ($this->settings['writeData']) {
+					if ($this->writeData) {
 						$parser->writeData();
 					}
 				}
 			}
 
-			if ($this->settings['doMaintenance']) {
+			if ($this->doMaintenance) {
 				$this->doMaintenance();
 			}
 		} else {
@@ -264,14 +249,24 @@ final class sss
 					}
 				}
 
-				foreach ($this->settings_list as $key) {
+				foreach ($this->settings_list as $key => $type) {
 					if (array_key_exists($key, $this->settings)) {
-						$this->$key = $this->settings[$key];
+						if ($type == 'string') {
+							$this->$key = (string) $this->settings[$key];
+						} elseif ($type == 'int') {
+							$this->$key = (int) $this->settings[$key];
+						} elseif ($type == 'bool') {
+							if (strcasecmp($this->settings[$key], 'TRUE') == 0) {
+								$this->$key = TRUE;
+							} elseif (strcasecmp($this->settings[$key], 'FALSE') == 0) {
+								$this->$key = FALSE;
+							}
+						}
 					}
 				}
 
 				if (date_default_timezone_set($this->settings['timezone']) !== FALSE) {
-					$this->output('notice', 'readConfig(): switched to timezone: \''.$this->settings['timezone'].'\'');
+					$this->output('notice', 'readConfig(): switched timezone to: \''.$this->settings['timezone'].'\'');
 				} else {
 					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->settings['timezone'].'\'');
 				}
@@ -290,6 +285,14 @@ final class sss
 
 if (substr(phpversion(), 0, 3) != '5.3') {
 	exit('PHP version 5.3 needed, currently running with '.phpversion()."\n");
+}
+
+/**
+ * Class autoloader.
+ */
+function __autoload($class)
+{
+	require_once(dirname(__FILE__).'/'.$class.'.class.php');
 }
 
 $sss = new sss();
