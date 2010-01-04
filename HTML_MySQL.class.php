@@ -55,18 +55,42 @@ final class HTML_MySQL
 	private $month_name = '';
 	private $mysqli;
 	private $output = '';
-	private $settings_list = array('bar_afternoon', 'bar_evening', 'bar_morning', 'bar_night', 'channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'minLines', 'minRows', 'outputbits', 'stylesheet', 'userstats');
+	private $settings_list = array('bar_afternoon' => 'string'
+				      ,'bar_evening' => 'string'
+				      ,'bar_morning' => 'string'
+				      ,'bar_night' => 'string'
+				      ,'channel' => 'string'
+				      ,'db_host' => 'string'
+				      ,'db_name' => 'string'
+				      ,'db_pass' => 'string'
+				      ,'db_port' => 'int'
+				      ,'db_user' => 'string'
+				      ,'minLines' => 'int'
+				      ,'minRows' => 'int'
+				      ,'outputbits' => 'int'
+				      ,'stylesheet' => 'string'
+				      ,'userstats' => 'bool');
 	private $year = '';
 	private $years = 0;
 
 	/**
 	 * Constructor.
 	 */
-	final public function __construct($settings)
+	public function __construct($settings)
 	{
-		foreach ($this->settings_list as $key) {
+		foreach ($this->settings_list as $key => $type) {
 			if (array_key_exists($key, $settings)) {
-				$this->$key = $settings[$key];
+				if ($type == 'string') {
+					$this->$key = (string) $settings[$key];
+				} elseif ($type == 'int') {
+					$this->$key = (int) $settings[$key];
+				} elseif ($type == 'bool') {
+					if (strcasecmp($settings[$key], 'TRUE') == 0) {
+						$this->$key = TRUE;
+					} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
+						$this->$key = FALSE;
+					}
+				}
 			}
 		}
 	}
