@@ -78,7 +78,20 @@ abstract class Parser extends Parser_MySQL
 	private $URLTools;
 	private $prevNick = '';
 	private $prevOutput = array();
-	private $settings_list = array('URL_maxLen', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'host_maxLen', 'minStreak', 'nick_maxLen', 'nick_minLen', 'outputLevel', 'quote_maxLen', 'quote_prefLen', 'wordTracking');
+	private $settings_list = array('URL_maxLen' => 'int'
+				      ,'db_host' => 'string'
+				      ,'db_name' => 'string'
+				      ,'db_pass' => 'string'
+				      ,'db_port' => 'int'
+				      ,'db_user' => 'string'
+				      ,'host_maxLen' => 'int'
+				      ,'minStreak' => 'int'
+				      ,'nick_maxLen' => 'int'
+				      ,'nick_minLen' => 'int'
+				      ,'outputLevel' => 'int'
+				      ,'quote_maxLen' => 'int'
+				      ,'quote_prefLen' => 'int'
+				      ,'wordTracking' => 'bool');
 	private $smileys = array('=]' => 's_01'
 				,'=)' => 's_02'
 				,';x' => 's_03'
@@ -112,9 +125,19 @@ abstract class Parser extends Parser_MySQL
 	 */
 	final public function __construct($settings)
 	{
-		foreach ($this->settings_list as $key) {
+		foreach ($this->settings_list as $key => $type) {
 			if (array_key_exists($key, $settings)) {
-				$this->$key = $settings[$key];
+				if ($type == 'string') {
+					$this->$key = (string) $settings[$key];
+				} elseif ($type == 'int') {
+					$this->$key = (int) $settings[$key];
+				} elseif ($type == 'bool') {
+					if (strcasecmp($settings[$key], 'TRUE') == 0) {
+						$this->$key = TRUE;
+					} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
+						$this->$key = FALSE;
+					}
+				}
 			}
 		}
 
