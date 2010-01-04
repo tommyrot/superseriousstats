@@ -36,7 +36,7 @@ abstract class Parser extends Parser_MySQL
 	protected $db_host = '';
         protected $db_name = '';
         protected $db_pass = '';
-        protected $db_port = '';
+        protected $db_port = 0;
         protected $db_user = '';
 
 	/**
