@@ -36,7 +36,7 @@ final class Maintenance_MySQL
         private $db_host = '';
         private $db_name = '';
         private $db_pass = '';
-        private $db_port = '';
+        private $db_port = 0;
         private $db_user = '';
         private $outputLevel = 1;
         private $sanitisationDay = 'mon';
