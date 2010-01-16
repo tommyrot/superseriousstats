@@ -19,12 +19,17 @@
 /**
  * General parse instructions. This class will be extended by a class with logfile format specific parse instructions.
  */
-abstract class Parser extends Parser_MySQL
+abstract class Parser
 {
 	/**
 	 * Default settings, can be overridden in the config file.
 	 */
 	private $URL_maxLen = 255;
+	private $db_host = '';
+        private $db_name = '';
+        private $db_pass = '';
+        private $db_port = 0;
+        private $db_user = '';
 	private $host_maxLen = 255;
 	private $minStreak = 5;
 	private $nick_maxLen = 255;
@@ -33,49 +38,46 @@ abstract class Parser extends Parser_MySQL
 	private $quote_maxLen = 255;
 	private $quote_prefLen = 25;
 	private $wordTracking = FALSE;
-	protected $db_host = '';
-        protected $db_name = '';
-        protected $db_pass = '';
-        protected $db_port = 0;
-        protected $db_user = '';
 
 	/**
 	 * Variables used in database table "channel".
 	 */
-	protected $l_00 = 0;
-	protected $l_01 = 0;
-	protected $l_02 = 0;
-	protected $l_03 = 0;
-	protected $l_04 = 0;
-	protected $l_05 = 0;
-	protected $l_06 = 0;
-	protected $l_07 = 0;
-	protected $l_08 = 0;
-	protected $l_09 = 0;
-	protected $l_10 = 0;
-	protected $l_11 = 0;
-	protected $l_12 = 0;
-	protected $l_13 = 0;
-	protected $l_14 = 0;
-	protected $l_15 = 0;
-	protected $l_16 = 0;
-	protected $l_17 = 0;
-	protected $l_18 = 0;
-	protected $l_19 = 0;
-	protected $l_20 = 0;
-	protected $l_21 = 0;
-	protected $l_22 = 0;
-	protected $l_23 = 0;
-	protected $l_night = 0;
-	protected $l_morning = 0;
-	protected $l_afternoon = 0;
-	protected $l_evening = 0;
-	protected $l_total = 0;
+	private $l_00 = 0;
+	private $l_01 = 0;
+	private $l_02 = 0;
+	private $l_03 = 0;
+	private $l_04 = 0;
+	private $l_05 = 0;
+	private $l_06 = 0;
+	private $l_07 = 0;
+	private $l_08 = 0;
+	private $l_09 = 0;
+	private $l_10 = 0;
+	private $l_11 = 0;
+	private $l_12 = 0;
+	private $l_13 = 0;
+	private $l_14 = 0;
+	private $l_15 = 0;
+	private $l_16 = 0;
+	private $l_17 = 0;
+	private $l_18 = 0;
+	private $l_19 = 0;
+	private $l_20 = 0;
+	private $l_21 = 0;
+	private $l_22 = 0;
+	private $l_23 = 0;
+	private $l_night = 0;
+	private $l_morning = 0;
+	private $l_afternoon = 0;
+	private $l_evening = 0;
+	private $l_total = 0;
 
 	/**
 	 * Other variables that shouldn't be tampered with.
 	 */
 	private $URLTools;
+	private $nicks_list = array();
+	private $nicks_objs = array();
 	private $prevNick = '';
 	private $prevOutput = array();
 	private $settings_list = array('URL_maxLen' => 'int'
@@ -112,13 +114,11 @@ abstract class Parser extends Parser_MySQL
 				,':(' => 's_18'
 				,'\\o/' => 's_19');
 	private $streak = 0;
+	private $words_list = array();
+	private $words_objs = array();
 	protected $date = '';
 	protected $lineNum = 0;
-	protected $nicks_list = array();
-	protected $nicks_objs = array();
 	protected $prevLine = '';
-	protected $words_list = array();
-	protected $words_objs = array();
 
 	/**
 	 * Constructor.
@@ -675,6 +675,51 @@ abstract class Parser extends Parser_MySQL
 			return TRUE;
 		} else {
 			return FALSE;
+		}
+	}
+
+	/**
+	 * Write all gathered data to the database.
+	 */
+	final public function writeData()
+	{
+		/**
+		 * If there are no nicks there is no data. Don't write channel data so the log can be parsed at a later time.
+		 */
+		if (!empty($this->nicks_list)) {
+			$this->output('notice', 'writeData(): writing data to database: \''.$this->db_name.'\'');
+			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
+
+			/**
+			 * Write channel totals to the database.
+			 * The date is a unique value here, if you try to insert records for a date that is already present in database table "channel" the program will exit with an error.
+			 */
+			@mysqli_query($mysqli, 'INSERT INTO `channel` (`date`, `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->date).'\', '.$this->l_00.', '.$this->l_01.', '.$this->l_02.', '.$this->l_03.', '.$this->l_04.', '.$this->l_05.', '.$this->l_06.', '.$this->l_07.', '.$this->l_08.', '.$this->l_09.', '.$this->l_10.', '.$this->l_11.', '.$this->l_12.', '.$this->l_13.', '.$this->l_14.', '.$this->l_15.', '.$this->l_16.', '.$this->l_17.', '.$this->l_18.', '.$this->l_19.', '.$this->l_20.', '.$this->l_21.', '.$this->l_22.', '.$this->l_23.', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+
+			/**
+			 * Write user data to the database.
+			 */
+			foreach ($this->nicks_list as $nick) {
+				if ($this->nicks_objs[$nick]->getValue('firstSeen') != '') {
+					$this->nicks_objs[$nick]->randomizeQuotes();
+					$this->nicks_objs[$nick]->writeData($mysqli) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+				} else {
+					$this->output('notice', 'writeData(): skipping empty nick: \''.$this->nicks_objs[$nick]->getValue('csNick').'\'');
+				}
+			}
+
+			/**
+			 * Write word data to the database.
+			 * To keep our database sane words are not linked to users.
+			 */
+			foreach ($this->words_list as $word) {
+				$this->words_objs[$word]->writeData($mysqli) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+			}
+
+			$this->output('notice', 'writeData(): writing completed');
+			@mysqli_close($mysqli);
+		} else {
+			$this->output('notice', 'writeData(): no data to write to database');
 		}
 	}
 }
