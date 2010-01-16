@@ -19,157 +19,159 @@
 /**
  * Class for handling user data.
  */
-final class Nick extends Nick_MySQL
+final class Nick
 {
 	/**
 	 * Variables used in database table "user_details".
 	 */
-	protected $csNick = '';
-	protected $firstSeen = '';
-	protected $lastSeen = '';
+	private $csNick = '';
+	private $firstSeen = '';
+	private $lastSeen = '';
 
 	/**
 	 * Variables used in database table "user_hosts".
 	 */
-	protected $hosts_list = array();
+	private $hosts_list = array();
 
 	/**
 	 * Variables used in database table "user_topics".
 	 */
-	protected $topics_list = array();
+	private $topics_list = array();
 
 	/**
 	 * Variables used in database table "user_URLs".
 	 */
-	protected $URLs_list = array();
-	protected $URLs_objs = array();
+	private $URLs_list = array();
+	private $URLs_objs = array();
 
 	/**
 	 * Variables used in database table "user_events".
 	 */
-	protected $m_op = 0;
-	protected $m_opped = 0;
-	protected $m_voice = 0;
-	protected $m_voiced = 0;
-	protected $m_deOp = 0;
-	protected $m_deOpped = 0;
-	protected $m_deVoice = 0;
-	protected $m_deVoiced = 0;
-	protected $joins = 0;
-	protected $parts = 0;
-	protected $quits = 0;
-	protected $kicks = 0;
-	protected $kicked = 0;
-	protected $nickchanges = 0;
-	protected $topics = 0;
-	protected $ex_kicks = '';
-	protected $ex_kicked = '';
+	private $m_op = 0;
+	private $m_opped = 0;
+	private $m_voice = 0;
+	private $m_voiced = 0;
+	private $m_deOp = 0;
+	private $m_deOpped = 0;
+	private $m_deVoice = 0;
+	private $m_deVoiced = 0;
+	private $joins = 0;
+	private $parts = 0;
+	private $quits = 0;
+	private $kicks = 0;
+	private $kicked = 0;
+	private $nickchanges = 0;
+	private $topics = 0;
+	private $ex_kicks = '';
+	private $ex_kicked = '';
 
 	/**
 	 * Variables used in database table "user_lines".
 	 */
-	protected $l_00 = 0;
-	protected $l_01 = 0;
-	protected $l_02 = 0;
-	protected $l_03 = 0;
-	protected $l_04 = 0;
-	protected $l_05 = 0;
-	protected $l_06 = 0;
-	protected $l_07 = 0;
-	protected $l_08 = 0;
-	protected $l_09 = 0;
-	protected $l_10 = 0;
-	protected $l_11 = 0;
-	protected $l_12 = 0;
-	protected $l_13 = 0;
-	protected $l_14 = 0;
-	protected $l_15 = 0;
-	protected $l_16 = 0;
-	protected $l_17 = 0;
-	protected $l_18 = 0;
-	protected $l_19 = 0;
-	protected $l_20 = 0;
-	protected $l_21 = 0;
-	protected $l_22 = 0;
-	protected $l_23 = 0;
-	protected $l_night = 0;
-	protected $l_morning = 0;
-	protected $l_afternoon = 0;
-	protected $l_evening = 0;
-	protected $l_total = 0;
-	protected $l_mon_night = 0;
-	protected $l_mon_morning = 0;
-	protected $l_mon_afternoon = 0;
-	protected $l_mon_evening = 0;
-	protected $l_tue_night = 0;
-	protected $l_tue_morning = 0;
-	protected $l_tue_afternoon = 0;
-	protected $l_tue_evening = 0;
-	protected $l_wed_night = 0;
-	protected $l_wed_morning = 0;
-	protected $l_wed_afternoon = 0;
-	protected $l_wed_evening = 0;
-	protected $l_thu_night = 0;
-	protected $l_thu_morning = 0;
-	protected $l_thu_afternoon = 0;
-	protected $l_thu_evening = 0;
-	protected $l_fri_night = 0;
-	protected $l_fri_morning = 0;
-	protected $l_fri_afternoon = 0;
-	protected $l_fri_evening = 0;
-	protected $l_sat_night = 0;
-	protected $l_sat_morning = 0;
-	protected $l_sat_afternoon = 0;
-	protected $l_sat_evening = 0;
-	protected $l_sun_night = 0;
-	protected $l_sun_morning = 0;
-	protected $l_sun_afternoon = 0;
-	protected $l_sun_evening = 0;
-	protected $URLs = 0;
-	protected $words = 0;
-	protected $characters = 0;
-	protected $monologues = 0;
-	protected $topMonologue = 0;
-	protected $activeDays = 0;
-	protected $slaps = 0;
-	protected $slapped = 0;
-	protected $exclamations = 0;
-	protected $questions = 0;
-	protected $actions = 0;
-	protected $uppercased = 0;
-	protected $quote = '';
-	protected $ex_exclamations = '';
-	protected $ex_questions = '';
-	protected $ex_actions = '';
-	protected $ex_uppercased = '';
-	protected $lastTalked = '';
+	private $l_00 = 0;
+	private $l_01 = 0;
+	private $l_02 = 0;
+	private $l_03 = 0;
+	private $l_04 = 0;
+	private $l_05 = 0;
+	private $l_06 = 0;
+	private $l_07 = 0;
+	private $l_08 = 0;
+	private $l_09 = 0;
+	private $l_10 = 0;
+	private $l_11 = 0;
+	private $l_12 = 0;
+	private $l_13 = 0;
+	private $l_14 = 0;
+	private $l_15 = 0;
+	private $l_16 = 0;
+	private $l_17 = 0;
+	private $l_18 = 0;
+	private $l_19 = 0;
+	private $l_20 = 0;
+	private $l_21 = 0;
+	private $l_22 = 0;
+	private $l_23 = 0;
+	private $l_night = 0;
+	private $l_morning = 0;
+	private $l_afternoon = 0;
+	private $l_evening = 0;
+	private $l_total = 0;
+	private $l_mon_night = 0;
+	private $l_mon_morning = 0;
+	private $l_mon_afternoon = 0;
+	private $l_mon_evening = 0;
+	private $l_tue_night = 0;
+	private $l_tue_morning = 0;
+	private $l_tue_afternoon = 0;
+	private $l_tue_evening = 0;
+	private $l_wed_night = 0;
+	private $l_wed_morning = 0;
+	private $l_wed_afternoon = 0;
+	private $l_wed_evening = 0;
+	private $l_thu_night = 0;
+	private $l_thu_morning = 0;
+	private $l_thu_afternoon = 0;
+	private $l_thu_evening = 0;
+	private $l_fri_night = 0;
+	private $l_fri_morning = 0;
+	private $l_fri_afternoon = 0;
+	private $l_fri_evening = 0;
+	private $l_sat_night = 0;
+	private $l_sat_morning = 0;
+	private $l_sat_afternoon = 0;
+	private $l_sat_evening = 0;
+	private $l_sun_night = 0;
+	private $l_sun_morning = 0;
+	private $l_sun_afternoon = 0;
+	private $l_sun_evening = 0;
+	private $URLs = 0;
+	private $words = 0;
+	private $characters = 0;
+	private $monologues = 0;
+	private $topMonologue = 0;
+	private $activeDays = 0;
+	private $slaps = 0;
+	private $slapped = 0;
+	private $exclamations = 0;
+	private $questions = 0;
+	private $actions = 0;
+	private $uppercased = 0;
+	private $quote = '';
+	private $ex_exclamations = '';
+	private $ex_questions = '';
+	private $ex_actions = '';
+	private $ex_uppercased = '';
+	private $lastTalked = '';
 
 	/**
 	 * Variables used in database table "user_smileys".
 	 */
-	protected $s_01 = 0;
-	protected $s_02 = 0;
-	protected $s_03 = 0;
-	protected $s_04 = 0;
-	protected $s_05 = 0;
-	protected $s_06 = 0;
-	protected $s_07 = 0;
-	protected $s_08 = 0;
-	protected $s_09 = 0;
-	protected $s_10 = 0;
-	protected $s_11 = 0;
-	protected $s_12 = 0;
-	protected $s_13 = 0;
-	protected $s_14 = 0;
-	protected $s_15 = 0;
-	protected $s_16 = 0;
-	protected $s_17 = 0;
-	protected $s_18 = 0;
-	protected $s_19 = 0;
+	private $s_01 = 0;
+	private $s_02 = 0;
+	private $s_03 = 0;
+	private $s_04 = 0;
+	private $s_05 = 0;
+	private $s_06 = 0;
+	private $s_07 = 0;
+	private $s_08 = 0;
+	private $s_09 = 0;
+	private $s_10 = 0;
+	private $s_11 = 0;
+	private $s_12 = 0;
+	private $s_13 = 0;
+	private $s_14 = 0;
+	private $s_15 = 0;
+	private $s_16 = 0;
+	private $s_17 = 0;
+	private $s_18 = 0;
+	private $s_19 = 0;
 
 	/**
 	 * Other variables that shouldn't be tampered with.
 	 */
+	private $UID = 0;
+	private $date = '';
 	private $long_ex_actions_list = array();
 	private $long_ex_exclamations_list = array();
 	private $long_ex_questions_list = array();
@@ -180,8 +182,11 @@ final class Nick extends Nick_MySQL
 	private $short_ex_questions_list = array();
 	private $short_ex_uppercased_list = array();
 	private $short_quote_list = array();
-	protected $UID = 0;
-	protected $date = '';
+	private $user_details = array('UID', 'csNick', 'firstSeen', 'lastSeen');
+	private $user_events = array('UID', 'm_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deOp', 'm_deOpped', 'm_deVoice', 'm_deVoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked');
+	private $user_lines = array('UID', 'l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'URLs', 'words', 'characters', 'monologues', 'topMonologue', 'activeDays', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased', 'lastTalked');
+	private $user_smileys = array('UID', 's_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19');
+	private $user_tables = array('user_details', 'user_events', 'user_lines', 'user_smileys');
 
         /**
          * Constructor.
@@ -301,6 +306,198 @@ final class Nick extends Nick_MySQL
 	public function setValue($var, $value)
 	{
 		$this->$var = $value;
+	}
+
+	/**
+	 * Write user data to the database.
+	 */
+	public function writeData($mysqli)
+	{
+		/**
+		 * Write data to database tables "user_details", "user_status", "user_events", "user_lines" and "user_smileys".
+		 */
+		foreach ($this->user_tables as $table) {
+			if ($table == 'user_details') {
+				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `csNick` = \''.mysqli_real_escape_string($mysqli, $this->csNick).'\' LIMIT 1')) === FALSE) {
+					return FALSE;
+				}
+			} else {
+				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `UID` = '.$this->UID.' LIMIT 1')) === FALSE) {
+					return FALSE;
+				}
+			}
+
+			$rows = mysqli_num_rows($query);
+
+			/**
+			 * Don't send anything to the database if user data is empty or hasn't changed.
+			 */
+			$submit = FALSE;
+
+			if (empty($rows)) {
+				$query = 'INSERT INTO `'.$table.'` SET';
+
+				foreach ($this->{$table} as $key) {
+					if ($key == 'UID' && $this->UID != 0) {
+						$query .= ' `UID` = '.$this->UID.',';
+					} elseif (is_int($this->$key) && $this->$key != 0) {
+						$query .= ' `'.$key.'` = '.$this->$key.',';
+						$submit = TRUE;
+					} elseif (is_string($this->$key) && $this->$key != '') {
+						$query .= ' `'.$key.'` = \''.mysqli_real_escape_string($mysqli, $this->$key).'\',';
+						$submit = TRUE;
+					}
+				}
+
+				$query = rtrim($query, ',');
+
+				if ($submit) {
+					if (!@mysqli_query($mysqli, $query)) {
+						return FALSE;
+					}
+
+					if ($table == 'user_details') {
+						$this->UID = mysqli_insert_id($mysqli);
+
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_status` (`UID`, `RUID`, `status`) VALUES ('.$this->UID.', '.$this->UID.', 0)')) {
+							return FALSE;
+						}
+					}
+				}
+			} else {
+				$result = mysqli_fetch_object($query);
+
+				if ($table == 'user_details') {
+					$this->UID = $result->UID;
+				}
+
+				$query = 'UPDATE `'.$table.'` SET';
+
+				foreach ($this->{$table} as $key) {
+					if (is_int($this->$key) && $this->$key != 0 && $key != 'UID') {
+						if ($key == 'topMonologue') {
+							if ($this->topMonologue > $result->topMonologue) {
+								$query .= ' `topMonologue` = '.$this->topMonologue.',';
+							}
+						} else {
+							$query .= ' `'.$key.'` = '.($this->$key + $result->$key).',';
+						}
+
+						$submit = TRUE;
+					} elseif (is_string($this->$key) && $this->$key != '' && $this->$key != $result->$key && !($key == 'firstSeen' && $this->$key.':00' >= $result->$key) && !(($key == 'lastSeen' || $key == 'lastTalked') && $this->$key.':00' <= $result->$key)) {
+						$query .= ' `'.$key.'` = \''.mysqli_real_escape_string($mysqli, $this->$key).'\',';
+						$submit = TRUE;
+					}
+				}
+
+				$query = rtrim($query, ',').' WHERE `UID` = '.$this->UID;
+
+				if ($submit) {
+					if (!@mysqli_query($mysqli, $query)) {
+						return FALSE;
+					}
+				}
+			}
+		}
+
+		/**
+		 * Write data to database table "user_activity".
+		 */
+		if ($this->l_total != 0) {
+			if (!@mysqli_query($mysqli, 'INSERT INTO `user_activity` (`UID`, `date`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $this->date).'\', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')')) {
+				return FALSE;
+			}
+		}
+
+		/**
+		 * Write data to database table "user_hosts".
+		 */
+		if (!empty($this->hosts_list)) {
+			foreach ($this->hosts_list as $host) {
+				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `UID` = '.$this->UID.' AND `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1')) === FALSE) {
+					return FALSE;
+				}
+
+				$rows = mysqli_num_rows($query);
+
+				/**
+				 * Only add hosts for this user which aren't already in the database.
+				 */
+				if (empty($rows)) {
+					/**
+					 * Check if the host exists in the database paired with an UID other than mine and if it does, use its HID in my own insert query.
+					 */
+					if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_hosts` WHERE `host` = \''.mysqli_real_escape_string($mysqli, $host).'\' LIMIT 1')) === FALSE) {
+						return FALSE;
+					}
+
+					$rows = mysqli_num_rows($query);
+
+					if (empty($rows)) {
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`UID`, `host`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')')) {
+							return FALSE;
+						}
+					} else {
+						$result = mysqli_fetch_object($query);
+
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`HID`, `UID`, `host`) VALUES ('.$result->HID.', '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')')) {
+							return FALSE;
+						}
+					}
+				}
+			}
+		}
+
+		/**
+		 * Write data to database table "user_topics".
+		 */
+		if (!empty($this->topics_list)) {
+			foreach ($this->topics_list as $topic) {
+				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `UID` = '.$this->UID.' AND `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' AND `setDate` = \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\' LIMIT 1')) === FALSE) {
+					return FALSE;
+				}
+
+				$rows = mysqli_num_rows($query);
+
+				/**
+				 * Don't insert a topic already set by this user at the same time.
+				 * The combination of TID/UID/setDate is unique in the database where TID is the identifier of the topic.
+				 */
+				if (empty($rows)) {
+					/**
+					 * Check if the topic exists in the database and if it does, use its TID in the insert query.
+					 */
+					if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_topics` WHERE `csTopic` = \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\' LIMIT 1')) === FALSE) {
+						return FALSE;
+					}
+
+					$rows = mysqli_num_rows($query);
+
+					if (empty($rows)) {
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`UID`, `csTopic`, `setDate`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')')) {
+							return FALSE;
+						}
+					} else {
+						$result = mysqli_fetch_object($query);
+
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`TID`, `UID`, `csTopic`, `setDate`) VALUES ('.$result->TID.', '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')')) {
+							return FALSE;
+						}
+					}
+				}
+			}
+		}
+
+		/**
+		 * Write data to database table "user_URLs".
+		 */
+		foreach ($this->URLs_list as $URL) {
+			if (!$this->URLs_objs[$URL]->writeData($mysqli, $this->UID)) {
+				return FALSE;
+			}
+		}
+
+		return TRUE;
 	}
 }
 

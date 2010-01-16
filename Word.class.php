@@ -19,13 +19,13 @@
 /**
  * Class for handling word data.
  */
-final class Word extends Word_MySQL
+final class Word
 {
 	/**
 	 * Variables used in database table "user_words".
 	 */
-	protected $word = '';
-	protected $total = 0;
+	private $word = '';
+	private $total = 0;
 
 	/**
 	 * Constructor.
@@ -41,6 +41,21 @@ final class Word extends Word_MySQL
 	public function addValue($var, $value)
 	{
 		$this->$var += $value;
+	}
+
+	/**
+	 * Write word data to the database.
+	 */
+	public function writeData($mysqli)
+	{
+		/**
+		 * Write data to database table "words".
+		 */
+		if (!@mysqli_query($mysqli, 'INSERT INTO `words` (`word`, `total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->word).'\', '.$this->total.') ON DUPLICATE KEY UPDATE `total` = `total` + '.$this->total)) {
+			return FALSE;
+		}
+
+		return TRUE;
 	}
 }
 
