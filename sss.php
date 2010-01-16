@@ -140,11 +140,11 @@ final class sss
 	/**
 	 * Parse a logfile, or all logfiles in the given logdir.
 	 */
-	private function parseLog($path)
+	private function parseLog($filedir)
 	{
-		$path = preg_replace('/YESTERDAY/', date($this->settings['logfileDateFormat'], strtotime('yesterday')), $path);
+		$filedir = preg_replace('/YESTERDAY/', date($this->settings['logfileDateFormat'], strtotime('yesterday')), $filedir);
 
-		if (($rp = realpath($path)) !== FALSE) {
+		if (($rp = realpath($filedir)) !== FALSE) {
 			if (is_dir($rp)) {
 				if (($dh = @opendir($rp)) !== FALSE) {
 					while (($file = readdir($dh)) !== FALSE) {
@@ -160,6 +160,11 @@ final class sss
 			}
 
 			sort($logfiles);
+			
+			/**
+			 * Variable to track if we modified our database and therefore need maintenance.
+			 */
+			$needMaintenance = FALSE;
 
 			foreach ($logfiles as $logfile) {
 				if ((empty($this->settings['logfilePrefix']) || stripos(basename($logfile), $this->settings['logfilePrefix']) !== FALSE) && (empty($this->settings['logfileSuffix']) || stripos(basename($logfile), $this->settings['logfileSuffix']) !== FALSE)) {
@@ -170,7 +175,7 @@ final class sss
 						echo 'The logfile you are about to parse appears to be of today. It is recommended'."\n"
 						   . 'to skip this file until tomorrow when logging will be completed.'."\n"
 						   . 'Skip \''.basename($logfile).'\'? [yes] ';
-						$yn = trim(fgets(STDIN));
+						$yn = strtolower(trim(fgets(STDIN)));
 
 						if (empty($yn) || $yn == 'y' || $yn == 'yes') {
 							break;
@@ -184,15 +189,16 @@ final class sss
 
 					if ($this->writeData) {
 						$parser->writeData();
+						$needMaintenance = TRUE;
 					}
 				}
 			}
 
-			if ($this->doMaintenance) {
+			if ($needMaintenance && $this->doMaintenance) {
 				$this->doMaintenance();
 			}
 		} else {
-			$this->output('critical', 'parseLog(): no such file: \''.$path.'\'');
+			$this->output('critical', 'parseLog(): no such file or directory: \''.$filedir.'\'');
 		}
 	}
 
@@ -225,9 +231,9 @@ final class sss
 	/**
 	 * Read settings from the config file.
 	 */
-	private function readConfig($path)
+	private function readConfig($file)
 	{
-		if (($rp = realpath($path)) !== FALSE) {
+		if (($rp = realpath($file)) !== FALSE) {
 			if (($fp = @fopen($rp, 'rb')) !== FALSE) {
 				while (!feof($fp)) {
 					$line = fgets($fp);
@@ -278,7 +284,7 @@ final class sss
 				$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
 			}
 		} else {
-			$this->output('critical', 'readConfig(): no such file: \''.$path.'\'');
+			$this->output('critical', 'readConfig(): no such file: \''.$file.'\'');
 		}
 	}
 }
