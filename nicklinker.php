@@ -33,7 +33,7 @@ final class nicklinker
 	 */
 	private $settings = array();
 	private $settings_list = array('outputLevel' => 'int');
-	private $settings_required_list = array('db_host', 'db_name', 'db_pass', 'db_port', 'db_server', 'db_user', 'timezone');
+	private $settings_required_list = array('db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'timezone');
 
 	/**
 	 * Constructor.
@@ -44,7 +44,7 @@ final class nicklinker
 		 * Use UTC until user specified timezone is loaded.
 		 */
 		date_default_timezone_set('UTC');
-		
+
 		/**
 		 * Read options from the command line.
 		 */
@@ -58,7 +58,7 @@ final class nicklinker
 			} else {
 				$this->readConfig(dirname(__FILE__).'/sss.conf');
 			}
-			
+
 			if (array_key_exists('i', $options)) {
 				$this->import($options['i']);
 			}
@@ -122,7 +122,7 @@ final class nicklinker
 			$this->output('critical', 'export(): failed to open file: \''.$file.'\'');
 		}
 	}
-	
+
 	/**
 	 * Import nicks.
 	 */
@@ -215,7 +215,7 @@ final class nicklinker
 				exit;
 		}
 	}
-	
+
 	/**
 	 * Print the manual and exit.
 	 */
@@ -277,10 +277,6 @@ final class nicklinker
 				} else {
 					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->settings['timezone'].'\'');
 				}
-
-				if ($this->settings['db_server'] == 'MySQL' && !extension_loaded('mysqli')) {
-					$this->output('critical', 'readConfig(): the MySQLi extension isn\'t loaded'."\n");
-				}
 			} else {
 				$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
 			}
@@ -289,5 +285,15 @@ final class nicklinker
 		}
 	}
 }
+
+if (substr(phpversion(), 0, 3) != '5.3') {
+	exit('PHP version 5.3 required, currently running with version '.phpversion()."\n");
+}
+
+if (!extension_loaded('mysqli')) {
+	exit('MySQLi extension isn\'t loaded'."\n");
+}
+
+$nicklinker = new nicklinker();
 
 ?>
