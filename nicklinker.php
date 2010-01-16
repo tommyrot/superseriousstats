@@ -32,7 +32,13 @@ final class nicklinker
 	 * Other variables that shouldn't be tampered with.
 	 */
 	private $settings = array();
-	private $settings_list = array('outputLevel' => 'int');
+	private $settings_list = array('db_host' => 'string'
+			              ,'db_name' => 'string'
+				      ,'db_pass' => 'string'
+				      ,'db_port' => 'int'
+				      ,'db_user' => 'string'
+				      ,'outputLevel' => 'int'
+			              ,'timezone' => 'string');
 	private $settings_required_list = array('db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'timezone');
 
 	/**
@@ -240,7 +246,7 @@ final class nicklinker
 					$line = fgets($fp);
 					$line = trim($line);
 
-					if (preg_match('/^[^#](\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
+					if (preg_match('/^(\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
 						$this->settings[$matches[1]] = $matches[2];
 					}
 				}
@@ -273,7 +279,7 @@ final class nicklinker
 				}
 
 				if (date_default_timezone_set($this->settings['timezone']) !== FALSE) {
-					$this->output('notice', 'readConfig(): switched timezone to: \''.$this->settings['timezone'].'\'');
+					$this->output('notice', 'readConfig(): switched to timezone: \''.$this->settings['timezone'].'\'');
 				} else {
 					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->settings['timezone'].'\'');
 				}
