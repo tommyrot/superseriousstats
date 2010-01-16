@@ -28,7 +28,7 @@
  * The registered user has the same RUID as UID and can be identified accordingly.
  * Its aliases have their own unique UID and a RUID which is set to the UID of the registered user.
  */
-final class Maintenance_MySQL
+final class Maintenance
 {
 	/**
 	 * Default settings, can be overridden in the config file.
