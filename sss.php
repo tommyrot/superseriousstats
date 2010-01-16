@@ -32,7 +32,7 @@ final class sss
 	private $settings_list = array('doMaintenance' => 'bool'
 				      ,'outputLevel' => 'int'
 				      ,'writeData' => 'bool');
-	private $settings_required_list = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_server', 'db_user', 'logfileDateFormat', 'logfileFormat', 'logfilePrefix', 'logfileSuffix', 'timezone');
+	private $settings_required_list = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'logfileDateFormat', 'logfileFormat', 'logfilePrefix', 'logfileSuffix', 'timezone');
 
 	/**
 	 * Constructor.
@@ -83,8 +83,7 @@ final class sss
 	 */
 	private function doMaintenance()
 	{
-		$maintenance_class = 'Maintenance_'.$this->settings['db_server'];
-		$maintenance = new $maintenance_class($this->settings);
+		$maintenance = new Maintenance($this->settings);
 		$maintenance->doMaintenance();
 	}
 
@@ -93,8 +92,7 @@ final class sss
 	 */
 	private function makeHTML($file)
 	{
-		$HTML_class = 'HTML_'.$this->settings['db_server'];
-		$HTML = new $HTML_class($this->settings);
+		$HTML = new HTML($this->settings);
 
 		if (($fp = @fopen($file, 'wb')) !== FALSE) {
 			fwrite($fp, $HTML->makeHTML());
@@ -276,10 +274,6 @@ final class sss
 				} else {
 					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->settings['timezone'].'\'');
 				}
-
-				if ($this->settings['db_server'] == 'MySQL' && !extension_loaded('mysqli')) {
-					$this->output('critical', 'readConfig(): the MySQLi extension isn\'t loaded'."\n");
-				}
 			} else {
 				$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
 			}
@@ -290,7 +284,11 @@ final class sss
 }
 
 if (substr(phpversion(), 0, 3) != '5.3') {
-	exit('PHP version 5.3 needed, currently running with '.phpversion()."\n");
+	exit('PHP version 5.3 required, currently running with version '.phpversion()."\n");
+}
+
+if (!extension_loaded('mysqli')) {
+	exit('MySQLi extension isn\'t loaded'."\n");
 }
 
 /**
