@@ -22,6 +22,10 @@ final class sss
 	 * Default settings, can be overridden in the config file.
 	 */
 	private $doMaintenance = TRUE;
+	private $logfileDateFormat = '';
+	private $logfileFormat = '';
+	private $logfilePrefix = '';
+	private $logfileSuffix = '';
 	private $outputLevel = 1;
 	private $writeData = TRUE;
 
@@ -30,6 +34,10 @@ final class sss
 	 */
 	private $settings = array();
 	private $settings_list = array('doMaintenance' => 'bool'
+				      ,'logfileDateFormat' => 'string'
+				      ,'logfileFormat' => 'string'
+				      ,'logfilePrefix' => 'string'
+				      ,'logfileSuffix' => 'string'
 				      ,'outputLevel' => 'int'
 				      ,'writeData' => 'bool');
 	private $settings_required_list = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'logfileDateFormat', 'logfileFormat', 'logfilePrefix', 'logfileSuffix', 'timezone');
@@ -237,7 +245,7 @@ final class sss
 					$line = fgets($fp);
 					$line = trim($line);
 
-					if (preg_match('/^[^#](\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
+					if (preg_match('/^(\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
 						$this->settings[$matches[1]] = $matches[2];
 					}
 				}
@@ -270,7 +278,7 @@ final class sss
 				}
 
 				if (date_default_timezone_set($this->settings['timezone']) !== FALSE) {
-					$this->output('notice', 'readConfig(): switched timezone to: \''.$this->settings['timezone'].'\'');
+					$this->output('notice', 'readConfig(): switched to timezone: \''.$this->settings['timezone'].'\'');
 				} else {
 					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->settings['timezone'].'\'');
 				}

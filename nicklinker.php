@@ -37,8 +37,7 @@ final class nicklinker
 				      ,'db_pass' => 'string'
 				      ,'db_port' => 'int'
 				      ,'db_user' => 'string'
-				      ,'outputLevel' => 'int'
-			              ,'timezone' => 'string');
+				      ,'outputLevel' => 'int');
 	private $settings_required_list = array('db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'timezone');
 
 	/**
