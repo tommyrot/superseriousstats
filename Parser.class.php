@@ -238,7 +238,7 @@ abstract class Parser
 				 * Normalize the line:
 				 * 1. Remove ISO-8859-1 control codes: characters x00 to x1F (except x09) and x7F to x9F. Treat x03 differently since it is used for (mIRC) color codes.
 				 * 2. Remove multiple adjacent spaces (x20) and all tabs (x09).
-				 * 3. Remove whitespaces at the beginning and end of a line.
+				 * 3. Remove whitespace characters at the beginning and end of a line.
 				 */
 				$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
 
