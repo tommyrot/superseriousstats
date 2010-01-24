@@ -24,18 +24,15 @@ abstract class Parser
 	/**
 	 * Default settings, can be overridden in the config file.
 	 */
-	private $URL_maxLen = 255;
 	private $db_host = '';
         private $db_name = '';
         private $db_pass = '';
         private $db_port = 0;
         private $db_user = '';
-	private $host_maxLen = 255;
 	private $minStreak = 5;
 	private $nick_maxLen = 255;
 	private $nick_minLen = 1;
 	private $outputLevel = 1;
-	private $quote_maxLen = 255;
 	private $quote_prefLen = 25;
 	private $wordTracking = FALSE;
 
@@ -73,46 +70,45 @@ abstract class Parser
 	private $l_total = 0;
 
 	/**
-	 * Other variables that shouldn't be tampered with.
+	 * Variables that shouldn't be tampered with.
 	 */
 	private $URLTools;
 	private $nicks_list = array();
 	private $nicks_objs = array();
 	private $prevNick = '';
 	private $prevOutput = array();
-	private $settings_list = array('URL_maxLen' => 'int'
-				      ,'db_host' => 'string'
-				      ,'db_name' => 'string'
-				      ,'db_pass' => 'string'
-				      ,'db_port' => 'int'
-				      ,'db_user' => 'string'
-				      ,'host_maxLen' => 'int'
-				      ,'minStreak' => 'int'
-				      ,'nick_maxLen' => 'int'
-				      ,'nick_minLen' => 'int'
-				      ,'outputLevel' => 'int'
-				      ,'quote_maxLen' => 'int'
-				      ,'quote_prefLen' => 'int'
-				      ,'wordTracking' => 'bool');
-	private $smileys = array('=]' => 's_01'
-				,'=)' => 's_02'
-				,';x' => 's_03'
-				,';p' => 's_04'
-				,';]' => 's_05'
-				,';-)' => 's_06'
-				,';)' => 's_07'
-				,';(' => 's_08'
-				,':x' => 's_09'
-				,':p' => 's_10'
-				,':d' => 's_11'
-				,':>' => 's_12'
-				,':]' => 's_13'
-				,':\\' => 's_14'
-				,':/' => 's_15'
-				,':-)' => 's_16'
-				,':)' => 's_17'
-				,':(' => 's_18'
-				,'\\o/' => 's_19');
+	private $settings_list = array(
+		'db_host' => 'string',
+		'db_name' => 'string',
+		'db_pass' => 'string',
+		'db_port' => 'int',
+		'db_user' => 'string',
+		'minStreak' => 'int',
+		'nick_maxLen' => 'int',
+		'nick_minLen' => 'int',
+		'outputLevel' => 'int',
+		'quote_prefLen' => 'int',
+		'wordTracking' => 'bool');
+	private $smileys = array(
+		'=]' => 's_01',
+		'=)' => 's_02',
+		';x' => 's_03',
+		';p' => 's_04',
+		';]' => 's_05',
+		';-)' => 's_06',
+		';)' => 's_07',
+		';(' => 's_08',
+		':x' => 's_09',
+		':p' => 's_10',
+		':d' => 's_11',
+		':>' => 's_12',
+		':]' => 's_13',
+		':\\' => 's_14',
+		':/' => 's_15',
+		':-)' => 's_16',
+		':)' => 's_17',
+		':(' => 's_18',
+		'\\o/' => 's_19');
 	private $streak = 0;
 	private $words_list = array();
 	private $words_objs = array();
@@ -199,6 +195,12 @@ abstract class Parser
 			}
 
 			switch ($type) {
+				case 'debug':
+					if ($this->outputLevel >= 4) {
+						echo $dateTime.' [debug] '.$msg."\n";
+					}
+
+					break;
 				case 'notice':
 					if ($this->outputLevel >= 3) {
 						echo $dateTime.' [notice] '.$msg."\n";
@@ -483,7 +485,7 @@ abstract class Parser
 			foreach ($lineParts as $csWord) {
 				/**
 				 * The "words" counter below has no relation with the real words which are stored in the database.
-				 * It simply counts all character groups seperated by whitespace.
+				 * It simply counts all character groups separated by whitespace.
 				 */
 				$this->nicks_objs[$nick]->addValue('words', 1);
 
@@ -576,8 +578,7 @@ abstract class Parser
 					/**
 					 * Don't pass a time when adding the undergoing nick while it may only be referred to instead of being seen for real.
 					 */
-					$dateTime = NULL;
-					$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
+					$nick_undergoing = $this->addNick($csNick_undergoing, NULL);
 					$this->nicks_objs[$nick_undergoing]->addValue('slapped', 1);
 				} else {
 					$this->output('warning', 'setSlap(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
@@ -617,7 +618,7 @@ abstract class Parser
 	}
 
 	/**
-	 * Function to change and set variables. Used only from the startup script.
+	 * Set the value of a variable.
 	 */
 	final public function setValue($var, $value)
 	{
@@ -625,13 +626,11 @@ abstract class Parser
 	}
 
 	/**
-	 * Validate a given host.
-	 * Only check for length since standards don't apply to network specific spoofed hosts.
-	 * These can be used for nicklinking.
+	 * Validate a given host. Networks may spoof hosts in various ways. Maximum length should not exceed 255 so it fits in the database field.
 	 */
 	final private function validateHost($csHost)
 	{
-		if (strlen($csHost) <= $this->host_maxLen) {
+		if (strlen($csHost) <= 255) {
 			return TRUE;
 		} else {
 			return FALSE;
@@ -639,12 +638,11 @@ abstract class Parser
 	}
 
 	/**
-	 * Validate a given nick.
-	 * Check on syntax and variable length. Set the maximum length to the maximum supported nick length on your network if you want to do strict validation.
+	 * Validate a given nick. Check on syntax and defined lengths. Maximum length should not exceed 255 so it fits in the database field.
 	 */
 	final private function validateNick($csNick)
 	{
-		if (preg_match('/^[]\[\^\{}\|\\\`_0-9a-z-]{'.$this->nick_minLen.','.$this->nick_maxLen.'}$/i', $csNick)) {
+		if (preg_match('/^[]\[\^\{}\|\\\`_0-9a-z-]{'.$this->nick_minLen.','.($this->nick_maxLen <= 255 ? $this->nick_maxLen : 255).'}$/i', $csNick)) {
 			return TRUE;
 		} else {
 			return FALSE;
@@ -652,12 +650,11 @@ abstract class Parser
 	}
 
 	/**
-	 * Validate a given quote.
-	 * Since all non printable ISO-8859-1 characters are stripped from the lines we can suffice with checking on minimum and maximum length.
+	 * Validate a given quote. All non printable ISO-8859-1 characters are already stripped from the lines. Maximum length should not exceed 255 so it fits in the database field.
 	 */
 	final private function validateQuote($line)
 	{
-		if (strlen($line) <= $this->quote_maxLen) {
+		if (strlen($line) <= 255) {
 			return TRUE;
 		} else {
 			return FALSE;
@@ -665,13 +662,11 @@ abstract class Parser
 	}
 
 	/**
-	 * Validate a given URL.
-	 * The maximum length variable is used to keep stored URLs within boundaries of our database field.
-	 * URL validation is done by an external class.
+	 * Validate a given URL. URL validation is done by an external class. Maximum length should not exceed 255 so it fits in the database field.
 	 */
 	final private function validateURL($csURL)
 	{
-		if (strlen($csURL) <= $this->URL_maxLen && $this->URLTools->validateURL($csURL)) {
+		if (strlen($csURL) <= 255 && $this->URLTools->validateURL($csURL)) {
 			return TRUE;
 		} else {
 			return FALSE;
@@ -688,13 +683,13 @@ abstract class Parser
 		 */
 		if (!empty($this->nicks_list)) {
 			$this->output('notice', 'writeData(): writing data to database: \''.$this->db_name.'\'');
-			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
+			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
 
 			/**
 			 * Write channel totals to the database.
 			 * The date is a unique value here, if you try to insert records for a date that is already present in database table "channel" the program will exit with an error.
 			 */
-			@mysqli_query($mysqli, 'INSERT INTO `channel` (`date`, `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->date).'\', '.$this->l_00.', '.$this->l_01.', '.$this->l_02.', '.$this->l_03.', '.$this->l_04.', '.$this->l_05.', '.$this->l_06.', '.$this->l_07.', '.$this->l_08.', '.$this->l_09.', '.$this->l_10.', '.$this->l_11.', '.$this->l_12.', '.$this->l_13.', '.$this->l_14.', '.$this->l_15.', '.$this->l_16.', '.$this->l_17.', '.$this->l_18.', '.$this->l_19.', '.$this->l_20.', '.$this->l_21.', '.$this->l_22.', '.$this->l_23.', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+			@mysqli_query($mysqli, 'INSERT INTO `channel` (`date`, `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->date).'\', '.$this->l_00.', '.$this->l_01.', '.$this->l_02.', '.$this->l_03.', '.$this->l_04.', '.$this->l_05.', '.$this->l_06.', '.$this->l_07.', '.$this->l_08.', '.$this->l_09.', '.$this->l_10.', '.$this->l_11.', '.$this->l_12.', '.$this->l_13.', '.$this->l_14.', '.$this->l_15.', '.$this->l_16.', '.$this->l_17.', '.$this->l_18.', '.$this->l_19.', '.$this->l_20.', '.$this->l_21.', '.$this->l_22.', '.$this->l_23.', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 
 			/**
 			 * Write user data to the database.
@@ -702,7 +697,7 @@ abstract class Parser
 			foreach ($this->nicks_list as $nick) {
 				if ($this->nicks_objs[$nick]->getValue('firstSeen') != '') {
 					$this->nicks_objs[$nick]->randomizeQuotes();
-					$this->nicks_objs[$nick]->writeData($mysqli) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+					$this->nicks_objs[$nick]->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 				} else {
 					$this->output('notice', 'writeData(): skipping empty nick: \''.$this->nicks_objs[$nick]->getValue('csNick').'\'');
 				}
@@ -713,7 +708,7 @@ abstract class Parser
 			 * To keep our database sane words are not linked to users.
 			 */
 			foreach ($this->words_list as $word) {
-				$this->words_objs[$word]->writeData($mysqli) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+				$this->words_objs[$word]->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 			}
 
 			$this->output('notice', 'writeData(): writing completed');
