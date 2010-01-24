@@ -80,7 +80,7 @@ final class Parser_test extends Parser
 				if ($mode == '-' || $mode == '+') {
 					$modeSign = $mode;
 				} else {
-					$this->setMode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modeNum], $modeSign.$mode, (isset($matches['host']) ? $matches['host'] : NULL));
+					$this->setMode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modeNum], $modeSign.$mode, ($matches['host'] != '' ? $matches['host'] : NULL));
 					$modeNum++;
 				}
 			}
@@ -89,8 +89,8 @@ final class Parser_test extends Parser
 		 * "Action" and "slap" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Action: (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
-			if (isset($matches['slap'])) {
-				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], (isset($matches['nick2']) ? $matches['nick2'] : NULL));
+			if ($matches['slap'] != '') {
+				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], ($matches['nick2'] != '' ? $matches['nick2'] : NULL));
 			}
 			
 			$this->setAction($this->date.' '.$matches['time'], $matches['nick1'], $matches['line']);
@@ -105,13 +105,13 @@ final class Parser_test extends Parser
 		 * "Part" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] (?<nick>\S+) \(~?(?<host>\S+)\) left [#&!\+]\S+( \(.*\))?\.$/', $line, $matches)) {
-			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], (isset($matches['host']) ? $matches['host'] : NULL));
+			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], ($matches['host'] != '' ? $matches['host'] : NULL));
 
 		/**
 		 * "Topic" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Topic changed on [#&!\+]\S+ by (?<nick>\S+?)(!(~?(?<host>\S+))?)?: (?<line>.+)$/', $line, $matches)) {
-			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], (isset($matches['host']) ? $matches['host'] : NULL), $matches['line']);
+			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], ($matches['host'] != '' ? $matches['host'] : NULL), $matches['line']);
 
 		/**
 		 * "Kick" lines.
