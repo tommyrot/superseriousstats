@@ -118,14 +118,14 @@ final class HTML
 		$rows = mysqli_num_rows($query_l_total);
 
 		if (empty($rows)) {
-			exit('The database for '.$this->channel.' is empty.'."\n");
+			$this->output('critical', 'makeHTML(): database \''.$this->db_name.'\' is empty');
 		}
 
 		$result_l_total = mysqli_fetch_object($query_l_total);
 		$this->l_total = $result_l_total->l_total;
 
 		if ($this->l_total == 0) {
-			exit('The database for '.$this->channel.' is empty.'."\n");
+			$this->output('critical', 'makeHTML(): database \''.$this->db_name.'\' is empty');
 		}
 
 		/**
