@@ -101,7 +101,7 @@ final class HTML
 	 */
 	private function getDetails($UID)
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT `csNick`, `status` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `user_details`.`UID` = '.$UID) or exit;
+		$query = @mysqli_query($this->mysqli, 'SELECT `csNick`, `status` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `user_details`.`UID` = '.$UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 
 		return array('csNick' => $result->csNick
@@ -113,8 +113,8 @@ final class HTML
 	 */
 	public function makeHTML()
 	{
-		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or exit;
-		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or exit;
+		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
+		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query_l_total);
 
 		if (empty($rows)) {
@@ -139,11 +139,11 @@ final class HTML
 		/**
 		 * Date and time variables used throughout the script.
 		 */
-		$query_days = @mysqli_query($this->mysqli, 'SELECT COUNT(*) AS `days` FROM `channel`') or exit;
+		$query_days = @mysqli_query($this->mysqli, 'SELECT COUNT(*) AS `days` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result_days = mysqli_fetch_object($query_days);
-		$query_date_first = @mysqli_query($this->mysqli, 'SELECT MIN(`date`) AS `date` FROM `channel`') or exit;
+		$query_date_first = @mysqli_query($this->mysqli, 'SELECT MIN(`date`) AS `date` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result_date_first = mysqli_fetch_object($query_date_first);
-		$query_date_last = @mysqli_query($this->mysqli, 'SELECT MAX(`date`) AS `date` FROM `channel`') or exit;
+		$query_date_last = @mysqli_query($this->mysqli, 'SELECT MAX(`date`) AS `date` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result_date_last = mysqli_fetch_object($query_date_last);
 		$this->days = $result_days->days;
 		$this->date_first = $result_date_first->date;
@@ -162,9 +162,9 @@ final class HTML
 		/**
 		 * HTML Head
 		 */
-		$query_avg = @mysqli_query($this->mysqli, 'SELECT AVG(`l_total`) AS `avg` FROM `channel`') or exit;
+		$query_avg = @mysqli_query($this->mysqli, 'SELECT AVG(`l_total`) AS `avg` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result_avg = mysqli_fetch_object($query_avg);
-		$query_max = @mysqli_query($this->mysqli, 'SELECT `l_total` AS `max`, `date` FROM `channel` ORDER BY `l_total` DESC LIMIT 1') or exit;
+		$query_max = @mysqli_query($this->mysqli, 'SELECT `l_total` AS `max`, `date` FROM `channel` ORDER BY `l_total` DESC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result_max = mysqli_fetch_object($query_max);
 		$this->years = $this->year - date('Y', strtotime($this->date_first)) + 1;
 
@@ -308,7 +308,7 @@ final class HTML
 					,'Cheer' => array('\\o/', 's_19'));
 
 			foreach ($smileys as $key => $value) {
-				$query = @mysqli_query($this->mysqli, 'SELECT SUM(`'.$value[1].'`) AS `total` FROM `query_smileys`') or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT SUM(`'.$value[1].'`) AS `total` FROM `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result = mysqli_fetch_object($query);
 
 				if ($result->total >= $this->minLines) {
@@ -336,7 +336,7 @@ final class HTML
 	 */
 	private function makeTable($settings)
 	{
-		$query = @mysqli_query($this->mysqli, $settings['query']) or exit;
+		$query = @mysqli_query($this->mysqli, $settings['query']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$i = 0;
 
 		while ($result = mysqli_fetch_object($query)) {
@@ -378,7 +378,7 @@ final class HTML
 			}
 
 			if (isset($settings['query_total'])) {
-				$query_total = @mysqli_query($this->mysqli, $settings['query_total']) or exit;
+				$query_total = @mysqli_query($this->mysqli, $settings['query_total']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result_total = mysqli_fetch_object($query_total);
 			}
 
@@ -417,17 +417,17 @@ final class HTML
 			case 'days':
 				$table_class = 'graph';
 				$cols = 24;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day - 24, $this->year)).'\'') or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day - 24, $this->year)).'\'') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				break;
 			case 'months':
 				$table_class = 'graph';
 				$cols = 24;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE DATE_FORMAT(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' GROUP BY YEAR(`date`), MONTH(`date`)') or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE DATE_FORMAT(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' GROUP BY YEAR(`date`), MONTH(`date`)') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				break;
 			case 'years':
 				$table_class = 'yearly';
 				$cols = $this->years;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` GROUP BY YEAR(`date`)') or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` GROUP BY YEAR(`date`)') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				break;
 		}
 
@@ -583,7 +583,7 @@ final class HTML
 	 */
 	private function makeTable_MostActiveDays($settings)
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines`') or exit;
+		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$l_total_high = 0;
 		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
@@ -651,20 +651,20 @@ final class HTML
 	{
 		switch ($settings['type']) {
 			case 'alltime':
-				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `csNick`, `quote`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` != 0 ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `csNick`, `quote`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` != 0 ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$l_total = $this->l_total;
 				$skipDetails = TRUE;
 				break;
 			case 'year':
-				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE (SELECT `status` FROM `user_status` AS `t1` WHERE `UID` = `user_status`.`RUID`) != 3 AND YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or exit;
-				$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `user_activity` WHERE YEAR(`date`) = '.$this->year) or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE (SELECT `status` FROM `user_status` AS `t1` WHERE `UID` = `user_status`.`RUID`) != 3 AND YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+				$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `user_activity` WHERE YEAR(`date`) = '.$this->year) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result_l_total = mysqli_fetch_object($query_l_total);
 				$l_total = $result_l_total->l_total;
 				$skipDetails = FALSE;
 				break;
 			case 'month':
-				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE (SELECT `status` FROM `user_status` AS `t1` WHERE `UID` = `user_status`.`RUID`) != 3 AND YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or exit;
-				$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `user_activity` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month) or exit;
+				$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE (SELECT `status` FROM `user_status` AS `t1` WHERE `UID` = `user_status`.`RUID`) != 3 AND YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `l_total` DESC, `RUID` ASC LIMIT '.$settings['rows']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+				$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `user_activity` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result_l_total = mysqli_fetch_object($query_l_total);
 				$l_total = $result_l_total->l_total;
 				$skipDetails = FALSE;
@@ -686,14 +686,14 @@ final class HTML
 				$csNick = $result->csNick;
 				$quote = $result->quote;
 			} else {
-				$query_details = @mysqli_query($this->mysqli, 'SELECT `csNick`, `quote` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` WHERE `query_lines`.`UID` = '.$RUID) or exit;
+				$query_details = @mysqli_query($this->mysqli, 'SELECT `csNick`, `quote` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` WHERE `query_lines`.`UID` = '.$RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result_details = mysqli_fetch_object($query_details);
 				$csNick = $result_details->csNick;
 				$quote = $result_details->quote;
 			}
 
 			$l_total_percentage = number_format(($result->l_total / $l_total) * 100, 2);
-			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or exit;
+			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			$result_lastSeen = mysqli_fetch_object($query_lastSeen);
 			$lastSeen = substr($result_lastSeen->lastSeen, 0, 10);
 			$lastSeen = round((strtotime('today') - strtotime($lastSeen)) / 86400);
@@ -767,7 +767,7 @@ final class HTML
 	 */
 	private function makeTable_MostActiveTimes($settings)
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or exit;
+		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$l_total_high = 0;
 
@@ -926,9 +926,9 @@ final class HTML
 				}
 
 				$i++;
-				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
+				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result_csTopic = mysqli_fetch_object($query_csTopic);
-				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
+				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result_csNick = mysqli_fetch_object($query_csNick);
 				$content2[] = array($i, number_format(floor($hoursPassed / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
 			}
@@ -955,14 +955,14 @@ final class HTML
 			/**
 			 * Most recent topics table.
 			 */
-			$query = @mysqli_query($this->mysqli, 'SELECT DISTINCT(`TID`) FROM `user_topics` ORDER BY `setDate` DESC LIMIT 5') or exit;
+			$query = @mysqli_query($this->mysqli, 'SELECT DISTINCT(`TID`) FROM `user_topics` ORDER BY `setDate` DESC LIMIT 5') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			$i = 0;
 
 			while ($result = mysqli_fetch_object($query)) {
 				$i++;
-				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
+				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result_csTopic = mysqli_fetch_object($query_csTopic);
-				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or exit;
+				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result_csNick = mysqli_fetch_object($query_csNick);
 				$content1[] = array($i, number_format(floor($topicTime[$result->TID] / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
 			}
