@@ -42,7 +42,7 @@ final class HTML
 	private $userstats = FALSE;
 
 	/**
-	 * The following variables shouldn't be tampered with.
+	 * Variables that shouldn't be tampered with.
 	 */
 	private $date_first = '';
 	private $date_last = '';
@@ -55,21 +55,22 @@ final class HTML
 	private $month_name = '';
 	private $mysqli;
 	private $output = '';
-	private $settings_list = array('bar_afternoon' => 'string'
-				      ,'bar_evening' => 'string'
-				      ,'bar_morning' => 'string'
-				      ,'bar_night' => 'string'
-				      ,'channel' => 'string'
-				      ,'db_host' => 'string'
-				      ,'db_name' => 'string'
-				      ,'db_pass' => 'string'
-				      ,'db_port' => 'int'
-				      ,'db_user' => 'string'
-				      ,'minLines' => 'int'
-				      ,'minRows' => 'int'
-				      ,'outputbits' => 'int'
-				      ,'stylesheet' => 'string'
-				      ,'userstats' => 'bool');
+	private $settings_list = array(
+		'bar_afternoon' => 'string',
+		'bar_evening' => 'string',
+		'bar_morning' => 'string',
+		'bar_night' => 'string',
+		'channel' => 'string',
+		'db_host' => 'string',
+		'db_name' => 'string',
+		'db_pass' => 'string',
+		'db_port' => 'int',
+		'db_user' => 'string',
+		'minLines' => 'int',
+		'minRows' => 'int',
+		'outputbits' => 'int',
+		'stylesheet' => 'string',
+		'userstats' => 'bool');
 	private $year = '';
 	private $years = 0;
 
@@ -988,14 +989,6 @@ final class HTML
 		}
 
 		return $output;
-	}
-
-        /**
-         * Set the value of a variable.
-         */
-	public function setValue($var, $value)
-	{
-		$this->$var = $value;
 	}
 }
 
