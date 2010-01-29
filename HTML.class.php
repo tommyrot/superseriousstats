@@ -990,6 +990,45 @@ final class HTML
 
 		return $output;
 	}
+
+	/**
+	 * Output given messages to the console.
+	 */
+	private function output($type, $msg)
+	{
+		$dateTime = date('M d H:i:s');
+
+		if (substr($dateTime, 4, 1) === '0') {
+			$dateTime = substr_replace($dateTime, ' ', 4, 1);
+		}
+
+		switch ($type) {
+			case 'debug':
+				if ($this->outputLevel >= 4) {
+					echo $dateTime.' [debug] '.$msg."\n";
+				}
+
+				break;
+			case 'notice':
+				if ($this->outputLevel >= 3) {
+					echo $dateTime.' [notice] '.$msg."\n";
+				}
+
+				break;
+			case 'warning':
+				if ($this->outputLevel >= 2) {
+					echo $dateTime.' [warning] '.$msg."\n";
+				}
+
+				break;
+			case 'critical':
+				if ($this->outputLevel >= 1) {
+					echo $dateTime.' [critical] '.$msg."\n";
+				}
+
+				exit;
+		}
+	}
 }
 
 ?>
