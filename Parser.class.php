@@ -187,41 +187,43 @@ abstract class Parser
 		/**
 		 * Don't output the same thing twice, like mode errors and repeated lines.
 		 */
-		if (!in_array($msg, $this->prevOutput)) {
-			$dateTime = date('M d H:i:s');
-
-			if (substr($dateTime, 4, 1) === '0') {
-				$dateTime = substr_replace($dateTime, ' ', 4, 1);
-			}
-
-			switch ($type) {
-				case 'debug':
-					if ($this->outputLevel >= 4) {
-						echo $dateTime.' [debug] '.$msg."\n";
-					}
-
-					break;
-				case 'notice':
-					if ($this->outputLevel >= 3) {
-						echo $dateTime.' [notice] '.$msg."\n";
-					}
-
-					break;
-				case 'warning':
-					if ($this->outputLevel >= 2) {
-						echo $dateTime.' [warning] '.$msg."\n";
-					}
-
-					break;
-				case 'critical':
-					if ($this->outputLevel >= 1) {
-						echo $dateTime.' [critical] '.$msg."\n";
-					}
-
-					exit;
-			}
-
+		if (in_array($msg, $this->prevOutput)) {
+			return;
+		} else {
 			$this->prevOutput[] = $msg;
+		}
+
+		$dateTime = date('M d H:i:s');
+
+		if (substr($dateTime, 4, 1) === '0') {
+			$dateTime = substr_replace($dateTime, ' ', 4, 1);
+		}
+
+		switch ($type) {
+			case 'debug':
+				if ($this->outputLevel & 8) {
+					echo $dateTime.' [debug] '.$msg."\n";
+				}
+
+				break;
+			case 'notice':
+				if ($this->outputLevel & 4) {
+					echo $dateTime.' [notice] '.$msg."\n";
+				}
+
+				break;
+			case 'warning':
+				if ($this->outputLevel & 2) {
+					echo $dateTime.' [warning] '.$msg."\n";
+				}
+
+				break;
+			case 'critical':
+				if ($this->outputLevel & 1) {
+					echo $dateTime.' [critical] '.$msg."\n";
+				}
+
+				exit;
 		}
 	}
 
