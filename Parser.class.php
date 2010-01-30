@@ -270,7 +270,7 @@ abstract class Parser
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('actions', 1);
 
-			if ($this->validateQuote($line)) {
+			if (strlen($line) <= 255) {
 				if (strlen($line) >= $this->quote_prefLen) {
 					$this->nicks_objs[$nick]->addQuote('ex_actions', 'long', $line);
 				} else {
@@ -313,7 +313,7 @@ abstract class Parser
 				$this->nicks_objs[$nick_performing]->addValue('kicks', 1);
 				$this->nicks_objs[$nick_undergoing]->addValue('kicked', 1);
 
-				if ($this->validateQuote($line)) {
+				if (strlen($line) <= 255) {
 					$this->nicks_objs[$nick_performing]->setValue('ex_kicks', $line);
 					$this->nicks_objs[$nick_undergoing]->setValue('ex_kicked', $line);
 				}
@@ -438,9 +438,8 @@ abstract class Parser
 			$this->l_total++;
 			$this->nicks_objs[$nick]->addValue('l_'.$hour, 1);
 			$this->nicks_objs[$nick]->addValue('l_total', 1);
-			$validateQuote = $this->validateQuote($line);
 
-			if ($validateQuote) {
+			if (strlen($line) <= 255) {
 				if (strlen($line) >= $this->quote_prefLen) {
 					$this->nicks_objs[$nick]->addQuote('quote', 'long', $line);
 				} else {
@@ -451,7 +450,7 @@ abstract class Parser
 			if (strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
 				$this->nicks_objs[$nick]->addValue('uppercased', 1);
 
-				if ($validateQuote) {
+				if (strlen($line) <= 255) {
 					if (strlen($line) >= $this->quote_prefLen) {
 						$this->nicks_objs[$nick]->addQuote('ex_uppercased', 'long', $line);
 					} else {
@@ -463,7 +462,7 @@ abstract class Parser
 			if (preg_match('/!$/', $line)) {
 				$this->nicks_objs[$nick]->addValue('exclamations', 1);
 
-				if ($validateQuote) {
+				if (strlen($line) <= 255) {
 					if (strlen($line) >= $this->quote_prefLen) {
 						$this->nicks_objs[$nick]->addQuote('ex_exclamations', 'long', $line);
 					} else {
@@ -473,7 +472,7 @@ abstract class Parser
 			} elseif (preg_match('/\?$/', $line)) {
 				$this->nicks_objs[$nick]->addValue('questions', 1);
 
-				if ($validateQuote) {
+				if (strlen($line) <= 255) {
 					if (strlen($line) >= $this->quote_prefLen) {
 						$this->nicks_objs[$nick]->addQuote('ex_questions', 'long', $line);
 					} else {
@@ -644,18 +643,6 @@ abstract class Parser
 	final private function validateNick($csNick)
 	{
 		if (preg_match('/^[]\[\^\{}\|\\\`_0-9a-z-]{'.$this->nick_minLen.','.($this->nick_maxLen <= 255 ? $this->nick_maxLen : 255).'}$/i', $csNick)) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
-	}
-
-	/**
-	 * Validate a given quote. All non printable ISO-8859-1 characters are already stripped from the lines. Maximum length should not exceed 255 so it fits in the database field.
-	 */
-	final private function validateQuote($line)
-	{
-		if (strlen($line) <= 255) {
 			return TRUE;
 		} else {
 			return FALSE;
