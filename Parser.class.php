@@ -497,7 +497,7 @@ abstract class Parser
 					 */
 					$csURL = preg_replace('/^www\./i', 'http://$0', $csWord);
 
-					if ($this->validateURL($csURL)) {
+					if (strlen($csURL) <= 255 && $this->URLTools->validateURL($csURL)) {
 						$csURL = $this->URLTools->normalizeURL($csURL);
 						$this->nicks_objs[$nick]->addURL($csURL, $dateTime);
 						$this->nicks_objs[$nick]->addValue('URLs', 1);
@@ -631,18 +631,6 @@ abstract class Parser
 	final private function validateNick($csNick)
 	{
 		if (preg_match('/^[]\[\^\{}\|\\\`_0-9a-z-]{'.$this->nick_minLen.','.($this->nick_maxLen <= 255 ? $this->nick_maxLen : 255).'}$/i', $csNick)) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
-	}
-
-	/**
-	 * Validate a given URL. URL validation is done by an external class. Maximum length should not exceed 255 so it fits in the database field.
-	 */
-	final private function validateURL($csURL)
-	{
-		if (strlen($csURL) <= 255 && $this->URLTools->validateURL($csURL)) {
 			return TRUE;
 		} else {
 			return FALSE;
