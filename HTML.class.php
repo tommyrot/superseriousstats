@@ -1004,25 +1004,25 @@ final class HTML
 
 		switch ($type) {
 			case 'debug':
-				if ($this->outputLevel >= 4) {
+				if ($this->outputLevel & 8) {
 					echo $dateTime.' [debug] '.$msg."\n";
 				}
 
 				break;
 			case 'notice':
-				if ($this->outputLevel >= 3) {
+				if ($this->outputLevel & 4) {
 					echo $dateTime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
-				if ($this->outputLevel >= 2) {
+				if ($this->outputLevel & 2) {
 					echo $dateTime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
-				if ($this->outputLevel >= 1) {
+				if ($this->outputLevel & 1) {
 					echo $dateTime.' [critical] '.$msg."\n";
 				}
 

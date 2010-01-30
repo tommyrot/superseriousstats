@@ -29,15 +29,16 @@ final class nicklinker
 	private $outputLevel = 1;
 
 	/**
-	 * Other variables that shouldn't be tampered with.
+	 * Variables that shouldn't be tampered with.
 	 */
 	private $settings = array();
-	private $settings_list = array('db_host' => 'string'
-			              ,'db_name' => 'string'
-				      ,'db_pass' => 'string'
-				      ,'db_port' => 'int'
-				      ,'db_user' => 'string'
-				      ,'outputLevel' => 'int');
+	private $settings_list = array(
+		'db_host' => 'string',
+		'db_name' => 'string',
+		'db_pass' => 'string',
+		'db_port' => 'int',
+		'db_user' => 'string',
+		'outputLevel' => 'int');
 	private $settings_required_list = array('db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'timezone');
 
 	/**
@@ -200,20 +201,26 @@ final class nicklinker
 		}
 
 		switch ($type) {
+			case 'debug':
+				if ($this->outputLevel & 8) {
+					echo $dateTime.' [debug] '.$msg."\n";
+				}
+
+				break;
 			case 'notice':
-				if ($this->outputLevel >= 3) {
+				if ($this->outputLevel & 4) {
 					echo $dateTime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
-				if ($this->outputLevel >= 2) {
+				if ($this->outputLevel & 2) {
 					echo $dateTime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
-				if ($this->outputLevel >= 1) {
+				if ($this->outputLevel & 1) {
 					echo $dateTime.' [critical] '.$msg."\n";
 				}
 
