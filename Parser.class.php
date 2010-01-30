@@ -482,15 +482,14 @@ abstract class Parser
 				}
 			}
 
-			$lineParts = explode(' ', $line);
+			/**
+			 * The "words" counter below has no relation with the real words which are stored in the database.
+			 * It simply counts all character groups separated by whitespace.
+			 */
+			$words = explode(' ', $line);
+			$this->nicks_objs[$nick]->addValue('words', count($words));
 
-			foreach ($lineParts as $csWord) {
-				/**
-				 * The "words" counter below has no relation with the real words which are stored in the database.
-				 * It simply counts all character groups separated by whitespace.
-				 */
-				$this->nicks_objs[$nick]->addValue('words', 1);
-
+			foreach ($words as $csWord) {
 				if (preg_match('/^(=[]\)]|;([]\(\)xp]|-\))|:([]\/\(\)\\\>xpd]|-\))|\\\o\/)$/i', $csWord)) {
 					$this->nicks_objs[$nick]->addValue($this->smileys[strtolower($csWord)], 1);
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csWord)) {
