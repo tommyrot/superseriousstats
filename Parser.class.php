@@ -291,7 +291,7 @@ abstract class Parser
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('joins', 1);
 
-			if ($this->validateHost($csHost)) {
+			if (strlen($csHost) <= 255) {
 				$this->nicks_objs[$nick]->addHost($csHost);
 			} else {
 				$this->output('warning', 'setJoin(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
@@ -355,7 +355,7 @@ abstract class Parser
 				}
 
 				if (!is_null($csHost)) {
-					if ($this->validateHost($csHost)) {
+					if (strlen($csHost) <= 255) {
 						$this->nicks_objs[$nick_performing]->addHost($csHost);
 					} else {
 						$this->output('warning', 'setMode(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
@@ -526,7 +526,7 @@ abstract class Parser
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('parts', 1);
 
-			if ($this->validateHost($csHost)) {
+			if (strlen($csHost) <= 255) {
 				$this->nicks_objs[$nick]->addHost($csHost);
 			} else {
 				$this->output('warning', 'setPart(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
@@ -545,7 +545,7 @@ abstract class Parser
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('quits', 1);
 
-			if ($this->validateHost($csHost)) {
+			if (strlen($csHost) <= 255) {
 				$this->nicks_objs[$nick]->addHost($csHost);
 			} else {
 				$this->output('warning', 'setQuit(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
@@ -599,7 +599,7 @@ abstract class Parser
 			$this->nicks_objs[$nick]->addValue('topics', 1);
 
 			if (!is_null($csHost)) {
-				if ($this->validateHost($csHost)) {
+				if (strlen($csHost) <= 255) {
 					$this->nicks_objs[$nick]->addHost($csHost);
 				} else {
 					$this->output('warning', 'setTopic(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
@@ -623,18 +623,6 @@ abstract class Parser
 	final public function setValue($var, $value)
 	{
 		$this->$var = $value;
-	}
-
-	/**
-	 * Validate a given host. Networks may spoof hosts in various ways. Maximum length should not exceed 255 so it fits in the database field.
-	 */
-	final private function validateHost($csHost)
-	{
-		if (strlen($csHost) <= 255) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
 	}
 
 	/**
