@@ -246,6 +246,8 @@ final class sss
 	 */
 	private function readConfig($file)
 	{
+		$this->output('notice', 'readConfig(): using config: \''.$file.'\'');
+
 		if (($rp = realpath($file)) !== FALSE) {
 			if (($fp = @fopen($rp, 'rb')) !== FALSE) {
 				while (!feof($fp)) {

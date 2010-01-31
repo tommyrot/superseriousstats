@@ -134,9 +134,10 @@ final class Parser_Eggdrop extends Parser
 			 */
 			if ($this->repeating) {
 				return;
+			} else {
+				$this->repeating = TRUE;
 			}
 
-			$this->repeating = TRUE;
 			$this->lineNum--;
 			$this->output('notice', 'parseLine(): repeating line '.$this->lineNum.': '.(($matches['num'] == 1) ? $matches['num'].' time' : $matches['num'].' times'));
 
@@ -144,14 +145,14 @@ final class Parser_Eggdrop extends Parser
 				$this->parseLine($this->prevLine);
 			}
 
-			$this->repeating = FALSE;
 			$this->lineNum++;
+			$this->repeating = FALSE;
 
 		/**
 		 * Skip everything else.
 		 */
 		} else {
-			$this->output('notice', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
+			$this->output('debug', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
 		}
 	}
 }
