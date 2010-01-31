@@ -37,7 +37,7 @@ final class HTML
         private $db_user = '';
 	private $minLines = 500;
 	private $minRows = 3;
-	private $outputbits = 31;
+	private $sectionbits = 31;
 	private $stylesheet = 'default.css';
 	private $userstats = FALSE;
 
@@ -68,7 +68,7 @@ final class HTML
 		'db_user' => 'string',
 		'minLines' => 'int',
 		'minRows' => 'int',
-		'outputbits' => 'int',
+		'sectionbits' => 'int',
 		'stylesheet' => 'string',
 		'userstats' => 'bool');
 	private $year = '';
@@ -194,7 +194,7 @@ final class HTML
 		/**
 		 * Activity section
 		 */
-		if ($this->outputbits & 1) {
+		if ($this->sectionbits & 1) {
 			$this->output .= '<div class="head">Activity</div>'."\n";
 			$this->output .= $this->makeTable_MostActiveTimes(array('head' => 'Most Active Times'));
 			$this->output .= $this->makeTable_Activity(array('type' => 'days', 'head' => 'Daily Activity'));
@@ -210,7 +210,7 @@ final class HTML
 		/**
 		 * General Chat section
 		 */
-		if ($this->outputbits & 2) {
+		if ($this->sectionbits & 2) {
 			$output = '';
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Talkative Chatters', 'key1' => 'Lines/Day', 'key2' => 'User', 'decimals' => 1, 'percentage' => FALSE, 'query' => 'SELECT (`l_total` / `activeDays`) AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Fluent Chatters', 'key1' => 'Words/Line', 'key2' => 'User', 'decimals' => 1, 'percentage' => FALSE, 'query' => 'SELECT (`words` / `l_total`) AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
@@ -242,7 +242,7 @@ final class HTML
 		/**
 		 * Modes section
 		 */
-		if ($this->outputbits & 4) {
+		if ($this->sectionbits & 4) {
 			$output = '';
 			$modes = array('Most Ops \'+o\', Given' => array('Ops', 'm_op')
 				      ,'Most Ops \'+o\', Received' => array('Ops', 'm_opped')
@@ -265,7 +265,7 @@ final class HTML
 		/**
 		 * Events section
 		 */
-		if ($this->outputbits & 8) {
+		if ($this->sectionbits & 8) {
 			$output = '';
 			$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most Kicks', 'key1' => 'Kicks', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `kicks` AS `v1`, `csNick` AS `v2`, `ex_kicks` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicks` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`kicks`) AS `total` FROM `query_events`'));
 			$output .= $this->makeTable(array('size' => 'large', 'rows' => 5, 'head' => 'Most Kicked', 'key1' => 'Kicked', 'key2' => 'User', 'key3' => 'Example', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `kicked` AS `v1`, `csNick` AS `v2`, `ex_kicked` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `kicked` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`kicked`) AS `total` FROM `query_events`'));
@@ -285,7 +285,7 @@ final class HTML
 		/**
 		 * Smileys section
 		 */
-		if ($this->outputbits & 16) {
+		if ($this->sectionbits & 16) {
 			$output = '';
 			$smileys = array('Big Cheerful Smile' => array('=]', 's_01')
 					,'Cheerful Smile' => array('=)', 's_02')
@@ -1004,25 +1004,25 @@ final class HTML
 
 		switch ($type) {
 			case 'debug':
-				if ($this->outputLevel & 8) {
+				if ($this->outputbits & 8) {
 					echo $dateTime.' [debug] '.$msg."\n";
 				}
 
 				break;
 			case 'notice':
-				if ($this->outputLevel & 4) {
+				if ($this->outputbits & 4) {
 					echo $dateTime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
-				if ($this->outputLevel & 2) {
+				if ($this->outputbits & 2) {
 					echo $dateTime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
-				if ($this->outputLevel & 1) {
+				if ($this->outputbits & 1) {
 					echo $dateTime.' [critical] '.$msg."\n";
 				}
 

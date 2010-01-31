@@ -26,7 +26,8 @@ final class sss
 	private $logfileFormat = '';
 	private $logfilePrefix = '';
 	private $logfileSuffix = '';
-	private $outputLevel = 1;
+	private $outputbits = 1;
+	private $timezone = '';
 	private $writeData = TRUE;
 
 	/**
@@ -39,7 +40,8 @@ final class sss
 		'logfileFormat' => 'string',
 		'logfilePrefix' => 'string',
 		'logfileSuffix' => 'string',
-		'outputLevel' => 'int',
+		'outputbits' => 'int',
+		'timezone' => 'string',
 		'writeData' => 'bool');
 	private $settings_required_list = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'logfileDateFormat', 'logfileFormat', 'logfilePrefix', 'logfileSuffix', 'timezone');
 
@@ -68,7 +70,7 @@ final class sss
 			}
 
 			if (array_key_exists('b', $options)) {
-				$this->settings['outputbits'] = $options['b'];
+				$this->settings['sectionBits'] = $options['b'];
 			}
 
 			if (array_key_exists('i', $options)) {
@@ -124,25 +126,25 @@ final class sss
 
 		switch ($type) {
 			case 'debug':
-				if ($this->outputLevel & 8) {
+				if ($this->outputbits & 8) {
 					echo $dateTime.' [debug] '.$msg."\n";
 				}
 
 				break;
 			case 'notice':
-				if ($this->outputLevel & 4) {
+				if ($this->outputbits & 4) {
 					echo $dateTime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
-				if ($this->outputLevel & 2) {
+				if ($this->outputbits & 2) {
 					echo $dateTime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
-				if ($this->outputLevel & 1) {
+				if ($this->outputbits & 1) {
 					echo $dateTime.' [critical] '.$msg."\n";
 				}
 
@@ -155,7 +157,7 @@ final class sss
 	 */
 	private function parseLog($filedir)
 	{
-		$filedir = preg_replace('/YESTERDAY/', date($this->settings['logfileDateFormat'], strtotime('yesterday')), $filedir);
+		$filedir = preg_replace('/YESTERDAY/', date($this->logfileDateFormat, strtotime('yesterday')), $filedir);
 
 		if (($rp = realpath($filedir)) !== FALSE) {
 			if (is_dir($rp)) {
@@ -180,8 +182,8 @@ final class sss
 			$needMaintenance = FALSE;
 
 			foreach ($logfiles as $logfile) {
-				if ((empty($this->settings['logfilePrefix']) || stripos(basename($logfile), $this->settings['logfilePrefix']) !== FALSE) && (empty($this->settings['logfileSuffix']) || stripos(basename($logfile), $this->settings['logfileSuffix']) !== FALSE)) {
-					$date = str_replace(array($this->settings['logfilePrefix'], $this->settings['logfileSuffix']), '', basename($logfile));
+				if ((empty($this->logfilePrefix) || stripos(basename($logfile), $this->logfilePrefix) !== FALSE) && (empty($this->logfileSuffix) || stripos(basename($logfile), $this->logfileSuffix) !== FALSE)) {
+					$date = str_replace(array($this->logfilePrefix, $this->logfileSuffix), '', basename($logfile));
 					$date = date('Y-m-d', strtotime($date));
 
 					if ($date == date('Y-m-d')) {
@@ -195,7 +197,7 @@ final class sss
 						}
 					}
 
-					$parser_class = 'Parser_'.$this->settings['logfileFormat'];
+					$parser_class = 'Parser_'.$this->logfileFormat;
 					$parser = new $parser_class($this->settings);
 					$parser->setValue('date', $date);
 					$parser->parseLog($logfile);
@@ -220,10 +222,10 @@ final class sss
 	 */
 	private function printManual()
 	{
-		$man = 'usage: php sss.php [-c <config>] [-i <logfile|logdir>] [-o <statspage> [-b <outputbits>]]'."\n"
+		$man = 'usage: php sss.php [-c <config>] [-i <logfile|logdir>] [-o <statspage> [-b <sectionbits>]]'."\n"
 		     . '       php sss.php [-c <config>] [-m]'."\n\n"
 		     . 'the options are:'."\n"
-		     . '       -b	set <outputbits>, add up the bits corresponding to the sections'."\n"
+		     . '       -b	set <sectionbits>, add up the bits corresponding to the sections'."\n"
 		     . '		you want to be included on the statspage:'."\n"
 		     . '		     1  activity'."\n"
 		     . '		     2  general chat'."\n"
@@ -286,10 +288,10 @@ final class sss
 					}
 				}
 
-				if (date_default_timezone_set($this->settings['timezone']) !== FALSE) {
-					$this->output('notice', 'readConfig(): switched to timezone: \''.$this->settings['timezone'].'\'');
+				if (date_default_timezone_set($this->timezone) !== FALSE) {
+					$this->output('notice', 'readConfig(): switched to timezone: \''.$this->timezone.'\'');
 				} else {
-					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->settings['timezone'].'\'');
+					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
 				}
 			} else {
 				$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');

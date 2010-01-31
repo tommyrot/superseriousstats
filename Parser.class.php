@@ -32,7 +32,7 @@ abstract class Parser
 	private $minStreak = 5;
 	private $nick_maxLen = 255;
 	private $nick_minLen = 1;
-	private $outputLevel = 1;
+	private $outputbits = 1;
 	private $quote_prefLen = 25;
 	private $wordTracking = FALSE;
 
@@ -86,7 +86,7 @@ abstract class Parser
 		'minStreak' => 'int',
 		'nick_maxLen' => 'int',
 		'nick_minLen' => 'int',
-		'outputLevel' => 'int',
+		'outputbits' => 'int',
 		'quote_prefLen' => 'int',
 		'wordTracking' => 'bool');
 	private $smileys = array(
@@ -201,25 +201,25 @@ abstract class Parser
 
 		switch ($type) {
 			case 'debug':
-				if ($this->outputLevel & 8) {
+				if ($this->outputbits & 8) {
 					echo $dateTime.' [debug] '.$msg."\n";
 				}
 
 				break;
 			case 'notice':
-				if ($this->outputLevel & 4) {
+				if ($this->outputbits & 4) {
 					echo $dateTime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
-				if ($this->outputLevel & 2) {
+				if ($this->outputbits & 2) {
 					echo $dateTime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
-				if ($this->outputLevel & 1) {
+				if ($this->outputbits & 1) {
 					echo $dateTime.' [critical] '.$msg."\n";
 				}
 
