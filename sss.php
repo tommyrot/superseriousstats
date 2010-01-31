@@ -70,7 +70,7 @@ final class sss
 			}
 
 			if (array_key_exists('b', $options)) {
-				$this->settings['sectionBits'] = $options['b'];
+				$this->settings['sectionbits'] = $options['b'];
 			}
 
 			if (array_key_exists('i', $options)) {

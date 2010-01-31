@@ -286,10 +286,10 @@ final class nicklinker
 					}
 				}
 
-				if (date_default_timezone_set($this->settings['timezone']) !== FALSE) {
-					$this->output('notice', 'readConfig(): switched to timezone: \''.$this->settings['timezone'].'\'');
+				if (date_default_timezone_set($this->timezone) !== FALSE) {
+					$this->output('notice', 'readConfig(): switched to timezone: \''.$this->timezone.'\'');
 				} else {
-					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->settings['timezone'].'\'');
+					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
 				}
 			} else {
 				$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
