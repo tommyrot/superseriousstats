@@ -168,7 +168,7 @@ final class Nick
 	private $s_19 = 0;
 
 	/**
-	 * Other variables that shouldn't be tampered with.
+	 * Variables that shouldn't be tampered with.
 	 */
 	private $UID = 0;
 	private $date = '';
