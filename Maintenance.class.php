@@ -38,7 +38,7 @@ final class Maintenance
         private $db_pass = '';
         private $db_port = 0;
         private $db_user = '';
-        private $outputLevel = 1;
+        private $outputbits = 1;
         private $sanitisationDay = 'mon';
 
 	/**
@@ -51,7 +51,7 @@ final class Maintenance
 		'db_pass' => 'string',
 		'db_port' => 'int',
 		'db_user' => 'string',
-		'outputLevel' => 'int',
+		'outputbits' => 'int',
 		'sanitisationDay' => 'string');
 
 	/**
@@ -308,25 +308,25 @@ final class Maintenance
 
 		switch ($type) {
 			case 'debug':
-				if ($this->outputLevel & 8) {
+				if ($this->outputbits & 8) {
 					echo $dateTime.' [debug] '.$msg."\n";
 				}
 
 				break;
 			case 'notice':
-				if ($this->outputLevel & 4) {
+				if ($this->outputbits & 4) {
 					echo $dateTime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
-				if ($this->outputLevel & 2) {
+				if ($this->outputbits & 2) {
 					echo $dateTime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
-				if ($this->outputLevel & 1) {
+				if ($this->outputbits & 1) {
 					echo $dateTime.' [critical] '.$msg."\n";
 				}
 
