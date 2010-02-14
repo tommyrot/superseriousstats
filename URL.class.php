@@ -19,7 +19,7 @@
 /**
  * Class for handling URL data.
  */
-final class URL
+final class URL extends Base
 {
 	/**
 	 * Variables used in database table "user_URLs".
@@ -38,14 +38,6 @@ final class URL
 	}
 
         /**
-         * Add a value to a variable.
-         */
-	public function addValue($var, $value)
-	{
-		$this->$var += $value;
-	}
-
-        /**
          * Store the date and time the URL was first and last typed in the channel.
          */
 	public function lastUsed($dateTime)
@@ -57,14 +49,6 @@ final class URL
 		if ($this->lastUsed == '' || $dateTime > $this->lastUsed) {
 			$this->lastUsed = $dateTime;
 		}
-	}
-
-        /**
-         * Set the value of a variable.
-         */
-	public function setValue($var, $value)
-	{
-		$this->$var = $value;
 	}
 
 	/**

@@ -19,7 +19,7 @@
 /**
  * Class for handling user data.
  */
-final class Nick
+final class Nick extends Base
 {
 	/**
 	 * Variables used in database table "user_details".
@@ -244,22 +244,6 @@ final class Nick
 	}
 
         /**
-         * Add a value to a variable.
-         */
-	public function addValue($var, $value)
-	{
-		$this->$var += $value;
-	}
-
-        /**
-         * Get the value of a variable.
-         */
-	public function getValue($var)
-	{
-		return $this->$var;
-	}
-
-        /**
          * Store the date and time the user was first and last seen.
          */
 	public function lastSeen($dateTime)
@@ -298,14 +282,6 @@ final class Nick
 				$this->$type = $this->{'short_'.$type.'_list'}[mt_rand(0, count($this->{'short_'.$type.'_list'}) - 1)];
 			}
 		}
-	}
-
-        /**
-         * Set the value of a variable.
-         */
-	public function setValue($var, $value)
-	{
-		$this->$var = $value;
 	}
 
 	/**

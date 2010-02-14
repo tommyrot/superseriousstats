@@ -19,7 +19,7 @@
 /**
  * General parse instructions. This class will be extended by a class with logfile format specific parse instructions.
  */
-abstract class Parser
+abstract class Parser extends Base
 {
 	/**
 	 * Default settings, can be overridden in the config file.
@@ -32,7 +32,6 @@ abstract class Parser
 	private $minStreak = 5;
 	private $nick_maxLen = 255;
 	private $nick_minLen = 1;
-	private $outputbits = 1;
 	private $quote_prefLen = 25;
 	private $wordTracking = FALSE;
 
@@ -76,7 +75,6 @@ abstract class Parser
 	private $nicks_list = array();
 	private $nicks_objs = array();
 	private $prevNick = '';
-	private $prevOutput = array();
 	private $settings_list = array(
 		'db_host' => 'string',
 		'db_name' => 'string',
@@ -177,54 +175,6 @@ abstract class Parser
 		}
 
 		$this->words_objs[$word]->addValue('total', 1);
-	}
-
-	/**
-	 * Output given messages to the console.
-	 */
-	final protected function output($type, $msg)
-	{
-		/**
-		 * Don't output the same thing twice, like mode errors and repeated lines.
-		 */
-		if (in_array($msg, $this->prevOutput)) {
-			return;
-		} else {
-			$this->prevOutput[] = $msg;
-		}
-
-		$dateTime = date('M d H:i:s');
-
-		if (substr($dateTime, 4, 1) === '0') {
-			$dateTime = substr_replace($dateTime, ' ', 4, 1);
-		}
-
-		switch ($type) {
-			case 'debug':
-				if ($this->outputbits & 8) {
-					echo $dateTime.' [debug] '.$msg."\n";
-				}
-
-				break;
-			case 'notice':
-				if ($this->outputbits & 4) {
-					echo $dateTime.' [notice] '.$msg."\n";
-				}
-
-				break;
-			case 'warning':
-				if ($this->outputbits & 2) {
-					echo $dateTime.' [warning] '.$msg."\n";
-				}
-
-				break;
-			case 'critical':
-				if ($this->outputbits & 1) {
-					echo $dateTime.' [critical] '.$msg."\n";
-				}
-
-				exit;
-		}
 	}
 
 	/**
@@ -615,14 +565,6 @@ abstract class Parser
 		} else {
 			$this->output('warning', 'setTopic(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 		}
-	}
-
-	/**
-	 * Set the value of a variable.
-	 */
-	final public function setValue($var, $value)
-	{
-		$this->$var = $value;
 	}
 
 	/**

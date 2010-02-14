@@ -28,7 +28,7 @@
  * The registered user has the same RUID as UID and can be identified accordingly.
  * Its aliases have their own unique UID and a RUID which is set to the UID of the registered user.
  */
-final class Maintenance
+final class Maintenance extends Base
 {
 	/**
 	 * Default settings, can be overridden in the config file.
@@ -38,7 +38,6 @@ final class Maintenance
         private $db_pass = '';
         private $db_port = 0;
         private $db_user = '';
-        private $outputbits = 1;
         private $sanitisationDay = 'mon';
 
 	/**
@@ -292,45 +291,6 @@ final class Maintenance
 			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `channel`, `user_activity`, `user_details`, `user_events`, `user_hosts`, `user_lines`, `user_smileys`, `user_status`, `user_topics`, `user_URLs`, `words`, `query_events`, `query_lines`, `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		} else {
 			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `query_events`, `query_lines`, `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		}
-	}
-
-	/**
-	 * Output given messages to the console.
-	 */
-	private function output($type, $msg)
-	{
-		$dateTime = date('M d H:i:s');
-
-		if (substr($dateTime, 4, 1) === '0') {
-			$dateTime = substr_replace($dateTime, ' ', 4, 1);
-		}
-
-		switch ($type) {
-			case 'debug':
-				if ($this->outputbits & 8) {
-					echo $dateTime.' [debug] '.$msg."\n";
-				}
-
-				break;
-			case 'notice':
-				if ($this->outputbits & 4) {
-					echo $dateTime.' [notice] '.$msg."\n";
-				}
-
-				break;
-			case 'warning':
-				if ($this->outputbits & 2) {
-					echo $dateTime.' [warning] '.$msg."\n";
-				}
-
-				break;
-			case 'critical':
-				if ($this->outputbits & 1) {
-					echo $dateTime.' [critical] '.$msg."\n";
-				}
-
-				exit;
 		}
 	}
 
