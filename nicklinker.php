@@ -16,7 +16,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-final class nicklinker
+/**
+ * Class for linking nicks.
+ */
+final class nicklinker extends Base
 {
 	/**
 	 * Default settings, can be overridden in the config file.
@@ -26,7 +29,6 @@ final class nicklinker
         private $db_pass = '';
         private $db_port = 0;
         private $db_user = '';
-	private $outputbits = 1;
 	private $timezone = '';
 
 	/**
@@ -192,45 +194,6 @@ final class nicklinker
 	}
 
 	/**
-	 * Output given messages to the console.
-	 */
-	private function output($type, $msg)
-	{
-		$dateTime = date('M d H:i:s');
-
-		if (substr($dateTime, 4, 1) === '0') {
-			$dateTime = substr_replace($dateTime, ' ', 4, 1);
-		}
-
-		switch ($type) {
-			case 'debug':
-				if ($this->outputbits & 8) {
-					echo $dateTime.' [debug] '.$msg."\n";
-				}
-
-				break;
-			case 'notice':
-				if ($this->outputbits & 4) {
-					echo $dateTime.' [notice] '.$msg."\n";
-				}
-
-				break;
-			case 'warning':
-				if ($this->outputbits & 2) {
-					echo $dateTime.' [warning] '.$msg."\n";
-				}
-
-				break;
-			case 'critical':
-				if ($this->outputbits & 1) {
-					echo $dateTime.' [critical] '.$msg."\n";
-				}
-
-				exit;
-		}
-	}
-
-	/**
 	 * Print the manual and exit.
 	 */
 	private function printManual()
@@ -306,6 +269,14 @@ if (substr(phpversion(), 0, 3) != '5.3') {
 
 if (!extension_loaded('mysqli')) {
 	exit('MySQLi extension isn\'t loaded'."\n");
+}
+
+/**
+ * Class autoloader.
+ */
+function __autoload($class)
+{
+	require_once(dirname(__FILE__).'/'.$class.'.class.php');
 }
 
 $nicklinker = new nicklinker();

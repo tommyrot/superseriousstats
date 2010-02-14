@@ -19,7 +19,7 @@
 /**
  * Class for handling word data.
  */
-final class Word
+final class Word extends Base
 {
 	/**
 	 * Variables used in database table "user_words".
@@ -33,14 +33,6 @@ final class Word
 	public function __construct($word)
 	{
 		$this->word = $word;
-	}
-
-        /**
-         * Add a value to a variable.
-         */
-	public function addValue($var, $value)
-	{
-		$this->$var += $value;
 	}
 
 	/**

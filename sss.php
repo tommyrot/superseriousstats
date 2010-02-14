@@ -16,7 +16,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-final class sss
+/**
+ * Class for controlling all features of the program.
+ */
+final class sss extends Base
 {
 	/**
 	 * Default settings, can be overridden in the config file.
@@ -26,7 +29,6 @@ final class sss
 	private $logfileFormat = '';
 	private $logfilePrefix = '';
 	private $logfileSuffix = '';
-	private $outputbits = 1;
 	private $timezone = '';
 	private $writeData = TRUE;
 
@@ -110,45 +112,6 @@ final class sss
 			fclose($fp);
 		} else {
 			$this->output('critical', 'makeHTML(): failed to open file: \''.$file.'\'');
-		}
-	}
-
-	/**
-	 * Output given messages to the console.
-	 */
-	private function output($type, $msg)
-	{
-		$dateTime = date('M d H:i:s');
-
-		if (substr($dateTime, 4, 1) === '0') {
-			$dateTime = substr_replace($dateTime, ' ', 4, 1);
-		}
-
-		switch ($type) {
-			case 'debug':
-				if ($this->outputbits & 8) {
-					echo $dateTime.' [debug] '.$msg."\n";
-				}
-
-				break;
-			case 'notice':
-				if ($this->outputbits & 4) {
-					echo $dateTime.' [notice] '.$msg."\n";
-				}
-
-				break;
-			case 'warning':
-				if ($this->outputbits & 2) {
-					echo $dateTime.' [warning] '.$msg."\n";
-				}
-
-				break;
-			case 'critical':
-				if ($this->outputbits & 1) {
-					echo $dateTime.' [critical] '.$msg."\n";
-				}
-
-				exit;
 		}
 	}
 
