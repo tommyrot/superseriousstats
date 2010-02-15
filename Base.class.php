@@ -22,11 +22,15 @@
 abstract class Base
 {
 	/**
+	 * Default settings, can be overridden in the config file.
+	 */
+	protected $outputbits = 1;
+
+	/**
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $prevOutput = array();
-	protected $outputbits = 1;
-	
+
         /**
          * Add a value to a variable.
          */
