@@ -87,6 +87,7 @@ final class nicklinker extends Base
 	private function export($file)
 	{
 		if (($fp = @fopen($file, 'wb')) !== FALSE) {
+			$this->output('notice', 'export(): exporting nicks');
 			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
 			$query = @mysqli_query($mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 			$rows = mysqli_num_rows($query);
@@ -128,6 +129,7 @@ final class nicklinker extends Base
 
 			fwrite($fp, $output);
 			fclose($fp);
+			$this->output('notice', 'export(): export completed');
 		} else {
 			$this->output('critical', 'export(): failed to open file: \''.$file.'\'');
 		}
@@ -140,6 +142,7 @@ final class nicklinker extends Base
 	{
 		if (($rp = realpath($file)) !== FALSE) {
 			if (($fp = @fopen($rp, 'rb')) !== FALSE) {
+				$this->output('notice', 'import(): importing nicks');
 				$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
 				$query = @mysqli_query($mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 				$rows = mysqli_num_rows($query);
@@ -185,6 +188,7 @@ final class nicklinker extends Base
 				}
 
 				fclose($fp);
+				$this->output('notice', 'import(): import completed');
 			} else {
 				$this->output('critical', 'import(): failed to open file: \''.$file.'\'');
 			}
