@@ -114,6 +114,7 @@ final class HTML extends Base
 	 */
 	public function makeHTML()
 	{
+		$this->output('notice', 'makeHTML(): creating statspage');
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
 		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query_l_total);
@@ -327,9 +328,9 @@ final class HTML extends Base
 		 */
 		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
 		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
-		return $this->output;
-
 		@mysqli_close($this->mysqli);
+		$this->output('notice', 'makeHTML(): finished creating statspage');
+		return $this->output;
 	}
 
 	/**
