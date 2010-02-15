@@ -287,7 +287,7 @@ final class Maintenance extends Base
 	 */
 	private function optimizeTables()
 	{
-		if (strtolower($this->sanitisationDay) == strtolower(date('D'))) {
+		if (strcasecmp($this->sanitisationDay, date('D')) == 0) {
 			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `channel`, `user_activity`, `user_details`, `user_events`, `user_hosts`, `user_lines`, `user_smileys`, `user_status`, `user_topics`, `user_URLs`, `words`, `query_events`, `query_lines`, `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		} else {
 			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `query_events`, `query_lines`, `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
