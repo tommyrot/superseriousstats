@@ -24,10 +24,10 @@ final class URL extends Base
 	/**
 	 * Variables used in database table "user_URLs".
 	 */
-	private $csURL = '';
-	private $total = 0;
-	private $firstUsed = '';
-	private $lastUsed = '';
+	protected $csURL = '';
+	protected $total = 0;
+	protected $firstUsed = '';
+	protected $lastUsed = '';
 
 	/**
 	 * Constructor.

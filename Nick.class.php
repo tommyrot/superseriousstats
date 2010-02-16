@@ -24,9 +24,9 @@ final class Nick extends Base
 	/**
 	 * Variables used in database table "user_details".
 	 */
-	private $csNick = '';
-	private $firstSeen = '';
-	private $lastSeen = '';
+	protected $csNick = '';
+	protected $firstSeen = '';
+	protected $lastSeen = '';
 
 	/**
 	 * Variables used in database table "user_hosts".
@@ -47,131 +47,130 @@ final class Nick extends Base
 	/**
 	 * Variables used in database table "user_events".
 	 */
-	private $m_op = 0;
-	private $m_opped = 0;
-	private $m_voice = 0;
-	private $m_voiced = 0;
-	private $m_deOp = 0;
-	private $m_deOpped = 0;
-	private $m_deVoice = 0;
-	private $m_deVoiced = 0;
-	private $joins = 0;
-	private $parts = 0;
-	private $quits = 0;
-	private $kicks = 0;
-	private $kicked = 0;
-	private $nickchanges = 0;
-	private $topics = 0;
-	private $ex_kicks = '';
-	private $ex_kicked = '';
+	protected $m_op = 0;
+	protected $m_opped = 0;
+	protected $m_voice = 0;
+	protected $m_voiced = 0;
+	protected $m_deOp = 0;
+	protected $m_deOpped = 0;
+	protected $m_deVoice = 0;
+	protected $m_deVoiced = 0;
+	protected $joins = 0;
+	protected $parts = 0;
+	protected $quits = 0;
+	protected $kicks = 0;
+	protected $kicked = 0;
+	protected $nickchanges = 0;
+	protected $topics = 0;
+	protected $ex_kicks = '';
+	protected $ex_kicked = '';
 
 	/**
 	 * Variables used in database table "user_lines".
 	 */
-	private $l_00 = 0;
-	private $l_01 = 0;
-	private $l_02 = 0;
-	private $l_03 = 0;
-	private $l_04 = 0;
-	private $l_05 = 0;
-	private $l_06 = 0;
-	private $l_07 = 0;
-	private $l_08 = 0;
-	private $l_09 = 0;
-	private $l_10 = 0;
-	private $l_11 = 0;
-	private $l_12 = 0;
-	private $l_13 = 0;
-	private $l_14 = 0;
-	private $l_15 = 0;
-	private $l_16 = 0;
-	private $l_17 = 0;
-	private $l_18 = 0;
-	private $l_19 = 0;
-	private $l_20 = 0;
-	private $l_21 = 0;
-	private $l_22 = 0;
-	private $l_23 = 0;
-	private $l_night = 0;
-	private $l_morning = 0;
-	private $l_afternoon = 0;
-	private $l_evening = 0;
-	private $l_total = 0;
-	private $l_mon_night = 0;
-	private $l_mon_morning = 0;
-	private $l_mon_afternoon = 0;
-	private $l_mon_evening = 0;
-	private $l_tue_night = 0;
-	private $l_tue_morning = 0;
-	private $l_tue_afternoon = 0;
-	private $l_tue_evening = 0;
-	private $l_wed_night = 0;
-	private $l_wed_morning = 0;
-	private $l_wed_afternoon = 0;
-	private $l_wed_evening = 0;
-	private $l_thu_night = 0;
-	private $l_thu_morning = 0;
-	private $l_thu_afternoon = 0;
-	private $l_thu_evening = 0;
-	private $l_fri_night = 0;
-	private $l_fri_morning = 0;
-	private $l_fri_afternoon = 0;
-	private $l_fri_evening = 0;
-	private $l_sat_night = 0;
-	private $l_sat_morning = 0;
-	private $l_sat_afternoon = 0;
-	private $l_sat_evening = 0;
-	private $l_sun_night = 0;
-	private $l_sun_morning = 0;
-	private $l_sun_afternoon = 0;
-	private $l_sun_evening = 0;
-	private $URLs = 0;
-	private $words = 0;
-	private $characters = 0;
-	private $monologues = 0;
-	private $topMonologue = 0;
-	private $activeDays = 0;
-	private $slaps = 0;
-	private $slapped = 0;
-	private $exclamations = 0;
-	private $questions = 0;
-	private $actions = 0;
-	private $uppercased = 0;
-	private $quote = '';
-	private $ex_exclamations = '';
-	private $ex_questions = '';
-	private $ex_actions = '';
-	private $ex_uppercased = '';
-	private $lastTalked = '';
+	protected $l_00 = 0;
+	protected $l_01 = 0;
+	protected $l_02 = 0;
+	protected $l_03 = 0;
+	protected $l_04 = 0;
+	protected $l_05 = 0;
+	protected $l_06 = 0;
+	protected $l_07 = 0;
+	protected $l_08 = 0;
+	protected $l_09 = 0;
+	protected $l_10 = 0;
+	protected $l_11 = 0;
+	protected $l_12 = 0;
+	protected $l_13 = 0;
+	protected $l_14 = 0;
+	protected $l_15 = 0;
+	protected $l_16 = 0;
+	protected $l_17 = 0;
+	protected $l_18 = 0;
+	protected $l_19 = 0;
+	protected $l_20 = 0;
+	protected $l_21 = 0;
+	protected $l_22 = 0;
+	protected $l_23 = 0;
+	protected $l_night = 0;
+	protected $l_morning = 0;
+	protected $l_afternoon = 0;
+	protected $l_evening = 0;
+	protected $l_total = 0;
+	protected $l_mon_night = 0;
+	protected $l_mon_morning = 0;
+	protected $l_mon_afternoon = 0;
+	protected $l_mon_evening = 0;
+	protected $l_tue_night = 0;
+	protected $l_tue_morning = 0;
+	protected $l_tue_afternoon = 0;
+	protected $l_tue_evening = 0;
+	protected $l_wed_night = 0;
+	protected $l_wed_morning = 0;
+	protected $l_wed_afternoon = 0;
+	protected $l_wed_evening = 0;
+	protected $l_thu_night = 0;
+	protected $l_thu_morning = 0;
+	protected $l_thu_afternoon = 0;
+	protected $l_thu_evening = 0;
+	protected $l_fri_night = 0;
+	protected $l_fri_morning = 0;
+	protected $l_fri_afternoon = 0;
+	protected $l_fri_evening = 0;
+	protected $l_sat_night = 0;
+	protected $l_sat_morning = 0;
+	protected $l_sat_afternoon = 0;
+	protected $l_sat_evening = 0;
+	protected $l_sun_night = 0;
+	protected $l_sun_morning = 0;
+	protected $l_sun_afternoon = 0;
+	protected $l_sun_evening = 0;
+	protected $URLs = 0;
+	protected $words = 0;
+	protected $characters = 0;
+	protected $monologues = 0;
+	protected $topMonologue = 0;
+	protected $activeDays = 0;
+	protected $slaps = 0;
+	protected $slapped = 0;
+	protected $exclamations = 0;
+	protected $questions = 0;
+	protected $actions = 0;
+	protected $uppercased = 0;
+	protected $quote = '';
+	protected $ex_exclamations = '';
+	protected $ex_questions = '';
+	protected $ex_actions = '';
+	protected $ex_uppercased = '';
+	protected $lastTalked = '';
 
 	/**
 	 * Variables used in database table "user_smileys".
 	 */
-	private $s_01 = 0;
-	private $s_02 = 0;
-	private $s_03 = 0;
-	private $s_04 = 0;
-	private $s_05 = 0;
-	private $s_06 = 0;
-	private $s_07 = 0;
-	private $s_08 = 0;
-	private $s_09 = 0;
-	private $s_10 = 0;
-	private $s_11 = 0;
-	private $s_12 = 0;
-	private $s_13 = 0;
-	private $s_14 = 0;
-	private $s_15 = 0;
-	private $s_16 = 0;
-	private $s_17 = 0;
-	private $s_18 = 0;
-	private $s_19 = 0;
+	protected $s_01 = 0;
+	protected $s_02 = 0;
+	protected $s_03 = 0;
+	protected $s_04 = 0;
+	protected $s_05 = 0;
+	protected $s_06 = 0;
+	protected $s_07 = 0;
+	protected $s_08 = 0;
+	protected $s_09 = 0;
+	protected $s_10 = 0;
+	protected $s_11 = 0;
+	protected $s_12 = 0;
+	protected $s_13 = 0;
+	protected $s_14 = 0;
+	protected $s_15 = 0;
+	protected $s_16 = 0;
+	protected $s_17 = 0;
+	protected $s_18 = 0;
+	protected $s_19 = 0;
 
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $UID = 0;
-	private $date = '';
 	private $long_ex_actions_list = array();
 	private $long_ex_exclamations_list = array();
 	private $long_ex_questions_list = array();
@@ -187,6 +186,7 @@ final class Nick extends Base
 	private $user_lines = array('UID', 'l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'URLs', 'words', 'characters', 'monologues', 'topMonologue', 'activeDays', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased', 'lastTalked');
 	private $user_smileys = array('UID', 's_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19');
 	private $user_tables = array('user_details', 'user_events', 'user_lines', 'user_smileys');
+	protected $date = '';
 
         /**
          * Constructor.
@@ -268,11 +268,14 @@ final class Nick extends Base
 	}
 
 	/**
-	 * Pick a random line from either the list of long quotes or, when there are no long quotes, from the list of short quotes.
-	 * Long quotes are preferred since these look better on the statspage and give away more about the subject.
+	 * Write user data to the database.
 	 */
-	public function randomizeQuotes()
+	public function writeData($mysqli)
 	{
+		/**
+		 * Pick a random line from either the list of long quotes or, when there are no long quotes, from the list of short quotes.
+		 * Long quotes are preferred since these look better on the statspage and give away more about the subject.
+		 */
 		$types = array('ex_actions', 'ex_exclamations', 'ex_questions', 'ex_uppercased', 'quote');
 
 		foreach ($types as $type) {
@@ -282,13 +285,7 @@ final class Nick extends Base
 				$this->$type = $this->{'short_'.$type.'_list'}[mt_rand(0, count($this->{'short_'.$type.'_list'}) - 1)];
 			}
 		}
-	}
 
-	/**
-	 * Write user data to the database.
-	 */
-	public function writeData($mysqli)
-	{
 		/**
 		 * Write data to database tables "user_details", "user_status", "user_events", "user_lines" and "user_smileys".
 		 */
