@@ -185,7 +185,8 @@ final class sss extends Base
 	 */
 	private function printManual()
 	{
-		$man = 'usage: php sss.php [-c <config>] [-i <logfile|logdir>] [-o <statspage> [-b <sectionbits>]]'."\n"
+		$man = 'usage: php sss.php [-c <config>] [-i <logfile|logdir>]'."\n"
+		     . '                   [-o <statspage> [-b <sectionbits>]]'."\n"
 		     . '       php sss.php [-c <config>] [-m]'."\n\n"
 		     . 'the options are:'."\n"
 		     . '       -b	set <sectionbits>, add up the bits corresponding to the sections'."\n"
