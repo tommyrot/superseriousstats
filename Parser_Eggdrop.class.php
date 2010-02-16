@@ -76,7 +76,7 @@ final class Parser_Eggdrop extends Parser
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] [#&!\+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+)(!(~?(?<host>\S+))?)?$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] [#&!\+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+?)(!(~?(?<host>\S+))?)?$/', $line, $matches)) {
 			$nicks = explode(' ', $matches['nicks']);
 			$modeNum = 0;
 
@@ -116,7 +116,7 @@ final class Parser_Eggdrop extends Parser
 		/**
 		 * "Topic" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Topic changed on [#&!\+]\S+ by (?<nick>\S+)(!(~?(?<host>\S+))?)?: (?<line>.+)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Topic changed on [#&!\+]\S+ by (?<nick>\S+?)(!(~?(?<host>\S+))?)?: (?<line>.+)$/', $line, $matches)) {
 			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], (!empty($matches['host']) ? $matches['host'] : NULL), $matches['line']);
 
 		/**
