@@ -24,8 +24,8 @@ final class Word extends Base
 	/**
 	 * Variables used in database table "user_words".
 	 */
-	private $word = '';
-	private $total = 0;
+	protected $word = '';
+	protected $total = 0;
 
 	/**
 	 * Constructor.
