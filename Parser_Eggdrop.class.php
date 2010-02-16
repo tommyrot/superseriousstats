@@ -41,6 +41,7 @@
  * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
  * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
  * - Some converted mIRC logs do include "!" in "mode" and "topic" lines while there is no host.
+ * - In certain cases $matches won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value. The consequence is that neither nicks nor hosts can have 0 as a value.
  */
 final class Parser_Eggdrop extends Parser
 {
@@ -75,7 +76,7 @@ final class Parser_Eggdrop extends Parser
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] [#&!\+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+?)(!(~?(?<host>\S+))?)?$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] [#&!\+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+)(!(~?(?<host>\S+))?)?$/', $line, $matches)) {
 			$nicks = explode(' ', $matches['nicks']);
 			$modeNum = 0;
 
@@ -85,7 +86,7 @@ final class Parser_Eggdrop extends Parser
 				if ($mode == '-' || $mode == '+') {
 					$modeSign = $mode;
 				} else {
-					$this->setMode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modeNum], $modeSign.$mode, ($matches['host'] != '' ? $matches['host'] : NULL));
+					$this->setMode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modeNum], $modeSign.$mode, (!empty($matches['host']) ? $matches['host'] : NULL));
 					$modeNum++;
 				}
 			}
@@ -94,8 +95,8 @@ final class Parser_Eggdrop extends Parser
 		 * "Action" and "slap" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Action: (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
-			if ($matches['slap'] != '') {
-				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], ($matches['nick2'] != '' ? $matches['nick2'] : NULL));
+			if (!empty($matches['slap'])) {
+				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : NULL));
 			}
 
 			$this->setAction($this->date.' '.$matches['time'], $matches['nick1'], $matches['line']);
@@ -110,13 +111,13 @@ final class Parser_Eggdrop extends Parser
 		 * "Part" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] (?<nick>\S+) \(~?(?<host>\S+)\) left [#&!\+]\S+( \(.*\))?\.$/', $line, $matches)) {
-			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], ($matches['host'] != '' ? $matches['host'] : NULL));
+			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Topic" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Topic changed on [#&!\+]\S+ by (?<nick>\S+?)(!(~?(?<host>\S+))?)?: (?<line>.+)$/', $line, $matches)) {
-			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], ($matches['host'] != '' ? $matches['host'] : NULL), $matches['line']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Topic changed on [#&!\+]\S+ by (?<nick>\S+)(!(~?(?<host>\S+))?)?: (?<line>.+)$/', $line, $matches)) {
+			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], (!empty($matches['host']) ? $matches['host'] : NULL), $matches['line']);
 
 		/**
 		 * "Kick" lines.
