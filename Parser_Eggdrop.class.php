@@ -151,7 +151,7 @@ final class Parser_Eggdrop extends Parser
 		/**
 		 * Skip everything else.
 		 */
-		} else {
+		} elseif ($line != '') {
 			$this->output('debug', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
 		}
 	}
