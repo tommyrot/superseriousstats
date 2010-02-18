@@ -25,10 +25,10 @@ abstract class Parser extends Base
 	 * Default settings, can be overridden in the config file.
 	 */
 	private $db_host = '';
-        private $db_name = '';
-        private $db_pass = '';
-        private $db_port = 0;
-        private $db_user = '';
+	private $db_name = '';
+	private $db_pass = '';
+	private $db_port = 0;
+	private $db_user = '';
 	private $minStreak = 5;
 	private $nick_maxLen = 255;
 	private $nick_minLen = 1;
@@ -162,7 +162,7 @@ abstract class Parser extends Base
 	}
 
 	/**
-	 * Function for the global word tracking. This feature can be enabled or disabled in the settings file.
+	 * Function for the global word tracking. This feature can be enabled or disabled in the config file.
 	 * Due to the in_array() function being shitty inefficient, searching large arrays is a big performance hit.
 	 */
 	final private function addWord($csWord)
@@ -457,7 +457,7 @@ abstract class Parser extends Base
 				} elseif ($this->wordTracking && preg_match('/^[a-z]{1,255}$/i', $csWord)) {
 					/**
 					 * To keep it simple we only track words composed of the characters A through Z.
-					 * Words of 30+ characters are most likely not real words but then again we're not a dictionary.
+					 * Words consisting of 30+ characters are most likely not real words but then again we're not a dictionary.
 					 */
 					$this->addWord($csWord);
 				}
@@ -568,7 +568,7 @@ abstract class Parser extends Base
 	}
 
 	/**
-	 * Validate a given nick. Check on syntax and defined lengths. Maximum length should not exceed 255 so it fits in the database field.
+	 * Validate a given nick. Check on syntax and defined lengths. Maximum length should not exceed 255 which is the maximum database field length.
 	 */
 	final private function validateNick($csNick)
 	{

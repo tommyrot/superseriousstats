@@ -48,18 +48,18 @@ final class User
 	/**
 	 * The following variables shouldn't be tampered with.
 	 */
-        private $RUID = 0;
-        private $UID = 0;
-        private $avg = 0;
-        private $csNick = '';
-        private $firstSeen = '';
-        private $l_total = 0;
-        private $lastSeen = '';
-        private $month = '';
-        private $mysqli;
-        private $output = '';
-        private $year = '';
-        private $years = 0;
+	private $RUID = 0;
+	private $UID = 0;
+	private $avg = 0;
+	private $csNick = '';
+	private $firstSeen = '';
+	private $l_total = 0;
+	private $lastSeen = '';
+	private $month = '';
+	private $mysqli;
+	private $output = '';
+	private $year = '';
+	private $years = 0;
 
 	/**
 	 * Constructor.
@@ -145,7 +145,7 @@ final class User
 			      . '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n"
 			      . '<style type="text/css">'."\n".'  table.yearly {width:'.(2 + ($this->years * 34)).'px}'."\n".'</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
-		              . '<div class="box">'."\n\n"
+			      . '<div class="box">'."\n\n"
 			      . '<div class="info">'.htmlspecialchars($this->csNick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstSeen)).' and last seen on '.date('M j, Y', strtotime($this->lastSeen)).'.<br />'
 			      . '<br />'.htmlspecialchars($this->csNick).' typed '.number_format($this->l_total).' lines, an average of '.number_format($this->avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
 

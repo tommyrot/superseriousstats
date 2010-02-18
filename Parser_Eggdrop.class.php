@@ -80,7 +80,7 @@ final class Parser_Eggdrop extends Parser
 			$nicks = explode(' ', $matches['nicks']);
 			$modeNum = 0;
 
-			for ($i = 0; $i < strlen($matches['modes']); $i++) {
+			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
 				$mode = substr($matches['modes'], $i, 1);
 
 				if ($mode == '-' || $mode == '+') {
@@ -142,7 +142,7 @@ final class Parser_Eggdrop extends Parser
 			$this->lineNum--;
 			$this->output('notice', 'parseLine(): repeating line '.$this->lineNum.': '.(($matches['num'] == 1) ? $matches['num'].' time' : $matches['num'].' times'));
 
-			for ($i = $matches['num']; $i > 0; $i--) {
+			for ($i = 1, $j = $matches['num']; $i <= $j; $i++) {
 				$this->parseLine($this->prevLine);
 			}
 

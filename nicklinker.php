@@ -25,10 +25,10 @@ final class nicklinker extends Base
 	 * Default settings, can be overridden in the config file.
 	 */
 	private $db_host = '';
-        private $db_name = '';
-        private $db_pass = '';
-        private $db_port = 0;
-        private $db_user = '';
+	private $db_name = '';
+	private $db_pass = '';
+	private $db_port = 0;
+	private $db_user = '';
 	private $timezone = '';
 
 	/**
@@ -175,7 +175,7 @@ final class nicklinker extends Base
 							if (!empty($nick_main)) {
 								@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$nick2UID[$nick_main]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 
-								for ($i = 2; $i < count($lineParts); $i++) {
+								for ($i = 2, $j = count($lineParts); $i < $j; $i++) {
 									$nick = trim($lineParts[$i]);
 
 									if (!empty($nick)) {

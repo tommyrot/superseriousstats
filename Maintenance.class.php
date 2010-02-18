@@ -18,27 +18,18 @@
 
 /**
  * Class for performing database maintenance.
- *
- * One should understand the following basic variables before continuing to read through this file.
- * Comments in this file are likely to be confusing and not of any help in understanding how things work.
- *
- * UID = User ID
- * RUID = UID of the registered user
- *
- * The registered user has the same RUID as UID and can be identified accordingly.
- * Its aliases have their own unique UID and a RUID which is set to the UID of the registered user.
  */
 final class Maintenance extends Base
 {
 	/**
 	 * Default settings, can be overridden in the config file.
 	 */
-        private $db_host = '';
-        private $db_name = '';
-        private $db_pass = '';
-        private $db_port = 0;
-        private $db_user = '';
-        private $sanitisationDay = 'mon';
+	private $db_host = '';
+	private $db_name = '';
+	private $db_pass = '';
+	private $db_port = 0;
+	private $db_user = '';
+	private $sanitisationDay = 'mon';
 
 	/**
 	 * Variables that shouldn't be tampered with.
