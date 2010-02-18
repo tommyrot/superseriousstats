@@ -188,17 +188,17 @@ final class Nick extends Base
 	private $user_tables = array('user_details', 'user_events', 'user_lines', 'user_smileys');
 	protected $date = '';
 
-        /**
-         * Constructor.
-         */
+	/**
+	 * Constructor.
+	 */
 	public function __construct($csNick)
 	{
 		$this->csNick = $csNick;
 	}
 
-        /**
-         * Keep a list of hosts this user has been seen using.
-         */
+	/**
+	 * Keep a list of hosts this user has been seen using.
+	 */
 	public function addHost($csHost)
 	{
 		$host = strtolower($csHost);
@@ -208,26 +208,26 @@ final class Nick extends Base
 		}
 	}
 
-        /**
-         * Keep two lists of the various types of quotes for the user; one with short quotes and one with long quotes.
-         */
+	/**
+	 * Keep two lists of the various types of quotes for the user; one with short quotes and one with long quotes.
+	 */
 	public function addQuote($type, $length, $line)
 	{
 		$this->{$length.'_'.$type.'_list'}[] = $line;
 	}
 
-        /**
-         * Keep a list of topics set by the user.
-         */
+	/**
+	 * Keep a list of topics set by the user.
+	 */
 	public function addTopic($csTopic, $dateTime)
 	{
 		$this->topics_list[] = array('csTopic' => $csTopic
 					    ,'setDate' => $dateTime);
 	}
 
-        /**
-         * Keep a list of URLs pasted by the user. The case of the last mentioned version of the URL will be stored.
-         */
+	/**
+	 * Keep a list of URLs pasted by the user. The last used case sensitivity will be stored for the specific URL.
+	 */
 	public function addURL($csURL, $dateTime)
 	{
 		$URL = strtolower($csURL);
@@ -243,9 +243,9 @@ final class Nick extends Base
 		$this->URLs_objs[$URL]->lastUsed($dateTime);
 	}
 
-        /**
-         * Store the date and time the user was first and last seen.
-         */
+	/**
+	 * Store the date and time of when the user was first and last seen.
+	 */
 	public function lastSeen($dateTime)
 	{
 		if ($this->firstSeen == '' || $dateTime < $this->firstSeen) {
@@ -257,9 +257,9 @@ final class Nick extends Base
 		}
 	}
 
-        /**
-         * Store the date and time the user last typed a "normal" line.
-         */
+	/**
+	 * Store the date and time of when the user last typed a "normal" line.
+	 */
 	public function lastTalked($dateTime)
 	{
 		if ($this->lastTalked == '' || $dateTime > $this->lastTalked) {

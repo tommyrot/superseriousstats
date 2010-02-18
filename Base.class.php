@@ -31,17 +31,17 @@ abstract class Base
 	 */
 	private $prevOutput = array();
 
-        /**
-         * Add a value to a variable.
-         */
+	/**
+	 * Add a value to a variable.
+	 */
 	final public function addValue($var, $value)
 	{
 		$this->$var += $value;
 	}
 
-        /**
-         * Get the value of a variable.
-         */
+	/**
+	 * Get the value of a variable.
+	 */
 	final public function getValue($var)
 	{
 		return $this->$var;
@@ -95,9 +95,9 @@ abstract class Base
 		}
 	}
 
-        /**
-         * Set the value of a variable.
-         */
+	/**
+	 * Set the value of a variable.
+	 */
 	final public function setValue($var, $value)
 	{
 		$this->$var = $value;

@@ -37,9 +37,9 @@ final class URL extends Base
 		$this->csURL = $csURL;
 	}
 
-        /**
-         * Store the date and time the URL was first and last typed in the channel.
-         */
+	/**
+	 * Store the date and time of when the URL was first and last typed in the channel.
+	 */
 	public function lastUsed($dateTime)
 	{
 		if ($this->firstUsed == '' || $dateTime < $this->firstUsed) {
