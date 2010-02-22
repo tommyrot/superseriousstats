@@ -202,9 +202,11 @@ final class nicklinker extends Base
 	 */
 	private function printManual()
 	{
-		$man = 'usage: php nicklinker.php [-i <file>]'."\n"
-		     . '       php nicklinker.php [-o <file>]'."\n\n"
+		$man = 'usage: php nicklinker.php [-c <config>] [-i <file>]'."\n"
+		     . '       php nicklinker.php [-c <config>] [-o <file>]'."\n\n"
 		     . 'the options are:'."\n"
+		     . '	-c	read settings from <config>'."\n"
+		     . '		if unspecified sss.conf will be used'."\n"
 		     . '	-i	import all users from <file> to the database'."\n"
 		     . '	-o	export all users from the database to <file>'."\n";
 		exit($man);
