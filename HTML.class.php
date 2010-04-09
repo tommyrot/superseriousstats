@@ -46,10 +46,13 @@ final class HTML extends Base
 	 */
 	private $date_first = '';
 	private $date_last = '';
+	private $date_max = '';
 	private $day = '';
+	private $days = 0;
 	private $day_of_month = '';
 	private $day_of_year = '';
-	private $days = 0;
+	private $l_avg = 0;
+	private $l_max = 0;
 	private $l_total = 0;
 	private $month = '';
 	private $month_name = '';
@@ -116,18 +119,22 @@ final class HTML extends Base
 	{
 		$this->output('notice', 'makeHTML(): creating statspage');
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
-		$query_l_total = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `l_total` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query_l_total);
+		$query = @mysqli_query($this->mysqli, 'SELECT MIN(`date`) AS `date_first`, MAX(`date`) AS `date_last`, COUNT(*) AS `days`, AVG(`l_total`) AS `l_avg`, SUM(`l_total`) AS `l_total` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
 			$this->output('critical', 'makeHTML(): database \''.$this->db_name.'\' is empty');
 		}
 
-		$result_l_total = mysqli_fetch_object($query_l_total);
-		$this->l_total = $result_l_total->l_total;
+		$result = mysqli_fetch_object($query);
+		$this->date_first = $result->date_first;
+		$this->date_last = $result->date_last;
+		$this->days = $result->days;
+		$this->l_avg = $result->l_avg;
+		$this->l_total = $result->l_total;
 
 		if ($this->l_total == 0) {
-			$this->output('critical', 'makeHTML(): database \''.$this->db_name.'\' is empty');
+			$this->output('critical', 'makeHTML(): database \''.$this->db_name.'\' contains insufficient data');
 		}
 
 		/**
@@ -140,40 +147,30 @@ final class HTML extends Base
 
 		/**
 		 * Date and time variables used throughout the script.
+		 * For whatever reason PHP starts counting days from 0.. so we add 1 to $day_of_year to fix this absurdity.
 		 */
-		$query_days = @mysqli_query($this->mysqli, 'SELECT COUNT(*) AS `days` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		$result_days = mysqli_fetch_object($query_days);
-		$query_date_first = @mysqli_query($this->mysqli, 'SELECT MIN(`date`) AS `date` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		$result_date_first = mysqli_fetch_object($query_date_first);
-		$query_date_last = @mysqli_query($this->mysqli, 'SELECT MAX(`date`) AS `date` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		$result_date_last = mysqli_fetch_object($query_date_last);
-		$this->days = $result_days->days;
-		$this->date_first = $result_date_first->date;
-		$this->date_last = $result_date_last->date;
 		$this->day = date('j', strtotime('yesterday'));
-		$this->year = date('Y', strtotime('yesterday'));
+		$this->day_of_month = date('d', strtotime('yesterday'));
+		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
 		$this->month = date('m', strtotime('yesterday'));
 		$this->month_name = date('F', strtotime('yesterday'));
-		$this->day_of_month = date('d', strtotime('yesterday'));
-
-		/**
-		 * For whatever reason PHP starts counting days from 0.. so we add 1 to fix this absurdity.
-		 */
-		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
-
-		/**
-		 * HTML Head
-		 */
-		$query_avg = @mysqli_query($this->mysqli, 'SELECT AVG(`l_total`) AS `avg` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		$result_avg = mysqli_fetch_object($query_avg);
-		$query_max = @mysqli_query($this->mysqli, 'SELECT `l_total` AS `max`, `date` FROM `channel` ORDER BY `l_total` DESC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		$result_max = mysqli_fetch_object($query_max);
+		$this->year = date('Y', strtotime('yesterday'));
 		$this->years = $this->year - date('Y', strtotime($this->date_first)) + 1;
 
+		/**
+		 * If we have less than 3 years of data we set the amount of years to 3 so we have that many columns in our table. Looks better.
+		 */
 		if ($this->years < 3) {
 			$this->years = 3;
 		}
 
+		/**
+		 * HTML Head
+		 */
+		$query = @mysqli_query($this->mysqli, 'SELECT `date` AS `date_max`, `l_total` AS `l_max` FROM `channel` ORDER BY `l_total` DESC, `date` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$result = mysqli_fetch_object($query);
+		$this->date_max = $result->date_max;
+		$this->l_max = $result->l_max;
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
 			      . '<head>'."\n".'<title>'.htmlspecialchars($this->channel).', seriously.</title>'."\n"
@@ -186,7 +183,7 @@ final class HTML extends Base
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"
 			      . '<div class="info">'.htmlspecialchars($this->channel).', seriously.<br /><br />'.number_format($this->days).' day'.($this->days > 1 ? 's logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)) : ' logged on '.date('M j, Y', strtotime($this->date_first))).'.<br />'
-			      . '<br />Logs contain '.number_format($this->l_total).' lines, an average of '.number_format($result_avg->avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
+			      . '<br />Logs contain '.number_format($this->l_total).' lines, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.</div>'."\n";
 
 		/**
 		 * Bots are excluded from statistics unless stated otherwise.
