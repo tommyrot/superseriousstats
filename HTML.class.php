@@ -311,7 +311,7 @@ final class HTML extends Base
 
 			foreach ($smileys as $key => $value) {
 				if ($result->$value[1] >= $this->minLines) {
-					$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => $key, 'key1' => $value[0], 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `'.$value[1].'` AS `v1`, `csNick` AS `v2` FROM `query_smileys` JOIN `user_details` ON `query_smileys`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_smileys`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `'.$value[1].'` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'query_total' => 'SELECT SUM(`'.$value[1].'`) AS `total` FROM `query_smileys`'));
+					$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => $key, 'key1' => $value[0], 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'query' => 'SELECT `'.$value[1].'` AS `v1`, `csNick` AS `v2` FROM `query_smileys` JOIN `user_details` ON `query_smileys`.`UID` = `user_details`.`UID` JOIN `user_status` ON `query_smileys`.`UID` = `user_status`.`UID` WHERE `status` != 3 AND `'.$value[1].'` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5', 'result_total' => $result->$value[1]));
 				}
 			}
 
@@ -376,14 +376,17 @@ final class HTML extends Base
 				}
 			}
 
-			if (isset($settings['query_total'])) {
+			if (isset($settings['result_total'])) {
+				$total = $settings['result_total'];
+			} elseif (isset($settings['query_total'])) {
 				$query_total = @mysqli_query($this->mysqli, $settings['query_total']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$result_total = mysqli_fetch_object($query_total);
+				$total = $result_total->total;
 			}
 
 			if ($settings['size'] == 'small') {
 				$output .= '<table class="small">'
-					.  '<tr><th colspan="3"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($result_total->total) ? '' : '<span class="right">'.number_format($result_total->total).' total</span>').'</th></tr>'
+					.  '<tr><th colspan="3"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($total) ? '' : '<span class="right">'.number_format($total).' total</span>').'</th></tr>'
 					.  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td></tr>';
 
 				foreach ($content as $row) {
@@ -393,7 +396,7 @@ final class HTML extends Base
 				$output .= '</table>'."\n";
 			} elseif ($settings['size'] == 'large') {
 				$output .= '<table class="large">'
-					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($result_total->total) ? '' : '<span class="right">'.number_format($result_total->total).' total</span>').'</th></tr>'
+					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($total) ? '' : '<span class="right">'.number_format($total).' total</span>').'</th></tr>'
 					.  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
 				foreach ($content as $row) {
@@ -692,7 +695,7 @@ final class HTML extends Base
 			}
 
 			$l_total_percentage = number_format(($result->l_total / $l_total) * 100, 2);
-			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$RUID.' ORDER BY `lastSeen` DESC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT MAX(`lastSeen`) AS `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			$result_lastSeen = mysqli_fetch_object($query_lastSeen);
 			$lastSeen = substr($result_lastSeen->lastSeen, 0, 10);
 			$lastSeen = round((strtotime('today') - strtotime($lastSeen)) / 86400);
