@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2010, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,7 +17,30 @@
  */
 
 /**
- * Parse instructions for Irssi logfile format.
+ * Parse instructions for the Irssi logfile format.
+ *
+ * +------------+-------------------------------------------------------+->
+ * | Line	| Format						| Notes
+ * +------------+-------------------------------------------------------+->
+ * | Normal	| <NICK> MSG						| Skip empty lines.
+ * | Action	| * NICK MSG						| Skip empty actions.
+ * | Slap	| * NICK slaps MSG					| Slaps may lack a (valid) target.
+ * | Nickchange	| -!- NICK is now known as NICK				|
+ * | Join	| -!- NICK [HOST] has joined CHAN			|
+ * | Part	| -!- NICK [HOST] has left CHAN [MSG]			| Part message may be absent, or empty due to normalization.
+ * | Quit	| -!- NICK [HOST] has quit [MSG]			| Quit message may be empty due to normalization.
+ * | Mode	| -!- mode/CHAN [+o-v NICK NICK] by NICK		| Only check for combinations of ops (+o) and voices (+v).
+ * | Mode	| -!- ServerMode/CHAN [+o-v NICK NICK] by NICK		| "
+ * | Topic	| -!- NICK changed the topic of CHAN to: MSG		| Skip empty topics.
+ * | Kick	| -!- NICK was kicked from CHAN by NICK [MSG]		| Kick message may be empty due to normalization.
+ * +------------+-------------------------------------------------------+->
+ *
+ * Notes:
+ * - parseLog() normalizes all lines before passing them on to parseLine().
+ * - Given that nicks can't contain "<", ">" or ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
+ * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
+ * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
+ * - In certain cases $matches won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value. The consequence is that neither nicks nor hosts can have 0 as a value.
  */
 final class Parser_Irssi extends Parser
 {
@@ -27,170 +50,80 @@ final class Parser_Irssi extends Parser
 	protected function parseLine($line)
 	{
 		/**
-		 * Only process lines beginning with a timestamp.
+		 * "Normal" lines.
 		 */
-		if (preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]/', $line)) {
-			$dateTime = $this->date.' '.substr($line, 0, 5);
+		if (preg_match('/^(?<time>\d{2}:\d{2}) <[\x20~&@%+!*](?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+			$this->setNormal($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 
-			/**
-			 * Normalize the nick in a "normal" line. Irssi logs nicknames with a mode prefix by default. We don't want nor use that info.
-			 */
-			$line = preg_replace('/^<[\x20\+@%~&](.+)>/', '<$1>', substr($line, 6));
-			$lineParts = explode(' ', $line);
+		/**
+		 * "Join" lines.
+		 */
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) \[~?(?<host>\S+)\] joined [#&!+]\S+$/', $line, $matches)) {
+			$this->setJoin($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
-			/**
-			 * "Normal" lines. Format: "<NICK> MSG".
-			 */
-			if (preg_match('/^<.+>$/', $lineParts[0])) {
-				/**
-				 * Empty "normal" lines are silently ignored.
-				 */
-				if (isset($lineParts[1])) {
-					$csNick = trim($lineParts[0], '<>');
-					$line = implode(' ', array_slice($lineParts, 1));
-					$this->setNormal($dateTime, $csNick, $line);
-				}
+		/**
+		 * "Quit" lines.
+		 */
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) (?<nick>\S+) \[~?(?<host>\S+)\] has quit \[.*\]$/', $line, $matches)) {
+			$this->setQuit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
-			/**
-			 * "Action" lines. Format: "* NICK MSG".
-			 * "Slap" lines. Format: "* NICK slaps MSG".
-			 */
-			} elseif ($lineParts[0] == '*') {
-				/**
-				 * Empty "action" lines are silently ignored.
-				 */
-				if (isset($lineParts[2])) {
-					$csNick = $lineParts[1];
-					$line = implode(' ', array_slice($lineParts, 1));
+		/**
+		 * "Mode" lines.
+		 */
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) (ServerMode|mode)\/[#&!+]\S+  \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)$/', $line, $matches)) {
+			$nicks = explode(' ', $matches['nicks']);
+			$modeNum = 0;
 
-					/**
-					 * There doesn't have to be an "undergoing" nick for a slap to count.
-					 */
-					if (strtolower($lineParts[2]) == 'slaps') {
-						if (isset($lineParts[3])) {
-							$csNick_undergoing = $lineParts[3];
-						} else {
-							$csNick_undergoing = NULL;
-						}
+			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
+				$mode = substr($matches['modes'], $i, 1);
 
-						$this->setSlap($dateTime, $csNick, $csNick_undergoing);
-					}
-
-					$this->setAction($dateTime, $csNick, $line);
-				}
-
-			/**
-			 * "Mode" lines by user. Format: "-!- mode/CHAN [+o-v NICK NICK] by NICK".
-			 * "Mode" lines by server. Format: "-!- ServerMode/CHAN [+o-v NICK NICK] by NICK".
-			 */
-			} elseif (stripos($lineParts[1], 'mode/') !== FALSE) {
-				$modes = ltrim($lineParts[2], '[');
-
-				/**
-				 * Only process modes consisting of ops and voices.
-				 */
-				if (preg_match('/^[-+][ov]+([-+][ov]+)?$/', $modes)) {
-					$modesTotal = substr_count($modes, 'o') + substr_count($modes, 'v');
-
-					/**
-					 * Irssi may log multiple "performing" nicks separated by commas. We use only the first one and strip the comma from it.
-					 */
-					$csNick_performing = rtrim($lineParts[4 + $modesTotal], ',');
-
-					/**
-					 * Irssi doesn't log a user's host for "mode" lines so we pass on NULL to setMode().
-					 */
-					$csHost = NULL;
-					$modeNum = 0;
-
-					for ($i = 0; $i < strlen($modes); $i++) {
-						$mode = substr($modes, $i, 1);
-
-						if ($mode == '-' || $mode == '+') {
-							$modeSign = $mode;
-						} else {
-							$modeNum++;
-
-							if ($modeNum == $modesTotal) {
-								$csNick_undergoing = rtrim($lineParts[2 + $modeNum], ']');
-							} else {
-								$csNick_undergoing = $lineParts[2 + $modeNum];
-							}
-
-							$this->setMode($dateTime, $csNick_performing, $csNick_undergoing, $modeSign.$mode, $csHost);
-						}
-					}
-				}
-
-			/**
-			 * "Nickchange" lines. Format: "-!- NICK is now known as NICK".
-			 */
-			} elseif ($lineParts[4] == 'known') {
-				$csNick_performing = $lineParts[1];
-				$csNick_undergoing = $lineParts[6];
-				$this->setNickchange($dateTime, $csNick_performing, $csNick_undergoing);
-
-			/**
-			 * "Join" lines. Format: "-!- NICK [HOST] has joined CHAN".
-			 */
-			} elseif ($lineParts[4] == 'joined') {
-				$csNick = $lineParts[1];
-				$csHost = trim($lineParts[2], '[~]');
-				$this->setJoin($dateTime, $csNick, $csHost);
-
-			/**
-			 * "Part" lines. Format: "-!- NICK [HOST] has left CHAN [MSG]".
-			 */
-			} elseif ($lineParts[4] == 'left') {
-				$csNick = $lineParts[1];
-				$csHost = trim($lineParts[2], '[~]');
-				$this->setPart($dateTime, $csNick, $csHost);
-
-			/**
-			 * "Quit" lines. Format: "-!- NICK [HOST] has quit [MSG]".
-			 */
-			} elseif ($lineParts[4] == 'quit') {
-				$csNick = $lineParts[1];
-				$csHost = trim($lineParts[2], '[~]');
-				$this->setQuit($dateTime, $csNick, $csHost);
-
-			/**
-			 * "Topic" lines. Format: "-!- NICK changed the topic of CHAN to: MSG".
-			 */
-			} elseif ($lineParts[2] == 'changed') {
-				$csNick = $lineParts[1];
-
-				/**
-				 * Irssi doesn't log a user's host for "topic" lines so we pass on NULL to setTopic().
-				 */
-				$csHost = NULL;
-
-				/**
-				 * If the topic is empty we pass on NULL to setTopic().
-				 */
-				if (isset($lineParts[8])) {
-					$line = implode(' ', array_slice($lineParts, 8));
+				if ($mode == '-' || $mode == '+') {
+					$modeSign = $mode;
 				} else {
-					$line = NULL;
+					$this->setMode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modeNum], $modeSign.$mode, NULL);
+					$modeNum++;
 				}
-
-				$this->setTopic($dateTime, $csNick, $csHost, $line);
-
-			/**
-			 * "Kick" lines. Format: "-!- NICK was kicked from CHAN by NICK [MSG]".
-			 */
-			} elseif ($lineParts[3] == 'kicked') {
-				$csNick_performing = $lineParts[7];
-				$csNick_undergoing = $lineParts[1];
-				$line = substr($line, 4);
-				$this->setKick($dateTime, $csNick_performing, $csNick_undergoing, $line);
-
-			/**
-			 * Skip everything else.
-			 */
-			} else {
-				$this->output('notice', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
 			}
+
+		/**
+		 * "Action" and "slap" lines.
+		 */
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) \* (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
+			if (!empty($matches['slap'])) {
+				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : NULL));
+			}
+
+			$this->setAction($this->date.' '.$matches['time'], $matches['nick1'], $matches['line']);
+
+		/**
+		 * "Nickchange" lines.
+		 */
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick1>\S+) is now known as (?<nick2>\S+)$/', $line, $matches)) {
+			$this->setNickchange($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2']);
+
+		/**
+		 * "Part" lines.
+		 */
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) \[~?(?<host>\S+)\] has left [#&!+]\S+ \[.*\]$/', $line, $matches)) {
+			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+
+		/**
+		 * "Topic" lines.
+		 */
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) has changed the topic of [#&!+]\S+ to: (?<line>.+)$/', $line, $matches)) {
+			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], NULL, $matches['line']);
+
+		/**
+		 * "Kick" lines.
+		 */
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<line>(?<nick2>\S+) was kicked from [#&!+]\S+ by (?<nick1>\S+) \[.*\])$/', $line, $matches)) {
+			$this->setKick($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2'], $matches['line']);
+
+		/**
+		 * Skip everything else.
+		 */
+		} elseif ($line != '') {
+			$this->output('debug', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
 		}
 	}
 }
