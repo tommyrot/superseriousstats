@@ -64,13 +64,13 @@ final class Parser_Irssi extends Parser
 		/**
 		 * "Quit" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) (?<nick>\S+) \[~?(?<host>\S+)\] has quit \[.*\]$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) \[~?(?<host>\S+)\] has quit \[.*\]$/', $line, $matches)) {
 			$this->setQuit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) (ServerMode|mode)\/[#&!+]\S+  \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (ServerMode|mode)\/[#&!+]\S+  \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)$/', $line, $matches)) {
 			$nicks = explode(' ', $matches['nicks']);
 			$modeNum = 0;
 
