@@ -58,7 +58,7 @@ final class Parser_Irssi extends Parser
 		/**
 		 * "Join" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) \[~?(?<host>\S+)\] joined [#&!+]\S+$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) \[~?(?<host>\S+)\] has joined [#&!+]\S+$/', $line, $matches)) {
 			$this->setJoin($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
@@ -70,7 +70,7 @@ final class Parser_Irssi extends Parser
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (ServerMode|mode)\/[#&!+]\S+  \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (ServerMode|mode)\/[#&!+]\S+ \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)$/', $line, $matches)) {
 			$nicks = explode(' ', $matches['nicks']);
 			$modeNum = 0;
 
@@ -110,7 +110,7 @@ final class Parser_Irssi extends Parser
 		/**
 		 * "Topic" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) has changed the topic of [#&!+]\S+ to: (?<line>.+)$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) changed the topic of [#&!+]\S+ to: (?<line>.+)$/', $line, $matches)) {
 			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], NULL, $matches['line']);
 
 		/**
