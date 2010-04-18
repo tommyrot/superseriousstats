@@ -439,7 +439,7 @@ abstract class Parser extends Base
 			$this->nicks_objs[$nick]->addValue('words', count($words));
 
 			foreach ($words as $csWord) {
-				if (preg_match('/^(=[]\)]|;([]\(\)xp]|-\))|:([]\/\(\)\\\>xpd]|-\))|\\\o\/)$/i', $csWord)) {
+				if (preg_match('/^(=[])]|;([]()xp]|-\))|:([]\/()\\\>xpd]|-\))|\\\o\/)$/i', $csWord)) {
 					$this->nicks_objs[$nick]->addValue($this->smileys[strtolower($csWord)], 1);
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csWord)) {
 					/**
@@ -572,7 +572,7 @@ abstract class Parser extends Base
 	 */
 	final private function validateNick($csNick)
 	{
-		if (preg_match('/^[]\[\^\{}\|\\\`_0-9a-z-]{'.$this->nick_minLen.','.($this->nick_maxLen <= 255 ? $this->nick_maxLen : 255).'}$/i', $csNick)) {
+		if (preg_match('/^[][^{}|\\\`_0-9a-z-]{'.$this->nick_minLen.','.($this->nick_maxLen <= 255 ? $this->nick_maxLen : 255).'}$/i', $csNick)) {
 			return TRUE;
 		} else {
 			return FALSE;
