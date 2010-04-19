@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2009, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2010, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -78,10 +78,10 @@ final class URLTools
 		/**
 		 * Character groups.
 		 */
-		$this->unreserved = '[a-z0-9_\.~-]';
+		$this->unreserved = '[a-z0-9_.~-]';
 		$this->pct_encoded = '%[0-9a-f]{2}';
-		$this->gen_delims = '[]:\/\?#\[@]';
-		$this->sub_delims = '[!$&\'\(\)\*\+,;=]';
+		$this->gen_delims = '[]:\/?#[@]';
+		$this->sub_delims = '[!$&\'()*+,;=]';
 		$this->reserved = '('.$this->gen_delims.'|'.$this->sub_delims.')';
 		$this->pchar = '('.$this->unreserved.'|'.$this->pct_encoded.'|'.$this->sub_delims.'|[:@])';
 
@@ -128,12 +128,12 @@ final class URLTools
 		/**
 		 * Query
 		 */
-		$this->query = '(\?('.$this->pchar.'|[\/\?])*)?';
+		$this->query = '(\?('.$this->pchar.'|[\/?])*)?';
 
 		/**
 		 * Fragment
 		 */
-		$this->fragment = '(#('.$this->pchar.'|[\/\?])*)?';
+		$this->fragment = '(#('.$this->pchar.'|[\/?])*)?';
 
 		/**
 		 * Build regular expression. Case insensitive.
