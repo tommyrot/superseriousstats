@@ -37,9 +37,11 @@
  *
  * Notes:
  * - parseLog() normalizes all lines before passing them on to parseLine().
- * - Given that nicks can't contain "<", ">" or ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
+ * - The order of the regular expressions below is irrelevant (current order aims for best performance).
+ * - We have to be mindful that nicks can contain "[" and "]".
  * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
  * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
+ * - Irssi may log multiple "performing" nicks separated by commas. We use only the first one.
  * - In certain cases $matches won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value. The consequence is that neither nicks nor hosts can have 0 as a value.
  */
 final class Parser_Irssi extends Parser
@@ -70,7 +72,7 @@ final class Parser_Irssi extends Parser
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (ServerMode|mode)\/[#&!+]\S+ \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (ServerMode|mode)\/[#&!+]\S+ \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)(, \S+)*$/', $line, $matches)) {
 			$nicks = explode(' ', $matches['nicks']);
 			$modeNum = 0;
 
