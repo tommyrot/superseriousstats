@@ -27,7 +27,7 @@
  * | Slap	| ** NICK slaps MSG					| "mIRC6hack" syntax. Slaps may lack a (valid) target.
  * | Nickchange	| * NICK is now known as NICK				|
  * | Join	| * NICK (HOST) has joined CHAN				|
- * | Part	| * NICK (HOST) left CHAN (MSG)				| Part message may be absent, or empty due to normalization.
+ * | Part	| * NICK (HOST) has left CHAN (MSG)			| Part message may be absent, or empty due to normalization.
  * | Quit	| * NICK (HOST) Quit (MSG)				| Quit message may be absent, or empty due to normalization.
  * | Mode	| * NICK sets mode: +o-v NICK NICK			| Only check for combinations of ops (+o) and voices (+v).
  * | Topic	| * NICK changes topic to 'MSG'				| Skip empty topics.
@@ -105,7 +105,7 @@ final class Parser_mIRC6 extends Parser
 		/**
 		 * "Part" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick>\S+) \(~?(?<host>\S+)\) left [#&!+]\S+( \(.*\))?$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick>\S+) \(~?(?<host>\S+)\) has left [#&!+]\S+( \(.*\))?$/', $line, $matches)) {
 			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
