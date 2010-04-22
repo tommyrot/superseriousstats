@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2010, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,13 +17,31 @@
  */
 
 /**
- * Parse instructions for mIRC6 logfile format.
- * 
- * The way mIRC logs actions is pretty dumb, we can spoof nearly all other line types with our actions.
- * Even non-chat messages are logged with the same syntax. This makes it very complicated to come up with a good parser.
- * For this reason we won't parse for actions. Also, the checks on the other line types are a little stricter as usual.
+ * Parse instructions for the mIRC6 logfile format.
  *
- * Use mIRC6hack logfile format if you can!
+ * +------------+-------------------------------------------------------+->
+ * | Line	| Format						| Notes
+ * +------------+-------------------------------------------------------+->
+ * | Normal	| <NICK> MSG						| Skip empty lines.
+ * | Action	| ** NICK MSG						| "mIRC6hack" syntax. Skip empty actions.
+ * | Slap	| ** NICK slaps MSG					| "mIRC6hack" syntax. Slaps may lack a (valid) target.
+ * | Nickchange	| * NICK is now known as NICK				|
+ * | Join	| * NICK (HOST) has joined CHAN				|
+ * | Part	| * NICK (HOST) left CHAN (MSG)				| Part message may be absent, or empty due to normalization.
+ * | Quit	| * NICK (HOST) Quit (MSG)				| Quit message may be empty due to normalization.
+ * | Mode	| * NICK sets mode: +o-v NICK NICK			| Only check for combinations of ops (+o) and voices (+v).
+ * | Topic	| * NICK changes topic to 'MSG'				| Skip empty topics.
+ * | Kick	| * NICK was kicked by NICK (MSG)			| Kick message may be empty due to normalization.
+ * +------------+-------------------------------------------------------+->
+ *
+ * Notes:
+ * - parseLog() normalizes all lines before passing them on to parseLine().
+ * - The way mIRC logs actions is pretty dumb, we can spoof nearly all other line types with our actions. Even non-chat messages are logged with the same syntax. For this reason we won't parse for actions.
+ * - There is a little workaround script available referred to as "mIRC6hack". It's on the wiki.
+ * - Given our handling of "action" lines (and lack thereof) the order of the regular expressions below is irrelevant (current order aims for best performance).
+ * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
+ * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
+ * - In certain cases $matches won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value. The consequence is that neither nicks nor hosts can have 0 as a value.
  */
 final class Parser_mIRC6 extends Parser
 {
@@ -33,131 +51,80 @@ final class Parser_mIRC6 extends Parser
 	protected function parseLine($line)
 	{
 		/**
-		 * Only process lines beginning with a timestamp.
+		 * "Normal" lines.
 		 */
-		if (preg_match('/^\[([01][0-9]|2[0-3]):[0-5][0-9]\]/', $line)) {
-			$dateTime = $this->date.' '.substr($line, 1, 5);
+		if (preg_match('/^\[(?<time>\d{2}:\d{2})\] <(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+			$this->setNormal($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 
-			/**
-			 * Normalize the nick in a "normal" line. mIRC logs nicknames with a mode prefix by default. We don't want nor use that info.
-			 */
-			$line = preg_replace('/^<[\+@%~&](.+)>/', '<$1>', substr($line, 6));
-			$lineParts = explode(' ', $line);
+		/**
+		 * "Join" lines.
+		 */
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick>\S+) \(~?(?<host>\S+)\) has joined [#&!+]\S+$/', $line, $matches)) {
+			$this->setJoin($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
-			/**
-			 * "Normal" lines. Format: "<NICK> MSG".
-			 */
-			if (preg_match('/^<.+>$/', $lineParts[0])) {
-				/**
-				 * Empty "normal" lines are silently ignored.
-				 */
-				if (isset($lineParts[1])) {
-					$csNick = trim($lineParts[0], '<>');
-					$line = implode(' ', array_slice($lineParts, 1));
-					$this->setNormal($dateTime, $csNick, $line);
-				}
+		/**
+		 * "Quit" lines.
+		 */
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick>\S+) \(~?(?<host>\S+)\) Quit \(.*\)$/', $line, $matches)) {
+			$this->setQuit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
-			/**
-			 * "Nickchange" lines. Format: "* NICK is now known as NICK".
-			 */
-			} elseif (implode(' ', array_slice($lineParts, 2, 4)) == 'is now known as') {
-				$csNick_performing = $lineParts[1];
-				$csNick_undergoing = $lineParts[6];
-				$this->setNickchange($dateTime, $csNick_performing, $csNick_undergoing);
+		/**
+		 * "Mode" lines.
+		 */
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick>\S+) sets mode: (?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)$/', $line, $matches)) {
+			$nicks = explode(' ', $matches['nicks']);
+			$modeNum = 0;
 
-			/**
-			 * "Join" lines. Format: "* NICK (HOST) has joined CHAN".
-			 */
-			} elseif (implode(' ', array_slice($lineParts, 3, 2)) == 'has joined') {
-				$csNick = $lineParts[1];
-				$csHost = trim($lineParts[2], '(~)');
-				$this->setJoin($dateTime, $csNick, $csHost);
+			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
+				$mode = substr($matches['modes'], $i, 1);
 
-			/**
-			 * "Part" lines. Format: "* NICK (HOST) left CHAN (MSG)".
-			 */
-			} elseif ($lineParts[3] == 'left') {
-				$csNick = $lineParts[1];
-				$csHost = trim($lineParts[2], '(~)');
-				$this->setPart($dateTime, $csNick, $csHost);
-
-			/**
-			 * "Quit" lines. Format: "* NICK (HOST) Quit (MSG)".
-			 */
-			} elseif ($lineParts[3] == 'quit') {
-				$csNick = $lineParts[1];
-				$csHost = trim($lineParts[2], '(~)');
-				$this->setQuit($dateTime, $csNick, $csHost);
-
-			/**
-			 * "Mode" lines. Format: "* NICK sets mode: +o-v NICK NICK".
-			 */
-			} elseif (implode(' ', array_slice($lineParts, 2, 2)) == 'sets mode:') {
-				$modes = $lineParts[4];
-
-				/**
-				 * Only process modes consisting of ops and voices.
-				 */
-				if (preg_match('/^[-+][ov]+([-+][ov]+)?$/', $modes)) {
-					$modesTotal = substr_count($modes, 'o') + substr_count($modes, 'v');
-					$csNick_performing = $lineParts[1];
-
-					/**
-					 * mIRC doesn't log a user's host for "mode" lines so we pass on NULL to setMode().
-					 */
-					$csHost = NULL;
-					$modeNum = 0;
-
-					for ($i = 0; $i < strlen($modes); $i++) {
-						$mode = substr($modes, $i, 1);
-
-						if ($mode == '-' || $mode == '+') {
-							$modeSign = $mode;
-						} else {
-							$modeNum++;
-							$csNick_undergoing = $lineParts[4 + $modeNum];
-							$this->setMode($dateTime, $csNick_performing, $csNick_undergoing, $modeSign.$mode, $csHost);
-						}
-					}
-				}
-
-			/**
-			 * "Topic" lines. Format: "* NICK changes topic to 'MSG'".
-			 */
-			} elseif (implode(' ', array_slice($lineParts, 2, 3)) == 'changes topic to') {
-				$csNick = $lineParts[1];
-
-				/**
-				 * mIRC doesn't log a user's host for "topic" lines so we pass on NULL to setTopic().
-				 */
-				$csHost = NULL;
-
-				/**
-				 * If the topic is empty we pass on NULL to setTopic().
-				 */
-				if (array_slice($lineParts, 5) != '\'\'') {
-					$line = substr(implode(' ', array_slice($lineParts, 5)), 1, -1);
+				if ($mode == '-' || $mode == '+') {
+					$modeSign = $mode;
 				} else {
-					$line = NULL;
+					$this->setMode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modeNum], $modeSign.$mode, NULL);
+					$modeNum++;
 				}
-
-				$this->setTopic($dateTime, $csNick, $csHost, $line);
-
-			/**
-			 * "Kick" lines. Format: "* NICK was kicked by NICK (MSG)".
-			 */
-			} elseif (implode(' ', array_slice($lineParts, 2, 3)) == 'was kicked by') {
-				$csNick_performing = $lineParts[5];
-				$csNick_undergoing = $lineParts[1];
-				$line = substr($line, 2);
-				$this->setKick($dateTime, $csNick_performing, $csNick_undergoing, $line);
-
-			/**
-			 * Skip everything else.
-			 */
-			} else {
-				$this->output('notice', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
 			}
+
+		/**
+		 * "Action" and "slap" lines.
+		 */
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \*\* (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
+			if (!empty($matches['slap'])) {
+				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : NULL));
+			}
+
+			$this->setAction($this->date.' '.$matches['time'], $matches['nick1'], $matches['line']);
+
+		/**
+		 * "Nickchange" lines.
+		 */
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick1>\S+) is now known as (?<nick2>\S+)$/', $line, $matches)) {
+			$this->setNickchange($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2']);
+
+		/**
+		 * "Part" lines.
+		 */
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick>\S+) \(~?(?<host>\S+)\) left [#&!+]\S+( \(.*\))?$/', $line, $matches)) {
+			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+
+		/**
+		 * "Topic" lines.
+		 */
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick>\S+) changes topic to \'(?<line>.+)\'$/', $line, $matches)) {
+			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], NULL, $matches['line']);
+
+		/**
+		 * "Kick" lines.
+		 */
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<line>(?<nick2>\S+) was kicked by (?<nick1>\S+) \(.*\)$/', $line, $matches)) {
+			$this->setKick($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2'], $matches['line']);
+
+		/**
+		 * Skip everything else.
+		 */
+		} elseif ($line != '') {
+			$this->output('debug', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
 		}
 	}
 }
