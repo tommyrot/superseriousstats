@@ -28,7 +28,7 @@
  * | Nickchange	| * NICK is now known as NICK				|
  * | Join	| * NICK (HOST) has joined CHAN				|
  * | Part	| * NICK (HOST) left CHAN (MSG)				| Part message may be absent, or empty due to normalization.
- * | Quit	| * NICK (HOST) Quit (MSG)				| Quit message may be empty due to normalization.
+ * | Quit	| * NICK (HOST) Quit (MSG)				| Quit message may be absent, or empty due to normalization.
  * | Mode	| * NICK sets mode: +o-v NICK NICK			| Only check for combinations of ops (+o) and voices (+v).
  * | Topic	| * NICK changes topic to 'MSG'				| Skip empty topics.
  * | Kick	| * NICK was kicked by NICK (MSG)			| Kick message may be empty due to normalization.
@@ -65,7 +65,7 @@ final class Parser_mIRC6 extends Parser
 		/**
 		 * "Quit" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick>\S+) \(~?(?<host>\S+)\) Quit \(.*\)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<nick>\S+) \(~?(?<host>\S+)\) Quit( \(.*\))?$/', $line, $matches)) {
 			$this->setQuit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
@@ -117,7 +117,7 @@ final class Parser_mIRC6 extends Parser
 		/**
 		 * "Kick" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<line>(?<nick2>\S+) was kicked by (?<nick1>\S+) \(.*\)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \* (?<line>(?<nick2>\S+) was kicked by (?<nick1>\S+) \(.*\))$/', $line, $matches)) {
 			$this->setKick($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2'], $matches['line']);
 
 		/**
