@@ -89,7 +89,7 @@ final class Parser_mIRC6 extends Parser
 		/**
 		 * "Action" and "slap" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \*\* (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] \*\* [~&@%+!*]?(?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
 			if (!empty($matches['slap'])) {
 				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : NULL));
 			}
