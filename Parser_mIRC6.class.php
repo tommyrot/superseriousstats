@@ -53,7 +53,7 @@ final class Parser_mIRC6 extends Parser
 		/**
 		 * "Normal" lines.
 		 */
-		if (preg_match('/^\[(?<time>\d{2}:\d{2})\] <(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+		if (preg_match('/^\[(?<time>\d{2}:\d{2})\] <[~&@%+!*]?(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->setNormal($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 
 		/**
