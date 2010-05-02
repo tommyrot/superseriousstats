@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2009, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2010, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,7 +17,7 @@
  */
 
 /**
- * Class for building a fancy webpage out of stored user data.
+ * Class for creating userstats.
  * Note: data is always one day old (we are generating stats from data up to and including yesterday).
  */
 final class User
@@ -50,7 +50,7 @@ final class User
 	 */
 	private $RUID = 0;
 	private $UID = 0;
-	private $avg = 0;
+	private $l_avg = 0;
 	private $csNick = '';
 	private $firstSeen = '';
 	private $l_total = 0;
@@ -86,37 +86,33 @@ final class User
 	public function makeHTML()
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->fail(mysqli_connect_error());
-		$query = @mysqli_query($this->mysqli, 'SELECT `RUID` FROM `user_status` WHERE `UID` = '.$this->UID) or $this->fail(mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `csNick` FROM `user_status` JOIN `user_details` ON `user_status`.`RUID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$this->UID) or $this->fail(mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
-			$this->RUID = $result->RUID;
-			$query = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` WHERE `UID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
-			$result = mysqli_fetch_object($query);
-			$this->csNick = $result->csNick;
-			$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
-			$result = mysqli_fetch_object($query);
-			$this->firstSeen = $result->firstSeen;
-			$this->lastSeen = $result->lastSeen;
-		} else {
+		if (empty($rows)) {
 			exit('This user doesn\'t exist.'."\n");
 		}
 
-		$query = @mysqli_query($this->mysqli, 'SELECT `l_total`, (`l_total` / `activeDays`) AS `avg` FROM `query_lines` WHERE `UID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
+		$result = mysqli_fetch_object($query);
+		$this->RUID = $result->RUID;
+		$this->csNick = $result->csNick;
+		$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen`, `l_total`, (`l_total` / `activeDays`) AS `l_avg` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`UID` WHERE `RUID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
-			$this->avg = $result->avg;
-			$this->l_total = $result->l_total;
-
-			if ($this->l_total == 0) {
-				exit('This user has no lines.'."\n");
-			}
-		} else {
+		if (empty($rows)) {
 			exit('This user has no lines.'."\n");
 		}
+
+		$result = mysqli_fetch_object($query);
+
+		if ($result->l_total == 0) {
+			exit('This user has no lines.'."\n");
+		}
+		
+		$this->firstSeen = $result->firstSeen;
+		$this->lastSeen = $result->lastSeen;
+		$this->l_avg = $result->l_avg;
+		$this->l_total = $result->l_total;
 
 		/**
 		 * Date and time variables used throughout the script.
@@ -147,7 +143,7 @@ final class User
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"
 			      . '<div class="info">'.htmlspecialchars($this->csNick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstSeen)).' and last seen on '.date('M j, Y', strtotime($this->lastSeen)).'.<br />'
-			      . '<br />'.htmlspecialchars($this->csNick).' typed '.number_format($this->l_total).' lines, an average of '.number_format($this->avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
+			      . '<br />'.htmlspecialchars($this->csNick).' typed '.number_format($this->l_total).' lines, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
 
 		/**
 		 * Activity section
