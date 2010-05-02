@@ -23,6 +23,7 @@
 final class User
 {
 	// EDIT EDIT EDIT EDIT EDIT EDIT EDIT EDIT
+	private $channel = '#yourchan';
 	private $db_host = '127.0.0.1';
 	private $db_port = 3306;
 	private $db_user = 'user';
@@ -143,7 +144,7 @@ final class User
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"
 			      . '<div class="info">'.htmlspecialchars($this->csNick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstSeen)).' and last seen on '.date('M j, Y', strtotime($this->lastSeen)).'.<br />'
-			      . '<br />'.htmlspecialchars($this->csNick).' typed '.number_format($this->l_total).' lines, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
+			      . '<br />'.htmlspecialchars($this->csNick).' typed '.number_format($this->l_total).' lines on '.htmlspecialchars($this->channel).', an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
 
 		/**
 		 * Activity section
