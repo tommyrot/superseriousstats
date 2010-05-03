@@ -22,27 +22,25 @@
  */
 final class User
 {
-	// EDIT EDIT EDIT EDIT EDIT EDIT EDIT EDIT
+	/**
+	 * Make sure to **EDIT** the following settings so they correspond with your setup. Consult the wiki for more details.
+	 */
+	private $bar_afternoon = 'y.png';
+	private $bar_evening = 'r.png';
+	private $bar_morning = 'g.png';
+	private $bar_night = 'b.png';
 	private $channel = '#yourchan';
 	private $db_host = '127.0.0.1';
 	private $db_port = 3306;
 	private $db_user = 'user';
 	private $db_pass = 'pass';
 	private $db_name = 'superseriousstats';
-	private $timezone = 'Europe/Amsterdam';
-	// EDIT EDIT EDIT EDIT EDIT EDIT EDIT EDIT
-
-	/**
-	 * Change only if you know what you're doing.
-	 */
-	private $bar_afternoon = 'y.png';
-	private $bar_evening = 'r.png';
-	private $bar_morning = 'g.png';
-	private $bar_night = 'b.png';
 	private $stylesheet = 'default.css';
+	private $timezone = 'Europe/Amsterdam';
 
 	/**
 	 * Output debug/error messages on the userstats page. Useful to troubleshoot problems with your webserver configuration.
+	 * It's recommended to leave this setting set to FALSE during normal operation.
 	 */
 	private $debug = FALSE;
 
@@ -51,9 +49,11 @@ final class User
 	 */
 	private $RUID = 0;
 	private $UID = 0;
-	private $l_avg = 0;
 	private $csNick = '';
+	private $date_max = '';
 	private $firstSeen = '';
+	private $l_avg = 0;
+	private $l_max = 0;
 	private $l_total = 0;
 	private $lastSeen = '';
 	private $month = '';
@@ -119,20 +119,24 @@ final class User
 		 * Date and time variables used throughout the script.
 		 */
 		$this->day = date('j', strtotime('yesterday'));
-		$this->year = date('Y', strtotime('yesterday'));
 		$this->month = date('m', strtotime('yesterday'));
-
-		/**
-		 * HTML Head
-		 */
-		$query_max = @mysqli_query($this->mysqli, 'SELECT SUM(`l_total`) AS `max`, `date` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$this->RUID.' GROUP BY `date` ORDER BY `max` DESC LIMIT 10') or $this->fail(mysqli_error($this->mysqli));
-		$result_max = mysqli_fetch_object($query_max);
+		$this->year = date('Y', strtotime('yesterday'));
 		$this->years = $this->year - date('Y', strtotime($this->firstSeen)) + 1;
 
+		/**
+		 * If we have less than 3 years of data we set the amount of years to 3 so we have that many columns in our table. Looks better.
+		 */
 		if ($this->years < 3) {
 			$this->years = 3;
 		}
 
+		/**
+		 * HTML Head
+		 */
+		$query = @mysqli_query($this->mysqli, 'SELECT `date` AS `date_max`, SUM(`l_total`) AS `l_max` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE `RUID` = '.$this->RUID.' GROUP BY `date` ORDER BY `l_max` DESC LIMIT 1') or $this->fail(mysqli_error($this->mysqli));
+		$result = mysqli_fetch_object($query);
+		$this->date_max = $result->date_max;
+		$this->l_max = $result->l_max;
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
 			      . '<head>'."\n".'<title>'.htmlspecialchars($this->csNick).', seriously.</title>'."\n"
@@ -144,7 +148,7 @@ final class User
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"
 			      . '<div class="info">'.htmlspecialchars($this->csNick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstSeen)).' and last seen on '.date('M j, Y', strtotime($this->lastSeen)).'.<br />'
-			      . '<br />'.htmlspecialchars($this->csNick).' typed '.number_format($this->l_total).' lines on '.htmlspecialchars($this->channel).', an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($result_max->date)).' with a total of '.number_format($result_max->max).' lines typed.</div>'."\n";
+			      . '<br />'.htmlspecialchars($this->csNick).' typed '.number_format($this->l_total).' lines on '.htmlspecialchars($this->channel).', an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($result->l_max).' lines typed.</div>'."\n";
 
 		/**
 		 * Activity section
@@ -161,9 +165,8 @@ final class User
 		 */
 		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
 		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
-		return $this->output;
-
 		@mysqli_close($this->mysqli);
+		return $this->output;
 	}
 
 	/**
