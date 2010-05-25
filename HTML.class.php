@@ -101,6 +101,28 @@ final class HTML extends Base
 	}
 
 	/**
+	 * Calculate how many years, months or days ago a given date plus time is.
+	 */
+	private function dateTime2DaysAgo($dateTime)
+	{
+		$daysAgo = round((strtotime('today') - strtotime(substr($dateTime, 0, 10))) / 86400);
+
+		if (($daysAgo / 365) >= 1) {
+			$daysAgo = str_replace('.0', '', number_format($daysAgo / 365, 1));
+			$daysAgo .= ' Year'.($daysAgo > 1 ? 's' : '').' Ago';
+		} elseif (($daysAgo / 30.42) >= 1) {
+			$daysAgo = str_replace('.0', '', number_format($daysAgo / 30.42, 1));
+			$daysAgo .= ' Month'.($daysAgo > 1 ? 's' : '').' Ago';
+		} elseif ($daysAgo == 1) {
+			$daysAgo = 'Yesterday';
+		} else {
+			$daysAgo .= ' Days Ago';
+		}
+
+		return $daysAgo;
+	}
+	
+	/**
 	 * Get the case sensitive nick and status for a given UID.
 	 */
 	private function getDetails($UID)
@@ -697,21 +719,7 @@ final class HTML extends Base
 			$l_total_percentage = number_format(($result->l_total / $l_total) * 100, 2);
 			$query_lastSeen = @mysqli_query($this->mysqli, 'SELECT MAX(`lastSeen`) AS `lastSeen` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			$result_lastSeen = mysqli_fetch_object($query_lastSeen);
-			$lastSeen = substr($result_lastSeen->lastSeen, 0, 10);
-			$lastSeen = round((strtotime('today') - strtotime($lastSeen)) / 86400);
-
-			if (($lastSeen / 365) >= 1) {
-				$lastSeen = str_replace('.0', '', number_format($lastSeen / 365, 1));
-				$lastSeen = $lastSeen.' Year'.($lastSeen > 1 ? 's' : '').' Ago';
-			} elseif (($lastSeen / 30.42) >= 1) {
-				$lastSeen = str_replace('.0', '', number_format($lastSeen / 30.42, 1));
-				$lastSeen = $lastSeen.' Month'.($lastSeen > 1 ? 's' : '').' Ago';
-			} elseif ($lastSeen == 1) {
-				$lastSeen = 'Yesterday';
-			} else {
-				$lastSeen = $lastSeen.' Days Ago';
-			}
-
+			$lastSeen = $this->dateTime2DaysAgo($result_lastSeen->lastSeen);
 			$when_width = 50;
 			$times = array('night', 'morning', 'afternoon', 'evening');
 			unset($l_night_width_real, $l_night_width, $l_morning_width_real, $l_morning_width, $l_afternoon_width_real, $l_afternoon_width, $l_evening_width_real, $l_evening_width, $remainders, $when_night, $when_morning, $when_afternoon, $when_evening);
