@@ -97,7 +97,7 @@ final class User
 		$result = mysqli_fetch_object($query);
 		$this->RUID = $result->RUID;
 		$this->csNick = $result->csNick;
-		$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen`, `l_total`, (`l_total` / `activeDays`) AS `l_avg` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`UID` WHERE `RUID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen`, `l_total`, (`l_total` / `activeDays`) AS `l_avg` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` JOIN `query_lines` ON `user_status`.`RUID` = `query_lines`.`UID` WHERE `RUID` = '.$this->RUID.' GROUP BY `RUID`') or $this->fail(mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
