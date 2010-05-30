@@ -49,12 +49,12 @@ final class HTML extends Base
 	private $date_max = '';
 	private $day = '';
 	private $days = 0;
-	private $day_of_month = '';
-	private $day_of_year = '';
+	private $day_of_month = 0;
+	private $day_of_year = 0;
 	private $l_avg = 0;
 	private $l_max = 0;
 	private $l_total = 0;
-	private $month = '';
+	private $month = 0;
 	private $month_name = '';
 	private $mysqli;
 	private $output = '';
@@ -172,9 +172,9 @@ final class HTML extends Base
 		 * For whatever reason PHP starts counting days from 0.. so we add 1 to $day_of_year to fix this absurdity.
 		 */
 		$this->day = date('j', strtotime('yesterday'));
-		$this->day_of_month = date('d', strtotime('yesterday'));
+		$this->day_of_month = date('j', strtotime('yesterday'));
 		$this->day_of_year = date('z', strtotime('yesterday')) + 1;
-		$this->month = date('m', strtotime('yesterday'));
+		$this->month = date('n', strtotime('yesterday'));
 		$this->month_name = date('F', strtotime('yesterday'));
 		$this->year = date('Y', strtotime('yesterday'));
 		$this->years = $this->year - date('Y', strtotime($this->date_first)) + 1;
