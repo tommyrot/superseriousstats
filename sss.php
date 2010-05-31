@@ -250,9 +250,7 @@ final class sss extends Base
 					}
 				}
 
-				if (date_default_timezone_set($this->timezone) !== FALSE) {
-					$this->output('notice', 'readConfig(): switched to timezone: \''.$this->timezone.'\'');
-				} else {
+				if (date_default_timezone_set($this->timezone) == FALSE) {
 					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
 				}
 			} else {
