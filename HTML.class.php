@@ -37,7 +37,7 @@ final class HTML extends Base
 	private $db_user = '';
 	private $minLines = 500;
 	private $minRows = 3;
-	private $sectionbits = 31;
+	private $sectionbits = 63;
 	private $stylesheet = 'default.css';
 	private $userstats = FALSE;
 
@@ -343,6 +343,18 @@ final class HTML extends Base
 		}
 
 		/**
+		 * URLs section
+		 */
+		if ($this->sectionbits & 32) {
+			$output = '';
+			$output .= $this->makeTable_URLs(array('rows' => 100, 'head' => 'Newest URLs', 'key1' => 'Date', 'key2' => 'Nick', 'key3' => 'URL', 'query' => 'SELECT `v1`, `v2`, `v3` FROM (SELECT `LID`, `firstUsed` AS `v1`, `csNick` AS `v2`, `csURL` AS `v3` FROM `user_URLs` JOIN `user_details` ON `user_URLs`.`UID` = `user_details`.`UID` ORDER BY `v1` ASC, `user_URLs`.`UID` ASC) AS `sub` GROUP BY `LID` ORDER BY `v1` DESC, `LID` DESC LIMIT 100'));
+
+			if (!empty($output)) {
+				$this->output .= '<div class="head">URLs</div>'."\n".$output;
+			}
+		}
+
+		/**
 		 * HTML Foot
 		 */
 		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
@@ -350,6 +362,44 @@ final class HTML extends Base
 		@mysqli_close($this->mysqli);
 		$this->output('notice', 'makeHTML(): finished creating statspage');
 		return $this->output;
+	}
+
+	/**
+	 * Create a table for URLs.
+	 */
+	private function makeTable_URLs($settings)
+	{
+		$query = @mysqli_query($this->mysqli, $settings['query']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$prevDate = '';
+		$i = 0;
+
+		while ($result = mysqli_fetch_object($query)) {
+			if  ($i >= $settings['rows']) {
+				break;
+			}
+
+			$i++;
+			$date = date('Y-m-d', strtotime($result->v1));
+
+			if ($date == $prevDate) {
+				$date = '';
+			} else {
+				$prevDate = $date;
+			}
+
+			$content[] = array($i, $date, htmlspecialchars($result->v2), htmlspecialchars($result->v3));
+		}
+
+		$output = '<table class="large">'
+			. '<tr><th colspan="3"><span class="left">'.htmlspecialchars($settings['head']).'</span></th></tr>'
+			. '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
+
+		foreach ($content as $row) {
+			$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'"><div>'.$row[3].'</div></a></td></tr>';
+		}
+
+		$output .= '</table>'."\n";
+		return $output;
 	}
 
 	/**
