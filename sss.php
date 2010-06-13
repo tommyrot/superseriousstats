@@ -23,6 +23,7 @@ final class sss extends Base
 {
 	/**
 	 * Default settings, can be overridden in the config file.
+	 * These should all appear in $settings_list along with their type.
 	 */
 	private $doMaintenance = TRUE;
 	private $logfileDateFormat = '';
