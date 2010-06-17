@@ -396,7 +396,8 @@ final class HTML extends Base
 			. '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
 		foreach ($content as $row) {
-			$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'"><div>'.$row[3].'</div></a></td></tr>';
+			// TODO: <div> inside <a> doesn't validate! other way around breaks ellipsis..
+			$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'"><div>'.htmlspecialchars($row[3]).'</div></a></td></tr>';
 		}
 
 		$output .= '</table>'."\n";
