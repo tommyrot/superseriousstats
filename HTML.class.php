@@ -425,60 +425,64 @@ final class HTML extends Base
 				$status = 1;
 			}
 
-			if ($status != 3) {
-				$i++;
+			if ($status == 3) {
+				continue;
+			}
 
-				if ($settings['size'] == 'small') {
-					$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2));
-				} elseif ($settings['size'] == 'large') {
-					$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
-				}
+			$i++;
+
+			if ($settings['size'] == 'small') {
+				$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2));
+			} elseif ($settings['size'] == 'large') {
+				$content[] = array($i, number_format($result->v1, $settings['decimals']).($settings['percentage'] ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			}
 		}
-
-		$output = '';
 
 		/**
 		 * If there are less rows to display than the desired minimum amount of rows we skip this table.
 		 */
-		if ($i >= $this->minRows) {
-			for ($i = count($content); $i < $settings['rows']; $i++) {
-				if ($settings['size'] == 'small') {
-					$content[] = array('&nbsp;', '', '');
-				} elseif ($settings['size'] == 'large') {
-					$content[] = array('&nbsp;', '', '', '');
-				}
-			}
+		if ($i < $this->minRows) {
+			return NULL;
+		}
 
-			if (isset($settings['result_total'])) {
-				$total = $settings['result_total'];
-			} elseif (isset($settings['query_total'])) {
-				$query_total = @mysqli_query($this->mysqli, $settings['query_total']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-				$result_total = mysqli_fetch_object($query_total);
-				$total = $result_total->total;
-			}
-
+		$output = '';
+		
+		for ($i = count($content); $i < $settings['rows']; $i++) {
 			if ($settings['size'] == 'small') {
-				$output .= '<table class="small">'
-					.  '<tr><th colspan="3"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($total) ? '' : '<span class="right">'.number_format($total).' total</span>').'</th></tr>'
-					.  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td></tr>';
-
-				foreach ($content as $row) {
-					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
-				}
-
-				$output .= '</table>'."\n";
+				$content[] = array('&nbsp;', '', '');
 			} elseif ($settings['size'] == 'large') {
-				$output .= '<table class="large">'
-					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($total) ? '' : '<span class="right">'.number_format($total).' total</span>').'</th></tr>'
-					.  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
-
-				foreach ($content as $row) {
-					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
-				}
-
-				$output .= '</table>'."\n";
+				$content[] = array('&nbsp;', '', '', '');
 			}
+		}
+
+		if (isset($settings['result_total'])) {
+			$total = $settings['result_total'];
+		} elseif (isset($settings['query_total'])) {
+			$query_total = @mysqli_query($this->mysqli, $settings['query_total']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$result_total = mysqli_fetch_object($query_total);
+			$total = $result_total->total;
+		}
+
+		if ($settings['size'] == 'small') {
+			$output .= '<table class="small">'
+				.  '<tr><th colspan="3"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($total) ? '' : '<span class="right">'.number_format($total).' total</span>').'</th></tr>'
+				.  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td></tr>';
+
+			foreach ($content as $row) {
+				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
+			}
+
+			$output .= '</table>'."\n";
+		} elseif ($settings['size'] == 'large') {
+			$output .= '<table class="large">'
+				.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head']).'</span>'.(empty($total) ? '' : '<span class="right">'.number_format($total).' total</span>').'</th></tr>'
+				.  '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
+
+			foreach ($content as $row) {
+				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
+			}
+
+			$output .= '</table>'."\n";
 		}
 
 		return $output;
@@ -949,106 +953,107 @@ final class HTML extends Base
 		$rows = mysqli_num_rows($query);
 		$output = '';
 
-		if (!empty($rows)) {
-			$prevTID = 0;
-			$prevDate = $this->date_first;
-			$TIDs = array();
+		if (empty($rows)) {
+			return NULL;
+		}
+		
+		$prevTID = 0;
+		$prevDate = $this->date_first;
+		$TIDs = array();
 
-			while ($result = mysqli_fetch_object($query)) {
-				$hoursPassed = floor((strtotime($result->setDate) - strtotime($prevDate)) / 3600);
+		while ($result = mysqli_fetch_object($query)) {
+			$hoursPassed = floor((strtotime($result->setDate) - strtotime($prevDate)) / 3600);
 
-				if ($prevTID != 0) {
-					$topicTime[$prevTID] += $hoursPassed;
-				}
-
-				if (!in_array($result->TID, $TIDs)) {
-					$TIDs[] = $result->TID;
-					$topicTime[$result->TID] = 0;
-				}
-
-				$prevTID = $result->TID;
-				$prevDate = $result->setDate;
+			if ($prevTID != 0) {
+				$topicTime[$prevTID] += $hoursPassed;
 			}
 
-			/**
-			 * Time between yesterday midnight and setDate from last topic will be added to the last topic.
-			 */
-			$hoursPassed = floor(((strtotime('yesterday') + 86400) - strtotime($prevDate)) / 3600);
-			$topicTime[$prevTID] += $hoursPassed;
-
-			/**
-			 * Order the results and fill the longest standing topics table.
-			 */
-			arsort($topicTime);
-			$i = 0;
-
-			foreach ($topicTime as $TID => $hoursPassed) {
-				if ($i >= $settings['rows']) {
-					break;
-				}
-
-				$i++;
-				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-				$result_csTopic = mysqli_fetch_object($query_csTopic);
-				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-				$result_csNick = mysqli_fetch_object($query_csNick);
-				$content2[] = array($i, number_format(floor($hoursPassed / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
+			if (!in_array($result->TID, $TIDs)) {
+				$TIDs[] = $result->TID;
+				$topicTime[$result->TID] = 0;
 			}
 
-			/**
-			* If there are less rows to display than the desired minimum amount of rows we skip this table.
-			*/
-			if ($i >= $this->minRows) {
-				for ($i = count($content2); $i < $settings['rows']; $i++) {
-					$content2[] = array('&nbsp;', '', '', '');
-				}
+			$prevTID = $result->TID;
+			$prevDate = $result->setDate;
+		}
 
-				$output .= '<table class="large">'
-					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head2']).'</span></th></tr>'
-					.  '<tr><td class="k1">'.htmlspecialchars($settings['key1a']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
+		/**
+		 * Time between yesterday midnight and setDate from last topic will be added to the last topic.
+		 */
+		$hoursPassed = floor(((strtotime('yesterday') + 86400) - strtotime($prevDate)) / 3600);
+		$topicTime[$prevTID] += $hoursPassed;
 
-				foreach ($content2 as $row) {
-					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
-				}
+		/**
+		 * Order the results and fill the longest standing topics table.
+		 */
+		arsort($topicTime);
+		$i = 0;
 
-				$output .= '</table>'."\n";
+		foreach ($topicTime as $TID => $hoursPassed) {
+			if ($i >= $settings['rows']) {
+				break;
 			}
 
-			/**
-			 * Most recent topics table.
-			 */
-			$query = @mysqli_query($this->mysqli, 'SELECT DISTINCT(`TID`), `setDate` FROM `user_topics` ORDER BY `setDate` DESC LIMIT 5') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-			$i = 0;
+			$i++;
+			$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$result_csTopic = mysqli_fetch_object($query_csTopic);
+			$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$result_csNick = mysqli_fetch_object($query_csNick);
+			$content2[] = array($i, number_format(floor($hoursPassed / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
+		}
 
-			while ($result = mysqli_fetch_object($query)) {
-				$i++;
-				$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-				$result_csTopic = mysqli_fetch_object($query_csTopic);
-				$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-				$result_csNick = mysqli_fetch_object($query_csNick);
-				$daysPassed = round(((strtotime('yesterday') + 86400) - strtotime($result->setDate)) / 86400);
-				$content1[] = array($i, number_format($daysPassed), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
+		/**
+		* If there are less rows to display than the desired minimum amount of rows we skip this table.
+		*/
+		if ($i >= $this->minRows) {
+			for ($i = count($content2); $i < $settings['rows']; $i++) {
+				$content2[] = array('&nbsp;', '', '', '');
 			}
 
-			/**
-			* If there are less rows to display than the desired minimum amount of rows we skip this table.
-			*/
-			if ($i >= $this->minRows) {
-				for ($i = count($content1); $i < $settings['rows']; $i++) {
-					$content1[] = array('&nbsp;', '', '', '');
-				}
+			$output .= '<table class="large">'
+				.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head2']).'</span></th></tr>'
+				.  '<tr><td class="k1">'.htmlspecialchars($settings['key1a']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
-				$output .= '<table class="large">'
-					.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head1']).'</span></th></tr>'
-					.  '<tr><td class="k1">'.htmlspecialchars($settings['key1b']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
-
-				foreach ($content1 as $row) {
-					$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
-				}
-
-				$output .= '</table>'."\n";
+			foreach ($content2 as $row) {
+				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 			}
 
+			$output .= '</table>'."\n";
+		}
+
+		/**
+		 * Most recent topics table.
+		 */
+		$query = @mysqli_query($this->mysqli, 'SELECT DISTINCT(`TID`), `setDate` FROM `user_topics` ORDER BY `setDate` DESC LIMIT 5') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$i = 0;
+
+		while ($result = mysqli_fetch_object($query)) {
+			$i++;
+			$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$result_csTopic = mysqli_fetch_object($query_csTopic);
+			$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$result_csNick = mysqli_fetch_object($query_csNick);
+			$daysPassed = round(((strtotime('yesterday') + 86400) - strtotime($result->setDate)) / 86400);
+			$content1[] = array($i, number_format($daysPassed), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
+		}
+
+		/**
+		* If there are less rows to display than the desired minimum amount of rows we skip this table.
+		*/
+		if ($i >= $this->minRows) {
+			for ($i = count($content1); $i < $settings['rows']; $i++) {
+				$content1[] = array('&nbsp;', '', '', '');
+			}
+
+			$output .= '<table class="large">'
+				.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head1']).'</span></th></tr>'
+				.  '<tr><td class="k1">'.htmlspecialchars($settings['key1b']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
+
+			foreach ($content1 as $row) {
+				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+			}
+
+			$output .= '</table>'."\n";
 		}
 
 		return $output;
