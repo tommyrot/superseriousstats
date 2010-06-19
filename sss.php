@@ -124,7 +124,7 @@ final class sss extends Base
 		if (($rp = realpath($filedir)) === FALSE) {
 			$this->output('critical', 'parseLog(): no such file or directory: \''.$filedir.'\'');
 		}
-		
+
 		if (is_dir($rp)) {
 			if (($dh = @opendir($rp)) === FALSE) {
 				$this->output('critical', 'parseLog(): failed to open directory: \''.$rp.'\'');
@@ -150,7 +150,7 @@ final class sss extends Base
 			if ((!empty($this->logfilePrefix) && strpos(basename($logfile), $this->logfilePrefix) === FALSE) || (!empty($this->logfileSuffix) && strpos(basename($logfile), $this->logfileSuffix) === FALSE)) {
 				continue;
 			}
-			
+
 			$date = str_replace(array($this->logfilePrefix, $this->logfileSuffix), '', basename($logfile));
 			$date = date('Y-m-d', strtotime($date));
 
