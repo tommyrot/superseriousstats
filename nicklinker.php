@@ -85,53 +85,53 @@ final class nicklinker extends Base
 	 */
 	private function export($file)
 	{
-		if (($fp = @fopen($file, 'wb')) !== FALSE) {
-			$this->output('notice', 'export(): exporting nicks');
-			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
-			$query = @mysqli_query($mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-			$rows = mysqli_num_rows($query);
-			$output = '';
+		$this->output('notice', 'export(): exporting nicks');
+		$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
+		$query = @mysqli_query($mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+		$rows = mysqli_num_rows($query);
+		$output = '';
 
-			if (!empty($rows)) {
-				while ($result = mysqli_fetch_object($query)) {
-					$RUIDs[] = $result->RUID;
-					$status[$result->RUID] = $result->status;
-				}
-
-				foreach ($RUIDs as $RUID) {
-					$output .= $status[$RUID];
-					$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` AND `RUID` = '.$RUID.' ORDER BY `csNick` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-					$rows = mysqli_num_rows($query);
-
-					if (!empty($rows)) {
-						while ($result = mysqli_fetch_object($query)) {
-							$output .= ','.$result->csNick;
-						}
-					}
-
-					$output .= "\n";
-				}
+		if (!empty($rows)) {
+			while ($result = mysqli_fetch_object($query)) {
+				$RUIDs[] = $result->RUID;
+				$status[$result->RUID] = $result->status;
 			}
 
-			$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE STATUS = 0 ORDER BY `csNick` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-			$rows = mysqli_num_rows($query);
+			foreach ($RUIDs as $RUID) {
+				$output .= $status[$RUID];
+				$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` AND `RUID` = '.$RUID.' ORDER BY `csNick` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+				$rows = mysqli_num_rows($query);
 
-			if (!empty($rows)) {
-				$output .= '*';
-
-				while ($result = mysqli_fetch_object($query)) {
-					$output .= ','.$result->csNick;
+				if (!empty($rows)) {
+					while ($result = mysqli_fetch_object($query)) {
+						$output .= ','.$result->csNick;
+					}
 				}
 
 				$output .= "\n";
 			}
+		}
 
-			fwrite($fp, $output);
-			fclose($fp);
-			$this->output('notice', 'export(): export completed');
-		} else {
+		$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE STATUS = 0 ORDER BY `csNick` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (!empty($rows)) {
+			$output .= '*';
+
+			while ($result = mysqli_fetch_object($query)) {
+				$output .= ','.$result->csNick;
+			}
+
+			$output .= "\n";
+		}
+
+		if (($fp = @fopen($file, 'wb')) === FALSE) {
 			$this->output('critical', 'export(): failed to open file: \''.$file.'\'');
 		}
+
+		fwrite($fp, $output);
+		fclose($fp);
+		$this->output('notice', 'export(): export completed');
 	}
 
 	/**
