@@ -22,8 +22,8 @@
 final class nicklinker extends Base
 {
 	/**
-	 * Default settings, can be overridden in the config file.
-	 * These should all appear in $settings_list along with their type.
+	 * Default settings for this script, can be overridden in the config file.
+	 * These should all appear in $settings_list[] along with their type.
 	 */
 	private $db_host = '';
 	private $db_name = '';
@@ -59,26 +59,24 @@ final class nicklinker extends Base
 		/**
 		 * Read options from the command line.
 		 */
-		if (($options = getopt('c:i:o:')) !== FALSE) {
-			if (empty($options)) {
-				$this->printManual();
-			}
+		$options = getopt('c:i:o:');
 
-			if (array_key_exists('c', $options)) {
-				$this->readConfig($options['c']);
-			} else {
-				$this->readConfig(dirname(__FILE__).'/sss.conf');
-			}
-
-			if (array_key_exists('i', $options)) {
-				$this->import($options['i']);
-			}
-
-			if (array_key_exists('o', $options)) {
-				$this->export($options['o']);
-			}
-		} else {
+		if (empty($options)) {
 			$this->printManual();
+		}
+
+		if (array_key_exists('c', $options)) {
+			$this->readConfig($options['c']);
+		} else {
+			$this->readConfig(dirname(__FILE__).'/sss.conf');
+		}
+
+		if (array_key_exists('i', $options)) {
+			$this->import($options['i']);
+		}
+
+		if (array_key_exists('o', $options)) {
+			$this->export($options['o']);
 		}
 	}
 
@@ -214,7 +212,7 @@ final class nicklinker extends Base
 	}
 
 	/**
-	 * Read settings from the config file.
+	 * Read settings from the config file and put them into $settings[] so we can pass them along to other classes.
 	 */
 	private function readConfig($file)
 	{
@@ -225,7 +223,7 @@ final class nicklinker extends Base
 		if (($fp = @fopen($rp, 'rb')) === FALSE) {
 			$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
 		}
-		
+
 		while (!feof($fp)) {
 			$line = fgets($fp);
 			$line = trim($line);
