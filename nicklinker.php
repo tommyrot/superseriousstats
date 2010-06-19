@@ -141,60 +141,60 @@ final class nicklinker extends Base
 	 */
 	private function import($file)
 	{
-		if (($rp = realpath($file)) !== FALSE) {
-			if (($fp = @fopen($rp, 'rb')) !== FALSE) {
-				$this->output('notice', 'import(): importing nicks');
-				$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
-				$query = @mysqli_query($mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-				$rows = mysqli_num_rows($query);
+		if (($rp = realpath($file)) === FALSE) {
+			$this->output('critical', 'import(): no such file: \''.$file.'\'');
+		}
 
-				if (!empty($rows)) {
-					while ($result = mysqli_fetch_object($query)) {
-						$nick2UID[strtolower($result->csNick)] = $result->UID;
-					}
+		if (($fp = @fopen($rp, 'rb')) !== FALSE) {
+			$this->output('notice', 'import(): importing nicks');
+			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
+			$query = @mysqli_query($mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+			$rows = mysqli_num_rows($query);
+
+			if (!empty($rows)) {
+				while ($result = mysqli_fetch_object($query)) {
+					$nick2UID[strtolower($result->csNick)] = $result->UID;
+				}
+
+				/**
+				 * Set all nicks to their default status before updating any records from the input file.
+				 */
+				@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+
+				while (!feof($fp)) {
+					$line = fgets($fp);
+					$lineParts = explode(',', strtolower($line));
+					$status = trim($lineParts[0]);
 
 					/**
-					 * Set all nicks to their default status before updating any records from the input file.
+					 * Only lines starting with the number 1 (normal user) or 3 (bot) will be used when updating the user records.
+					 * The first nick on each line will initially be used as the "main" nick, and gets the status 1 or 3, as specified in the imported nicks file.
+					 * Additional nicks on the same line will be linked to this "main" nick and get the status 2, indicating it being an alias.
+					 * Run "php sss.php -m" afterwards to start database maintenance. This will ensure all userstats are properly accumulated according to your latest changes.
+					 * More info on http://code.google.com/p/superseriousstats/wiki/Nicklinker
 					 */
-					@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+					if ($status == 1 || $status == 3) {
+						$nick_main = trim($lineParts[1]);
 
-					while (!feof($fp)) {
-						$line = fgets($fp);
-						$lineParts = explode(',', strtolower($line));
-						$status = trim($lineParts[0]);
+						if (!empty($nick_main)) {
+							@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$nick2UID[$nick_main]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 
-						/**
-						 * Only lines starting with the number 1 (normal user) or 3 (bot) will be used when updating the user records.
-						 * The first nick on each line will initially be used as the "main" nick, and gets the status 1 or 3, as specified in the imported nicks file.
-						 * Additional nicks on the same line will be linked to this "main" nick and get the status 2, indicating it being an alias.
-						 * Run "php sss.php -m" afterwards to start database maintenance. This will ensure all userstats are properly accumulated according to your latest changes.
-						 * More info on http://code.google.com/p/superseriousstats/wiki/Nicklinker
-						 */
-						if ($status == 1 || $status == 3) {
-							$nick_main = trim($lineParts[1]);
+							for ($i = 2, $j = count($lineParts); $i < $j; $i++) {
+								$nick = trim($lineParts[$i]);
 
-							if (!empty($nick_main)) {
-								@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$nick2UID[$nick_main]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-
-								for ($i = 2, $j = count($lineParts); $i < $j; $i++) {
-									$nick = trim($lineParts[$i]);
-
-									if (!empty($nick)) {
-										@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$nick2UID[$nick_main].', `status` = 2 WHERE `UID` = '.$nick2UID[$nick]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-									}
+								if (!empty($nick)) {
+									@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$nick2UID[$nick_main].', `status` = 2 WHERE `UID` = '.$nick2UID[$nick]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 								}
 							}
 						}
 					}
 				}
-
-				fclose($fp);
-				$this->output('notice', 'import(): import completed');
-			} else {
-				$this->output('critical', 'import(): failed to open file: \''.$file.'\'');
 			}
+
+			fclose($fp);
+			$this->output('notice', 'import(): import completed');
 		} else {
-			$this->output('critical', 'import(): no such file: \''.$file.'\'');
+			$this->output('critical', 'import(): failed to open file: \''.$file.'\'');
 		}
 	}
 
@@ -219,51 +219,53 @@ final class nicklinker extends Base
 	private function readConfig($file)
 	{
 		if (($rp = realpath($file)) !== FALSE) {
-			if (($fp = @fopen($rp, 'rb')) !== FALSE) {
-				while (!feof($fp)) {
-					$line = fgets($fp);
-					$line = trim($line);
+			$this->output('critical', 'readConfig(): no such file: \''.$file.'\'');
+		}
 
-					if (preg_match('/^(\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
-						$this->settings[$matches[1]] = $matches[2];
+		if (($fp = @fopen($rp, 'rb')) !== FALSE) {
+			while (!feof($fp)) {
+				$line = fgets($fp);
+				$line = trim($line);
+
+				if (preg_match('/^(\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
+					$this->settings[$matches[1]] = $matches[2];
+				}
+			}
+
+			fclose($fp);
+
+			/**
+			 * Exit if any crucial settings aren't present in the config file.
+			 */
+			foreach ($this->settings_required_list as $key) {
+				if (!array_key_exists($key, $this->settings)) {
+					$this->output('critical', 'readConfig(): missing setting: \''.$key.'\'');
+				}
+			}
+
+			foreach ($this->settings_list as $key => $type) {
+				if (!array_key_exists($key, $this->settings)) {
+					continue;
+				}
+
+				if ($type == 'string') {
+					$this->$key = (string) $this->settings[$key];
+				} elseif ($type == 'int') {
+					$this->$key = (int) $this->settings[$key];
+				} elseif ($type == 'bool') {
+					if (strcasecmp($this->settings[$key], 'TRUE') == 0) {
+						$this->$key = TRUE;
+					} elseif (strcasecmp($this->settings[$key], 'FALSE') == 0) {
+						$this->$key = FALSE;
 					}
 				}
+			}
 
-				fclose($fp);
-
-				/**
-				 * Exit if any crucial settings aren't present in the config file.
-				 */
-				foreach ($this->settings_required_list as $key) {
-					if (!array_key_exists($key, $this->settings)) {
-						$this->output('critical', 'readConfig(): missing setting: \''.$key.'\'');
-					}
-				}
-
-				foreach ($this->settings_list as $key => $type) {
-					if (array_key_exists($key, $this->settings)) {
-						if ($type == 'string') {
-							$this->$key = (string) $this->settings[$key];
-						} elseif ($type == 'int') {
-							$this->$key = (int) $this->settings[$key];
-						} elseif ($type == 'bool') {
-							if (strcasecmp($this->settings[$key], 'TRUE') == 0) {
-								$this->$key = TRUE;
-							} elseif (strcasecmp($this->settings[$key], 'FALSE') == 0) {
-								$this->$key = FALSE;
-							}
-						}
-					}
-				}
-
-				if (date_default_timezone_set($this->timezone) == FALSE) {
-					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
-				}
-			} else {
-				$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
+			if (date_default_timezone_set($this->timezone) == FALSE) {
+				$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
 			}
 		} else {
-			$this->output('critical', 'readConfig(): no such file: \''.$file.'\'');
+			$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
 		}
 	}
 }
