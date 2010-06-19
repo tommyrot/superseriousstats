@@ -61,34 +61,32 @@ final class sss extends Base
 		/**
 		 * Read options from the command line.
 		 */
-		if (($options = getopt('b:c:i:mo:')) !== FALSE) {
-			if (empty($options)) {
-				$this->printManual();
-			}
+		$options = getopt('b:c:i:mo:');
 
-			if (array_key_exists('c', $options)) {
-				$this->readConfig($options['c']);
-			} else {
-				$this->readConfig(dirname(__FILE__).'/sss.conf');
-			}
-
-			if (array_key_exists('b', $options)) {
-				$this->settings['sectionbits'] = $options['b'];
-			}
-
-			if (array_key_exists('i', $options)) {
-				$this->parseLog($options['i']);
-			}
-
-			if (array_key_exists('m', $options)) {
-				$this->doMaintenance();
-			}
-
-			if (array_key_exists('o', $options)) {
-				$this->makeHTML($options['o']);
-			}
-		} else {
+		if (empty($options)) {
 			$this->printManual();
+		}
+
+		if (array_key_exists('c', $options)) {
+			$this->readConfig($options['c']);
+		} else {
+			$this->readConfig(dirname(__FILE__).'/sss.conf');
+		}
+
+		if (array_key_exists('b', $options)) {
+			$this->settings['sectionbits'] = $options['b'];
+		}
+
+		if (array_key_exists('i', $options)) {
+			$this->parseLog($options['i']);
+		}
+
+		if (array_key_exists('m', $options)) {
+			$this->doMaintenance();
+		}
+
+		if (array_key_exists('o', $options)) {
+			$this->makeHTML($options['o']);
 		}
 	}
 
@@ -123,61 +121,63 @@ final class sss extends Base
 	{
 		$filedir = preg_replace('/YESTERDAY/', date($this->logfileDateFormat, strtotime('yesterday')), $filedir);
 
-		if (($rp = realpath($filedir)) !== FALSE) {
-			if (is_dir($rp)) {
-				if (($dh = @opendir($rp)) !== FALSE) {
-					while (($file = readdir($dh)) !== FALSE) {
-						$logfiles[] = realpath($rp.'/'.$file);
-					}
-
-					closedir($dh);
-				} else {
-					$this->output('critical', 'parseLog(): failed to open directory: \''.$rp.'\'');
-				}
-			} else {
-				$logfiles[] = $rp;
-			}
-
-			sort($logfiles);
-			
-			/**
-			 * Variable to track if we modified our database and therefore need maintenance.
-			 */
-			$needMaintenance = FALSE;
-
-			foreach ($logfiles as $logfile) {
-				if ((empty($this->logfilePrefix) || stripos(basename($logfile), $this->logfilePrefix) !== FALSE) && (empty($this->logfileSuffix) || stripos(basename($logfile), $this->logfileSuffix) !== FALSE)) {
-					$date = str_replace(array($this->logfilePrefix, $this->logfileSuffix), '', basename($logfile));
-					$date = date('Y-m-d', strtotime($date));
-
-					if ($date == date('Y-m-d')) {
-						echo 'The logfile you are about to parse appears to be of today. It is recommended'."\n"
-						   . 'to skip this file until tomorrow when logging will be completed.'."\n"
-						   . 'Skip \''.basename($logfile).'\'? [yes] ';
-						$yn = strtolower(trim(fgets(STDIN)));
-
-						if (empty($yn) || $yn == 'y' || $yn == 'yes') {
-							break;
-						}
-					}
-
-					$parser_class = 'Parser_'.$this->logfileFormat;
-					$parser = new $parser_class($this->settings);
-					$parser->setValue('date', $date);
-					$parser->parseLog($logfile);
-
-					if ($this->writeData) {
-						$parser->writeData();
-						$needMaintenance = TRUE;
-					}
-				}
-			}
-
-			if ($needMaintenance && $this->doMaintenance) {
-				$this->doMaintenance();
-			}
-		} else {
+		if (($rp = realpath($filedir)) === FALSE) {
 			$this->output('critical', 'parseLog(): no such file or directory: \''.$filedir.'\'');
+		}
+		
+		if (is_dir($rp)) {
+			if (($dh = @opendir($rp)) === FALSE) {
+				$this->output('critical', 'parseLog(): failed to open directory: \''.$rp.'\'');
+			}
+
+			while (($file = readdir($dh)) !== FALSE) {
+				$logfiles[] = realpath($rp.'/'.$file);
+			}
+
+			closedir($dh);
+		} else {
+			$logfiles[] = $rp;
+		}
+
+		sort($logfiles);
+
+		/**
+		 * Variable to track if we modified our database and therefore need maintenance.
+		 */
+		$needMaintenance = FALSE;
+
+		foreach ($logfiles as $logfile) {
+			if ((!empty($this->logfilePrefix) && stripos(basename($logfile), $this->logfilePrefix) === FALSE) || (!empty($this->logfileSuffix) && stripos(basename($logfile), $this->logfileSuffix) === FALSE)) {
+				continue;
+			}
+			
+			$date = str_replace(array($this->logfilePrefix, $this->logfileSuffix), '', basename($logfile));
+			$date = date('Y-m-d', strtotime($date));
+
+			if ($date == date('Y-m-d')) {
+				echo 'The logfile you are about to parse appears to be of today. It is recommended'."\n"
+				   . 'to skip this file until tomorrow when logging will be completed.'."\n"
+				   . 'Skip \''.basename($logfile).'\'? [yes] ';
+				$yn = strtolower(trim(fgets(STDIN)));
+
+				if (empty($yn) || $yn == 'y' || $yn == 'yes') {
+					break;
+				}
+			}
+
+			$parser_class = 'Parser_'.$this->logfileFormat;
+			$parser = new $parser_class($this->settings);
+			$parser->setValue('date', $date);
+			$parser->parseLog($logfile);
+
+			if ($this->writeData) {
+				$parser->writeData();
+				$needMaintenance = TRUE;
+			}
+		}
+
+		if ($needMaintenance && $this->doMaintenance) {
+			$this->doMaintenance();
 		}
 	}
 
@@ -213,52 +213,54 @@ final class sss extends Base
 	 */
 	private function readConfig($file)
 	{
-		if (($rp = realpath($file)) !== FALSE) {
-			if (($fp = @fopen($rp, 'rb')) !== FALSE) {
-				while (!feof($fp)) {
-					$line = fgets($fp);
-					$line = trim($line);
-
-					if (preg_match('/^(\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
-						$this->settings[$matches[1]] = $matches[2];
-					}
-				}
-
-				fclose($fp);
-
-				/**
-				 * Exit if any crucial settings aren't present in the config file.
-				 */
-				foreach ($this->settings_required_list as $key) {
-					if (!array_key_exists($key, $this->settings)) {
-						$this->output('critical', 'readConfig(): missing setting: \''.$key.'\'');
-					}
-				}
-
-				foreach ($this->settings_list as $key => $type) {
-					if (array_key_exists($key, $this->settings)) {
-						if ($type == 'string') {
-							$this->$key = (string) $this->settings[$key];
-						} elseif ($type == 'int') {
-							$this->$key = (int) $this->settings[$key];
-						} elseif ($type == 'bool') {
-							if (strcasecmp($this->settings[$key], 'TRUE') == 0) {
-								$this->$key = TRUE;
-							} elseif (strcasecmp($this->settings[$key], 'FALSE') == 0) {
-								$this->$key = FALSE;
-							}
-						}
-					}
-				}
-
-				if (date_default_timezone_set($this->timezone) == FALSE) {
-					$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
-				}
-			} else {
-				$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
-			}
-		} else {
+		if (($rp = realpath($file)) === FALSE) {
 			$this->output('critical', 'readConfig(): no such file: \''.$file.'\'');
+		}
+
+		if (($fp = @fopen($rp, 'rb')) === FALSE) {
+			$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
+		}
+
+		while (!feof($fp)) {
+			$line = fgets($fp);
+			$line = trim($line);
+
+			if (preg_match('/^(\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
+				$this->settings[$matches[1]] = $matches[2];
+			}
+		}
+
+		fclose($fp);
+
+		/**
+		 * Exit if any crucial settings aren't present in the config file.
+		 */
+		foreach ($this->settings_required_list as $key) {
+			if (!array_key_exists($key, $this->settings)) {
+				$this->output('critical', 'readConfig(): missing setting: \''.$key.'\'');
+			}
+		}
+
+		foreach ($this->settings_list as $key => $type) {
+			if (!array_key_exists($key, $this->settings)) {
+				continue;
+			}
+
+			if ($type == 'string') {
+				$this->$key = (string) $this->settings[$key];
+			} elseif ($type == 'int') {
+				$this->$key = (int) $this->settings[$key];
+			} elseif ($type == 'bool') {
+				if (strcasecmp($this->settings[$key], 'TRUE') == 0) {
+					$this->$key = TRUE;
+				} elseif (strcasecmp($this->settings[$key], 'FALSE') == 0) {
+					$this->$key = FALSE;
+				}
+			}
+		}
+
+		if (date_default_timezone_set($this->timezone) == FALSE) {
+			$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
 		}
 	}
 }
