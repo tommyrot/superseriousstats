@@ -218,54 +218,54 @@ final class nicklinker extends Base
 	 */
 	private function readConfig($file)
 	{
-		if (($rp = realpath($file)) !== FALSE) {
+		if (($rp = realpath($file)) === FALSE) {
 			$this->output('critical', 'readConfig(): no such file: \''.$file.'\'');
 		}
 
-		if (($fp = @fopen($rp, 'rb')) !== FALSE) {
-			while (!feof($fp)) {
-				$line = fgets($fp);
-				$line = trim($line);
-
-				if (preg_match('/^(\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
-					$this->settings[$matches[1]] = $matches[2];
-				}
-			}
-
-			fclose($fp);
-
-			/**
-			 * Exit if any crucial settings aren't present in the config file.
-			 */
-			foreach ($this->settings_required_list as $key) {
-				if (!array_key_exists($key, $this->settings)) {
-					$this->output('critical', 'readConfig(): missing setting: \''.$key.'\'');
-				}
-			}
-
-			foreach ($this->settings_list as $key => $type) {
-				if (!array_key_exists($key, $this->settings)) {
-					continue;
-				}
-
-				if ($type == 'string') {
-					$this->$key = (string) $this->settings[$key];
-				} elseif ($type == 'int') {
-					$this->$key = (int) $this->settings[$key];
-				} elseif ($type == 'bool') {
-					if (strcasecmp($this->settings[$key], 'TRUE') == 0) {
-						$this->$key = TRUE;
-					} elseif (strcasecmp($this->settings[$key], 'FALSE') == 0) {
-						$this->$key = FALSE;
-					}
-				}
-			}
-
-			if (date_default_timezone_set($this->timezone) == FALSE) {
-				$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
-			}
-		} else {
+		if (($fp = @fopen($rp, 'rb')) === FALSE) {
 			$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
+		}
+		
+		while (!feof($fp)) {
+			$line = fgets($fp);
+			$line = trim($line);
+
+			if (preg_match('/^(\w+)\s*=\s*"(\S*)"$/', $line, $matches)) {
+				$this->settings[$matches[1]] = $matches[2];
+			}
+		}
+
+		fclose($fp);
+
+		/**
+		 * Exit if any crucial settings aren't present in the config file.
+		 */
+		foreach ($this->settings_required_list as $key) {
+			if (!array_key_exists($key, $this->settings)) {
+				$this->output('critical', 'readConfig(): missing setting: \''.$key.'\'');
+			}
+		}
+
+		foreach ($this->settings_list as $key => $type) {
+			if (!array_key_exists($key, $this->settings)) {
+				continue;
+			}
+
+			if ($type == 'string') {
+				$this->$key = (string) $this->settings[$key];
+			} elseif ($type == 'int') {
+				$this->$key = (int) $this->settings[$key];
+			} elseif ($type == 'bool') {
+				if (strcasecmp($this->settings[$key], 'TRUE') == 0) {
+					$this->$key = TRUE;
+				} elseif (strcasecmp($this->settings[$key], 'FALSE') == 0) {
+					$this->$key = FALSE;
+				}
+			}
+		}
+
+		if (date_default_timezone_set($this->timezone) == FALSE) {
+			$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
 		}
 	}
 }
