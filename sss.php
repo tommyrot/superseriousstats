@@ -22,8 +22,8 @@
 final class sss extends Base
 {
 	/**
-	 * Default settings, can be overridden in the config file.
-	 * These should all appear in $settings_list along with their type.
+	 * Default settings for this script, can be overridden in the config file.
+	 * These should all appear in $settings_list[] along with their type.
 	 */
 	private $doMaintenance = TRUE;
 	private $logfileDateFormat = '';
@@ -209,7 +209,7 @@ final class sss extends Base
 	}
 
 	/**
-	 * Read settings from the config file.
+	 * Read settings from the config file and put them into $settings[] so we can pass them along to other classes.
 	 */
 	private function readConfig($file)
 	{
