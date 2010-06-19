@@ -147,7 +147,7 @@ final class sss extends Base
 		$needMaintenance = FALSE;
 
 		foreach ($logfiles as $logfile) {
-			if ((!empty($this->logfilePrefix) && stripos(basename($logfile), $this->logfilePrefix) === FALSE) || (!empty($this->logfileSuffix) && stripos(basename($logfile), $this->logfileSuffix) === FALSE)) {
+			if ((!empty($this->logfilePrefix) && strpos(basename($logfile), $this->logfilePrefix) === FALSE) || (!empty($this->logfileSuffix) && strpos(basename($logfile), $this->logfileSuffix) === FALSE)) {
 				continue;
 			}
 			
