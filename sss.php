@@ -105,13 +105,14 @@ final class sss extends Base
 	private function makeHTML($file)
 	{
 		$HTML = new HTML($this->settings);
+		$output = $HTML->makeHTML();
 
-		if (($fp = @fopen($file, 'wb')) !== FALSE) {
-			fwrite($fp, $HTML->makeHTML());
-			fclose($fp);
-		} else {
+		if (($fp = @fopen($file, 'wb')) === FALSE) {
 			$this->output('critical', 'makeHTML(): failed to open file: \''.$file.'\'');
 		}
+
+		fwrite($fp, $output);
+		fclose($fp);
 	}
 
 	/**
