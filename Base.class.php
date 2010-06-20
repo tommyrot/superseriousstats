@@ -58,10 +58,9 @@ abstract class Base
 		 */
 		if (in_array($msg, $this->prevOutput)) {
 			return;
-		} else {
-			$this->prevOutput[] = $msg;
 		}
 
+		$this->prevOutput[] = $msg;
 		$dateTime = date('M d H:i:s');
 
 		if (substr($dateTime, 4, 1) === '0') {
