@@ -203,11 +203,11 @@ final class nicklinker extends Base
 	{
 		$man = 'usage: php nicklinker.php [-c <config>] [-i <file>]'."\n"
 		     . '       php nicklinker.php [-c <config>] [-o <file>]'."\n\n"
-		     . 'the options are:'."\n"
-		     . '	-c	read settings from <config>'."\n"
-		     . '		if unspecified sss.conf will be used'."\n"
-		     . '	-i	import all users from <file> to the database'."\n"
-		     . '	-o	export all users from the database to <file>'."\n";
+		     . 'The options are:'."\n"
+		     . '	-c	Read settings from <config>.'."\n"
+		     . '		If unspecified sss.conf will be used.'."\n"
+		     . '	-i	Import all users from <file> to the database.'."\n"
+		     . '	-o	Export all users from the database to <file>.'."\n";
 		exit($man);
 	}
 
