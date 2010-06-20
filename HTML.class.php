@@ -85,17 +85,19 @@ final class HTML extends Base
 	public function __construct($settings)
 	{
 		foreach ($this->settings_list as $key => $type) {
-			if (array_key_exists($key, $settings)) {
-				if ($type == 'string') {
-					$this->$key = (string) $settings[$key];
-				} elseif ($type == 'int') {
-					$this->$key = (int) $settings[$key];
-				} elseif ($type == 'bool') {
-					if (strcasecmp($settings[$key], 'TRUE') == 0) {
-						$this->$key = TRUE;
-					} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
-						$this->$key = FALSE;
-					}
+			if (!array_key_exists($key, $settings)) {
+				continue;
+			}
+
+			if ($type == 'string') {
+				$this->$key = (string) $settings[$key];
+			} elseif ($type == 'int') {
+				$this->$key = (int) $settings[$key];
+			} elseif ($type == 'bool') {
+				if (strcasecmp($settings[$key], 'TRUE') == 0) {
+					$this->$key = TRUE;
+				} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
+					$this->$key = FALSE;
 				}
 			}
 		}
@@ -122,7 +124,7 @@ final class HTML extends Base
 
 		return $daysAgo;
 	}
-	
+
 	/**
 	 * Get the case sensitive nick and status for a given UID.
 	 */
@@ -446,7 +448,7 @@ final class HTML extends Base
 		}
 
 		$output = '';
-		
+
 		for ($i = count($content); $i < $settings['rows']; $i++) {
 			if ($settings['size'] == 'small') {
 				$content[] = array('&nbsp;', '', '');
@@ -956,7 +958,7 @@ final class HTML extends Base
 		if (empty($rows)) {
 			return NULL;
 		}
-		
+
 		$prevTID = 0;
 		$prevDate = $this->date_first;
 		$TIDs = array();

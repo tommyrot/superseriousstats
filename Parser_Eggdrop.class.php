@@ -135,10 +135,9 @@ final class Parser_Eggdrop extends Parser
 			 */
 			if ($this->repeating) {
 				return;
-			} else {
-				$this->repeating = TRUE;
 			}
 
+			$this->repeating = TRUE;
 			$this->lineNum--;
 			$this->output('notice', 'parseLine(): repeating line '.$this->lineNum.': '.(($matches['num'] == 1) ? $matches['num'].' time' : $matches['num'].' times'));
 
