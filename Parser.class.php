@@ -121,17 +121,19 @@ abstract class Parser extends Base
 	final public function __construct($settings)
 	{
 		foreach ($this->settings_list as $key => $type) {
-			if (array_key_exists($key, $settings)) {
-				if ($type == 'string') {
-					$this->$key = (string) $settings[$key];
-				} elseif ($type == 'int') {
-					$this->$key = (int) $settings[$key];
-				} elseif ($type == 'bool') {
-					if (strcasecmp($settings[$key], 'TRUE') == 0) {
-						$this->$key = TRUE;
-					} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
-						$this->$key = FALSE;
-					}
+			if (!array_key_exists($key, $settings)) {
+				continue;
+			}
+
+			if ($type == 'string') {
+				$this->$key = (string) $settings[$key];
+			} elseif ($type == 'int') {
+				$this->$key = (int) $settings[$key];
+			} elseif ($type == 'bool') {
+				if (strcasecmp($settings[$key], 'TRUE') == 0) {
+					$this->$key = TRUE;
+				} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
+					$this->$key = FALSE;
 				}
 			}
 		}
