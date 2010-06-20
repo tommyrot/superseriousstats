@@ -22,8 +22,8 @@
 final class Maintenance extends Base
 {
 	/**
-	 * Default settings, can be overridden in the config file.
-	 * These should all appear in $settings_list along with their type.
+	 * Default settings for this script, can be overridden in the config file.
+	 * These should all appear in $settings_list[] along with their type.
 	 */
 	private $db_host = '';
 	private $db_name = '';
@@ -51,17 +51,19 @@ final class Maintenance extends Base
 	public function __construct($settings)
 	{
 		foreach ($this->settings_list as $key => $type) {
-			if (array_key_exists($key, $settings)) {
-				if ($type == 'string') {
-					$this->$key = (string) $settings[$key];
-				} elseif ($type == 'int') {
-					$this->$key = (int) $settings[$key];
-				} elseif ($type == 'bool') {
-					if (strcasecmp($settings[$key], 'TRUE') == 0) {
-						$this->$key = TRUE;
-					} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
-						$this->$key = FALSE;
-					}
+			if (!array_key_exists($key, $settings)) {
+				continue;
+			}
+
+			if ($type == 'string') {
+				$this->$key = (string) $settings[$key];
+			} elseif ($type == 'int') {
+				$this->$key = (int) $settings[$key];
+			} elseif ($type == 'bool') {
+				if (strcasecmp($settings[$key], 'TRUE') == 0) {
+					$this->$key = TRUE;
+				} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
+					$this->$key = FALSE;
 				}
 			}
 		}
@@ -161,15 +163,17 @@ final class Maintenance extends Base
 				 * Do what we're here to do, unlink when appropriate.
 				 */
 				foreach ($linked_RUIDs_list as $RUID) {
-					if (!in_array($RUID, $valid_RUIDs_list)) {
-						$query = @mysqli_query($this->mysqli, 'SELECT `UID` FROM `user_status` WHERE `RUID` = '.$RUID.' AND `status` = 2 ORDER BY `UID` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-						$rows = mysqli_num_rows($query);
+					if (in_array($RUID, $valid_RUIDs_list)) {
+						continue;
+					}
 
-						if (!empty($rows)) {
-							while ($result = mysqli_fetch_object($query)) {
-								@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result->UID.', `status` = 0 WHERE `UID` = '.$result->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-								$this->output('debug', 'fixUserStatusErrors(): UID '.$result->UID.' set to default (pointing to invalid registered)');
-							}
+					$query = @mysqli_query($this->mysqli, 'SELECT `UID` FROM `user_status` WHERE `RUID` = '.$RUID.' AND `status` = 2 ORDER BY `UID` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+					$rows = mysqli_num_rows($query);
+
+					if (!empty($rows)) {
+						while ($result = mysqli_fetch_object($query)) {
+							@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result->UID.', `status` = 0 WHERE `UID` = '.$result->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+							$this->output('debug', 'fixUserStatusErrors(): UID '.$result->UID.' set to default (pointing to invalid registered)');
 						}
 					}
 				}
