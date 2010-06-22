@@ -82,7 +82,8 @@ final class Maintenance extends Base
 		if (!empty($rows)) {
 			$this->fixUserStatusErrors();
 			$this->registerMostActiveAlias();
-			$this->makeQuerytables();
+			//$this->makeQuerytables();
+			$this->makeMaterializedViews();
 			$this->optimizeTables();
 			$this->output('notice', 'doMaintenance(): maintenance completed');
 		} else {
@@ -179,6 +180,75 @@ final class Maintenance extends Base
 				}
 			}
 		}
+	}
+
+	/**
+	 * Make materialized sub views so our query tables execute faster. Query tables are top level views based on various sub views and contain accumulated stats per RUID.
+	 */
+	private function makeMaterializedViews()
+	{
+		/**
+		 * The dependencies are as follows:
+		 *
+		 *   v = view
+		 *  mv = materialized view
+		 *
+		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
+		 * | top level		|    | 1st sub level		|    | 2nd sub level		|    | 3rd sub level		|    |
+		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
+		 * | query_events	|  v | view_events		|  v |				|    |				|    |
+		 * |			|    | mview_ex_kicks		| mv | view_ex_kicks		|  v | view_ex_kicks_1		|  v |
+		 * |			|    | mview_ex_kicked		| mv | view_ex_kicked		|  v | view_ex_kicked_1		|  v |
+		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
+		 * | query_lines	|  v | view_lines		|  v |				|    |				|    |
+		 * |			|    | view_activeDays		|  v |				|    |				|    |
+		 * |			|    | mview_quote		| mv | view_quote		|  v | view_quote_1		|  v |
+		 * |			|    |				|    |				|    | view_quote_2		|  v |
+		 * |			|    | mview_ex_exclamations	| mv | view_ex_exclamations	|  v | view_ex_exclamations_1	|  v |
+		 * |			|    |				|    |				|    | view_ex_exclamations_2	|  v |
+		 * |			|    | mview_ex_questions	| mv | view_ex_questions	|  v | view_ex_questions_1	|  v |
+		 * |			|    |				|    |				|    | view_ex_questions_2	|  v |
+		 * |			|    | mview_ex_actions		| mv | view_ex_actions		|  v | view_ex_actions_1	|  v |
+		 * |			|    |				|    |				|    | view_ex_actions_2	|  v |
+		 * |			|    | mview_ex_uppercased	| mv | view_ex_uppercased	|  v | view_ex_uppercased_1	|  v |
+		 * |			|    |				|    |				|    | view_ex_uppercased_2	|  v |
+		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
+		 * | query_smileys	|  v |				|    |				|    |				|    |
+		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
+		 */
+
+		/**
+		 * Create tables.
+		 */
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_kicks` SELECT * FROM `view_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_kicked` SELECT * FROM `view_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_quote` SELECT * FROM `view_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_exclamations` SELECT * FROM `view_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_questions` SELECT * FROM `view_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_actions` SELECT * FROM `view_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_uppercased` SELECT * FROM `view_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+		/**
+		 * Rename tables.
+		 */
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_kicks` = `old_mview_ex_kicks`, `new_mview_ex_kicks` = `mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_kicked` = `old_mview_ex_kicked`, `new_mview_ex_kicked` = `mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_quote` = `old_mview_quote`, `new_mview_quote` = `mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_exclamations` = `old_mview_ex_exclamations`, `new_mview_ex_exclamations` = `mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_questions` = `old_mview_ex_questions`, `new_mview_ex_questions` = `mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_actions` = `old_mview_ex_actions`, `new_mview_ex_actions` = `mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_uppercased` = `old_mview_ex_uppercased`, `new_mview_ex_uppercased` = `mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+		/**
+		 * Drop tables.
+		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 	}
 
 	/**
@@ -283,9 +353,7 @@ final class Maintenance extends Base
 	private function optimizeTables()
 	{
 		if (strcasecmp($this->sanitisationDay, date('D')) == 0) {
-			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `channel`, `user_activity`, `user_details`, `user_events`, `user_hosts`, `user_lines`, `user_smileys`, `user_status`, `user_topics`, `user_URLs`, `words`, `query_events`, `query_lines`, `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		} else {
-			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `query_events`, `query_lines`, `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `channel`, `user_activity`, `user_details`, `user_events`, `user_hosts`, `user_lines`, `user_smileys`, `user_status`, `user_topics`, `user_URLs`, `words`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		}
 	}
 
