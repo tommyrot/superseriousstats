@@ -227,9 +227,9 @@ final class Maintenance extends Base
 		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_questions` SELECT * FROM `view_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_actions` SELECT * FROM `view_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_uppercased` SELECT * FROM `view_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_events` SELECT * FROM `view_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_lines` SELECT * FROM `view_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_smileys` SELECT * FROM `view_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_events` LIKE `template_query_events` SELECT * FROM `view_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_lines` LIKE `template_query_lines` SELECT * FROM `view_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_smileys` LIKE `template_query_smileys` SELECT * FROM `view_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 
 		/**
 		 * Drop old tables.
