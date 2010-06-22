@@ -196,11 +196,11 @@ final class Maintenance extends Base
 		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
 		 * | top level		|    | 1st sub level		|    | 2nd sub level		|    | 3rd sub level		|    |
 		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
-		 * | query_events	|  v | view_events		|  v |				|    |				|    |
+		 * | query_events	| mv | view_events		|  v |				|    |				|    |
 		 * |			|    | mview_ex_kicks		| mv | view_ex_kicks		|  v | view_ex_kicks_1		|  v |
 		 * |			|    | mview_ex_kicked		| mv | view_ex_kicked		|  v | view_ex_kicked_1		|  v |
 		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
-		 * | query_lines	|  v | view_lines		|  v |				|    |				|    |
+		 * | query_lines	| mv | view_lines		|  v |				|    |				|    |
 		 * |			|    | view_activeDays		|  v |				|    |				|    |
 		 * |			|    | mview_quote		| mv | view_quote		|  v | view_quote_1		|  v |
 		 * |			|    |				|    |				|    | view_quote_2		|  v |
@@ -213,12 +213,12 @@ final class Maintenance extends Base
 		 * |			|    | mview_ex_uppercased	| mv | view_ex_uppercased	|  v | view_ex_uppercased_1	|  v |
 		 * |			|    |				|    |				|    | view_ex_uppercased_2	|  v |
 		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
-		 * | query_smileys	|  v |				|    |				|    |				|    |
+		 * | query_smileys	| mv |				|    |				|    |				|    |
 		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
 		 */
 
 		/**
-		 * Create tables.
+		 * Create new tables.
 		 */
 		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_kicks` SELECT * FROM `view_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_kicked` SELECT * FROM `view_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
@@ -227,9 +227,12 @@ final class Maintenance extends Base
 		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_questions` SELECT * FROM `view_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_actions` SELECT * FROM `view_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_uppercased` SELECT * FROM `view_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_events` SELECT * FROM `view_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_lines` SELECT * FROM `view_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_smileys` SELECT * FROM `view_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 
 		/**
-		 * Rename tables.
+		 * Rename/replace tables.
 		 */
 		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_kicks` = `old_mview_ex_kicks`, `new_mview_ex_kicks` = `mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_kicked` = `old_mview_ex_kicked`, `new_mview_ex_kicked` = `mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
@@ -238,9 +241,12 @@ final class Maintenance extends Base
 		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_questions` = `old_mview_ex_questions`, `new_mview_ex_questions` = `mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_actions` = `old_mview_ex_actions`, `new_mview_ex_actions` = `mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_uppercased` = `old_mview_ex_uppercased`, `new_mview_ex_uppercased` = `mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `query_events` = `old_query_events`, `new_query_events` = `query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `query_lines` = `old_query_lines`, `new_query_lines` = `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `query_smileys` = `old_query_smileys`, `new_query_smileys` = `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 
 		/**
-		 * Drop tables.
+		 * Drop old tables.
 		 */
 		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
@@ -249,6 +255,9 @@ final class Maintenance extends Base
 		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `old_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 	}
 
 	/**
