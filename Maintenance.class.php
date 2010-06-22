@@ -234,16 +234,16 @@ final class Maintenance extends Base
 		/**
 		 * Rename/replace tables.
 		 */
-		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_kicks` = `old_mview_ex_kicks`, `new_mview_ex_kicks` = `mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_kicked` = `old_mview_ex_kicked`, `new_mview_ex_kicked` = `mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_quote` = `old_mview_quote`, `new_mview_quote` = `mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_exclamations` = `old_mview_ex_exclamations`, `new_mview_ex_exclamations` = `mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_questions` = `old_mview_ex_questions`, `new_mview_ex_questions` = `mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_actions` = `old_mview_ex_actions`, `new_mview_ex_actions` = `mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_uppercased` = `old_mview_ex_uppercased`, `new_mview_ex_uppercased` = `mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `query_events` = `old_query_events`, `new_query_events` = `query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `query_lines` = `old_query_lines`, `new_query_lines` = `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `query_smileys` = `old_query_smileys`, `new_query_smileys` = `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_kicks` TO `old_mview_ex_kicks`, `new_mview_ex_kicks` TO `mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_kicked` TO `old_mview_ex_kicked`, `new_mview_ex_kicked` TO `mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_quote` TO `old_mview_quote`, `new_mview_quote` TO `mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_exclamations` TO `old_mview_ex_exclamations`, `new_mview_ex_exclamations` TO `mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_questions` TO `old_mview_ex_questions`, `new_mview_ex_questions` TO `mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_actions` TO `old_mview_ex_actions`, `new_mview_ex_actions` TO `mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `mview_ex_uppercased` TO `old_mview_ex_uppercased`, `new_mview_ex_uppercased` TO `mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `query_events` TO `old_query_events`, `new_query_events` TO `query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `query_lines` TO `old_query_lines`, `new_query_lines` TO `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `query_smileys` TO `old_query_smileys`, `new_query_smileys` TO `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 
 		/**
 		 * Drop old tables.
