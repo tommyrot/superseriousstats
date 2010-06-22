@@ -183,7 +183,8 @@ final class Maintenance extends Base
 	}
 
 	/**
-	 * Make materialized sub views so our query tables execute faster. Query tables are top level views based on various sub views and contain accumulated stats per RUID.
+	 * Make materialized views, which are stored copies of dynamic views.
+	 * Query tables are top level materialized views based on various sub views and contain accumulated stats per RUID.
 	 */
 	private function makeMaterializedViews()
 	{
@@ -218,48 +219,87 @@ final class Maintenance extends Base
 		 */
 
 		/**
-		 * Create new tables.
+		 * mview_ex_kicks
 		 */
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_kicks` SELECT * FROM `view_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_kicked` SELECT * FROM `view_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_quote` SELECT * FROM `view_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_exclamations` SELECT * FROM `view_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_questions` SELECT * FROM `view_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_actions` SELECT * FROM `view_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_mview_ex_uppercased` SELECT * FROM `view_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_events` LIKE `template_query_events` SELECT * FROM `view_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_lines` LIKE `template_query_lines` SELECT * FROM `view_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE IF NOT EXISTS `new_query_smileys` LIKE `template_query_smileys` SELECT * FROM `view_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-
-		/**
-		 * Drop old tables.
-		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_kicks` SELECT * FROM `view_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_kicks` TO `mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 
 		/**
-		 * Rename new tables.
+		 * mview_ex_kicked
 		 */
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_kicks` TO `mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_kicked` SELECT * FROM `view_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_kicked` TO `mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+		/**
+		 * mview_quote
+		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_quote` SELECT * FROM `view_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_quote` TO `mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+		/**
+		 * mview_ex_exclamations
+		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_exclamations` SELECT * FROM `view_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_exclamations` TO `mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+		/**
+		 * mview_ex_questions
+		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_questions` SELECT * FROM `view_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_questions` TO `mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+		/**
+		 * mview_ex_actions
+		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_actions` SELECT * FROM `view_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_actions` TO `mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+		/**
+		 * mview_ex_uppercased
+		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_uppercased` SELECT * FROM `view_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_uppercased` TO `mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+		/**
+		 * query_events
+		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_query_events` LIKE `template_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'INSERT INTO `new_query_events` SELECT * FROM `view_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_query_events` TO `query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+		/**
+		 * query_lines
+		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_query_lines` LIKE `template_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'INSERT INTO `new_query_lines` SELECT * FROM `view_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_query_lines` TO `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		
+		/**
+		 * query_smileys
+		 */
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'CREATE TABLE `new_query_smileys` LIKE `template_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'INSERT INTO `new_query_smileys` SELECT * FROM `view_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_query_smileys` TO `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-
-
 	}
 
 	/**
