@@ -604,11 +604,7 @@ abstract class Parser extends Base
 			 * Write user data to the database.
 			 */
 			foreach ($this->nicks_list as $nick) {
-				if ($this->nicks_objs[$nick]->getValue('firstSeen') != '') {
-					$this->nicks_objs[$nick]->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
-				} else {
-					$this->output('notice', 'writeData(): skipping empty nick: \''.$this->nicks_objs[$nick]->getValue('csNick').'\'');
-				}
+				$this->nicks_objs[$nick]->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 			}
 
 			/**
