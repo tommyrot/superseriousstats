@@ -30,7 +30,6 @@ final class Maintenance extends Base
 	private $db_pass = '';
 	private $db_port = 0;
 	private $db_user = '';
-	private $sanitisationDay = 'mon';
 
 	/**
 	 * Variables that shouldn't be tampered with.
@@ -42,8 +41,7 @@ final class Maintenance extends Base
 		'db_pass' => 'string',
 		'db_port' => 'int',
 		'db_user' => 'string',
-		'outputbits' => 'int',
-		'sanitisationDay' => 'string');
+		'outputbits' => 'int');
 
 	/**
 	 * Constructor.
@@ -83,7 +81,6 @@ final class Maintenance extends Base
 			$this->fixUserStatusErrors();
 			$this->registerMostActiveAlias();
 			$this->makeMaterializedViews();
-			$this->optimizeTables();
 			$this->output('notice', 'doMaintenance(): maintenance completed');
 		} else {
 			$this->output('warning', 'doMaintenance(): database is empty');
@@ -290,7 +287,7 @@ final class Maintenance extends Base
 		@mysqli_query($this->mysqli, 'INSERT INTO `new_query_lines` SELECT * FROM `view_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_query_lines` TO `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		
+
 		/**
 		 * query_smileys
 		 */
@@ -299,16 +296,6 @@ final class Maintenance extends Base
 		@mysqli_query($this->mysqli, 'INSERT INTO `new_query_smileys` SELECT * FROM `view_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		@mysqli_query($this->mysqli, 'RENAME TABLE `new_query_smileys` TO `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-	}
-
-	/**
-	 * Optimize the database tables (sort indexes, etc).
-	 */
-	private function optimizeTables()
-	{
-		if (strcasecmp($this->sanitisationDay, date('D')) == 0) {
-			@mysqli_query($this->mysqli, 'OPTIMIZE TABLE `channel`, `user_activity`, `user_details`, `user_events`, `user_hosts`, `user_lines`, `user_smileys`, `user_status`, `user_topics`, `user_URLs`, `words`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		}
 	}
 
 	/**
