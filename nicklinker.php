@@ -141,14 +141,6 @@ final class nicklinker extends Base
 	 */
 	private function import($file)
 	{
-		if (($rp = realpath($file)) === FALSE) {
-			$this->output('critical', 'import(): no such file: \''.$file.'\'');
-		}
-
-		if (($fp = @fopen($rp, 'rb')) !== FALSE) {
-			$this->output('critical', 'import(): failed to open file: \''.$file.'\'');
-		}
-
 		$this->output('notice', 'import(): importing nicks');
 		$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
 		$query = @mysqli_query($mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
@@ -164,6 +156,14 @@ final class nicklinker extends Base
 			 */
 			@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 
+			if (($rp = realpath($file)) === FALSE) {
+				$this->output('critical', 'import(): no such file: \''.$file.'\'');
+			}
+
+			if (($fp = @fopen($rp, 'rb')) !== FALSE) {
+				$this->output('critical', 'import(): failed to open file: \''.$file.'\'');
+			}
+
 			while (!feof($fp)) {
 				$line = fgets($fp);
 				$lineParts = explode(',', strtolower($line));
@@ -176,27 +176,30 @@ final class nicklinker extends Base
 				 * Run "php sss.php -m" afterwards to start database maintenance. This will ensure all userstats are properly accumulated according to your latest changes.
 				 * More info on http://code.google.com/p/superseriousstats/wiki/Nicklinker
 				 */
-				if ($status == 1 || $status == 3) {
-					$nick_main = trim($lineParts[1]);
+				if ($status != 1 && $status != 3) {
+					continue;
+				}
 
-					if (!empty($nick_main)) {
-						@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$nick2UID[$nick_main]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+				$nick_main = trim($lineParts[1]);
 
-						for ($i = 2, $j = count($lineParts); $i < $j; $i++) {
-							$nick = trim($lineParts[$i]);
+				if (!empty($nick_main) && array_key_exists($nick_main, $nick2UID)) {
+					@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$nick2UID[$nick_main]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 
-							if (!empty($nick)) {
-								@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$nick2UID[$nick_main].', `status` = 2 WHERE `UID` = '.$nick2UID[$nick]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
-							}
+					for ($i = 2, $j = count($lineParts); $i < $j; $i++) {
+						$nick = trim($lineParts[$i]);
+
+						if (!empty($nick) && array_key_exists($nick, $nick2UID)) {
+							@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$nick2UID[$nick_main].', `status` = 2 WHERE `UID` = '.$nick2UID[$nick]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
 						}
 					}
 				}
 			}
+
+			fclose($fp);
 		}
 
 		@mysqli_close($mysqli);
-		fclose($fp);
-		$this->output('notice', 'import(): import completed');
+		$this->output('notice', 'import(): import completed, don\'t forget to run "php sss.php -m"');
 	}
 
 	/**
@@ -209,8 +212,13 @@ final class nicklinker extends Base
 		     . 'The options are:'."\n"
 		     . '	-c	Read settings from <config>.'."\n"
 		     . '		If unspecified sss.conf will be used.'."\n"
-		     . '	-i	Import all users from <file> to the database.'."\n"
-		     . '	-o	Export all users from the database to <file>.'."\n";
+		     . '	-i	Import all user relations from <file> to the database. It is'."\n"
+		     . '		strongly adviced to make an export first to serve as a backup.'."\n"
+		     . '		All stored user relations in the database will be unset before'."\n"
+		     . '		reading the contents of <file>. The script will skip all nicks'."\n"
+		     . '		found in <file> which are not in the database. The syntax of'."\n"
+		     . '		nicks contained in <file> is case insensitive.'."\n"
+		     . '	-o	Export all user relations from the database to <file>.'."\n";
 		exit($man);
 	}
 
