@@ -213,7 +213,7 @@ final class nicklinker extends Base
 		     . '	-c	Read settings from <config>.'."\n"
 		     . '		If unspecified sss.conf will be used.'."\n"
 		     . '	-i	Import all user relations from <file> to the database. It is'."\n"
-		     . '		strongly adviced to make an export first to serve as a backup.'."\n"
+		     . '		strongly advised to make an export first to serve as a backup.'."\n"
 		     . '		All stored user relations in the database will be unset before'."\n"
 		     . '		reading the contents of <file>. The script will skip all nicks'."\n"
 		     . '		found in <file> which are not in the database. The syntax of'."\n"
