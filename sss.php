@@ -177,7 +177,7 @@ final class sss extends Base
 			}
 		}
 
-		if ($needMaintenance && $this->doMaintenance) {
+		if ($this->doMaintenance && $needMaintenance) {
 			$this->doMaintenance();
 		}
 	}
