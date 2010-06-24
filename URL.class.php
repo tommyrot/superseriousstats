@@ -59,7 +59,7 @@ final class URL extends Base
 		/**
 		 * Write data to database table "user_URLs".
 		 */
-		if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `UID` = '.$UID.' AND `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1')) === FALSE) {
+		if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `UID` = '.$UID.' AND `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\'')) === FALSE) {
 			return FALSE;
 		}
 
@@ -69,7 +69,7 @@ final class URL extends Base
 			/**
 			 * Check if the URL exists in the database paired with an UID other than mine and if it does, use its LID in my own insert query.
 			 */
-			if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' LIMIT 1')) === FALSE) {
+			if (($query = @mysqli_query($mysqli, 'SELECT `LID` FROM `user_URLs` WHERE `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' GROUP BY `csURL`')) === FALSE) {
 				return FALSE;
 			}
 
