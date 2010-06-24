@@ -125,6 +125,8 @@ final class nicklinker extends Base
 			$output .= "\n";
 		}
 
+		@mysqli_close($mysqli);
+
 		if (($fp = @fopen($file, 'wb')) === FALSE) {
 			$this->output('critical', 'export(): failed to open file: \''.$file.'\'');
 		}
@@ -192,6 +194,7 @@ final class nicklinker extends Base
 			}
 		}
 
+		@mysqli_close($mysqli);
 		fclose($fp);
 		$this->output('notice', 'import(): import completed');
 	}
