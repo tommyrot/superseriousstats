@@ -615,8 +615,8 @@ abstract class Parser extends Base
 				$this->words_objs[$word]->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 			}
 
-			$this->output('notice', 'writeData(): writing completed');
 			@mysqli_close($mysqli);
+			$this->output('notice', 'writeData(): writing completed');
 		} else {
 			$this->output('notice', 'writeData(): no data to write to database');
 		}

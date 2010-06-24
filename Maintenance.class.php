@@ -77,16 +77,15 @@ final class Maintenance extends Base
 		$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_status` LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
-		if (!empty($rows)) {
-			$this->fixUserStatusErrors();
-			$this->registerMostActiveAlias();
-			$this->makeMaterializedViews();
-			$this->output('notice', 'doMaintenance(): maintenance completed');
-		} else {
-			$this->output('warning', 'doMaintenance(): database is empty');
+		if (empty($rows)) {
+			$this->output('critical', 'doMaintenance(): database is empty');
 		}
 
+		$this->fixUserStatusErrors();
+		$this->registerMostActiveAlias();
+		$this->makeMaterializedViews();
 		@mysqli_close($this->mysqli);
+		$this->output('notice', 'doMaintenance(): maintenance completed');
 	}
 
 	/**
