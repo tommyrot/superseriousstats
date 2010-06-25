@@ -86,8 +86,8 @@ final class nicklinker extends Base
 	private function export($file)
 	{
 		$this->output('notice', 'export(): exporting nicks');
-		$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
-		$query = @mysqli_query($mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+		$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
+		$query = @mysqli_query($mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 		$rows = mysqli_num_rows($query);
 		$output = '';
 
@@ -99,7 +99,7 @@ final class nicklinker extends Base
 
 			foreach ($RUIDs as $RUID) {
 				$output .= $status[$RUID];
-				$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` AND `RUID` = '.$RUID.' ORDER BY `csNick` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+				$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` AND `RUID` = '.$RUID.' ORDER BY `csNick` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 				$rows = mysqli_num_rows($query);
 
 				if (!empty($rows)) {
@@ -112,7 +112,7 @@ final class nicklinker extends Base
 			}
 		}
 
-		$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE STATUS = 0 ORDER BY `csNick` ASC') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+		$query = @mysqli_query($mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE STATUS = 0 ORDER BY `csNick` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
@@ -142,8 +142,8 @@ final class nicklinker extends Base
 	private function import($file)
 	{
 		$this->output('notice', 'import(): importing nicks');
-		$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQL: '.mysqli_connect_error());
-		$query = @mysqli_query($mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+		$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
+		$query = @mysqli_query($mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
@@ -154,7 +154,7 @@ final class nicklinker extends Base
 			/**
 			 * Set all nicks to their default status before updating any records from the input file.
 			 */
-			@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+			@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 
 			if (($rp = realpath($file)) === FALSE) {
 				$this->output('critical', 'import(): no such file: \''.$file.'\'');
@@ -183,13 +183,13 @@ final class nicklinker extends Base
 				$nick_main = trim($lineParts[1]);
 
 				if (!empty($nick_main) && array_key_exists($nick_main, $nick2UID)) {
-					@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$nick2UID[$nick_main]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+					@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$nick2UID[$nick_main]) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 
 					for ($i = 2, $j = count($lineParts); $i < $j; $i++) {
 						$nick = trim($lineParts[$i]);
 
 						if (!empty($nick) && array_key_exists($nick, $nick2UID)) {
-							@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$nick2UID[$nick_main].', `status` = 2 WHERE `UID` = '.$nick2UID[$nick]) or $this->output('critical', 'MySQL: '.mysqli_error($mysqli));
+							@mysqli_query($mysqli, 'UPDATE `user_status` SET `RUID` = '.$nick2UID[$nick_main].', `status` = 2 WHERE `UID` = '.$nick2UID[$nick]) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 						}
 					}
 				}
