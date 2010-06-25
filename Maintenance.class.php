@@ -74,7 +74,7 @@ final class Maintenance extends Base
 	{
 		$this->output('notice', 'doMaintenance(): performing database maintenance routines');
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
-		$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_status` LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT COUNT(*) FROM `user_details`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -183,36 +183,6 @@ final class Maintenance extends Base
 	 */
 	private function makeMaterializedViews()
 	{
-		/**
-		 * The dependencies are as follows:
-		 *
-		 *   v = view
-		 *  mv = materialized view
-		 *
-		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
-		 * | top level		|    | 1st sub level		|    | 2nd sub level		|    | 3rd sub level		|    | 4th sub level		|    |
-		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
-		 * | query_events	| mv | view_events		|  v |				|    |				|    |				|    |
-		 * |			|    | mview_ex_kicks		| mv | view_ex_kicks		|  v | view_ex_kicks_1		|  v |				|    |
-		 * |			|    | mview_ex_kicked		| mv | view_ex_kicked		|  v | view_ex_kicked_1		|  v |				|    |
-		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
-		 * | query_lines	| mv | view_lines		|  v |				|    |				|    |				|    |
-		 * |			|    | view_activeDays		|  v |				|    |				|    |				|    |
-		 * |			|    | mview_quote		| mv | view_quote		|  v | view_quote_1		|  v |				|    |
-		 * |			|    |				|    |				|    | view_quote_2		|  v | view_quote_1		|  v |
-		 * |			|    | mview_ex_exclamations	| mv | view_ex_exclamations	|  v | view_ex_exclamations_1	|  v |				|    |
-		 * |			|    |				|    |				|    | view_ex_exclamations_2	|  v | view_ex_exclamations_1	|  v |
-		 * |			|    | mview_ex_questions	| mv | view_ex_questions	|  v | view_ex_questions_1	|  v |				|    |
-		 * |			|    |				|    |				|    | view_ex_questions_2	|  v | view_ex_questions_1	|  v |
-		 * |			|    | mview_ex_actions		| mv | view_ex_actions		|  v | view_ex_actions_1	|  v |				|    |
-		 * |			|    |				|    |				|    | view_ex_actions_2	|  v | view_ex_actions_1	|  v |
-		 * |			|    | mview_ex_uppercased	| mv | view_ex_uppercased	|  v | view_ex_uppercased_1	|  v |				|    |
-		 * |			|    |				|    |				|    | view_ex_uppercased_2	|  v | view_ex_uppercased_1	|  v |
-		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
-		 * | query_smileys	| mv |				|    |				|    |				|    |				|    |
-		 * +--------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+--------------------------+----+
-		 */
-
 		/**
 		 * mview_ex_kicks
 		 */
