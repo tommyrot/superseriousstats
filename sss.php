@@ -25,7 +25,11 @@ final class sss extends Base
 	 * Default settings for this script, can be overridden in the config file.
 	 * These should all appear in $settings_list[] along with their type.
 	 */
-	private $doMaintenance = TRUE;
+	private $db_host = '';
+	private $db_name = '';
+	private $db_pass = '';
+	private $db_port = 0;
+	private $db_user = '';
 	private $logfileDateFormat = '';
 	private $logfileFormat = '';
 	private $logfilePrefix = '';
@@ -38,7 +42,11 @@ final class sss extends Base
 	 */
 	private $settings = array();
 	private $settings_list = array(
-		'doMaintenance' => 'bool',
+		'db_host' => 'string',
+		'db_name' => 'string',
+		'db_pass' => 'string',
+		'db_port' => 'int',
+		'db_user' => 'string',
 		'logfileDateFormat' => 'string',
 		'logfileFormat' => 'string',
 		'logfilePrefix' => 'string',
@@ -154,30 +162,34 @@ final class sss extends Base
 
 			$date = str_replace(array($this->logfilePrefix, $this->logfileSuffix), '', basename($logfile));
 			$date = date('Y-m-d', strtotime($date));
-
-			if ($date == date('Y-m-d')) {
-				echo 'The logfile you are about to parse appears to be of today. It is recommended'."\n"
-				   . 'to skip this file until tomorrow when logging will be completed.'."\n"
-				   . 'Skip \''.basename($logfile).'\'? [yes] ';
-				$yn = strtolower(trim(fgets(STDIN)));
-
-				if (empty($yn) || $yn == 'y' || $yn == 'yes') {
-					break;
-				}
-			}
-
 			$parser_class = 'Parser_'.$this->logfileFormat;
 			$parser = new $parser_class($this->settings);
 			$parser->setValue('date', $date);
-			$parser->parseLog($logfile);
+
+			/**
+			 * Get the parse history for the current logfile.
+			 */
+			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
+			$query = @mysqli_query($mysqli, 'SELECT `lines_parsed` FROM `parse_history` WHERE `date` = \''.mysqli_real_escape_string($mysqli, $date).'\'') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+			$rows = mysqli_num_rows($query);
+
+			if (!empty($rows)) {
+				$result = mysqli_fetch_object($query);
+				$firstLine = $result->lines_parsed + 1;
+			} else {
+				$firstLine = 1;
+			}
+
+			$parser->parseLog($logfile, $firstLine);
 
 			if ($this->writeData) {
 				$parser->writeData();
+				@mysqli_query($mysqli, 'INSERT INTO `parse_history` (`date`, `lines_parsed`) VALUES (\''.mysqli_real_escape_string($mysqli, $date).'\', '.$parser->getValue('lineNum').') ON DUPLICATE KEY UPDATE `lines_parsed` = '.$parser->getValue('lineNum')) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 				$needMaintenance = TRUE;
 			}
 		}
 
-		if ($this->doMaintenance && $needMaintenance) {
+		if ($needMaintenance) {
 			$this->doMaintenance();
 		}
 	}
@@ -202,9 +214,8 @@ final class sss extends Base
 		     . '		If this option is omitted all sections will be included.'."\n"
 		     . '	-c	Read settings from <config>.'."\n"
 		     . '		If unspecified sss.conf will be used.'."\n"
-		     . '	-i	Input <logfile>, or all logfiles in <logdir>.'."\n"
-		     . '		Database maintenance will be run after parsing the last logfile'."\n"
-		     . '		unless "doMaintenance" is set to FALSE in the config file.'."\n"
+		     . '	-i	Input <logfile>, or all logfiles in <logdir>. Database'."\n"
+		     . '		maintenance will always be run after parsing the last logfile.'."\n"
 		     . '	-m	Perform maintenance routines on the database.'."\n"
 		     . '	-o	Generate statistics and output to <statspage>.'."\n";
 		exit($man);
