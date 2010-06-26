@@ -183,9 +183,16 @@ final class sss extends Base
 			$parser->parseLog($logfile, $firstLine);
 
 			if ($this->writeData) {
-				$parser->writeData();
-				@mysqli_query($mysqli, 'INSERT INTO `parse_history` (`date`, `lines_parsed`) VALUES (\''.mysqli_real_escape_string($mysqli, $date).'\', '.$parser->getValue('lineNum').') ON DUPLICATE KEY UPDATE `lines_parsed` = '.$parser->getValue('lineNum')) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
-				$needMaintenance = TRUE;
+				/**
+				 * If the stored number of parsed lines is equal to the last line in the logfile we can skip writing to db and performing maintenance.
+				 */
+				if ($parser->getValue('lineNum') <= $result->lines_parsed) {
+					$this->output('notice', 'parseLog(): no activity since last update, skipping writeData()');
+				} else {
+					$parser->writeData();
+					@mysqli_query($mysqli, 'INSERT INTO `parse_history` (`date`, `lines_parsed`) VALUES (\''.mysqli_real_escape_string($mysqli, $date).'\', '.$parser->getValue('lineNum').') ON DUPLICATE KEY UPDATE `lines_parsed` = '.$parser->getValue('lineNum')) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+					$needMaintenance = TRUE;
+				}
 			}
 		}
 
