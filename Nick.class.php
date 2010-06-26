@@ -377,7 +377,7 @@ final class Nick extends Base
 		 * Write data to database table "user_activity".
 		 */
 		if ($this->l_total != 0) {
-			if (!@mysqli_query($mysqli, 'INSERT INTO `user_activity` (`UID`, `date`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $this->date).'\', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')')) {
+			if (!@mysqli_query($mysqli, 'INSERT INTO `user_activity` (`UID`, `date`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $this->date).'\', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.') ON DUPLICATE KEY UPDATE `l_night` = `l_night` + '.$this->l_night.', `l_morning` = `l_morning` + '.$this->l_morning.', `l_afternoon` = `l_afternoon` + '.$this->l_afternoon.', `l_evening` = `l_evening` + '.$this->l_evening.', `l_total` = `l_total` + '.$this->l_total)) {
 				return FALSE;
 			}
 		}

@@ -183,13 +183,18 @@ abstract class Parser extends Base
 	/**
 	 * Main function with general parse instructions.
 	 */
-	final public function parseLog($logfile)
+	final public function parseLog($logfile, $firstLine)
 	{
 		if (($fp = @fopen($logfile, 'rb')) !== FALSE) {
-			$this->output('notice', 'parseLog(): parsing logfile: \''.$logfile.'\'');
+			$this->output('notice', 'parseLog(): parsing logfile: \''.$logfile.'\' from line '.$firstLine);
 
 			while (!feof($fp)) {
 				$line = fgets($fp);
+				$this->lineNum++;
+
+				if ($this->lineNum < $firstLine) {
+					continue;
+				}
 
 				/**
 				 * Normalize the line:
@@ -202,7 +207,6 @@ abstract class Parser extends Base
 				/**
 				 * Pass on the normalized line to the logfile format specific parser class extending this class.
 				 */
-				$this->lineNum++;
 				$this->parseLine($line);
 				$this->prevLine = $line;
 			}
@@ -596,9 +600,8 @@ abstract class Parser extends Base
 
 			/**
 			 * Write channel totals to the database.
-			 * The date is a unique value here, if you try to insert records for a date that is already present in database table "channel" the program will exit with an error.
 			 */
-			@mysqli_query($mysqli, 'INSERT INTO `channel` (`date`, `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->date).'\', '.$this->l_00.', '.$this->l_01.', '.$this->l_02.', '.$this->l_03.', '.$this->l_04.', '.$this->l_05.', '.$this->l_06.', '.$this->l_07.', '.$this->l_08.', '.$this->l_09.', '.$this->l_10.', '.$this->l_11.', '.$this->l_12.', '.$this->l_13.', '.$this->l_14.', '.$this->l_15.', '.$this->l_16.', '.$this->l_17.', '.$this->l_18.', '.$this->l_19.', '.$this->l_20.', '.$this->l_21.', '.$this->l_22.', '.$this->l_23.', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.')') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+			@mysqli_query($mysqli, 'INSERT INTO `channel` (`date`, `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->date).'\', '.$this->l_00.', '.$this->l_01.', '.$this->l_02.', '.$this->l_03.', '.$this->l_04.', '.$this->l_05.', '.$this->l_06.', '.$this->l_07.', '.$this->l_08.', '.$this->l_09.', '.$this->l_10.', '.$this->l_11.', '.$this->l_12.', '.$this->l_13.', '.$this->l_14.', '.$this->l_15.', '.$this->l_16.', '.$this->l_17.', '.$this->l_18.', '.$this->l_19.', '.$this->l_20.', '.$this->l_21.', '.$this->l_22.', '.$this->l_23.', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.') ON DUPLICATE KEY UPDATE `l_00` = `l_00` + '.$this->l_00.', `l_01` = `l_01` + '.$this->l_01.', `l_02` = `l_02` + '.$this->l_02.', `l_03` = `l_03` + '.$this->l_03.', `l_04` = `l_04` + '.$this->l_04.', `l_05` = `l_05` + '.$this->l_05.', `l_06` = `l_06` + '.$this->l_06.', `l_07` = `l_07` + '.$this->l_07.', `l_08` = `l_08` + '.$this->l_08.', `l_09` = `l_09` + '.$this->l_09.', `l_10` = `l_10` + '.$this->l_10.', `l_11` = `l_11` + '.$this->l_11.', `l_12` = `l_12` + '.$this->l_12.', `l_13` = `l_13` + '.$this->l_13.', `l_14` = `l_14` + '.$this->l_14.', `l_15` = `l_15` + '.$this->l_15.', `l_16` = `l_16` + '.$this->l_16.', `l_17` = `l_17` + '.$this->l_17.', `l_18` = `l_18` + '.$this->l_18.', `l_19` = `l_19` + '.$this->l_19.', `l_20` = `l_20` + '.$this->l_20.', `l_21` = `l_21` + '.$this->l_21.', `l_22` = `l_22` + '.$this->l_22.', `l_night` = `l_night` + '.$this->l_night.', `l_morning` = `l_morning` + '.$this->l_morning.', `l_afternoon` = `l_afternoon` + '.$this->l_afternoon.', `l_evening` = `l_evening` + '.$this->l_evening.', `l_total` = `l_total` + '.$this->l_total) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 
 			/**
 			 * Write user data to the database.
