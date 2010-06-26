@@ -67,6 +67,214 @@ LOCK TABLES `channel` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `mview_ex_actions`
+--
+
+DROP TABLE IF EXISTS `mview_ex_actions`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `mview_ex_actions` (
+  `RUID` int(10) unsigned NOT NULL default '0',
+  `ex_actions` varchar(255) NOT NULL default ''
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping data for table `mview_ex_actions`
+--
+
+LOCK TABLES `mview_ex_actions` WRITE;
+/*!40000 ALTER TABLE `mview_ex_actions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mview_ex_actions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mview_ex_exclamations`
+--
+
+DROP TABLE IF EXISTS `mview_ex_exclamations`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `mview_ex_exclamations` (
+  `RUID` int(10) unsigned NOT NULL default '0',
+  `ex_exclamations` varchar(255) NOT NULL default ''
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping data for table `mview_ex_exclamations`
+--
+
+LOCK TABLES `mview_ex_exclamations` WRITE;
+/*!40000 ALTER TABLE `mview_ex_exclamations` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mview_ex_exclamations` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mview_ex_kicked`
+--
+
+DROP TABLE IF EXISTS `mview_ex_kicked`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `mview_ex_kicked` (
+  `RUID` int(10) unsigned NOT NULL default '0',
+  `ex_kicked` varchar(255) NOT NULL default ''
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping data for table `mview_ex_kicked`
+--
+
+LOCK TABLES `mview_ex_kicked` WRITE;
+/*!40000 ALTER TABLE `mview_ex_kicked` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mview_ex_kicked` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mview_ex_kicks`
+--
+
+DROP TABLE IF EXISTS `mview_ex_kicks`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `mview_ex_kicks` (
+  `RUID` int(10) unsigned NOT NULL default '0',
+  `ex_kicks` varchar(255) NOT NULL default ''
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping data for table `mview_ex_kicks`
+--
+
+LOCK TABLES `mview_ex_kicks` WRITE;
+/*!40000 ALTER TABLE `mview_ex_kicks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mview_ex_kicks` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mview_ex_questions`
+--
+
+DROP TABLE IF EXISTS `mview_ex_questions`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `mview_ex_questions` (
+  `RUID` int(10) unsigned NOT NULL default '0',
+  `ex_questions` varchar(255) NOT NULL default ''
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping data for table `mview_ex_questions`
+--
+
+LOCK TABLES `mview_ex_questions` WRITE;
+/*!40000 ALTER TABLE `mview_ex_questions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mview_ex_questions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mview_ex_uppercased`
+--
+
+DROP TABLE IF EXISTS `mview_ex_uppercased`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `mview_ex_uppercased` (
+  `RUID` int(10) unsigned NOT NULL default '0',
+  `ex_uppercased` varchar(255) NOT NULL default ''
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping data for table `mview_ex_uppercased`
+--
+
+LOCK TABLES `mview_ex_uppercased` WRITE;
+/*!40000 ALTER TABLE `mview_ex_uppercased` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mview_ex_uppercased` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mview_quote`
+--
+
+DROP TABLE IF EXISTS `mview_quote`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `mview_quote` (
+  `RUID` int(10) unsigned NOT NULL default '0',
+  `quote` varchar(255) NOT NULL default ''
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping data for table `mview_quote`
+--
+
+LOCK TABLES `mview_quote` WRITE;
+/*!40000 ALTER TABLE `mview_quote` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mview_quote` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `new_query_events`
+--
+
+DROP TABLE IF EXISTS `new_query_events`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `new_query_events` (
+  `UID` int(10) unsigned NOT NULL default '0',
+  `m_op` int(10) unsigned NOT NULL default '0',
+  `m_opped` int(10) unsigned NOT NULL default '0',
+  `m_voice` int(10) unsigned NOT NULL default '0',
+  `m_voiced` int(10) unsigned NOT NULL default '0',
+  `m_deOp` int(10) unsigned NOT NULL default '0',
+  `m_deOpped` int(10) unsigned NOT NULL default '0',
+  `m_deVoice` int(10) unsigned NOT NULL default '0',
+  `m_deVoiced` int(10) unsigned NOT NULL default '0',
+  `joins` int(10) unsigned NOT NULL default '0',
+  `parts` int(10) unsigned NOT NULL default '0',
+  `quits` int(10) unsigned NOT NULL default '0',
+  `kicks` int(10) unsigned NOT NULL default '0',
+  `kicked` int(10) unsigned NOT NULL default '0',
+  `nickchanges` int(10) unsigned NOT NULL default '0',
+  `topics` int(10) unsigned NOT NULL default '0',
+  `ex_kicks` varchar(255) NOT NULL default '',
+  `ex_kicked` varchar(255) NOT NULL default '',
+  PRIMARY KEY  (`UID`),
+  KEY `m_op` (`m_op`),
+  KEY `m_opped` (`m_opped`),
+  KEY `m_voice` (`m_voice`),
+  KEY `m_voiced` (`m_voiced`),
+  KEY `m_deOp` (`m_deOp`),
+  KEY `m_deOpped` (`m_deOpped`),
+  KEY `m_deVoice` (`m_deVoice`),
+  KEY `m_deVoiced` (`m_deVoiced`),
+  KEY `joins` (`joins`),
+  KEY `parts` (`parts`),
+  KEY `quits` (`quits`),
+  KEY `kicks` (`kicks`),
+  KEY `kicked` (`kicked`),
+  KEY `nickchanges` (`nickchanges`),
+  KEY `topics` (`topics`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping data for table `new_query_events`
+--
+
+LOCK TABLES `new_query_events` WRITE;
+/*!40000 ALTER TABLE `new_query_events` DISABLE KEYS */;
+/*!40000 ALTER TABLE `new_query_events` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `parse_history`
 --
 
@@ -955,6 +1163,118 @@ DROP TABLE IF EXISTS `view_lines`;
 ) ENGINE=MyISAM */;
 
 --
+-- Temporary table structure for view `view_query_events`
+--
+
+DROP TABLE IF EXISTS `view_query_events`;
+/*!50001 DROP VIEW IF EXISTS `view_query_events`*/;
+/*!50001 CREATE TABLE `view_query_events` (
+  `UID` int(10) unsigned,
+  `m_op` decimal(33,0),
+  `m_opped` decimal(33,0),
+  `m_voice` decimal(33,0),
+  `m_voiced` decimal(33,0),
+  `m_deOp` decimal(33,0),
+  `m_deOpped` decimal(33,0),
+  `m_deVoice` decimal(33,0),
+  `m_deVoiced` decimal(33,0),
+  `joins` decimal(33,0),
+  `parts` decimal(33,0),
+  `quits` decimal(33,0),
+  `kicks` decimal(33,0),
+  `kicked` decimal(33,0),
+  `nickChanges` decimal(33,0),
+  `topics` decimal(33,0),
+  `ex_kicks` varchar(255),
+  `ex_kicked` varchar(255)
+) ENGINE=MyISAM */;
+
+--
+-- Temporary table structure for view `view_query_lines`
+--
+
+DROP TABLE IF EXISTS `view_query_lines`;
+/*!50001 DROP VIEW IF EXISTS `view_query_lines`*/;
+/*!50001 CREATE TABLE `view_query_lines` (
+  `UID` int(10) unsigned,
+  `l_00` decimal(33,0),
+  `l_01` decimal(33,0),
+  `l_02` decimal(33,0),
+  `l_03` decimal(33,0),
+  `l_04` decimal(33,0),
+  `l_05` decimal(33,0),
+  `l_06` decimal(33,0),
+  `l_07` decimal(33,0),
+  `l_08` decimal(33,0),
+  `l_09` decimal(33,0),
+  `l_10` decimal(33,0),
+  `l_11` decimal(33,0),
+  `l_12` decimal(33,0),
+  `l_13` decimal(33,0),
+  `l_14` decimal(33,0),
+  `l_15` decimal(33,0),
+  `l_16` decimal(33,0),
+  `l_17` decimal(33,0),
+  `l_18` decimal(33,0),
+  `l_19` decimal(33,0),
+  `l_20` decimal(33,0),
+  `l_21` decimal(33,0),
+  `l_22` decimal(33,0),
+  `l_23` decimal(33,0),
+  `l_night` decimal(33,0),
+  `l_morning` decimal(33,0),
+  `l_afternoon` decimal(33,0),
+  `l_evening` decimal(33,0),
+  `l_total` decimal(33,0),
+  `l_mon_night` decimal(33,0),
+  `l_mon_morning` decimal(33,0),
+  `l_mon_afternoon` decimal(33,0),
+  `l_mon_evening` decimal(33,0),
+  `l_tue_night` decimal(33,0),
+  `l_tue_morning` decimal(33,0),
+  `l_tue_afternoon` decimal(33,0),
+  `l_tue_evening` decimal(33,0),
+  `l_wed_night` decimal(33,0),
+  `l_wed_morning` decimal(33,0),
+  `l_wed_afternoon` decimal(33,0),
+  `l_wed_evening` decimal(33,0),
+  `l_thu_night` decimal(33,0),
+  `l_thu_morning` decimal(33,0),
+  `l_thu_afternoon` decimal(33,0),
+  `l_thu_evening` decimal(33,0),
+  `l_fri_night` decimal(33,0),
+  `l_fri_morning` decimal(33,0),
+  `l_fri_afternoon` decimal(33,0),
+  `l_fri_evening` decimal(33,0),
+  `l_sat_night` decimal(33,0),
+  `l_sat_morning` decimal(33,0),
+  `l_sat_afternoon` decimal(33,0),
+  `l_sat_evening` decimal(33,0),
+  `l_sun_night` decimal(33,0),
+  `l_sun_morning` decimal(33,0),
+  `l_sun_afternoon` decimal(33,0),
+  `l_sun_evening` decimal(33,0),
+  `URLs` decimal(33,0),
+  `words` decimal(33,0),
+  `characters` decimal(33,0),
+  `monologues` decimal(33,0),
+  `topMonologue` int(10) unsigned,
+  `activeDays` bigint(21),
+  `slaps` decimal(33,0),
+  `slapped` decimal(33,0),
+  `exclamations` decimal(33,0),
+  `questions` decimal(33,0),
+  `actions` decimal(33,0),
+  `uppercased` decimal(33,0),
+  `quote` varchar(255),
+  `ex_exclamations` varchar(255),
+  `ex_questions` varchar(255),
+  `ex_actions` varchar(255),
+  `ex_uppercased` varchar(255),
+  `lastTalked` datetime
+) ENGINE=MyISAM */;
+
+--
 -- Temporary table structure for view `view_query_smileys`
 --
 
@@ -1234,6 +1554,26 @@ UNLOCK TABLES;
 /*!50001 VIEW `view_lines` AS select `user_status`.`RUID` AS `RUID`,sum(`user_lines`.`l_00`) AS `l_00`,sum(`user_lines`.`l_01`) AS `l_01`,sum(`user_lines`.`l_02`) AS `l_02`,sum(`user_lines`.`l_03`) AS `l_03`,sum(`user_lines`.`l_04`) AS `l_04`,sum(`user_lines`.`l_05`) AS `l_05`,sum(`user_lines`.`l_06`) AS `l_06`,sum(`user_lines`.`l_07`) AS `l_07`,sum(`user_lines`.`l_08`) AS `l_08`,sum(`user_lines`.`l_09`) AS `l_09`,sum(`user_lines`.`l_10`) AS `l_10`,sum(`user_lines`.`l_11`) AS `l_11`,sum(`user_lines`.`l_12`) AS `l_12`,sum(`user_lines`.`l_13`) AS `l_13`,sum(`user_lines`.`l_14`) AS `l_14`,sum(`user_lines`.`l_15`) AS `l_15`,sum(`user_lines`.`l_16`) AS `l_16`,sum(`user_lines`.`l_17`) AS `l_17`,sum(`user_lines`.`l_18`) AS `l_18`,sum(`user_lines`.`l_19`) AS `l_19`,sum(`user_lines`.`l_20`) AS `l_20`,sum(`user_lines`.`l_21`) AS `l_21`,sum(`user_lines`.`l_22`) AS `l_22`,sum(`user_lines`.`l_23`) AS `l_23`,sum(`user_lines`.`l_night`) AS `l_night`,sum(`user_lines`.`l_morning`) AS `l_morning`,sum(`user_lines`.`l_afternoon`) AS `l_afternoon`,sum(`user_lines`.`l_evening`) AS `l_evening`,sum(`user_lines`.`l_total`) AS `l_total`,sum(`user_lines`.`l_mon_night`) AS `l_mon_night`,sum(`user_lines`.`l_mon_morning`) AS `l_mon_morning`,sum(`user_lines`.`l_mon_afternoon`) AS `l_mon_afternoon`,sum(`user_lines`.`l_mon_evening`) AS `l_mon_evening`,sum(`user_lines`.`l_tue_night`) AS `l_tue_night`,sum(`user_lines`.`l_tue_morning`) AS `l_tue_morning`,sum(`user_lines`.`l_tue_afternoon`) AS `l_tue_afternoon`,sum(`user_lines`.`l_tue_evening`) AS `l_tue_evening`,sum(`user_lines`.`l_wed_night`) AS `l_wed_night`,sum(`user_lines`.`l_wed_morning`) AS `l_wed_morning`,sum(`user_lines`.`l_wed_afternoon`) AS `l_wed_afternoon`,sum(`user_lines`.`l_wed_evening`) AS `l_wed_evening`,sum(`user_lines`.`l_thu_night`) AS `l_thu_night`,sum(`user_lines`.`l_thu_morning`) AS `l_thu_morning`,sum(`user_lines`.`l_thu_afternoon`) AS `l_thu_afternoon`,sum(`user_lines`.`l_thu_evening`) AS `l_thu_evening`,sum(`user_lines`.`l_fri_night`) AS `l_fri_night`,sum(`user_lines`.`l_fri_morning`) AS `l_fri_morning`,sum(`user_lines`.`l_fri_afternoon`) AS `l_fri_afternoon`,sum(`user_lines`.`l_fri_evening`) AS `l_fri_evening`,sum(`user_lines`.`l_sat_night`) AS `l_sat_night`,sum(`user_lines`.`l_sat_morning`) AS `l_sat_morning`,sum(`user_lines`.`l_sat_afternoon`) AS `l_sat_afternoon`,sum(`user_lines`.`l_sat_evening`) AS `l_sat_evening`,sum(`user_lines`.`l_sun_night`) AS `l_sun_night`,sum(`user_lines`.`l_sun_morning`) AS `l_sun_morning`,sum(`user_lines`.`l_sun_afternoon`) AS `l_sun_afternoon`,sum(`user_lines`.`l_sun_evening`) AS `l_sun_evening`,sum(`user_lines`.`URLs`) AS `URLs`,sum(`user_lines`.`words`) AS `words`,sum(`user_lines`.`characters`) AS `characters`,sum(`user_lines`.`monologues`) AS `monologues`,max(`user_lines`.`topMonologue`) AS `topMonologue`,sum(`user_lines`.`slaps`) AS `slaps`,sum(`user_lines`.`slapped`) AS `slapped`,sum(`user_lines`.`exclamations`) AS `exclamations`,sum(`user_lines`.`questions`) AS `questions`,sum(`user_lines`.`actions`) AS `actions`,sum(`user_lines`.`uppercased`) AS `uppercased`,max(`user_lines`.`lastTalked`) AS `lastTalked` from (`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) group by `user_status`.`RUID` */;
 
 --
+-- Final view structure for view `view_query_events`
+--
+
+/*!50001 DROP TABLE `view_query_events`*/;
+/*!50001 DROP VIEW IF EXISTS `view_query_events`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
+/*!50001 VIEW `view_query_events` AS select `view_events`.`RUID` AS `UID`,`view_events`.`m_op` AS `m_op`,`view_events`.`m_opped` AS `m_opped`,`view_events`.`m_voice` AS `m_voice`,`view_events`.`m_voiced` AS `m_voiced`,`view_events`.`m_deOp` AS `m_deOp`,`view_events`.`m_deOpped` AS `m_deOpped`,`view_events`.`m_deVoice` AS `m_deVoice`,`view_events`.`m_deVoiced` AS `m_deVoiced`,`view_events`.`joins` AS `joins`,`view_events`.`parts` AS `parts`,`view_events`.`quits` AS `quits`,`view_events`.`kicks` AS `kicks`,`view_events`.`kicked` AS `kicked`,`view_events`.`nickchanges` AS `nickChanges`,`view_events`.`topics` AS `topics`,`mview_ex_kicks`.`ex_kicks` AS `ex_kicks`,`mview_ex_kicked`.`ex_kicked` AS `ex_kicked` from ((`view_events` left join `mview_ex_kicks` on((`view_events`.`RUID` = `mview_ex_kicks`.`RUID`))) left join `mview_ex_kicked` on((`view_events`.`RUID` = `mview_ex_kicked`.`RUID`))) */;
+
+--
+-- Final view structure for view `view_query_lines`
+--
+
+/*!50001 DROP TABLE `view_query_lines`*/;
+/*!50001 DROP VIEW IF EXISTS `view_query_lines`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
+/*!50001 VIEW `view_query_lines` AS select `view_lines`.`RUID` AS `UID`,`view_lines`.`l_00` AS `l_00`,`view_lines`.`l_01` AS `l_01`,`view_lines`.`l_02` AS `l_02`,`view_lines`.`l_03` AS `l_03`,`view_lines`.`l_04` AS `l_04`,`view_lines`.`l_05` AS `l_05`,`view_lines`.`l_06` AS `l_06`,`view_lines`.`l_07` AS `l_07`,`view_lines`.`l_08` AS `l_08`,`view_lines`.`l_09` AS `l_09`,`view_lines`.`l_10` AS `l_10`,`view_lines`.`l_11` AS `l_11`,`view_lines`.`l_12` AS `l_12`,`view_lines`.`l_13` AS `l_13`,`view_lines`.`l_14` AS `l_14`,`view_lines`.`l_15` AS `l_15`,`view_lines`.`l_16` AS `l_16`,`view_lines`.`l_17` AS `l_17`,`view_lines`.`l_18` AS `l_18`,`view_lines`.`l_19` AS `l_19`,`view_lines`.`l_20` AS `l_20`,`view_lines`.`l_21` AS `l_21`,`view_lines`.`l_22` AS `l_22`,`view_lines`.`l_23` AS `l_23`,`view_lines`.`l_night` AS `l_night`,`view_lines`.`l_morning` AS `l_morning`,`view_lines`.`l_afternoon` AS `l_afternoon`,`view_lines`.`l_evening` AS `l_evening`,`view_lines`.`l_total` AS `l_total`,`view_lines`.`l_mon_night` AS `l_mon_night`,`view_lines`.`l_mon_morning` AS `l_mon_morning`,`view_lines`.`l_mon_afternoon` AS `l_mon_afternoon`,`view_lines`.`l_mon_evening` AS `l_mon_evening`,`view_lines`.`l_tue_night` AS `l_tue_night`,`view_lines`.`l_tue_morning` AS `l_tue_morning`,`view_lines`.`l_tue_afternoon` AS `l_tue_afternoon`,`view_lines`.`l_tue_evening` AS `l_tue_evening`,`view_lines`.`l_wed_night` AS `l_wed_night`,`view_lines`.`l_wed_morning` AS `l_wed_morning`,`view_lines`.`l_wed_afternoon` AS `l_wed_afternoon`,`view_lines`.`l_wed_evening` AS `l_wed_evening`,`view_lines`.`l_thu_night` AS `l_thu_night`,`view_lines`.`l_thu_morning` AS `l_thu_morning`,`view_lines`.`l_thu_afternoon` AS `l_thu_afternoon`,`view_lines`.`l_thu_evening` AS `l_thu_evening`,`view_lines`.`l_fri_night` AS `l_fri_night`,`view_lines`.`l_fri_morning` AS `l_fri_morning`,`view_lines`.`l_fri_afternoon` AS `l_fri_afternoon`,`view_lines`.`l_fri_evening` AS `l_fri_evening`,`view_lines`.`l_sat_night` AS `l_sat_night`,`view_lines`.`l_sat_morning` AS `l_sat_morning`,`view_lines`.`l_sat_afternoon` AS `l_sat_afternoon`,`view_lines`.`l_sat_evening` AS `l_sat_evening`,`view_lines`.`l_sun_night` AS `l_sun_night`,`view_lines`.`l_sun_morning` AS `l_sun_morning`,`view_lines`.`l_sun_afternoon` AS `l_sun_afternoon`,`view_lines`.`l_sun_evening` AS `l_sun_evening`,`view_lines`.`URLs` AS `URLs`,`view_lines`.`words` AS `words`,`view_lines`.`characters` AS `characters`,`view_lines`.`monologues` AS `monologues`,`view_lines`.`topMonologue` AS `topMonologue`,`view_activeDays`.`activeDays` AS `activeDays`,`view_lines`.`slaps` AS `slaps`,`view_lines`.`slapped` AS `slapped`,`view_lines`.`exclamations` AS `exclamations`,`view_lines`.`questions` AS `questions`,`view_lines`.`actions` AS `actions`,`view_lines`.`uppercased` AS `uppercased`,`mview_quote`.`quote` AS `quote`,`mview_ex_exclamations`.`ex_exclamations` AS `ex_exclamations`,`mview_ex_questions`.`ex_questions` AS `ex_questions`,`mview_ex_actions`.`ex_actions` AS `ex_actions`,`mview_ex_uppercased`.`ex_uppercased` AS `ex_uppercased`,`view_lines`.`lastTalked` AS `lastTalked` from ((((((`view_lines` left join `view_activeDays` on((`view_lines`.`RUID` = `view_activeDays`.`RUID`))) left join `mview_quote` on((`view_lines`.`RUID` = `mview_quote`.`RUID`))) left join `mview_ex_exclamations` on((`view_lines`.`RUID` = `mview_ex_exclamations`.`RUID`))) left join `mview_ex_questions` on((`view_lines`.`RUID` = `mview_ex_questions`.`RUID`))) left join `mview_ex_actions` on((`view_lines`.`RUID` = `mview_ex_actions`.`RUID`))) left join `mview_ex_uppercased` on((`view_lines`.`RUID` = `mview_ex_uppercased`.`RUID`))) */;
+
+--
 -- Final view structure for view `view_query_smileys`
 --
 
@@ -1282,4 +1622,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-06-26  1:08:28
+-- Dump completed on 2010-06-26  1:28:23
