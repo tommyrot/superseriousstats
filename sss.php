@@ -167,15 +167,30 @@ final class sss extends Base
 			$parser->setValue('date', $date);
 
 			/**
-			 * Get the parse history for the current logfile.
+			 * Get the streak history, we assume that logs are being parsed in chronological order.
 			 */
 			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
+			$query = @mysqli_query($mysqli, 'SELECT * FROM `streak_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+			$rows = mysqli_num_rows($query);
+
+			if (!empty($rows)) {
+				$result = mysqli_fetch_object($query);
+				$parser->setValue('prevNick', $result->prevNick);
+				$parser->setValue('streak', $result->streak);
+			}
+
+			/**
+			 * Get the parse history for the current logfile.
+			 */
 			$query = @mysqli_query($mysqli, 'SELECT `lines_parsed` FROM `parse_history` WHERE `date` = \''.mysqli_real_escape_string($mysqli, $date).'\'') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 			$rows = mysqli_num_rows($query);
 
 			if (!empty($rows)) {
 				$result = mysqli_fetch_object($query);
-				$firstLine = $result->lines_parsed + 1;
+				/**
+				 * Have the parser start at the last line we parsed on previous run. The last line is empty since EOF occurs only at n+1 and $lineNum has this number.
+				 */
+				$firstLine = $result->lines_parsed;
 			} else {
 				$firstLine = 1;
 			}
@@ -184,7 +199,7 @@ final class sss extends Base
 
 			if ($this->writeData) {
 				/**
-				 * If the stored number of parsed lines is equal to the last line in the logfile we can skip writing to db and performing maintenance.
+				 * If the stored number of parsed lines is equal to the amount of lines in the logfile we can skip writing to db and performing maintenance.
 				 */
 				if ($parser->getValue('lineNum') <= $result->lines_parsed) {
 					$this->output('notice', 'parseLog(): no activity since last update, skipping writeData()');
