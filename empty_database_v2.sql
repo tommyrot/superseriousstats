@@ -298,6 +298,28 @@ LOCK TABLES `parse_history` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `streak_history`
+--
+
+DROP TABLE IF EXISTS `streak_history`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `streak_history` (
+  `prevNick` varchar(255) NOT NULL default '',
+  `streak` int(10) unsigned NOT NULL default '0'
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping data for table `streak_history`
+--
+
+LOCK TABLES `streak_history` WRITE;
+/*!40000 ALTER TABLE `streak_history` DISABLE KEYS */;
+/*!40000 ALTER TABLE `streak_history` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `template_query_events`
 --
 
@@ -1622,4 +1644,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-06-26  1:28:23
+-- Dump completed on 2010-06-27  2:54:42
