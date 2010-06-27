@@ -359,6 +359,13 @@ abstract class Parser extends Base
 				$this->streak++;
 			} else {
 				if ($this->streak >= $this->minStreak) {
+					/**
+					 * Since $prevNick may only be seen in previous parse run its object may not exist here. Create it if so.
+					 */
+					if (!isset($this->nicks_objs[$this->prevNick])) {
+						$this->addNick($this->prevNick, NULL);
+					}
+
 					$this->nicks_objs[$this->prevNick]->addValue('monologues', 1);
 
 					if ($this->streak > $this->nicks_objs[$this->prevNick]->getValue('topMonologue')) {
