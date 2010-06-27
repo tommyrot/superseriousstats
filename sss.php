@@ -188,7 +188,8 @@ final class sss extends Base
 			if (!empty($rows)) {
 				$result = mysqli_fetch_object($query);
 				/**
-				 * Have the parser start at the last line we parsed on previous run. The last line is empty since EOF occurs only at n+1 and $lineNum has this number.
+				 * Have the parser start at the last line we parsed on previous run. The final value of $lineNum is that of the line which contains EOF.
+				 * This line contains no chat data and should be parsed again on the next run when it possibly does contain data.
 				 */
 				$firstLine = $result->lines_parsed;
 			} else {
@@ -197,17 +198,13 @@ final class sss extends Base
 
 			$parser->parseLog($logfile, $firstLine);
 
-			if ($this->writeData) {
-				/**
-				 * If the stored number of parsed lines is equal to the amount of lines in the logfile we can skip writing to db and performing maintenance.
-				 */
-				if ($parser->getValue('lineNum') <= $result->lines_parsed) {
-					$this->output('notice', 'parseLog(): no activity since last update, skipping writeData()');
-				} else {
-					$parser->writeData();
-					@mysqli_query($mysqli, 'INSERT INTO `parse_history` (`date`, `lines_parsed`) VALUES (\''.mysqli_real_escape_string($mysqli, $date).'\', '.$parser->getValue('lineNum').') ON DUPLICATE KEY UPDATE `lines_parsed` = '.$parser->getValue('lineNum')) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
-					$needMaintenance = TRUE;
-				}
+			/**
+			 * If the stored number of parsed lines is equal to the amount of lines in the logfile we can skip writing to db and performing maintenance.
+			 */
+			if ($this->writeData && $parser->getValue('lineNum') > $result->lines_parsed) {
+				$parser->writeData();
+				@mysqli_query($mysqli, 'INSERT INTO `parse_history` (`date`, `lines_parsed`) VALUES (\''.mysqli_real_escape_string($mysqli, $date).'\', '.$parser->getValue('lineNum').') ON DUPLICATE KEY UPDATE `lines_parsed` = '.$parser->getValue('lineNum')) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+				$needMaintenance = TRUE;
 			}
 		}
 
