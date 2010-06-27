@@ -75,7 +75,6 @@ abstract class Parser extends Base
 	private $URLTools;
 	private $nicks_list = array();
 	private $nicks_objs = array();
-	private $prevNick = '';
 	private $settings_list = array(
 		'db_host' => 'string',
 		'db_name' => 'string',
@@ -108,12 +107,13 @@ abstract class Parser extends Base
 		':)' => 's_17',
 		':(' => 's_18',
 		'\\o/' => 's_19');
-	private $streak = 0;
 	private $words_list = array();
 	private $words_objs = array();
 	protected $date = '';
 	protected $lineNum = 0;
 	protected $prevLine = '';
+	protected $prevNick = '';
+	protected $streak = 0;
 
 	/**
 	 * Constructor.
