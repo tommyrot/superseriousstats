@@ -160,7 +160,7 @@ final class nicklinker extends Base
 				$this->output('critical', 'import(): no such file: \''.$file.'\'');
 			}
 
-			if (($fp = @fopen($rp, 'rb')) !== FALSE) {
+			if (($fp = @fopen($rp, 'rb')) === FALSE) {
 				$this->output('critical', 'import(): failed to open file: \''.$file.'\'');
 			}
 
