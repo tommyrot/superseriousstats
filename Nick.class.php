@@ -339,7 +339,7 @@ final class Nick extends Base
 				$result = mysqli_fetch_object($query);
 
 				if ($table == 'user_details') {
-					$this->UID = $result->UID;
+					$this->UID = (int) $result->UID;
 				}
 
 				$query = 'UPDATE `'.$table.'` SET';
