@@ -82,7 +82,7 @@ final class sss extends Base
 		}
 
 		if (array_key_exists('b', $options)) {
-			$this->settings['sectionbits'] = $options['b'];
+			$this->settings['sectionbits'] = (int) $options['b'];
 		}
 
 		if (array_key_exists('i', $options)) {
@@ -176,7 +176,7 @@ final class sss extends Base
 			if (!empty($rows)) {
 				$result = mysqli_fetch_object($query);
 				$parser->setValue('prevNick', $result->prevNick);
-				$parser->setValue('streak', $result->streak);
+				$parser->setValue('streak', (int) $result->streak);
 			}
 
 			/**
@@ -191,7 +191,7 @@ final class sss extends Base
 				 * Have the parser start at the last line we parsed on previous run. The final value of $lineNum is that of the line which contains EOF.
 				 * This line contains no chat data and should be parsed again on the next run when it possibly does contain data.
 				 */
-				$firstLine = $result->lines_parsed;
+				$firstLine = (int) $result->lines_parsed;
 			} else {
 				$firstLine = 1;
 			}
@@ -201,7 +201,7 @@ final class sss extends Base
 			/**
 			 * If the stored number of parsed lines is equal to the amount of lines in the logfile we can skip writing to db and performing maintenance.
 			 */
-			if ($this->writeData && $parser->getValue('lineNum') > $result->lines_parsed) {
+			if ($this->writeData && $parser->getValue('lineNum') > (int) $result->lines_parsed) {
 				$parser->writeData();
 				@mysqli_query($mysqli, 'INSERT INTO `parse_history` (`date`, `lines_parsed`) VALUES (\''.mysqli_real_escape_string($mysqli, $date).'\', '.$parser->getValue('lineNum').') ON DUPLICATE KEY UPDATE `lines_parsed` = '.$parser->getValue('lineNum')) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 				$needMaintenance = TRUE;
