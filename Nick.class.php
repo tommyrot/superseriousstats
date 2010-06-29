@@ -41,7 +41,6 @@ final class Nick extends Base
 	/**
 	 * Variables used in database table "user_URLs".
 	 */
-	private $URLs_list = array();
 	private $URLs_objs = array();
 
 	/**
@@ -232,8 +231,7 @@ final class Nick extends Base
 	{
 		$URL = strtolower($csURL);
 
-		if (!in_array($URL, $this->URLs_list)) {
-			$this->URLs_list[] = $URL;
+		if (!array_key_exists($URL, $this->URLs_objs)) {
 			$this->URLs_objs[$URL] = new URL($csURL);
 		} else {
 			$this->URLs_objs[$URL]->setValue('csURL', $csURL);
@@ -464,8 +462,8 @@ final class Nick extends Base
 		/**
 		 * Write data to database table "user_URLs".
 		 */
-		foreach ($this->URLs_list as $URL) {
-			if (!$this->URLs_objs[$URL]->writeData($mysqli, $this->UID)) {
+		foreach ($this->URLs_objs as $URL) {
+			if (!$URL->writeData($mysqli, $this->UID)) {
 				return FALSE;
 			}
 		}

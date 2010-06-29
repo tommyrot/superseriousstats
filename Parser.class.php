@@ -73,7 +73,6 @@ abstract class Parser extends Base
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $URLTools;
-	private $nicks_list = array();
 	private $nicks_objs = array();
 	private $settings_list = array(
 		'db_host' => 'string',
@@ -107,7 +106,6 @@ abstract class Parser extends Base
 		':)' => 's_17',
 		':(' => 's_18',
 		'\\o/' => 's_19');
-	private $words_list = array();
 	private $words_objs = array();
 	protected $date = '';
 	protected $lineNum = 0;
@@ -149,8 +147,7 @@ abstract class Parser extends Base
 	{
 		$nick = strtolower($csNick);
 
-		if (!in_array($nick, $this->nicks_list)) {
-			$this->nicks_list[] = $nick;
+		if (!array_key_exists($nick, $this->nicks_objs)) {
 			$this->nicks_objs[$nick] = new Nick($csNick);
 			$this->nicks_objs[$nick]->setValue('date', $this->date);
 		} else {
@@ -172,8 +169,7 @@ abstract class Parser extends Base
 	{
 		$word = strtolower($csWord);
 
-		if (!in_array($word, $this->words_list)) {
-			$this->words_list[] = $word;
+		if (!array_key_exists($word, $this->words_objs)) {
 			$this->words_objs[$word] = new Word($word);
 		}
 
@@ -601,7 +597,7 @@ abstract class Parser extends Base
 		/**
 		 * If there are no nicks there is no data. Don't write channel data so the log can be parsed at a later time.
 		 */
-		if (!empty($this->nicks_list)) {
+		if (!empty($this->nicks_objs)) {
 			$this->output('notice', 'writeData(): writing data to database: \''.$this->db_name.'\'');
 			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
 
@@ -613,8 +609,8 @@ abstract class Parser extends Base
 			/**
 			 * Write user data to the database.
 			 */
-			foreach ($this->nicks_list as $nick) {
-				$this->nicks_objs[$nick]->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+			foreach ($this->nicks_objs as $nick) {
+				$nick->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 			}
 
 			/**
@@ -627,8 +623,8 @@ abstract class Parser extends Base
 			 * Write word data to the database.
 			 * To keep our database sane words are not linked to users.
 			 */
-			foreach ($this->words_list as $word) {
-				$this->words_objs[$word]->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+			foreach ($this->words_objs as $word) {
+				$word->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 			}
 
 			@mysqli_close($mysqli);
