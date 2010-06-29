@@ -176,7 +176,7 @@ final class nicklinker extends Base
 				 * Run "php sss.php -m" afterwards to start database maintenance. This will ensure all userstats are properly accumulated according to your latest changes.
 				 * More info on http://code.google.com/p/superseriousstats/wiki/Nicklinker
 				 */
-				if ($status != 1 && $status != 3) {
+				if ($status != '1' && $status != '3') {
 					continue;
 				}
 

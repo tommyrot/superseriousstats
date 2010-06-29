@@ -89,7 +89,7 @@ final class URL extends Base
 		} else {
 			$result = mysqli_fetch_object($query);
 
-			if (!@mysqli_query($mysqli, 'UPDATE `user_URLs` SET `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\', `total` = '.($this->total + $result->total).', `firstUsed` = \''.mysqli_real_escape_string($mysqli, $this->firstUsed.':00' < $result->firstUsed ? $this->firstUsed : $result->firstUsed).'\', `lastUsed` = \''.mysqli_real_escape_string($mysqli, $this->lastUsed.':00' > $result->lastUsed ? $this->lastUsed : $result->lastUsed).'\' WHERE `LID` = '.$result->LID.' AND `UID` = '.$UID)) {
+			if (!@mysqli_query($mysqli, 'UPDATE `user_URLs` SET `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\', `total` = `total` + '.$this->total.', `firstUsed` = \''.mysqli_real_escape_string($mysqli, $this->firstUsed.':00' < $result->firstUsed ? $this->firstUsed : $result->firstUsed).'\', `lastUsed` = \''.mysqli_real_escape_string($mysqli, $this->lastUsed.':00' > $result->lastUsed ? $this->lastUsed : $result->lastUsed).'\' WHERE `LID` = '.$result->LID.' AND `UID` = '.$UID)) {
 				return FALSE;
 			}
 		}
