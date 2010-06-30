@@ -1205,7 +1205,7 @@ DROP TABLE IF EXISTS `view_query_events`;
   `quits` decimal(33,0),
   `kicks` decimal(33,0),
   `kicked` decimal(33,0),
-  `nickChanges` decimal(33,0),
+  `nickchanges` decimal(33,0),
   `topics` decimal(33,0),
   `ex_kicks` varchar(255),
   `ex_kicked` varchar(255)
@@ -1583,7 +1583,7 @@ UNLOCK TABLES;
 /*!50001 DROP VIEW IF EXISTS `view_query_events`*/;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_query_events` AS select `view_events`.`RUID` AS `UID`,`view_events`.`m_op` AS `m_op`,`view_events`.`m_opped` AS `m_opped`,`view_events`.`m_voice` AS `m_voice`,`view_events`.`m_voiced` AS `m_voiced`,`view_events`.`m_deOp` AS `m_deOp`,`view_events`.`m_deOpped` AS `m_deOpped`,`view_events`.`m_deVoice` AS `m_deVoice`,`view_events`.`m_deVoiced` AS `m_deVoiced`,`view_events`.`joins` AS `joins`,`view_events`.`parts` AS `parts`,`view_events`.`quits` AS `quits`,`view_events`.`kicks` AS `kicks`,`view_events`.`kicked` AS `kicked`,`view_events`.`nickchanges` AS `nickChanges`,`view_events`.`topics` AS `topics`,`mview_ex_kicks`.`ex_kicks` AS `ex_kicks`,`mview_ex_kicked`.`ex_kicked` AS `ex_kicked` from ((`view_events` left join `mview_ex_kicks` on((`view_events`.`RUID` = `mview_ex_kicks`.`RUID`))) left join `mview_ex_kicked` on((`view_events`.`RUID` = `mview_ex_kicked`.`RUID`))) */;
+/*!50001 VIEW `view_query_events` AS select `view_events`.`RUID` AS `UID`,`view_events`.`m_op` AS `m_op`,`view_events`.`m_opped` AS `m_opped`,`view_events`.`m_voice` AS `m_voice`,`view_events`.`m_voiced` AS `m_voiced`,`view_events`.`m_deOp` AS `m_deOp`,`view_events`.`m_deOpped` AS `m_deOpped`,`view_events`.`m_deVoice` AS `m_deVoice`,`view_events`.`m_deVoiced` AS `m_deVoiced`,`view_events`.`joins` AS `joins`,`view_events`.`parts` AS `parts`,`view_events`.`quits` AS `quits`,`view_events`.`kicks` AS `kicks`,`view_events`.`kicked` AS `kicked`,`view_events`.`nickchanges` AS `nickchanges`,`view_events`.`topics` AS `topics`,`mview_ex_kicks`.`ex_kicks` AS `ex_kicks`,`mview_ex_kicked`.`ex_kicked` AS `ex_kicked` from ((`view_events` left join `mview_ex_kicks` on((`view_events`.`RUID` = `mview_ex_kicks`.`RUID`))) left join `mview_ex_kicked` on((`view_events`.`RUID` = `mview_ex_kicked`.`RUID`))) */;
 
 --
 -- Final view structure for view `view_query_lines`
