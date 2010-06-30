@@ -24,6 +24,7 @@ final class Nick extends Base
 	/**
 	 * Variables used in database table "user_details".
 	 */
+	private $UID = 0;
 	protected $csNick = '';
 	protected $firstSeen = '';
 	protected $lastSeen = '';
@@ -169,7 +170,6 @@ final class Nick extends Base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $UID = 0;
 	private $long_ex_actions_list = array();
 	private $long_ex_exclamations_list = array();
 	private $long_ex_questions_list = array();
@@ -180,11 +180,12 @@ final class Nick extends Base
 	private $short_ex_questions_list = array();
 	private $short_ex_uppercased_list = array();
 	private $short_quote_list = array();
+	private $user_activity = array('UID', 'date', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total');
 	private $user_details = array('UID', 'csNick', 'firstSeen', 'lastSeen');
 	private $user_events = array('UID', 'm_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deOp', 'm_deOpped', 'm_deVoice', 'm_deVoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked');
 	private $user_lines = array('UID', 'l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'URLs', 'words', 'characters', 'monologues', 'topMonologue', 'activeDays', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased', 'lastTalked');
 	private $user_smileys = array('UID', 's_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19');
-	private $user_tables = array('user_details', 'user_events', 'user_lines', 'user_smileys');
+	private $user_tables = array('user_details', 'user_activity', 'user_events', 'user_lines', 'user_smileys');
 	protected $date = '';
 
 	/**
@@ -285,33 +286,80 @@ final class Nick extends Base
 		}
 
 		/**
-		 * Write data to database tables "user_details", "user_status", "user_events", "user_lines" and "user_smileys".
+		 * Write data to database tables "user_details" and "user_status".
 		 */
-		foreach ($this->user_tables as $table) {
-			if ($table == 'user_details') {
-				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_details` WHERE `csNick` = \''.mysqli_real_escape_string($mysqli, $this->csNick).'\'')) === FALSE) {
-					return FALSE;
-				}
-			} else {
-				if (($query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `UID` = '.$this->UID)) === FALSE) {
-					return FALSE;
-				}
+		if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_details` WHERE `csNick` = \''.mysqli_real_escape_string($mysqli, $this->csNick).'\'')) === FALSE) {
+			return FALSE;
+		}
+
+		$rows = mysqli_num_rows($query);
+		$submit = FALSE;
+
+		if (empty($rows)) {
+			if (!@mysqli_query($mysqli, 'INSERT INTO `user_details` (`UID`, `csNick`, `firstSeen`, `lastSeen`) VALUES (0, \''.mysqli_real_escape_string($mysqli, $this->csNick).'\', \''.mysqli_real_escape_string($mysqli, $this->firstSeen).'\', \''.mysqli_real_escape_string($mysqli, $this->lastSeen).'\'')) {
+				return FALSE;
 			}
 
-			$rows = mysqli_num_rows($query);
+			$this->UID = mysqli_insert_id($mysqli);
+
+			if (!@mysqli_query($mysqli, 'INSERT INTO `user_status` (`UID`, `RUID`, `status`) VALUES ('.$this->UID.', '.$this->UID.', 0)')) {
+				return FALSE;
+			}
+		} else {
+			$result = mysqli_fetch_object($query);
+			$this->UID = $result->UID;
+			$query = 'UPDATE `'.$table.'` SET';
+			$columns = array('csNick', 'firstSeen', 'lastSeen');
+
+			foreach ($columns as $key) {
+				if ($this->$key != '' && $this->$key != $result->$key && !($key == 'firstSeen' && $this->firstSeen.':00' >= $result->firstSeen) && !($key == 'lastSeen' && $this->lastSeen.':00' <= $result->lastSeen)) {
+					$query .= ' `'.$key.'` = \''.mysqli_real_escape_string($mysqli, $this->$key).'\',';
+					$submit = TRUE;
+				}
+			}
 
 			/**
 			 * Don't send anything to the database if user data is empty or hasn't changed.
 			 */
+			if ($submit) {
+				$query = rtrim($query, ',').' WHERE `UID` = '.$this->UID;
+
+				if (!@mysqli_query($mysqli, $query)) {
+					return FALSE;
+				}
+			}
+		}
+
+		/**
+		 * Write data to database tables "user_events", "user_lines" and "user_smileys".
+		 */
+		$tables = array('user_events', 'user_lines', 'user_smileys');
+
+		foreach ($tables as $table) {
+			switch ($table) {
+				case 'user_events':
+					$columns = array('m_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deOp', 'm_deOpped', 'm_deVoice', 'm_deVoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked');
+					break;
+				case 'user_lines':
+					$columns = array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'URLs', 'words', 'characters', 'monologues', 'topMonologue', 'activeDays', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased', 'lastTalked');
+					break;
+				case 'user_smileys':
+					$columns = array('s_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19');
+					break;
+			}
+
+			if (($query = @mysqli_query($mysqli, 'SELECT * FROM `'.$table.'` WHERE `UID` = '.$this->UID)) === FALSE) {
+				return FALSE;
+			}
+
+			$rows = mysqli_num_rows($query);
 			$submit = FALSE;
 
 			if (empty($rows)) {
-				$query = 'INSERT INTO `'.$table.'` SET';
+				$query = 'INSERT INTO `'.$table.'` SET `UID` = '.$this->UID.',';
 
-				foreach ($this->{$table} as $key) {
-					if ($key == 'UID' && $this->UID != 0) {
-						$query .= ' `UID` = '.$this->UID.',';
-					} elseif (is_int($this->$key) && $this->$key != 0) {
+				foreach ($columns as $key) {
+					if (is_int($this->$key) && $this->$key != 0) {
 						$query .= ' `'.$key.'` = '.$this->$key.',';
 						$submit = TRUE;
 					} elseif (is_string($this->$key) && $this->$key != '') {
@@ -320,50 +368,40 @@ final class Nick extends Base
 					}
 				}
 
-				$query = rtrim($query, ',');
-
+				/**
+				 * Don't send anything to the database if user data is empty or hasn't changed.
+				 */
 				if ($submit) {
+					$query = rtrim($query, ',');
+
 					if (!@mysqli_query($mysqli, $query)) {
 						return FALSE;
-					}
-
-					if ($table == 'user_details') {
-						$this->UID = mysqli_insert_id($mysqli);
-
-						if (!@mysqli_query($mysqli, 'INSERT INTO `user_status` (`UID`, `RUID`, `status`) VALUES ('.$this->UID.', '.$this->UID.', 0)')) {
-							return FALSE;
-						}
 					}
 				}
 			} else {
 				$result = mysqli_fetch_object($query);
-
-				if ($table == 'user_details') {
-					$this->UID = (int) $result->UID;
-				}
-
 				$query = 'UPDATE `'.$table.'` SET';
 
-				foreach ($this->{$table} as $key) {
-					if (is_int($this->$key) && $this->$key != 0 && $key != 'UID') {
-						if ($key == 'topMonologue') {
-							if ($this->topMonologue > $result->topMonologue) {
-								$query .= ' `topMonologue` = '.$this->topMonologue.',';
-							}
-						} else {
-							$query .= ' `'.$key.'` = '.($this->$key + $result->$key).',';
+				foreach ($table as $key) {
+					if ($key == 'topMonologue') {
+						if ($this->topMonologue > (int) $result->topMonologue) {
+							$query .= ' `topMonologue` = '.$this->topMonologue.',';
 						}
-
+					} elseif (is_int($this->$key) && $this->$key != 0) {
+						$query .= ' `'.$key.'` = '.((int) $result->$key + $this->$key).',';
 						$submit = TRUE;
-					} elseif (is_string($this->$key) && $this->$key != '' && $this->$key != $result->$key && !($key == 'firstSeen' && $this->$key.':00' >= $result->$key) && !(($key == 'lastSeen' || $key == 'lastTalked') && $this->$key.':00' <= $result->$key)) {
+					} elseif (is_string($this->$key) && $this->$key != '' && $this->$key != $result->$key && !($key == 'lastTalked' && $this->lastTalked.':00' <= $result->lastTalked)) {
 						$query .= ' `'.$key.'` = \''.mysqli_real_escape_string($mysqli, $this->$key).'\',';
 						$submit = TRUE;
 					}
 				}
 
-				$query = rtrim($query, ',').' WHERE `UID` = '.$this->UID;
-
+				/**
+				 * Don't send anything to the database if user data is empty or hasn't changed.
+				 */
 				if ($submit) {
+					$query = rtrim($query, ',').' WHERE `UID` = '.$this->UID;
+
 					if (!@mysqli_query($mysqli, $query)) {
 						return FALSE;
 					}
@@ -405,7 +443,7 @@ final class Nick extends Base
 					$rows = mysqli_num_rows($query);
 
 					if (empty($rows)) {
-						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`UID`, `host`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')')) {
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_hosts` (`HID`, `UID`, `host`) VALUES (0, '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $host).'\')')) {
 							return FALSE;
 						}
 					} else {
@@ -445,7 +483,7 @@ final class Nick extends Base
 					$rows = mysqli_num_rows($query);
 
 					if (empty($rows)) {
-						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`UID`, `csTopic`, `setDate`) VALUES ('.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')')) {
+						if (!@mysqli_query($mysqli, 'INSERT INTO `user_topics` (`TID`, `UID`, `csTopic`, `setDate`) VALUES (0, '.$this->UID.', \''.mysqli_real_escape_string($mysqli, $topic['csTopic']).'\', \''.mysqli_real_escape_string($mysqli, $topic['setDate']).'\')')) {
 							return FALSE;
 						}
 					} else {
