@@ -290,7 +290,7 @@ final class Nick extends Base
 		$submit = FALSE;
 
 		if (empty($rows)) {
-			if (!@mysqli_query($mysqli, 'INSERT INTO `user_details` (`UID`, `csNick`, `firstSeen`, `lastSeen`) VALUES (0, \''.mysqli_real_escape_string($mysqli, $this->csNick).'\', \''.mysqli_real_escape_string($mysqli, $this->firstSeen).'\', \''.mysqli_real_escape_string($mysqli, $this->lastSeen).'\'')) {
+			if (!@mysqli_query($mysqli, 'INSERT INTO `user_details` (`UID`, `csNick`, `firstSeen`, `lastSeen`) VALUES (0, \''.mysqli_real_escape_string($mysqli, $this->csNick).'\', \''.mysqli_real_escape_string($mysqli, $this->firstSeen).'\', \''.mysqli_real_escape_string($mysqli, $this->lastSeen).'\')')) {
 				return FALSE;
 			}
 
