@@ -41,6 +41,70 @@ abstract class Base
 	}
 
 	/**
+	 * Create part of the MySQL query containing new data.
+	 */
+	final protected function createInsertQuery($columns) {
+		$changes = FALSE;
+
+		foreach ($columns as $c) {
+			if (is_int($this->$c) && $this->$c != 0) {
+				$query .= ' `'.$c.'` = '.$this->$c.',';
+				$changes = TRUE;
+			} elseif (is_string($this->$c) && $this->$c != '') {
+				$query .= ' `'.$c.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$c).'\',';
+				$changes = TRUE;
+			}
+		}
+
+		if ($changes) {
+			return rtrim($query, ',');
+		} else {
+			return NULL;
+		}
+	}
+
+	/**
+	 * Create part of the MySQL query containing updated data.
+	 */
+	final protected function createUpdateQuery($columns, $exclude) {
+		$changes = FALSE;
+
+		foreach ($columns as $c => $v) {
+			if (in_array($c, $exclude)) {
+				continue;
+			}
+
+			if ($c == 'firstSeen' && strtotime($this->firstSeen) >= strtotime($v)) {
+				continue;
+			} elseif ($c == 'firstUsed' && strtotime($this->firstUsed) >= strtotime($v)) {
+				continue;
+			} elseif ($c == 'lastSeen' && strtotime($this->lastSeen) <= strtotime($v)) {
+				continue;
+			} elseif ($c == 'lastUsed' && strtotime($this->lastUsed) <= strtotime($v)) {
+				continue;
+			} elseif ($c == 'lastTalked' && strtotime($this->lastTalked) <= strtotime($v)) {
+				continue;
+			} elseif ($c == 'topMonologue' && $this->topMonologue <= $v) {
+				continue;
+			}
+
+			if (is_int($this->$c) && $this->$c != 0) {
+				$query .= ' `'.$c.'` = '.($v + $this->$c).',';
+				$changes = TRUE;
+			} elseif (is_string($this->$c) && $this->$c != '') {
+				$query .= ' `'.$c.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$c).'\',';
+				$changes = TRUE;
+			}
+		}
+
+		if ($changes) {
+			return rtrim($query, ',');
+		} else {
+			return NULL;
+		}
+	}
+
+	/**
 	 * Get the value of a variable.
 	 */
 	final public function getValue($var)

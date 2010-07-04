@@ -43,11 +43,7 @@ final class Word extends Base
 		/**
 		 * Write data to database table "words".
 		 */
-		if (!@mysqli_query($mysqli, 'INSERT INTO `words` (`word`, `total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->word).'\', '.$this->total.') ON DUPLICATE KEY UPDATE `total` = `total` + '.$this->total)) {
-			return FALSE;
-		}
-
-		return TRUE;
+		@mysqli_query($mysqli, 'INSERT INTO `words` SET `word` = \''.mysqli_real_escape_string($mysqli, $this->word).'\', `total` = '.$this->total.' ON DUPLICATE KEY UPDATE `total` = `total` + '.$this->total) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 	}
 }
 

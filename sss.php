@@ -40,6 +40,7 @@ final class sss extends Base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
+	private $mysqli;
 	private $settings = array();
 	private $settings_list = array(
 		'db_host' => 'string',
@@ -85,6 +86,9 @@ final class sss extends Base
 			$this->settings['sectionbits'] = (int) $options['b'];
 		}
 
+		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
+		$this->output('notice', '__construct(): succesfully connected to '.$this->db_host.':'.$this->db_port.', database: \''.$this->db_name.'\'');
+
 		if (array_key_exists('i', $options)) {
 			$this->parseLog($options['i']);
 		}
@@ -96,6 +100,8 @@ final class sss extends Base
 		if (array_key_exists('o', $options)) {
 			$this->makeHTML($options['o']);
 		}
+
+		@mysqli_close($this->mysqli);
 	}
 
 	/**
@@ -169,8 +175,7 @@ final class sss extends Base
 			/**
 			 * Get the streak history, we assume that logs are being parsed in chronological order.
 			 */
-			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
-			$query = @mysqli_query($mysqli, 'SELECT * FROM `streak_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT * FROM `streak_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query);
 
 			if (!empty($rows)) {
@@ -182,7 +187,7 @@ final class sss extends Base
 			/**
 			 * Get the parse history for the current logfile.
 			 */
-			$query = @mysqli_query($mysqli, 'SELECT `lines_parsed` FROM `parse_history` WHERE `date` = \''.mysqli_real_escape_string($mysqli, $date).'\'') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT `lines_parsed` FROM `parse_history` WHERE `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\'') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query);
 
 			if (!empty($rows)) {
@@ -202,8 +207,8 @@ final class sss extends Base
 			 * If the stored number of parsed lines is equal to the amount of lines in the logfile we can skip writing to db and performing maintenance.
 			 */
 			if ($this->writeData && $parser->getValue('lineNum') > (int) $result->lines_parsed) {
-				$parser->writeData();
-				@mysqli_query($mysqli, 'INSERT INTO `parse_history` (`date`, `lines_parsed`) VALUES (\''.mysqli_real_escape_string($mysqli, $date).'\', '.$parser->getValue('lineNum').') ON DUPLICATE KEY UPDATE `lines_parsed` = '.$parser->getValue('lineNum')) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+				$parser->writeData($this->mysqli);
+				@mysqli_query($this->mysqli, 'INSERT INTO `parse_history` SET `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\', `lines_parsed` = '.$parser->getValue('lineNum').' ON DUPLICATE KEY UPDATE `lines_parsed` = '.$parser->getValue('lineNum')) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$needMaintenance = TRUE;
 			}
 		}
@@ -279,13 +284,13 @@ final class sss extends Base
 			}
 
 			if ($type == 'string') {
-				$this->$key = (string) $this->settings[$key];
+				$this->$key = $this->settings[$key];
 			} elseif ($type == 'int') {
 				$this->$key = (int) $this->settings[$key];
 			} elseif ($type == 'bool') {
-				if (strcasecmp($this->settings[$key], 'TRUE') == 0) {
+				if (strtoupper($this->settings[$key]) == 'TRUE') {
 					$this->$key = TRUE;
-				} elseif (strcasecmp($this->settings[$key], 'FALSE') == 0) {
+				} elseif (strtoupper($this->settings[$key]) == 'FALSE') {
 					$this->$key = FALSE;
 				}
 			}

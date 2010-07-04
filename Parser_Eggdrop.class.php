@@ -41,14 +41,14 @@
  * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
  * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
  * - Some converted mIRC logs do include "!" in "mode" and "topic" lines while there is no host.
- * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value. The consequence is that neither nicks nor hosts can have 0 as a value.
+ * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value.
  */
 final class Parser_Eggdrop extends Parser
 {
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $repeating = FALSE;
+	private $repeatLock = FALSE;
 
 	/**
 	 * Parse a line for various chat data.
@@ -131,22 +131,23 @@ final class Parser_Eggdrop extends Parser
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Last message repeated (?<num>\d+) time\(s\)\.$/', $line, $matches)) {
 			/**
-			 * Prevent the parser from repeating a line endlessly.
+			 * Prevent the parser from repeating a preceding repeat line.
+			 * Also, skip processing if we find a repeat line on the first line of the logfile. We can't look back across files.
 			 */
-			if ($this->repeating) {
+			if ($this->lineNum == 1 || $this->repeatLock) {
 				return;
 			}
 
-			$this->repeating = TRUE;
+			$this->repeatLock = TRUE;
 			$this->lineNum--;
-			$this->output('notice', 'parseLine(): repeating line '.$this->lineNum.': '.(($matches['num'] == '1') ? $matches['num'].' time' : $matches['num'].' times'));
+			$this->output('notice', 'parseLine(): repeating line '.$this->lineNum.': '.$matches['num'].' time'.(($matches['num'] != '1') ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; $i++) {
 				$this->parseLine($this->prevLine);
 			}
 
 			$this->lineNum++;
-			$this->repeating = FALSE;
+			$this->repeatLock = FALSE;
 
 		/**
 		 * Skip everything else.

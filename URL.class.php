@@ -30,6 +30,11 @@ final class URL extends Base
 	protected $lastUsed = '';
 
 	/**
+	 * Variables that shouldn't be tampered with.
+	 */
+	protected $mysqli;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct($csURL)
@@ -42,11 +47,11 @@ final class URL extends Base
 	 */
 	public function lastUsed($dateTime)
 	{
-		if ($this->firstUsed == '' || $dateTime < $this->firstUsed) {
+		if ($this->firstUsed == '' || strtotime($dateTime) < strtotime($this->firstUsed)) {
 			$this->firstUsed = $dateTime;
 		}
 
-		if ($this->lastUsed == '' || $dateTime > $this->lastUsed) {
+		if ($this->lastUsed == '' || strtotime($dateTime) > strtotime($this->lastUsed)) {
 			$this->lastUsed = $dateTime;
 		}
 	}
@@ -56,45 +61,34 @@ final class URL extends Base
 	 */
 	public function writeData($mysqli, $UID)
 	{
+		$this->mysqli = $mysqli;
+
 		/**
 		 * Write data to database table "user_URLs".
 		 */
-		if (($query = @mysqli_query($mysqli, 'SELECT * FROM `user_URLs` WHERE `UID` = '.$UID.' AND `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\'')) === FALSE) {
-			return FALSE;
-		}
-
+		$query = @mysqli_query($this->mysqli, 'SELECT `LID` FROM `user_URLs` WHERE `csURL` = \''.mysqli_real_escape_string($this->mysqli, $this->csURL).'\' GROUP BY `csURL`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
-			/**
-			 * Check if the URL exists in the database paired with an UID other than mine and if it does, use its LID in my own insert query.
-			 */
-			if (($query = @mysqli_query($mysqli, 'SELECT `LID` FROM `user_URLs` WHERE `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\' GROUP BY `csURL`')) === FALSE) {
-				return FALSE;
-			}
-
+			$createdQuery = $this->createInsertQuery(array('csURL', 'total', 'firstUsed', 'lastUsed'));
+			@mysqli_query($this->mysqli, 'INSERT INTO `user_URLs` SET `LID` = 0, `UID` = '.$UID.','.$createdQuery) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		} else {
+			$result = mysqli_fetch_object($query);
+			$query = @mysqli_query($this->mysqli, 'SELECT * FROM `user_URLs` WHERE `LID` = '.$result->LID.' AND `UID` = '.$UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query);
 
 			if (empty($rows)) {
-				if (!@mysqli_query($mysqli, 'INSERT INTO `user_URLs` (`LID`, `UID`, `csURL`, `total`, `firstUsed`, `lastUsed`) VALUES (0, '.$UID.', \''.mysqli_real_escape_string($mysqli, $this->csURL).'\', '.$this->total.', \''.mysqli_real_escape_string($mysqli, $this->firstUsed).'\', \''.mysqli_real_escape_string($mysqli, $this->lastUsed).'\')')) {
-					return FALSE;
-				}
+				$createdQuery = $this->createInsertQuery(array('csURL', 'total', 'firstUsed', 'lastUsed'));
+				@mysqli_query($this->mysqli, 'INSERT INTO `user_URLs` SET `LID` = '.$result->LID.', `UID` = '.$UID.','.$createdQuery) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			} else {
 				$result = mysqli_fetch_object($query);
+				$createdQuery = $this->createUpdateQuery($result, array('LID', 'UID'));
 
-				if (!@mysqli_query($mysqli, 'INSERT INTO `user_URLs` (`LID`, `UID`, `csURL`, `total`, `firstUsed`, `lastUsed`) VALUES ('.$result->LID.', '.$UID.', \''.mysqli_real_escape_string($mysqli, $this->csURL).'\', '.$this->total.', \''.mysqli_real_escape_string($mysqli, $this->firstUsed).'\', \''.mysqli_real_escape_string($mysqli, $this->lastUsed).'\')')) {
-					return FALSE;
+				if (!is_null($createdQuery)) {
+					@mysqli_query($mysqli, 'UPDATE `user_URLs` SET'.$createdQuery.' WHERE `LID` = '.$result->LID.' AND `UID` = '.$UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				}
 			}
-		} else {
-			$result = mysqli_fetch_object($query);
-
-			if (!@mysqli_query($mysqli, 'UPDATE `user_URLs` SET `csURL` = \''.mysqli_real_escape_string($mysqli, $this->csURL).'\', `total` = '.((int) $result->total + $this->total).', `firstUsed` = \''.mysqli_real_escape_string($mysqli, $this->firstUsed.':00' < $result->firstUsed ? $this->firstUsed : $result->firstUsed).'\', `lastUsed` = \''.mysqli_real_escape_string($mysqli, $this->lastUsed.':00' > $result->lastUsed ? $this->lastUsed : $result->lastUsed).'\' WHERE `LID` = '.$result->LID.' AND `UID` = '.$UID)) {
-				return FALSE;
-			}
 		}
-
-		return TRUE;
 	}
 }
 

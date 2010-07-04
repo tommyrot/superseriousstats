@@ -25,11 +25,6 @@ abstract class Parser extends Base
 	 * Default settings for this script, can be overridden in the config file.
 	 * These should all appear in $settings_list[] along with their type.
 	 */
-	private $db_host = '';
-	private $db_name = '';
-	private $db_pass = '';
-	private $db_port = 0;
-	private $db_user = '';
 	private $minStreak = 5;
 	private $nick_maxLen = 255;
 	private $nick_minLen = 1;
@@ -39,35 +34,35 @@ abstract class Parser extends Base
 	/**
 	 * Variables used in database table "channel".
 	 */
-	private $l_00 = 0;
-	private $l_01 = 0;
-	private $l_02 = 0;
-	private $l_03 = 0;
-	private $l_04 = 0;
-	private $l_05 = 0;
-	private $l_06 = 0;
-	private $l_07 = 0;
-	private $l_08 = 0;
-	private $l_09 = 0;
-	private $l_10 = 0;
-	private $l_11 = 0;
-	private $l_12 = 0;
-	private $l_13 = 0;
-	private $l_14 = 0;
-	private $l_15 = 0;
-	private $l_16 = 0;
-	private $l_17 = 0;
-	private $l_18 = 0;
-	private $l_19 = 0;
-	private $l_20 = 0;
-	private $l_21 = 0;
-	private $l_22 = 0;
-	private $l_23 = 0;
-	private $l_night = 0;
-	private $l_morning = 0;
-	private $l_afternoon = 0;
-	private $l_evening = 0;
-	private $l_total = 0;
+	protected $l_00 = 0;
+	protected $l_01 = 0;
+	protected $l_02 = 0;
+	protected $l_03 = 0;
+	protected $l_04 = 0;
+	protected $l_05 = 0;
+	protected $l_06 = 0;
+	protected $l_07 = 0;
+	protected $l_08 = 0;
+	protected $l_09 = 0;
+	protected $l_10 = 0;
+	protected $l_11 = 0;
+	protected $l_12 = 0;
+	protected $l_13 = 0;
+	protected $l_14 = 0;
+	protected $l_15 = 0;
+	protected $l_16 = 0;
+	protected $l_17 = 0;
+	protected $l_18 = 0;
+	protected $l_19 = 0;
+	protected $l_20 = 0;
+	protected $l_21 = 0;
+	protected $l_22 = 0;
+	protected $l_23 = 0;
+	protected $l_night = 0;
+	protected $l_morning = 0;
+	protected $l_afternoon = 0;
+	protected $l_evening = 0;
+	protected $l_total = 0;
 
 	/**
 	 * Variables that shouldn't be tampered with.
@@ -75,11 +70,6 @@ abstract class Parser extends Base
 	private $URLTools;
 	private $nicks_objs = array();
 	private $settings_list = array(
-		'db_host' => 'string',
-		'db_name' => 'string',
-		'db_pass' => 'string',
-		'db_port' => 'int',
-		'db_user' => 'string',
 		'minStreak' => 'int',
 		'nick_maxLen' => 'int',
 		'nick_minLen' => 'int',
@@ -109,6 +99,7 @@ abstract class Parser extends Base
 	private $words_objs = array();
 	protected $date = '';
 	protected $lineNum = 0;
+	protected $mysqli;
 	protected $prevLine = '';
 	protected $prevNick = '';
 	protected $streak = 0;
@@ -124,13 +115,13 @@ abstract class Parser extends Base
 			}
 
 			if ($type == 'string') {
-				$this->$key = (string) $settings[$key];
+				$this->$key = $settings[$key];
 			} elseif ($type == 'int') {
 				$this->$key = (int) $settings[$key];
 			} elseif ($type == 'bool') {
-				if (strcasecmp($settings[$key], 'TRUE') == 0) {
+				if (strtoupper($settings[$key]) == 'TRUE') {
 					$this->$key = TRUE;
-				} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
+				} elseif (strtoupper($settings[$key]) == 'FALSE') {
 					$this->$key = FALSE;
 				}
 			}
@@ -181,37 +172,37 @@ abstract class Parser extends Base
 	 */
 	final public function parseLog($logfile, $firstLine)
 	{
-		if (($fp = @fopen($logfile, 'rb')) !== FALSE) {
-			$this->output('notice', 'parseLog(): parsing logfile: \''.$logfile.'\' from line '.$firstLine);
-
-			while (!feof($fp)) {
-				$line = fgets($fp);
-				$this->lineNum++;
-
-				if ($this->lineNum < $firstLine) {
-					continue;
-				}
-
-				/**
-				 * Normalize the line:
-				 * 1. Remove ISO-8859-1 control codes: characters x00 to x1F (except x09) and x7F to x9F. Treat x03 differently since it is used for (mIRC) color codes.
-				 * 2. Remove multiple adjacent spaces (x20) and all tabs (x09).
-				 * 3. Remove whitespace characters at the beginning and end of a line.
-				 */
-				$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
-
-				/**
-				 * Pass on the normalized line to the logfile format specific parser class extending this class.
-				 */
-				$this->parseLine($line);
-				$this->prevLine = $line;
-			}
-
-			fclose($fp);
-			$this->output('notice', 'parseLog(): parsing completed');
-		} else {
+		if (($fp = @fopen($logfile, 'rb')) === FALSE) {
 			$this->output('critical', 'parseLog(): failed to open file: \''.$logfile.'\'');
 		}
+
+		$this->output('notice', 'parseLog(): parsing logfile: \''.$logfile.'\' from line '.$firstLine);
+
+		while (!feof($fp)) {
+			$line = fgets($fp);
+			$this->lineNum++;
+
+			if ($this->lineNum < $firstLine) {
+				continue;
+			}
+
+			/**
+			 * Normalize the line:
+			 * 1. Remove ISO-8859-1 control codes: characters x00 to x1F (except x09) and x7F to x9F. Treat x03 differently since it is used for (mIRC) color codes.
+			 * 2. Remove multiple adjacent spaces (x20) and all tabs (x09).
+			 * 3. Remove whitespace characters at the beginning and end of a line.
+			 */
+			$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
+
+			/**
+			 * Pass on the normalized line to the logfile format specific parser class extending this class.
+			 */
+			$this->parseLine($line);
+			$this->prevLine = $line;
+		}
+
+		fclose($fp);
+		$this->output('notice', 'parseLog(): parsing completed');
 	}
 
 	/**
@@ -219,7 +210,9 @@ abstract class Parser extends Base
 	 */
 	final protected function setAction($dateTime, $csNick, $line)
 	{
-		if ($this->validateNick($csNick)) {
+		if (!$this->validateNick($csNick)) {
+			$this->output('warning', 'setAction(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		} else {
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('actions', 1);
 
@@ -230,8 +223,6 @@ abstract class Parser extends Base
 					$this->nicks_objs[$nick]->addQuote('ex_actions', 'short', $line);
 				}
 			}
-		} else {
-			$this->output('warning', 'setAction(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 		}
 	}
 
@@ -240,17 +231,17 @@ abstract class Parser extends Base
 	 */
 	final protected function setJoin($dateTime, $csNick, $csHost)
 	{
-		if ($this->validateNick($csNick)) {
+		if (!$this->validateNick($csNick)) {
+			$this->output('warning', 'setJoin(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		} else {
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('joins', 1);
 
-			if (strlen($csHost) <= 255) {
-				$this->nicks_objs[$nick]->addHost($csHost);
-			} else {
+			if ($csHost == '0' || strlen($csHost) > 255) {
 				$this->output('warning', 'setJoin(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+			} else {
+				$this->nicks_objs[$nick]->addHost($csHost);
 			}
-		} else {
-			$this->output('warning', 'setJoin(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 		}
 	}
 
@@ -259,22 +250,20 @@ abstract class Parser extends Base
 	 */
 	final protected function setKick($dateTime, $csNick_performing, $csNick_undergoing, $line)
 	{
-		if ($this->validateNick($csNick_performing)) {
-			if ($this->validateNick($csNick_undergoing)) {
-				$nick_performing = $this->addNick($csNick_performing, $dateTime);
-				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
-				$this->nicks_objs[$nick_performing]->addValue('kicks', 1);
-				$this->nicks_objs[$nick_undergoing]->addValue('kicked', 1);
-
-				if (strlen($line) <= 255) {
-					$this->nicks_objs[$nick_performing]->setValue('ex_kicks', $line);
-					$this->nicks_objs[$nick_undergoing]->setValue('ex_kicked', $line);
-				}
-			} else {
-				$this->output('warning', 'setKick(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-			}
-		} else {
+		if (!$this->validateNick($csNick_performing)) {
 			$this->output('warning', 'setKick(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+		} elseif (!$this->validateNick($csNick_undergoing)) {
+			$this->output('warning', 'setKick(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+		} else {
+			$nick_performing = $this->addNick($csNick_performing, $dateTime);
+			$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
+			$this->nicks_objs[$nick_performing]->addValue('kicks', 1);
+			$this->nicks_objs[$nick_undergoing]->addValue('kicked', 1);
+
+			if (strlen($line) <= 255) {
+				$this->nicks_objs[$nick_performing]->setValue('ex_kicks', $line);
+				$this->nicks_objs[$nick_undergoing]->setValue('ex_kicked', $line);
+			}
 		}
 	}
 
@@ -283,42 +272,40 @@ abstract class Parser extends Base
 	 */
 	final protected function setMode($dateTime, $csNick_performing, $csNick_undergoing, $mode, $csHost)
 	{
-		if ($this->validateNick($csNick_performing)) {
-			if ($this->validateNick($csNick_undergoing)) {
-				$nick_performing = $this->addNick($csNick_performing, $dateTime);
-				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
-
-				switch ($mode) {
-					case '+o':
-						$this->nicks_objs[$nick_performing]->addValue('m_op', 1);
-						$this->nicks_objs[$nick_undergoing]->addValue('m_opped', 1);
-						break;
-					case '+v':
-						$this->nicks_objs[$nick_performing]->addValue('m_voice', 1);
-						$this->nicks_objs[$nick_undergoing]->addValue('m_voiced', 1);
-						break;
-					case '-o':
-						$this->nicks_objs[$nick_performing]->addValue('m_deOp', 1);
-						$this->nicks_objs[$nick_undergoing]->addValue('m_deOpped', 1);
-						break;
-					case '-v':
-						$this->nicks_objs[$nick_performing]->addValue('m_deVoice', 1);
-						$this->nicks_objs[$nick_undergoing]->addValue('m_deVoiced', 1);
-						break;
-				}
-
-				if (!is_null($csHost)) {
-					if (strlen($csHost) <= 255) {
-						$this->nicks_objs[$nick_performing]->addHost($csHost);
-					} else {
-						$this->output('warning', 'setMode(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
-					}
-				}
-			} else {
-				$this->output('warning', 'setMode(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-			}
-		} else {
+		if (!$this->validateNick($csNick_performing)) {
 			$this->output('warning', 'setMode(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+		} elseif (!$this->validateNick($csNick_undergoing)) {
+			$this->output('warning', 'setMode(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+		} else {
+			$nick_performing = $this->addNick($csNick_performing, $dateTime);
+			$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
+
+			switch ($mode) {
+				case '+o':
+					$this->nicks_objs[$nick_performing]->addValue('m_op', 1);
+					$this->nicks_objs[$nick_undergoing]->addValue('m_opped', 1);
+					break;
+				case '+v':
+					$this->nicks_objs[$nick_performing]->addValue('m_voice', 1);
+					$this->nicks_objs[$nick_undergoing]->addValue('m_voiced', 1);
+					break;
+				case '-o':
+					$this->nicks_objs[$nick_performing]->addValue('m_deOp', 1);
+					$this->nicks_objs[$nick_undergoing]->addValue('m_deOpped', 1);
+					break;
+				case '-v':
+					$this->nicks_objs[$nick_performing]->addValue('m_deVoice', 1);
+					$this->nicks_objs[$nick_undergoing]->addValue('m_deVoiced', 1);
+					break;
+			}
+
+			if (!is_null($csHost)) {
+				if ($csHost == '0' || strlen($csHost) > 255) {
+					$this->output('warning', 'setMode(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+				} else {
+					$this->nicks_objs[$nick_performing]->addHost($csHost);
+				}
+			}
 		}
 	}
 
@@ -327,16 +314,14 @@ abstract class Parser extends Base
 	 */
 	final protected function setNickchange($dateTime, $csNick_performing, $csNick_undergoing)
 	{
-		if ($this->validateNick($csNick_performing)) {
-			if ($this->validateNick($csNick_undergoing)) {
-				$nick_performing = $this->addNick($csNick_performing, $dateTime);
-				$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
-				$this->nicks_objs[$nick_performing]->addValue('nickchanges', 1);
-			} else {
-				$this->output('warning', 'setNickchange(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
-			}
-		} else {
+		if (!$this->validateNick($csNick_performing)) {
 			$this->output('warning', 'setNickchange(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+		} elseif (!$this->validateNick($csNick_undergoing)) {
+			$this->output('warning', 'setNickchange(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+		} else {
+			$nick_performing = $this->addNick($csNick_performing, $dateTime);
+			$nick_undergoing = $this->addNick($csNick_undergoing, $dateTime);
+			$this->nicks_objs[$nick_performing]->addValue('nickchanges', 1);
 		}
 	}
 
@@ -345,7 +330,9 @@ abstract class Parser extends Base
 	 */
 	final protected function setNormal($dateTime, $csNick, $line)
 	{
-		if ($this->validateNick($csNick)) {
+		if (!$this->validateNick($csNick)) {
+			$this->output('warning', 'setNormal(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		} else {
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->lastTalked($dateTime);
 			$this->nicks_objs[$nick]->setValue('activeDays', 1);
@@ -356,9 +343,12 @@ abstract class Parser extends Base
 			} else {
 				if ($this->streak >= $this->minStreak) {
 					/**
-					 * Since $prevNick may only be seen in previous parse run its object may not exist here. Create it if so.
+					 * If the current line count is 0 then $prevNick is not known to us yet (seen in previous parse run).
+					 * It's safe to assume that $prevNick is a valid nick since it was set by setNormal().
+					 * We will create an object for it here so we can add the monologue data. Don't worry about $prevNick being lowercase,
+					 * we won't update "user_details" if $prevNick isn't seen plus $csNick will get a refresh on any other activity.
 					 */
-					if (!isset($this->nicks_objs[$this->prevNick])) {
+					if ($this->l_total == 0) {
 						$this->addNick($this->prevNick, NULL);
 					}
 
@@ -442,7 +432,7 @@ abstract class Parser extends Base
 			}
 
 			/**
-			 * The "words" counter below has no relation with the real words which are stored in the database.
+			 * The "words" counter below has no relation with the words which are stored in the database.
 			 * It simply counts all character groups separated by whitespace.
 			 */
 			$words = explode(' ', $line);
@@ -457,12 +447,12 @@ abstract class Parser extends Base
 					 */
 					$csURL = preg_replace('/^www\./i', 'http://$0', $csWord);
 
-					if (strlen($csURL) <= 255 && $this->URLTools->validateURL($csURL)) {
+					if (strlen($csURL) > 255 || !$this->URLTools->validateURL($csURL)) {
+						$this->output('notice', 'setNormal(): invalid URL: \''.$csWord.'\' on line '.$this->lineNum);
+					} else {
 						$csURL = $this->URLTools->normalizeURL($csURL);
 						$this->nicks_objs[$nick]->addURL($csURL, $dateTime);
 						$this->nicks_objs[$nick]->addValue('URLs', 1);
-					} else {
-						$this->output('notice', 'setNormal(): invalid URL: \''.$csWord.'\' on line '.$this->lineNum);
 					}
 				} elseif ($this->wordTracking && preg_match('/^[a-z]{1,255}$/i', $csWord)) {
 					/**
@@ -472,8 +462,6 @@ abstract class Parser extends Base
 					$this->addWord($csWord);
 				}
 			}
-		} else {
-			$this->output('warning', 'setNormal(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 		}
 	}
 
@@ -482,17 +470,17 @@ abstract class Parser extends Base
 	 */
 	final protected function setPart($dateTime, $csNick, $csHost)
 	{
-		if ($this->validateNick($csNick)) {
+		if (!$this->validateNick($csNick)) {
+			$this->output('warning', 'setPart(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		} else {
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('parts', 1);
 
-			if (strlen($csHost) <= 255) {
-				$this->nicks_objs[$nick]->addHost($csHost);
-			} else {
+			if ($csHost == '0' || strlen($csHost) > 255) {
 				$this->output('warning', 'setPart(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+			} else {
+				$this->nicks_objs[$nick]->addHost($csHost);
 			}
-		} else {
-			$this->output('warning', 'setPart(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 		}
 	}
 
@@ -501,17 +489,17 @@ abstract class Parser extends Base
 	 */
 	final protected function setQuit($dateTime, $csNick, $csHost)
 	{
-		if ($this->validateNick($csNick)) {
+		if (!$this->validateNick($csNick)) {
+			$this->output('warning', 'setQuit(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		} else {
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('quits', 1);
 
-			if (strlen($csHost) <= 255) {
-				$this->nicks_objs[$nick]->addHost($csHost);
-			} else {
+			if ($csHost == '0' || strlen($csHost) > 255) {
 				$this->output('warning', 'setQuit(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+			} else {
+				$this->nicks_objs[$nick]->addHost($csHost);
 			}
-		} else {
-			$this->output('warning', 'setQuit(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 		}
 	}
 
@@ -520,7 +508,9 @@ abstract class Parser extends Base
 	 */
 	final protected function setSlap($dateTime, $csNick_performing, $csNick_undergoing)
 	{
-		if ($this->validateNick($csNick_performing)) {
+		if (!$this->validateNick($csNick_performing)) {
+			$this->output('warning', 'setSlap(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
+		} else {
 			$nick_performing = $this->addNick($csNick_performing, $dateTime);
 			$this->nicks_objs[$nick_performing]->addValue('slaps', 1);
 
@@ -534,18 +524,16 @@ abstract class Parser extends Base
 					$csNick_undergoing = $tmp[1];
 				}
 
-				if ($this->validateNick($csNick_undergoing)) {
+				if (!$this->validateNick($csNick_undergoing)) {
+					$this->output('warning', 'setSlap(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
+				} else {
 					/**
 					 * Don't pass a time when adding the undergoing nick while it may only be referred to instead of being seen for real.
 					 */
 					$nick_undergoing = $this->addNick($csNick_undergoing, NULL);
 					$this->nicks_objs[$nick_undergoing]->addValue('slapped', 1);
-				} else {
-					$this->output('warning', 'setSlap(): invalid "undergoing" nick: \''.$csNick_undergoing.'\' on line '.$this->lineNum);
 				}
 			}
-		} else {
-			$this->output('warning', 'setSlap(): invalid "performing" nick: \''.$csNick_performing.'\' on line '.$this->lineNum);
 		}
 	}
 
@@ -554,26 +542,28 @@ abstract class Parser extends Base
 	 */
 	final protected function setTopic($dateTime, $csNick, $csHost, $line)
 	{
-		if ($this->validateNick($csNick)) {
+		if (!$this->validateNick($csNick)) {
+			$this->output('warning', 'setTopic(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
+		} else {
 			$nick = $this->addNick($csNick, $dateTime);
 			$this->nicks_objs[$nick]->addValue('topics', 1);
 
 			if (!is_null($csHost)) {
-				if (strlen($csHost) <= 255) {
-					$this->nicks_objs[$nick]->addHost($csHost);
-				} else {
+				if ($csHost == '0' || strlen($csHost) > 255) {
 					$this->output('warning', 'setTopic(): invalid host: \''.$csHost.'\' on line '.$this->lineNum);
+				} else {
+					$this->nicks_objs[$nick]->addHost($csHost);
 				}
 			}
 
 			/**
 			 * Keep track of every single topic set.
 			 */
-			if (!is_null($line)) {
+			if (strlen($line) > 510) {
+				$this->output('warning', 'setTopic(): invalid topic: \''.$csTopic.'\' on line '.$this->lineNum);
+			} else {
 				$this->nicks_objs[$nick]->addTopic($line, $dateTime);
 			}
-		} else {
-			$this->output('warning', 'setTopic(): invalid nick: \''.$csNick.'\' on line '.$this->lineNum);
 		}
 	}
 
@@ -582,7 +572,7 @@ abstract class Parser extends Base
 	 */
 	final private function validateNick($csNick)
 	{
-		if (preg_match('/^[][^{}|\\\`_0-9a-z-]{'.$this->nick_minLen.','.($this->nick_maxLen <= 255 ? $this->nick_maxLen : 255).'}$/i', $csNick)) {
+		if ($csNick != '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{'.$this->nick_minLen.','.($this->nick_maxLen > 255 ? 255 : $this->nick_maxLen).'}$/i', $csNick)) {
 			return TRUE;
 		} else {
 			return FALSE;
@@ -592,45 +582,61 @@ abstract class Parser extends Base
 	/**
 	 * Write all gathered data to the database.
 	 */
-	final public function writeData()
+	final public function writeData($mysqli)
 	{
+		$this->mysqli = $mysqli;
+
 		/**
-		 * If there are no nicks there is no data. Don't write channel data so the log can be parsed at a later time.
+		 * If there are no nicks there is no data.
 		 */
-		if (!empty($this->nicks_objs)) {
-			$this->output('notice', 'writeData(): writing data to database: \''.$this->db_name.'\'');
-			$mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
+		if (empty($this->nicks_objs)) {
+			$this->output('notice', 'writeData(): no data to write to database');
+		} else {
+			$this->output('notice', 'writeData(): writing data to database');
 
 			/**
 			 * Write channel totals to the database.
 			 */
-			@mysqli_query($mysqli, 'INSERT INTO `channel` (`date`, `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `l_total`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->date).'\', '.$this->l_00.', '.$this->l_01.', '.$this->l_02.', '.$this->l_03.', '.$this->l_04.', '.$this->l_05.', '.$this->l_06.', '.$this->l_07.', '.$this->l_08.', '.$this->l_09.', '.$this->l_10.', '.$this->l_11.', '.$this->l_12.', '.$this->l_13.', '.$this->l_14.', '.$this->l_15.', '.$this->l_16.', '.$this->l_17.', '.$this->l_18.', '.$this->l_19.', '.$this->l_20.', '.$this->l_21.', '.$this->l_22.', '.$this->l_23.', '.$this->l_night.', '.$this->l_morning.', '.$this->l_afternoon.', '.$this->l_evening.', '.$this->l_total.') ON DUPLICATE KEY UPDATE `l_00` = `l_00` + '.$this->l_00.', `l_01` = `l_01` + '.$this->l_01.', `l_02` = `l_02` + '.$this->l_02.', `l_03` = `l_03` + '.$this->l_03.', `l_04` = `l_04` + '.$this->l_04.', `l_05` = `l_05` + '.$this->l_05.', `l_06` = `l_06` + '.$this->l_06.', `l_07` = `l_07` + '.$this->l_07.', `l_08` = `l_08` + '.$this->l_08.', `l_09` = `l_09` + '.$this->l_09.', `l_10` = `l_10` + '.$this->l_10.', `l_11` = `l_11` + '.$this->l_11.', `l_12` = `l_12` + '.$this->l_12.', `l_13` = `l_13` + '.$this->l_13.', `l_14` = `l_14` + '.$this->l_14.', `l_15` = `l_15` + '.$this->l_15.', `l_16` = `l_16` + '.$this->l_16.', `l_17` = `l_17` + '.$this->l_17.', `l_18` = `l_18` + '.$this->l_18.', `l_19` = `l_19` + '.$this->l_19.', `l_20` = `l_20` + '.$this->l_20.', `l_21` = `l_21` + '.$this->l_21.', `l_22` = `l_22` + '.$this->l_22.', `l_night` = `l_night` + '.$this->l_night.', `l_morning` = `l_morning` + '.$this->l_morning.', `l_afternoon` = `l_afternoon` + '.$this->l_afternoon.', `l_evening` = `l_evening` + '.$this->l_evening.', `l_total` = `l_total` + '.$this->l_total) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT * FROM `channel` WHERE `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query);
+
+			if (empty($rows)) {
+				$createdQuery = $this->createInsertQuery(array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
+
+				if (!is_null($createdQuery)) {
+					@mysqli_query($this->mysqli, 'INSERT INTO `channel` SET `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\','.$createdQuery) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+				}
+			} else {
+				$result = mysqli_fetch_object($query);
+				$createdQuery = $this->createUpdateQuery($result, array('date'));
+
+				if (!is_null($createdQuery)) {
+					@mysqli_query($this->mysqli, 'UPDATE `channel` SET'.$createdQuery.' WHERE `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+				}
+			}
 
 			/**
 			 * Write user data to the database.
 			 */
 			foreach ($this->nicks_objs as $nick) {
-				$nick->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+				$nick->writeData($this->mysqli);
 			}
 
 			/**
 			 * Write streak data to the database.
 			 */
-			@mysqli_query($mysqli, 'TRUNCATE TABLE `streak_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
-			@mysqli_query($mysqli, 'INSERT INTO `streak_history` (`prevNick`, `streak`) VALUES (\''.mysqli_real_escape_string($mysqli, $this->prevNick).'\', '.$this->streak.')') or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+			@mysqli_query($this->mysqli, 'TRUNCATE TABLE `streak_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'INSERT INTO `streak_history` (`prevNick`, `streak`) VALUES (\''.mysqli_real_escape_string($this->mysqli, $this->prevNick).'\', '.$this->streak.')') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 
 			/**
 			 * Write word data to the database.
 			 * To keep our database sane words are not linked to users.
 			 */
 			foreach ($this->words_objs as $word) {
-				$word->writeData($mysqli) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+				$word->writeData($this->mysqli);
 			}
 
-			@mysqli_close($mysqli);
 			$this->output('notice', 'writeData(): writing completed');
-		} else {
-			$this->output('notice', 'writeData(): no data to write to database');
 		}
 	}
 }
