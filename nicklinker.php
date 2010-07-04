@@ -261,13 +261,13 @@ final class nicklinker extends Base
 			}
 
 			if ($type == 'string') {
-				$this->$key = (string) $this->settings[$key];
+				$this->$key = $this->settings[$key];
 			} elseif ($type == 'int') {
 				$this->$key = (int) $this->settings[$key];
 			} elseif ($type == 'bool') {
-				if (strcasecmp($this->settings[$key], 'TRUE') == 0) {
+				if (strtoupper($this->settings[$key]) == 'TRUE') {
 					$this->$key = TRUE;
-				} elseif (strcasecmp($this->settings[$key], 'FALSE') == 0) {
+				} elseif (strtoupper($this->settings[$key]) == 'FALSE') {
 					$this->$key = FALSE;
 				}
 			}

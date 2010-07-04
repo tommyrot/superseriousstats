@@ -42,7 +42,7 @@
  * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
  * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
  * - Irssi may log multiple "performing" nicks separated by commas. We use only the first one.
- * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value. The consequence is that neither nicks nor hosts can have 0 as a value.
+ * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value.
  */
 final class Parser_Irssi extends Parser
 {

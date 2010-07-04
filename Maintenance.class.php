@@ -54,13 +54,13 @@ final class Maintenance extends Base
 			}
 
 			if ($type == 'string') {
-				$this->$key = (string) $settings[$key];
+				$this->$key = $settings[$key];
 			} elseif ($type == 'int') {
 				$this->$key = (int) $settings[$key];
 			} elseif ($type == 'bool') {
-				if (strcasecmp($settings[$key], 'TRUE') == 0) {
+				if (strtoupper($settings[$key]) == 'TRUE') {
 					$this->$key = TRUE;
-				} elseif (strcasecmp($settings[$key], 'FALSE') == 0) {
+				} elseif (strtoupper($settings[$key]) == 'FALSE') {
 					$this->$key = FALSE;
 				}
 			}
