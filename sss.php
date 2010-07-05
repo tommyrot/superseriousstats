@@ -110,7 +110,7 @@ final class sss extends Base
 	private function doMaintenance()
 	{
 		$maintenance = new Maintenance($this->settings);
-		$maintenance->doMaintenance();
+		$maintenance->doMaintenance($this->mysqli);
 	}
 
 	/**
@@ -119,7 +119,7 @@ final class sss extends Base
 	private function makeHTML($file)
 	{
 		$HTML = new HTML($this->settings);
-		$output = $HTML->makeHTML();
+		$output = $HTML->makeHTML($this->mysqli);
 
 		if (($fp = @fopen($file, 'wb')) === FALSE) {
 			$this->output('critical', 'makeHTML(): failed to open file: \''.$file.'\'');

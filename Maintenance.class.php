@@ -127,33 +127,35 @@ final class Maintenance extends Base
 			$rows = mysqli_num_rows($query_linked_RUIDs);
 
 			/**
-			 * And if there aren't any aliases we can stop right here.
+			 * If there aren't any aliases we can stop right here.
 			 */
-			if (!empty($rows)) {
-				while ($result_valid_RUIDs = mysqli_fetch_object($query_valid_RUIDs)) {
-					$valid_RUIDs_list[] = $result_valid_RUIDs->RUID;
+			if (empty($rows)) {
+				return;
+			}
+
+			while ($result_valid_RUIDs = mysqli_fetch_object($query_valid_RUIDs)) {
+				$valid_RUIDs_list[] = $result_valid_RUIDs->RUID;
+			}
+
+			while ($result_linked_RUIDs = mysqli_fetch_object($query_linked_RUIDs)) {
+				$linked_RUIDs_list[] = $result_linked_RUIDs->RUID;
+			}
+
+			/**
+			 * Do what we're here to do, unlink when appropriate.
+			 */
+			foreach ($linked_RUIDs_list as $RUID) {
+				if (in_array($RUID, $valid_RUIDs_list)) {
+					continue;
 				}
 
-				while ($result_linked_RUIDs = mysqli_fetch_object($query_linked_RUIDs)) {
-					$linked_RUIDs_list[] = $result_linked_RUIDs->RUID;
-				}
+				$query = @mysqli_query($this->mysqli, 'SELECT `UID` FROM `user_status` WHERE `RUID` = '.$RUID.' AND `status` = 2 ORDER BY `UID` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+				$rows = mysqli_num_rows($query);
 
-				/**
-				 * Do what we're here to do, unlink when appropriate.
-				 */
-				foreach ($linked_RUIDs_list as $RUID) {
-					if (in_array($RUID, $valid_RUIDs_list)) {
-						continue;
-					}
-
-					$query = @mysqli_query($this->mysqli, 'SELECT `UID` FROM `user_status` WHERE `RUID` = '.$RUID.' AND `status` = 2 ORDER BY `UID` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-					$rows = mysqli_num_rows($query);
-
-					if (!empty($rows)) {
-						while ($result = mysqli_fetch_object($query)) {
-							@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result->UID.', `status` = 0 WHERE `UID` = '.$result->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-							$this->output('debug', 'fixUserStatusErrors(): UID '.$result->UID.' set to default (pointing to invalid registered)');
-						}
+				if (!empty($rows)) {
+					while ($result = mysqli_fetch_object($query)) {
+						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result->UID.', `status` = 0 WHERE `UID` = '.$result->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+						$this->output('debug', 'fixUserStatusErrors(): UID '.$result->UID.' set to default (pointing to invalid registered)');
 					}
 				}
 			}
@@ -198,26 +200,31 @@ final class Maintenance extends Base
 		$query_valid_RUIDs = @mysqli_query($this->mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `UID` = `RUID` AND (`status` = 1 OR `status` = 3) ORDER BY `RUID` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query_valid_RUIDs);
 
-		if (!empty($rows)) {
-			while ($result_valid_RUIDs = mysqli_fetch_object($query_valid_RUIDs)) {
-				$query_aliases = @mysqli_query($this->mysqli, 'SELECT `user_status`.`UID` FROM `user_status` JOIN `user_lines` ON `user_status`.`UID` = `user_lines`.`UID` WHERE `RUID` = '.$result_valid_RUIDs->RUID.' ORDER BY `l_total` DESC, `user_status`.`UID` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-				$rows = mysqli_num_rows($query_aliases);
+		/**
+		 * If there aren't any registered nicks we can skip this one.
+		 */
+		if (empty($rows)) {
+			return;
+		}
 
-				if (empty($rows)) {
-					continue;
-				}
+		while ($result_valid_RUIDs = mysqli_fetch_object($query_valid_RUIDs)) {
+			$query_aliases = @mysqli_query($this->mysqli, 'SELECT `user_status`.`UID` FROM `user_status` JOIN `user_lines` ON `user_status`.`UID` = `user_lines`.`UID` WHERE `RUID` = '.$result_valid_RUIDs->RUID.' ORDER BY `l_total` DESC, `user_status`.`UID` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query_aliases);
 
-				$result_aliases = mysqli_fetch_object($query_aliases);
+			if (empty($rows)) {
+				continue;
+			}
 
-				if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
-					/**
-					 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old registered nick had.
-					 * Update all nicks linked to the old registered nick and make their RUID point to the new one.
-					 */
-					@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-					@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-					$this->output('debug', 'registerMostActiveAlias(): UID '.$result_aliases->UID.' set to new registered');
-				}
+			$result_aliases = mysqli_fetch_object($query_aliases);
+
+			if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
+				/**
+				 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old registered nick had.
+				 * Update all nicks linked to the old registered nick and make their RUID point to the new one.
+				 */
+				@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+				@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+				$this->output('debug', 'registerMostActiveAlias(): UID '.$result_aliases->UID.' set to new registered');
 			}
 		}
 	}
