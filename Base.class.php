@@ -74,15 +74,15 @@ abstract class Base
 				continue;
 			}
 
-			if ($c == 'firstSeen' && strtotime($this->firstSeen) >= strtotime($v)) {
+			if ($c == 'firstSeen' && $v != '0000-00-00 00:00:00' && strtotime($this->firstSeen) >= strtotime($v)) {
 				continue;
-			} elseif ($c == 'firstUsed' && strtotime($this->firstUsed) >= strtotime($v)) {
+			} elseif ($c == 'firstUsed' && $v != '0000-00-00 00:00:00' && strtotime($this->firstUsed) >= strtotime($v)) {
 				continue;
-			} elseif ($c == 'lastSeen' && strtotime($this->lastSeen) <= strtotime($v)) {
+			} elseif ($c == 'lastSeen' && $v != '0000-00-00 00:00:00' && strtotime($this->lastSeen) <= strtotime($v)) {
 				continue;
-			} elseif ($c == 'lastUsed' && strtotime($this->lastUsed) <= strtotime($v)) {
+			} elseif ($c == 'lastUsed' && $v != '0000-00-00 00:00:00' && strtotime($this->lastUsed) <= strtotime($v)) {
 				continue;
-			} elseif ($c == 'lastTalked' && strtotime($this->lastTalked) <= strtotime($v)) {
+			} elseif ($c == 'lastTalked' && $v != '0000-00-00 00:00:00' && strtotime($this->lastTalked) <= strtotime($v)) {
 				continue;
 			} elseif ($c == 'topMonologue' && $this->topMonologue <= $v) {
 				continue;
