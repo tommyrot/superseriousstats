@@ -447,7 +447,7 @@ abstract class Parser extends Base
 					 */
 					$csURL = preg_replace('/^www\./i', 'http://$0', $csWord);
 
-					if (strlen($csURL) > 255 || !$this->URLTools->validateURL($csURL)) {
+					if (strlen($csURL) > 510 || !$this->URLTools->validateURL($csURL)) {
 						$this->output('notice', 'setNormal(): invalid URL: \''.$csWord.'\' on line '.$this->lineNum);
 					} else {
 						$csURL = $this->URLTools->normalizeURL($csURL);
