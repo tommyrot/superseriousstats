@@ -22,26 +22,10 @@
 final class Maintenance extends Base
 {
 	/**
-	 * Default settings for this script, can be overridden in the config file.
-	 * These should all appear in $settings_list[] along with their type.
-	 */
-	private $db_host = '';
-	private $db_name = '';
-	private $db_pass = '';
-	private $db_port = 0;
-	private $db_user = '';
-
-	/**
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $mysqli;
-	private $settings_list = array(
-		'db_host' => 'string',
-		'db_name' => 'string',
-		'db_pass' => 'string',
-		'db_port' => 'int',
-		'db_user' => 'string',
-		'outputbits' => 'int');
+	private $settings_list = array('outputbits' => 'int');
 
 	/**
 	 * Constructor.
@@ -70,10 +54,10 @@ final class Maintenance extends Base
 	/**
 	 * Run the maintenance routines.
 	 */
-	public function doMaintenance()
+	public function doMaintenance($mysqli)
 	{
+		$this->mysqli = $mysqli;
 		$this->output('notice', 'doMaintenance(): performing database maintenance routines');
-		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
 		$query = @mysqli_query($this->mysqli, 'SELECT COUNT(*) FROM `user_details`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
@@ -84,7 +68,6 @@ final class Maintenance extends Base
 		$this->fixUserStatusErrors();
 		$this->registerMostActiveAlias();
 		$this->makeMaterializedViews();
-		@mysqli_close($this->mysqli);
 		$this->output('notice', 'doMaintenance(): maintenance completed');
 	}
 
@@ -183,88 +166,24 @@ final class Maintenance extends Base
 	 */
 	private function makeMaterializedViews()
 	{
-		/**
-		 * mview_ex_kicks
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_kicks` SELECT * FROM `view_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_kicks` TO `mview_ex_kicks`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$views = array('ex_kicks', 'ex_kicked', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased');
 
-		/**
-		 * mview_ex_kicked
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_kicked` SELECT * FROM `view_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_kicked` TO `mview_ex_kicked`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		foreach ($views as $view) {
+			@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_'.$view.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_'.$view.'` SELECT * FROM `view_'.$view.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_'.$view.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_'.$view.'` TO `mview_'.$view.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		}
 
-		/**
-		 * mview_quote
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_quote` SELECT * FROM `view_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_quote` TO `mview_quote`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$query_tables = array('query_events', 'query_lines', 'query_smileys');
 
-		/**
-		 * mview_ex_exclamations
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_exclamations` SELECT * FROM `view_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_exclamations` TO `mview_ex_exclamations`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-
-		/**
-		 * mview_ex_questions
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_questions` SELECT * FROM `view_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_questions` TO `mview_ex_questions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-
-		/**
-		 * mview_ex_actions
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_actions` SELECT * FROM `view_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_actions` TO `mview_ex_actions`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-
-		/**
-		 * mview_ex_uppercased
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_mview_ex_uppercased` SELECT * FROM `view_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_ex_uppercased` TO `mview_ex_uppercased`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-
-		/**
-		 * query_events
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_query_events` LIKE `template_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'INSERT INTO `new_query_events` SELECT * FROM `view_query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_query_events` TO `query_events`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-
-		/**
-		 * query_lines
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_query_lines` LIKE `template_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'INSERT INTO `new_query_lines` SELECT * FROM `view_query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_query_lines` TO `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-
-		/**
-		 * query_smileys
-		 */
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'CREATE TABLE `new_query_smileys` LIKE `template_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'INSERT INTO `new_query_smileys` SELECT * FROM `view_query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		@mysqli_query($this->mysqli, 'RENAME TABLE `new_query_smileys` TO `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		foreach ($query_tables as $query_table) {
+			@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_'.$query_table.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'CREATE TABLE `new_'.$query_table.'` LIKE `template_'.$query_table.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'INSERT INTO `new_'.$query_table.'` SELECT * FROM `view_'.$query_table.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `'.$query_table.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'RENAME TABLE `new_'.$query_table.'` TO `'.$query_table.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		}
 	}
 
 	/**
@@ -284,18 +203,20 @@ final class Maintenance extends Base
 				$query_aliases = @mysqli_query($this->mysqli, 'SELECT `user_status`.`UID` FROM `user_status` JOIN `user_lines` ON `user_status`.`UID` = `user_lines`.`UID` WHERE `RUID` = '.$result_valid_RUIDs->RUID.' ORDER BY `l_total` DESC, `user_status`.`UID` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$rows = mysqli_num_rows($query_aliases);
 
-				if (!empty($rows)) {
-					$result_aliases = mysqli_fetch_object($query_aliases);
+				if (empty($rows)) {
+					continue;
+				}
 
-					if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
-						/**
-						 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old registered nick had.
-						 * Update all nicks linked to the old registered nick and make their RUID point to the new one.
-						 */
-						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-						$this->output('debug', 'registerMostActiveAlias(): UID '.$result_aliases->UID.' set to new registered');
-					}
+				$result_aliases = mysqli_fetch_object($query_aliases);
+
+				if ($result_aliases->UID != $result_valid_RUIDs->RUID) {
+					/**
+					 * Make the alias the new registered nick; set UID = RUID and status = 1 or 3 depending on the status the old registered nick had.
+					 * Update all nicks linked to the old registered nick and make their RUID point to the new one.
+					 */
+					@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = '.$result_valid_RUIDs->status.' WHERE `UID` = '.$result_aliases->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+					@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$result_aliases->UID.', `status` = 2 WHERE `RUID` = '.$result_valid_RUIDs->RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+					$this->output('debug', 'registerMostActiveAlias(): UID '.$result_aliases->UID.' set to new registered');
 				}
 			}
 		}
