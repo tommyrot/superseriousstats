@@ -157,6 +157,19 @@ final class sss extends Base
 		sort($logfiles);
 
 		/**
+		 * Retrieve the date of the last log parsed from the database.
+		 */
+		$query = @mysqli_query($this->mysqli, 'SELECT MAX(`date`) AS `date` FROM `parse_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
+			$dateLastLogParsed = $result->date;
+		} else {
+			$dateLastLogParsed = NULL;
+		}
+
+		/**
 		 * Variable to track if we modified our database and therefore need maintenance.
 		 */
 		$needMaintenance = FALSE;
@@ -168,6 +181,14 @@ final class sss extends Base
 
 			$date = str_replace(array($this->logfilePrefix, $this->logfileSuffix), '', basename($logfile));
 			$date = date('Y-m-d', strtotime($date));
+
+			/**
+			 * If current log is older than the last log parsed we skip it. We do process the log with the same date as the last log parsed as it may contain new lines that haven't been processed yet.
+			 */
+			if (!is_null($dateLastLogParsed) && strtotime($date) < strtotime($dateLastLogParsed)) {
+				continue;
+			}
+
 			$parser_class = 'Parser_'.$this->logfileFormat;
 			$parser = new $parser_class($this->settings);
 			$parser->setValue('date', $date);
