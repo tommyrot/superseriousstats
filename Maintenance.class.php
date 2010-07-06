@@ -119,15 +119,12 @@ final class Maintenance extends Base
 		$query_valid_RUIDs = @mysqli_query($this->mysqli, 'SELECT `RUID` FROM `user_status` WHERE `UID` = `RUID` AND (`status` = 1 OR `status` = 3) ORDER BY `RUID` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query_valid_RUIDs);
 
-		/**
-		 * If there aren't any registered nicks we can skip this one.
-		 */
 		if (!empty($rows)) {
 			$query_linked_RUIDs = @mysqli_query($this->mysqli, 'SELECT DISTINCT `RUID` FROM `user_status` WHERE `UID` != `RUID` AND `status` = 2 ORDER BY `RUID` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query_linked_RUIDs);
 
 			/**
-			 * If there aren't any aliases we can stop right here.
+			 * If there aren't any aliases we can stop here.
 			 */
 			if (empty($rows)) {
 				return;
@@ -201,7 +198,7 @@ final class Maintenance extends Base
 		$rows = mysqli_num_rows($query_valid_RUIDs);
 
 		/**
-		 * If there aren't any registered nicks we can skip this one.
+		 * If there aren't any registered nicks we can stop here.
 		 */
 		if (empty($rows)) {
 			return;
