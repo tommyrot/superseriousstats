@@ -626,7 +626,7 @@ abstract class Parser extends Base
 			 * Write streak data to the database.
 			 */
 			@mysqli_query($this->mysqli, 'TRUNCATE TABLE `streak_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-			@mysqli_query($this->mysqli, 'INSERT INTO `streak_history` (`prevNick`, `streak`) VALUES (\''.mysqli_real_escape_string($this->mysqli, $this->prevNick).'\', '.$this->streak.')') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			@mysqli_query($this->mysqli, 'INSERT INTO `streak_history` SET `prevNick` = \''.mysqli_real_escape_string($this->mysqli, $this->prevNick).'\', `streak` = '.$this->streak) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 
 			/**
 			 * Write word data to the database.
