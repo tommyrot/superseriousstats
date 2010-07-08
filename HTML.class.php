@@ -43,6 +43,7 @@ final class HTML extends Base
 	 */
 	private $date_first = '';
 	private $date_last = '';
+	private $date_lastLogParsed = '';
 	private $date_max = '';
 	private $days = 0;
 	private $day_of_month = 0;
@@ -98,7 +99,7 @@ final class HTML extends Base
 	 */
 	private function dateTime2DaysAgo($dateTime)
 	{
-		$daysAgo = round((strtotime('today') - strtotime(substr($dateTime, 0, 10))) / 86400);
+		$daysAgo = round((strtotime($this->date_lastLogParsed) - strtotime(substr($dateTime, 0, 10))) / 86400);
 
 		if (($daysAgo / 365) >= 1) {
 			$daysAgo = str_replace('.0', '', number_format($daysAgo / 365, 1));
@@ -148,7 +149,7 @@ final class HTML extends Base
 		$this->date_last = $result->date_last;
 		$this->days = $result->days;
 		$this->l_avg = $result->l_avg;
-		$this->l_total = $result->l_total;
+		$this->l_total = (int) $result->l_total;
 
 		/**
 		 * This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
@@ -164,11 +165,12 @@ final class HTML extends Base
 		 */
 		$query = @mysqli_query($this->mysqli, 'SELECT MAX(`date`) AS `date` FROM `parse_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
-		$this->day_of_month = date('j', strtotime($result->date));
-		$this->day_of_year = date('z', strtotime($result->date)) + 1;
-		$this->month = date('n', strtotime($result->date));
-		$this->month_name = date('F', strtotime($result->date));
-		$this->year = date('Y', strtotime($result->date));
+		$this->date_lastLogParsed = $result->date;
+		$this->day_of_month = date('j', strtotime($this->date_lastLogParsed));
+		$this->day_of_year = date('z', strtotime($this->date_lastLogParsed)) + 1;
+		$this->month = date('n', strtotime($this->date_lastLogParsed));
+		$this->month_name = date('F', strtotime($this->date_lastLogParsed));
+		$this->year = date('Y', strtotime($this->date_lastLogParsed));
 		$this->years = $this->year - date('Y', strtotime($this->date_first)) + 1;
 
 		/**
@@ -826,62 +828,68 @@ final class HTML extends Base
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
-		$l_total_high = 0;
+		$high_key = '';
+		$high_value = 0;
 
-		for ($hour = 0; $hour < 24; $hour++) {
-			if ($hour < 10) {
-				$l_total[$hour] = $result->{'l_0'.$hour};
-			} else {
-				$l_total[$hour] = $result->{'l_'.$hour};
-			}
-
-			if ($l_total[$hour] > $l_total_high) {
-				$l_total_high = $l_total[$hour];
-				$l_total_high_hour = $hour;
+		foreach ($result as $k => $v) {
+			if ($v > $high_value) {
+				$high_key = $k;
+				$high_value = $v;
 			}
 		}
 
-		$output = '<table class="graph"><tr><th colspan="24">'.htmlspecialchars($settings['head']).'</th></tr><tr class="bars">';
+		$tr1 = '<tr><th colspan="24">'.htmlspecialchars($settings['head']).'</th></tr>';
+		$tr2 = '<tr class="bars">';
+		$tr3 = '<tr class="sub">';
 
-		for ($hour = 0; $hour < 24; $hour++) {
-			if ($l_total[$hour] != 0) {
-				$output .= '<td>';
+		foreach ($result as $k => $v) {
+			$v = (int) $v;
 
-				if ((($l_total[$hour] / $this->l_total) * 100) >= 9.95) {
-					$output .= round(($l_total[$hour] / $this->l_total) * 100).'%';
+			if (substr($k, -2, 1) == '0') {
+				$hour = (int) substr($k, -1);
+			} else {
+				$hour = (int) substr($k, -2);
+			}
+
+			if ($v == 0) {
+				$tr2 .= '<td><span class="grey">n/a</span></td>';
+				$tr3 .= '<td>'.$hour.'h</td>';
+			} else {
+				$perc = ($v / $this->l_total) * 100;
+
+				if ($perc >= 9.95) {
+					$tr2 .= '<td>'.round($perc).'%';
 				} else {
-					$output .= number_format(($l_total[$hour] / $this->l_total) * 100, 1).'%';
+					$tr2 .= '<td>'.number_format($perc, 1).'%';
 				}
 
-				$height = round(($l_total[$hour] / $l_total_high) * 100);
+				$height = round(($v / $high_value) * 100);
 
-				if ($height != 0 && $hour >= 0 && $hour <= 5) {
-					$output .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				} elseif ($height != 0 && $hour >= 6 && $hour <= 11) {
-					$output .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				} elseif ($height != 0 && $hour >= 12 && $hour <= 17) {
-					$output .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
-				} elseif ($height != 0 && $hour >= 18 && $hour <= 23) {
-					$output .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format($l_total[$hour]).'" />';
+				if ($height != 0) {
+					if ($hour >= 0 && $hour <= 5) {
+						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format($v).'" />';
+					} elseif ($hour >= 6 && $hour <= 11) {
+						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format($v).'" />';
+					} elseif ($hour >= 12 && $hour <= 17) {
+						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format($v).'" />';
+					} elseif ($hour >= 18 && $hour <= 23) {
+						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format($v).'" />';
+					}
 				}
 
-				$output .= '</td>';
-			} else {
-				$output .= '<td><span class="grey">n/a</span></td>';
+				$tr2 .= '</td>';
+
+				if ($high_key == $k) {
+					$tr3 .= '<td class="bold">'.$hour.'h</td>';
+				} else {
+					$tr3 .= '<td>'.$hour.'h</td>';
+				}
 			}
 		}
 
-		$output .= '</tr><tr class="sub">';
-
-		for ($hour = 0; $hour < 24; $hour++) {
-			if ($l_total_high != 0 && $l_total_high_hour == $hour) {
-				$output .= '<td class="bold">'.$hour.'h</td>';
-			} else {
-				$output .= '<td>'.$hour.'h</td>';
-			}
-		}
-
-		return $output.'</tr></table>'."\n";
+		$tr2 .= '</tr>';
+		$tr3 .= '</tr>';
+		return $output.'<table class="graph">'.$tr1.$tr2.tr3.'</table>'."\n";
 	}
 
 	/**
