@@ -164,9 +164,9 @@ final class sss extends Base
 
 		if (!empty($rows)) {
 			$result = mysqli_fetch_object($query);
-			$dateLastLogParsed = $result->date;
+			$date_lastLogParsed = $result->date;
 		} else {
-			$dateLastLogParsed = NULL;
+			$date_lastLogParsed = NULL;
 		}
 
 		/**
@@ -185,7 +185,7 @@ final class sss extends Base
 			/**
 			 * If current log is older than the last log parsed we skip it. We do process the log with the same date as the last log parsed as it may contain new lines that haven't been processed yet.
 			 */
-			if (!is_null($dateLastLogParsed) && strtotime($date) < strtotime($dateLastLogParsed)) {
+			if (!is_null($date_lastLogParsed) && strtotime($date) < strtotime($date_lastLogParsed)) {
 				continue;
 			}
 
