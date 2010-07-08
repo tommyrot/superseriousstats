@@ -87,7 +87,7 @@ final class User
 	public function makeHTML()
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->fail(mysqli_connect_error());
-		$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `csNick` FROM `user_status` JOIN `user_details` ON `user_status`.`RUID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$this->UID) or $this->fail(mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT `user_status`.`RUID`, `csNick` FROM `user_status` JOIN `user_details` ON `user_status`.`RUID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$this->UID) or $this->fail(mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -97,7 +97,7 @@ final class User
 		$result = mysqli_fetch_object($query);
 		$this->RUID = $result->RUID;
 		$this->csNick = $result->csNick;
-		$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen`, `l_total`, (`l_total` / `activeDays`) AS `l_avg` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` JOIN `query_lines` ON `user_status`.`RUID` = `query_lines`.`UID` WHERE `RUID` = '.$this->RUID.' GROUP BY `RUID`') or $this->fail(mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen`, `l_total`, (`l_total` / `activeDays`) AS `l_avg` FROM `user_status` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` JOIN `query_lines` ON `user_status`.`RUID` = `query_lines`.`RUID` WHERE `query_lines`.`RUID` = '.$this->RUID.' GROUP BY `user_status`.`RUID`') or $this->fail(mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -118,9 +118,12 @@ final class User
 		/**
 		 * Date and time variables used throughout the script.
 		 */
-		$this->day = date('j', strtotime('yesterday'));
-		$this->month = date('m', strtotime('yesterday'));
-		$this->year = date('Y', strtotime('yesterday'));
+		$query = @mysqli_query($this->mysqli, 'SELECT MAX(`date`) AS `date` FROM `parse_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$result = mysqli_fetch_object($query);
+		$this->date_lastLogParsed = $result->date;
+		$this->day = date('j', strtotime($this->date_lastLogParsed));
+		$this->month = date('n', strtotime($this->date_lastLogParsed));
+		$this->year = date('Y', strtotime($this->date_lastLogParsed));
 		$this->years = $this->year - date('Y', strtotime($this->firstSeen)) + 1;
 
 		/**
@@ -133,7 +136,7 @@ final class User
 		/**
 		 * HTML Head
 		 */
-		$query = @mysqli_query($this->mysqli, 'SELECT `date` AS `date_max`, SUM(`l_total`) AS `l_max` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE `RUID` = '.$this->RUID.' GROUP BY `date` ORDER BY `l_max` DESC LIMIT 1') or $this->fail(mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT `date` AS `date_max`, SUM(`l_total`) AS `l_max` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE `user_status`.`RUID` = '.$this->RUID.' GROUP BY `date` ORDER BY `l_max` DESC LIMIT 1') or $this->fail(mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->date_max = $result->date_max;
 		$this->l_max = $result->l_max;
@@ -174,7 +177,7 @@ final class User
 	 */
 	private function makeTable_MostActiveTimes($settings)
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23` FROM `query_lines` WHERE `UID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23` FROM `query_lines` WHERE `query_lines`.`RUID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$l_total_high = 0;
 
@@ -243,17 +246,17 @@ final class User
 			case 'days':
 				$table_class = 'graph';
 				$cols = 24;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day - 24, $this->year)).'\' AND `RUID` = '.$this->RUID.' GROUP BY `date`') or $this->fail(mysqli_error($this->mysqli));
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day - 24, $this->year)).'\' AND `user_status`.`RUID` = '.$this->RUID.' GROUP BY `date`') or $this->fail(mysqli_error($this->mysqli));
 				break;
 			case 'months':
 				$table_class = 'graph';
 				$cols = 24;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE DATE_FORMAT(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' AND `RUID` = '.$this->RUID.' GROUP BY YEAR(`date`), MONTH(`date`)') or $this->fail(mysqli_error($this->mysqli));
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE DATE_FORMAT(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' AND `user_status`.`RUID` = '.$this->RUID.' GROUP BY YEAR(`date`), MONTH(`date`)') or $this->fail(mysqli_error($this->mysqli));
 				break;
 			case 'years':
 				$table_class = 'yearly';
 				$cols = $this->years;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE `RUID` = '.$this->RUID.' GROUP BY YEAR(`date`)') or $this->fail(mysqli_error($this->mysqli));
+				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `user_activity` JOIN `user_status` ON `user_activity`.`UID` = `user_status`.`UID` WHERE `user_status`.`RUID` = '.$this->RUID.' GROUP BY YEAR(`date`)') or $this->fail(mysqli_error($this->mysqli));
 				break;
 		}
 
@@ -409,7 +412,7 @@ final class User
 	 */
 	private function makeTable_MostActiveDays($settings)
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines` WHERE `UID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines` WHERE `query_lines`.`RUID` = '.$this->RUID) or $this->fail(mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$l_total_high = 0;
 		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
