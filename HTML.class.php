@@ -889,7 +889,7 @@ final class HTML extends Base
 
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
-		return $output.'<table class="graph">'.$tr1.$tr2.tr3.'</table>'."\n";
+		return $output.'<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	/**
