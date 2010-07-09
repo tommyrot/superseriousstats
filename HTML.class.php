@@ -211,15 +211,55 @@ final class HTML extends Base
 		 */
 		if ($this->sectionbits & 1) {
 			$this->output .= '<div class="head">Activity</div>'."\n";
-			$this->output .= $this->makeTable_MostActiveTimes(array('head' => 'Most Active Times'));
-			$this->output .= $this->makeTable_Activity(array('type' => 'days', 'head' => 'Daily Activity'));
-			$this->output .= $this->makeTable_Activity(array('type' => 'months', 'head' => 'Monthly Activity'));
-			$this->output .= $this->makeTable_MostActiveDays(array('head' => 'Most Active Days'));
-			$this->output .= $this->makeTable_Activity(array('type' => 'years', 'head' => 'Yearly Activity'));
-			$this->output .= $this->makeTable_MostActivePeople(array('type' => 'alltime', 'rows' => 30, 'head' => 'Most Active People, Alltime', 'key1' => 'Percentage', 'key2' => 'Lines', 'key3' => 'User', 'key4' => 'When?', 'key5' => 'Last Seen', 'key6' => 'Quote'));
-			$this->output .= $this->makeTable_MostActivePeople(array('type' => 'year', 'rows' => 10, 'head' => 'Most Active People, '.$this->year, 'key1' => 'Percentage', 'key2' => 'Lines', 'key3' => 'User', 'key4' => 'When?', 'key5' => 'Last Seen', 'key6' => 'Quote'));
-			$this->output .= $this->makeTable_MostActivePeople(array('type' => 'month', 'rows' => 10, 'head' => 'Most Active People, '.$this->month_name.' '.$this->year, 'key1' => 'Percentage', 'key2' => 'Lines', 'key3' => 'User', 'key4' => 'When?', 'key5' => 'Last Seen', 'key6' => 'Quote'));
-			$this->output .= $this->makeTable_TimeOfDay(array('head' => 'Activity, by Time of Day', 'key1' => 'Nightcrawlers', 'key2' => 'Early Birds', 'key3' => 'Afternoon Shift', 'key4' => 'Evening Chatters'));
+			$this->output .= $this->makeTable_MostActiveTimes(array(
+				'head' => 'Most Active Times'));
+			$this->output .= $this->makeTable_Activity(array(
+				'type' => 'days',
+				'head' => 'Daily Activity'));
+			$this->output .= $this->makeTable_Activity(array(
+				'type' => 'months',
+				'head' => 'Monthly Activity'));
+			$this->output .= $this->makeTable_MostActiveDays(array(
+				'head' => 'Most Active Days'));
+			$this->output .= $this->makeTable_Activity(array(
+				'type' => 'years',
+				'head' => 'Yearly Activity'));
+			$this->output .= $this->makeTable_MostActivePeople(array(
+				'type' => 'alltime',
+				'rows' => 30,
+				'head' => 'Most Active People, Alltime',
+				'key1' => 'Percentage',
+				'key2' => 'Lines',
+				'key3' => 'User',
+				'key4' => 'When?',
+				'key5' => 'Last Seen',
+				'key6' => 'Quote'));
+			$this->output .= $this->makeTable_MostActivePeople(array(
+				'type' => 'year',
+				'rows' => 10,
+				'head' => 'Most Active People, '.$this->year,
+				'key1' => 'Percentage',
+				'key2' => 'Lines',
+				'key3' => 'User',
+				'key4' => 'When?',
+				'key5' => 'Last Seen',
+				'key6' => 'Quote'));
+			$this->output .= $this->makeTable_MostActivePeople(array(
+				'type' => 'month',
+				'rows' => 10,
+				'head' => 'Most Active People, '.$this->month_name.' '.$this->year,
+				'key1' => 'Percentage',
+				'key2' => 'Lines',
+				'key3' => 'User',
+				'key4' => 'When?',
+				'key5' => 'Last Seen',
+				'key6' => 'Quote'));
+			$this->output .= $this->makeTable_TimeOfDay(array(
+				'head' => 'Activity, by Time of Day',
+				'key1' => 'Nightcrawlers',
+				'key2' => 'Early Birds',
+				'key3' => 'Afternoon Shift',
+				'key4' => 'Evening Chatters'));
 		}
 
 		/**
@@ -232,7 +272,7 @@ final class HTML extends Base
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Tedious Chatters', 'key1' => 'Chars/Line', 'key2' => 'User', 'decimals' => 1, 'percentage' => FALSE, 'query' => 'SELECT (`characters` / `l_total`) AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, Alltime', 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` GROUP BY `RUID`, `date` ORDER BY `v1` DESC) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC, `RUID` ASC'));
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID`, `date` ORDER BY `v1` DESC) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC, `RUID` ASC'));
-			$output	.= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->month_name.' '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID`, `date` ORDER BY `v1` DESC) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC, `RUID` ASC'));
+			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Individual Top Days, '.$this->month_name.' '.$this->year, 'key1' => 'Lines', 'key2' => 'User', 'decimals' => 0, 'percentage' => FALSE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, `v1` FROM (SELECT `RUID`, SUM(`l_total`) AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID`, `date` ORDER BY `v1` DESC) AS `sub` GROUP BY `RUID` ORDER BY `v1` DESC, `RUID` ASC'));
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, Alltime', 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'query' => 'SELECT (`activeDays` / '.(((strtotime($this->date_last) - strtotime($this->date_first)) / 86400) + 1).') * 100 AS `v1`, `csNick` AS `v2` FROM `user_status` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`RUID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `status` != 3 ORDER BY `v1` DESC, `v2` ASC LIMIT 5'));
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, '.$this->year, 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_year.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25'));
 			$output .= $this->makeTable(array('size' => 'small', 'rows' => 5, 'head' => 'Most Active Chatters, '.$this->month_name.' '.$this->year, 'key1' => 'Activity', 'key2' => 'User', 'decimals' => 2, 'percentage' => TRUE, 'getDetails' => 'RUID', 'query' => 'SELECT `RUID`, (COUNT(DISTINCT `date`) / '.$this->day_of_month.') * 100 AS `v1` FROM `user_status` JOIN `user_activity` ON `user_status`.`UID` = `user_activity`.`UID` WHERE YEAR(`date`) = '.$this->year.' AND MONTH(`date`) = '.$this->month.' GROUP BY `RUID` ORDER BY `v1` DESC LIMIT 25'));
@@ -1016,7 +1056,7 @@ final class HTML extends Base
 				.  '<tr><td class="k1">'.htmlspecialchars($settings['key1a']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
 			foreach ($content2 as $row) {
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
 			}
 
 			$output .= '</table>'."\n";
@@ -1051,7 +1091,7 @@ final class HTML extends Base
 				.  '<tr><td class="k1">'.htmlspecialchars($settings['key1b']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
 
 			foreach ($content1 as $row) {
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
+				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
 			}
 
 			$output .= '</table>'."\n";
