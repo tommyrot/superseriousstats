@@ -59,7 +59,7 @@ abstract class Base
 		if ($changes) {
 			return rtrim($query, ',');
 		} else {
-			return NULL;
+			return;
 		}
 	}
 
@@ -100,7 +100,7 @@ abstract class Base
 		if ($changes) {
 			return rtrim($query, ',');
 		} else {
-			return NULL;
+			return;
 		}
 	}
 
