@@ -589,7 +589,7 @@ CREATE TABLE `user_URLs` (
   KEY `total` (`total`),
   KEY `firstUsed` (`firstUsed`),
   KEY `lastUsed` (`lastUsed`)
-) ENGINE=MyISAM AUTO_INCREMENT=43837 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -628,7 +628,7 @@ CREATE TABLE `user_details` (
   UNIQUE KEY `csNick` (`csNick`),
   KEY `firstSeen` (`firstSeen`),
   KEY `lastSeen` (`lastSeen`)
-) ENGINE=MyISAM AUTO_INCREMENT=5153 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -675,7 +675,7 @@ CREATE TABLE `user_hosts` (
   PRIMARY KEY (`HID`,`UID`),
   KEY `UID` (`UID`),
   KEY `host` (`host`)
-) ENGINE=MyISAM AUTO_INCREMENT=5966 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -831,7 +831,7 @@ CREATE TABLE `user_topics` (
   KEY `UID` (`UID`),
   KEY `csTopic` (`csTopic`),
   KEY `setDate` (`setDate`)
-) ENGINE=MyISAM AUTO_INCREMENT=2597 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1393,7 +1393,7 @@ CREATE TABLE `words` (
   PRIMARY KEY (`WID`),
   UNIQUE KEY `word` (`word`),
   KEY `total` (`total`)
-) ENGINE=MyISAM AUTO_INCREMENT=226969 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1880,4 +1880,4 @@ CREATE TABLE `words` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-07-15  3:58:21
+-- Dump completed on 2010-07-15  4:12:37
