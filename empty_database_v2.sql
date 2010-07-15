@@ -58,15 +58,6 @@ CREATE TABLE `channel` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `channel`
---
-
-LOCK TABLES `channel` WRITE;
-/*!40000 ALTER TABLE `channel` DISABLE KEYS */;
-/*!40000 ALTER TABLE `channel` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `mview_ex_actions`
 --
 
@@ -78,15 +69,6 @@ CREATE TABLE `mview_ex_actions` (
   `ex_actions` varchar(255) NOT NULL DEFAULT ''
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `mview_ex_actions`
---
-
-LOCK TABLES `mview_ex_actions` WRITE;
-/*!40000 ALTER TABLE `mview_ex_actions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mview_ex_actions` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `mview_ex_exclamations`
@@ -102,15 +84,6 @@ CREATE TABLE `mview_ex_exclamations` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `mview_ex_exclamations`
---
-
-LOCK TABLES `mview_ex_exclamations` WRITE;
-/*!40000 ALTER TABLE `mview_ex_exclamations` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mview_ex_exclamations` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `mview_ex_kicked`
 --
 
@@ -122,15 +95,6 @@ CREATE TABLE `mview_ex_kicked` (
   `ex_kicked` varchar(255) NOT NULL DEFAULT ''
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `mview_ex_kicked`
---
-
-LOCK TABLES `mview_ex_kicked` WRITE;
-/*!40000 ALTER TABLE `mview_ex_kicked` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mview_ex_kicked` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `mview_ex_kicks`
@@ -146,15 +110,6 @@ CREATE TABLE `mview_ex_kicks` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `mview_ex_kicks`
---
-
-LOCK TABLES `mview_ex_kicks` WRITE;
-/*!40000 ALTER TABLE `mview_ex_kicks` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mview_ex_kicks` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `mview_ex_questions`
 --
 
@@ -166,15 +121,6 @@ CREATE TABLE `mview_ex_questions` (
   `ex_questions` varchar(255) NOT NULL DEFAULT ''
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `mview_ex_questions`
---
-
-LOCK TABLES `mview_ex_questions` WRITE;
-/*!40000 ALTER TABLE `mview_ex_questions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mview_ex_questions` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `mview_ex_uppercased`
@@ -190,15 +136,6 @@ CREATE TABLE `mview_ex_uppercased` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `mview_ex_uppercased`
---
-
-LOCK TABLES `mview_ex_uppercased` WRITE;
-/*!40000 ALTER TABLE `mview_ex_uppercased` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mview_ex_uppercased` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `mview_quote`
 --
 
@@ -210,15 +147,6 @@ CREATE TABLE `mview_quote` (
   `quote` varchar(255) NOT NULL DEFAULT ''
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `mview_quote`
---
-
-LOCK TABLES `mview_quote` WRITE;
-/*!40000 ALTER TABLE `mview_quote` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mview_quote` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `parse_history`
@@ -233,15 +161,6 @@ CREATE TABLE `parse_history` (
   PRIMARY KEY (`date`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `parse_history`
---
-
-LOCK TABLES `parse_history` WRITE;
-/*!40000 ALTER TABLE `parse_history` DISABLE KEYS */;
-/*!40000 ALTER TABLE `parse_history` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `query_events`
@@ -287,15 +206,6 @@ CREATE TABLE `query_events` (
   KEY `topics` (`topics`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `query_events`
---
-
-LOCK TABLES `query_events` WRITE;
-/*!40000 ALTER TABLE `query_events` DISABLE KEYS */;
-/*!40000 ALTER TABLE `query_events` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `query_lines`
@@ -399,15 +309,6 @@ CREATE TABLE `query_lines` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `query_lines`
---
-
-LOCK TABLES `query_lines` WRITE;
-/*!40000 ALTER TABLE `query_lines` DISABLE KEYS */;
-/*!40000 ALTER TABLE `query_lines` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `query_smileys`
 --
 
@@ -459,15 +360,6 @@ CREATE TABLE `query_smileys` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `query_smileys`
---
-
-LOCK TABLES `query_smileys` WRITE;
-/*!40000 ALTER TABLE `query_smileys` DISABLE KEYS */;
-/*!40000 ALTER TABLE `query_smileys` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `streak_history`
 --
 
@@ -479,15 +371,6 @@ CREATE TABLE `streak_history` (
   `streak` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `streak_history`
---
-
-LOCK TABLES `streak_history` WRITE;
-/*!40000 ALTER TABLE `streak_history` DISABLE KEYS */;
-/*!40000 ALTER TABLE `streak_history` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `template_query_events`
@@ -533,15 +416,6 @@ CREATE TABLE `template_query_events` (
   KEY `topics` (`topics`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `template_query_events`
---
-
-LOCK TABLES `template_query_events` WRITE;
-/*!40000 ALTER TABLE `template_query_events` DISABLE KEYS */;
-/*!40000 ALTER TABLE `template_query_events` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `template_query_lines`
@@ -645,15 +519,6 @@ CREATE TABLE `template_query_lines` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `template_query_lines`
---
-
-LOCK TABLES `template_query_lines` WRITE;
-/*!40000 ALTER TABLE `template_query_lines` DISABLE KEYS */;
-/*!40000 ALTER TABLE `template_query_lines` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `template_query_smileys`
 --
 
@@ -705,15 +570,6 @@ CREATE TABLE `template_query_smileys` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `template_query_smileys`
---
-
-LOCK TABLES `template_query_smileys` WRITE;
-/*!40000 ALTER TABLE `template_query_smileys` DISABLE KEYS */;
-/*!40000 ALTER TABLE `template_query_smileys` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user_URLs`
 --
 
@@ -733,17 +589,8 @@ CREATE TABLE `user_URLs` (
   KEY `total` (`total`),
   KEY `firstUsed` (`firstUsed`),
   KEY `lastUsed` (`lastUsed`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=43837 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_URLs`
---
-
-LOCK TABLES `user_URLs` WRITE;
-/*!40000 ALTER TABLE `user_URLs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_URLs` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_activity`
@@ -766,15 +613,6 @@ CREATE TABLE `user_activity` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_activity`
---
-
-LOCK TABLES `user_activity` WRITE;
-/*!40000 ALTER TABLE `user_activity` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_activity` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user_details`
 --
 
@@ -790,17 +628,8 @@ CREATE TABLE `user_details` (
   UNIQUE KEY `csNick` (`csNick`),
   KEY `firstSeen` (`firstSeen`),
   KEY `lastSeen` (`lastSeen`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=5153 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_details`
---
-
-LOCK TABLES `user_details` WRITE;
-/*!40000 ALTER TABLE `user_details` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_details` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_events`
@@ -833,15 +662,6 @@ CREATE TABLE `user_events` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_events`
---
-
-LOCK TABLES `user_events` WRITE;
-/*!40000 ALTER TABLE `user_events` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_events` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user_hosts`
 --
 
@@ -855,17 +675,8 @@ CREATE TABLE `user_hosts` (
   PRIMARY KEY (`HID`,`UID`),
   KEY `UID` (`UID`),
   KEY `host` (`host`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=5966 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_hosts`
---
-
-LOCK TABLES `user_hosts` WRITE;
-/*!40000 ALTER TABLE `user_hosts` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_hosts` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_lines`
@@ -956,15 +767,6 @@ CREATE TABLE `user_lines` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_lines`
---
-
-LOCK TABLES `user_lines` WRITE;
-/*!40000 ALTER TABLE `user_lines` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_lines` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user_smileys`
 --
 
@@ -997,15 +799,6 @@ CREATE TABLE `user_smileys` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_smileys`
---
-
-LOCK TABLES `user_smileys` WRITE;
-/*!40000 ALTER TABLE `user_smileys` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_smileys` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user_status`
 --
 
@@ -1023,15 +816,6 @@ CREATE TABLE `user_status` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_status`
---
-
-LOCK TABLES `user_status` WRITE;
-/*!40000 ALTER TABLE `user_status` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_status` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user_topics`
 --
 
@@ -1047,17 +831,8 @@ CREATE TABLE `user_topics` (
   KEY `UID` (`UID`),
   KEY `csTopic` (`csTopic`),
   KEY `setDate` (`setDate`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=2597 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_topics`
---
-
-LOCK TABLES `user_topics` WRITE;
-/*!40000 ALTER TABLE `user_topics` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_topics` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Temporary table structure for view `view_activeDays`
@@ -1068,20 +843,6 @@ DROP TABLE IF EXISTS `view_activeDays`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `view_activeDays` (
-  `RUID` int(10) unsigned,
-  `activeDays` bigint(21)
-) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary table structure for view `view_activedays`
---
-
-DROP TABLE IF EXISTS `view_activedays`;
-/*!50001 DROP VIEW IF EXISTS `view_activedays`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
-/*!50001 CREATE TABLE `view_activedays` (
   `RUID` int(10) unsigned,
   `activeDays` bigint(21)
 ) ENGINE=MyISAM */;
@@ -1153,7 +914,7 @@ DROP TABLE IF EXISTS `view_ex_actions_2`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `view_ex_actions_2` (
-  `ruid` int(10) unsigned,
+  `RUID` int(10) unsigned,
   `lastSeen` datetime
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
@@ -1196,7 +957,7 @@ DROP TABLE IF EXISTS `view_ex_exclamations_2`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `view_ex_exclamations_2` (
-  `ruid` int(10) unsigned,
+  `RUID` int(10) unsigned,
   `lastTalked` datetime
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
@@ -1295,7 +1056,7 @@ DROP TABLE IF EXISTS `view_ex_questions_2`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `view_ex_questions_2` (
-  `ruid` int(10) unsigned,
+  `RUID` int(10) unsigned,
   `lastTalked` datetime
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
@@ -1338,7 +1099,7 @@ DROP TABLE IF EXISTS `view_ex_uppercased_2`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `view_ex_uppercased_2` (
-  `ruid` int(10) unsigned,
+  `RUID` int(10) unsigned,
   `lastTalked` datetime
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
@@ -1613,7 +1374,7 @@ DROP TABLE IF EXISTS `view_quote_2`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `view_quote_2` (
-  `ruid` int(10) unsigned,
+  `RUID` int(10) unsigned,
   `lastTalked` datetime
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
@@ -1632,17 +1393,8 @@ CREATE TABLE `words` (
   PRIMARY KEY (`WID`),
   UNIQUE KEY `word` (`word`),
   KEY `total` (`total`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=226969 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `words`
---
-
-LOCK TABLES `words` WRITE;
-/*!40000 ALTER TABLE `words` DISABLE KEYS */;
-/*!40000 ALTER TABLE `words` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Final view structure for view `view_activeDays`
@@ -1659,25 +1411,6 @@ UNLOCK TABLES;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
 /*!50001 VIEW `view_activeDays` AS select `user_status`.`RUID` AS `RUID`,count(distinct `user_activity`.`date`) AS `activeDays` from (`user_activity` join `user_status` on((`user_activity`.`UID` = `user_status`.`UID`))) group by `user_status`.`RUID` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_activedays`
---
-
-/*!50001 DROP TABLE IF EXISTS `view_activedays`*/;
-/*!50001 DROP VIEW IF EXISTS `view_activedays`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_activedays` AS select `user_status`.`RUID` AS `RUID`,count(distinct `user_activity`.`date`) AS `activeDays` from (`user_activity` join `user_status` on((`user_activity`.`UID` = `user_status`.`UID`))) group by `user_status`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1715,7 +1448,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_actions` AS select `view_ex_actions_1`.`RUID` AS `RUID`,`view_ex_actions_1`.`ex_actions` AS `ex_actions` from (`view_ex_actions_1` join `view_ex_actions_2` on((`view_ex_actions_1`.`RUID` = `view_ex_actions_2`.`ruid`))) where (`view_ex_actions_1`.`lastSeen` = `view_ex_actions_2`.`lastSeen`) */;
+/*!50001 VIEW `view_ex_actions` AS select `view_ex_actions_1`.`RUID` AS `RUID`,`view_ex_actions_1`.`ex_actions` AS `ex_actions` from (`view_ex_actions_1` join `view_ex_actions_2` on((`view_ex_actions_1`.`RUID` = `view_ex_actions_2`.`RUID`))) where (`view_ex_actions_1`.`lastSeen` = `view_ex_actions_2`.`lastSeen`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1734,7 +1467,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_actions_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`ex_actions` AS `ex_actions`,`user_details`.`lastSeen` AS `lastSeen` from ((`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) join `user_details` on((`user_lines`.`UID` = `user_details`.`UID`))) where (`user_lines`.`ex_actions` <> _latin1'') */;
+/*!50001 VIEW `view_ex_actions_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`ex_actions` AS `ex_actions`,`user_details`.`lastSeen` AS `lastSeen` from ((`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) join `user_details` on((`user_lines`.`UID` = `user_details`.`UID`))) where (`user_lines`.`ex_actions` <> '') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1753,7 +1486,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_actions_2` AS select `view_ex_actions_1`.`RUID` AS `ruid`,max(`view_ex_actions_1`.`lastSeen`) AS `lastSeen` from `view_ex_actions_1` group by `view_ex_actions_1`.`RUID` */;
+/*!50001 VIEW `view_ex_actions_2` AS select `view_ex_actions_1`.`RUID` AS `RUID`,max(`view_ex_actions_1`.`lastSeen`) AS `lastSeen` from `view_ex_actions_1` group by `view_ex_actions_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1772,7 +1505,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_exclamations` AS select `view_ex_exclamations_1`.`RUID` AS `RUID`,`view_ex_exclamations_1`.`ex_exclamations` AS `ex_exclamations` from (`view_ex_exclamations_1` join `view_ex_exclamations_2` on((`view_ex_exclamations_1`.`RUID` = `view_ex_exclamations_2`.`ruid`))) where (`view_ex_exclamations_1`.`lastTalked` = `view_ex_exclamations_2`.`lastTalked`) */;
+/*!50001 VIEW `view_ex_exclamations` AS select `view_ex_exclamations_1`.`RUID` AS `RUID`,`view_ex_exclamations_1`.`ex_exclamations` AS `ex_exclamations` from (`view_ex_exclamations_1` join `view_ex_exclamations_2` on((`view_ex_exclamations_1`.`RUID` = `view_ex_exclamations_2`.`RUID`))) where (`view_ex_exclamations_1`.`lastTalked` = `view_ex_exclamations_2`.`lastTalked`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1791,7 +1524,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_exclamations_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`ex_exclamations` AS `ex_exclamations`,`user_lines`.`lastTalked` AS `lastTalked` from (`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) where (`user_lines`.`ex_exclamations` <> _latin1'') */;
+/*!50001 VIEW `view_ex_exclamations_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`ex_exclamations` AS `ex_exclamations`,`user_lines`.`lastTalked` AS `lastTalked` from (`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) where (`user_lines`.`ex_exclamations` <> '') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1810,7 +1543,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_exclamations_2` AS select `view_ex_exclamations_1`.`RUID` AS `ruid`,max(`view_ex_exclamations_1`.`lastTalked`) AS `lastTalked` from `view_ex_exclamations_1` group by `view_ex_exclamations_1`.`RUID` */;
+/*!50001 VIEW `view_ex_exclamations_2` AS select `view_ex_exclamations_1`.`RUID` AS `RUID`,max(`view_ex_exclamations_1`.`lastTalked`) AS `lastTalked` from `view_ex_exclamations_1` group by `view_ex_exclamations_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1848,7 +1581,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=TEMPTABLE */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_kicked_1` AS select `user_status`.`RUID` AS `RUID`,`user_events`.`ex_kicked` AS `ex_kicked` from (`user_events` join `user_status` on((`user_events`.`UID` = `user_status`.`UID`))) where (`user_events`.`ex_kicked` <> _latin1'') order by rand() */;
+/*!50001 VIEW `view_ex_kicked_1` AS select `user_status`.`RUID` AS `RUID`,`user_events`.`ex_kicked` AS `ex_kicked` from (`user_events` join `user_status` on((`user_events`.`UID` = `user_status`.`UID`))) where (`user_events`.`ex_kicked` <> '') order by rand() */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1886,7 +1619,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=TEMPTABLE */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_kicks_1` AS select `user_status`.`RUID` AS `RUID`,`user_events`.`ex_kicks` AS `ex_kicks` from (`user_events` join `user_status` on((`user_events`.`UID` = `user_status`.`UID`))) where (`user_events`.`ex_kicks` <> _latin1'') order by rand() */;
+/*!50001 VIEW `view_ex_kicks_1` AS select `user_status`.`RUID` AS `RUID`,`user_events`.`ex_kicks` AS `ex_kicks` from (`user_events` join `user_status` on((`user_events`.`UID` = `user_status`.`UID`))) where (`user_events`.`ex_kicks` <> '') order by rand() */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1905,7 +1638,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_questions` AS select `view_ex_questions_1`.`RUID` AS `RUID`,`view_ex_questions_1`.`ex_questions` AS `ex_questions` from (`view_ex_questions_1` join `view_ex_questions_2` on((`view_ex_questions_1`.`RUID` = `view_ex_questions_2`.`ruid`))) where (`view_ex_questions_1`.`lastTalked` = `view_ex_questions_2`.`lastTalked`) */;
+/*!50001 VIEW `view_ex_questions` AS select `view_ex_questions_1`.`RUID` AS `RUID`,`view_ex_questions_1`.`ex_questions` AS `ex_questions` from (`view_ex_questions_1` join `view_ex_questions_2` on((`view_ex_questions_1`.`RUID` = `view_ex_questions_2`.`RUID`))) where (`view_ex_questions_1`.`lastTalked` = `view_ex_questions_2`.`lastTalked`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1924,7 +1657,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_questions_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`ex_questions` AS `ex_questions`,`user_lines`.`lastTalked` AS `lastTalked` from (`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) where (`user_lines`.`ex_questions` <> _latin1'') */;
+/*!50001 VIEW `view_ex_questions_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`ex_questions` AS `ex_questions`,`user_lines`.`lastTalked` AS `lastTalked` from (`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) where (`user_lines`.`ex_questions` <> '') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1943,7 +1676,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_questions_2` AS select `view_ex_questions_1`.`RUID` AS `ruid`,max(`view_ex_questions_1`.`lastTalked`) AS `lastTalked` from `view_ex_questions_1` group by `view_ex_questions_1`.`RUID` */;
+/*!50001 VIEW `view_ex_questions_2` AS select `view_ex_questions_1`.`RUID` AS `RUID`,max(`view_ex_questions_1`.`lastTalked`) AS `lastTalked` from `view_ex_questions_1` group by `view_ex_questions_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1962,7 +1695,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_uppercased` AS select `view_ex_uppercased_1`.`RUID` AS `RUID`,`view_ex_uppercased_1`.`ex_uppercased` AS `ex_uppercased` from (`view_ex_uppercased_1` join `view_ex_uppercased_2` on((`view_ex_uppercased_1`.`RUID` = `view_ex_uppercased_2`.`ruid`))) where (`view_ex_uppercased_1`.`lastTalked` = `view_ex_uppercased_2`.`lastTalked`) */;
+/*!50001 VIEW `view_ex_uppercased` AS select `view_ex_uppercased_1`.`RUID` AS `RUID`,`view_ex_uppercased_1`.`ex_uppercased` AS `ex_uppercased` from (`view_ex_uppercased_1` join `view_ex_uppercased_2` on((`view_ex_uppercased_1`.`RUID` = `view_ex_uppercased_2`.`RUID`))) where (`view_ex_uppercased_1`.`lastTalked` = `view_ex_uppercased_2`.`lastTalked`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1981,7 +1714,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_uppercased_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`ex_uppercased` AS `ex_uppercased`,`user_lines`.`lastTalked` AS `lastTalked` from (`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) where (`user_lines`.`ex_uppercased` <> _latin1'') */;
+/*!50001 VIEW `view_ex_uppercased_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`ex_uppercased` AS `ex_uppercased`,`user_lines`.`lastTalked` AS `lastTalked` from (`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) where (`user_lines`.`ex_uppercased` <> '') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -2000,7 +1733,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_uppercased_2` AS select `view_ex_uppercased_1`.`RUID` AS `ruid`,max(`view_ex_uppercased_1`.`lastTalked`) AS `lastTalked` from `view_ex_uppercased_1` group by `view_ex_uppercased_1`.`RUID` */;
+/*!50001 VIEW `view_ex_uppercased_2` AS select `view_ex_uppercased_1`.`RUID` AS `RUID`,max(`view_ex_uppercased_1`.`lastTalked`) AS `lastTalked` from `view_ex_uppercased_1` group by `view_ex_uppercased_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -2057,7 +1790,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_query_lines` AS select `view_lines`.`RUID` AS `RUID`,`view_lines`.`l_00` AS `l_00`,`view_lines`.`l_01` AS `l_01`,`view_lines`.`l_02` AS `l_02`,`view_lines`.`l_03` AS `l_03`,`view_lines`.`l_04` AS `l_04`,`view_lines`.`l_05` AS `l_05`,`view_lines`.`l_06` AS `l_06`,`view_lines`.`l_07` AS `l_07`,`view_lines`.`l_08` AS `l_08`,`view_lines`.`l_09` AS `l_09`,`view_lines`.`l_10` AS `l_10`,`view_lines`.`l_11` AS `l_11`,`view_lines`.`l_12` AS `l_12`,`view_lines`.`l_13` AS `l_13`,`view_lines`.`l_14` AS `l_14`,`view_lines`.`l_15` AS `l_15`,`view_lines`.`l_16` AS `l_16`,`view_lines`.`l_17` AS `l_17`,`view_lines`.`l_18` AS `l_18`,`view_lines`.`l_19` AS `l_19`,`view_lines`.`l_20` AS `l_20`,`view_lines`.`l_21` AS `l_21`,`view_lines`.`l_22` AS `l_22`,`view_lines`.`l_23` AS `l_23`,`view_lines`.`l_night` AS `l_night`,`view_lines`.`l_morning` AS `l_morning`,`view_lines`.`l_afternoon` AS `l_afternoon`,`view_lines`.`l_evening` AS `l_evening`,`view_lines`.`l_total` AS `l_total`,`view_lines`.`l_mon_night` AS `l_mon_night`,`view_lines`.`l_mon_morning` AS `l_mon_morning`,`view_lines`.`l_mon_afternoon` AS `l_mon_afternoon`,`view_lines`.`l_mon_evening` AS `l_mon_evening`,`view_lines`.`l_tue_night` AS `l_tue_night`,`view_lines`.`l_tue_morning` AS `l_tue_morning`,`view_lines`.`l_tue_afternoon` AS `l_tue_afternoon`,`view_lines`.`l_tue_evening` AS `l_tue_evening`,`view_lines`.`l_wed_night` AS `l_wed_night`,`view_lines`.`l_wed_morning` AS `l_wed_morning`,`view_lines`.`l_wed_afternoon` AS `l_wed_afternoon`,`view_lines`.`l_wed_evening` AS `l_wed_evening`,`view_lines`.`l_thu_night` AS `l_thu_night`,`view_lines`.`l_thu_morning` AS `l_thu_morning`,`view_lines`.`l_thu_afternoon` AS `l_thu_afternoon`,`view_lines`.`l_thu_evening` AS `l_thu_evening`,`view_lines`.`l_fri_night` AS `l_fri_night`,`view_lines`.`l_fri_morning` AS `l_fri_morning`,`view_lines`.`l_fri_afternoon` AS `l_fri_afternoon`,`view_lines`.`l_fri_evening` AS `l_fri_evening`,`view_lines`.`l_sat_night` AS `l_sat_night`,`view_lines`.`l_sat_morning` AS `l_sat_morning`,`view_lines`.`l_sat_afternoon` AS `l_sat_afternoon`,`view_lines`.`l_sat_evening` AS `l_sat_evening`,`view_lines`.`l_sun_night` AS `l_sun_night`,`view_lines`.`l_sun_morning` AS `l_sun_morning`,`view_lines`.`l_sun_afternoon` AS `l_sun_afternoon`,`view_lines`.`l_sun_evening` AS `l_sun_evening`,`view_lines`.`URLs` AS `URLs`,`view_lines`.`words` AS `words`,`view_lines`.`characters` AS `characters`,`view_lines`.`monologues` AS `monologues`,`view_lines`.`topMonologue` AS `topMonologue`,`view_activedays`.`activeDays` AS `activeDays`,`view_lines`.`slaps` AS `slaps`,`view_lines`.`slapped` AS `slapped`,`view_lines`.`exclamations` AS `exclamations`,`view_lines`.`questions` AS `questions`,`view_lines`.`actions` AS `actions`,`view_lines`.`uppercased` AS `uppercased`,`mview_quote`.`quote` AS `quote`,`mview_ex_exclamations`.`ex_exclamations` AS `ex_exclamations`,`mview_ex_questions`.`ex_questions` AS `ex_questions`,`mview_ex_actions`.`ex_actions` AS `ex_actions`,`mview_ex_uppercased`.`ex_uppercased` AS `ex_uppercased`,`view_lines`.`lastTalked` AS `lastTalked` from ((((((`view_lines` left join `view_activedays` on((`view_lines`.`RUID` = `view_activedays`.`RUID`))) left join `mview_quote` on((`view_lines`.`RUID` = `mview_quote`.`RUID`))) left join `mview_ex_exclamations` on((`view_lines`.`RUID` = `mview_ex_exclamations`.`RUID`))) left join `mview_ex_questions` on((`view_lines`.`RUID` = `mview_ex_questions`.`RUID`))) left join `mview_ex_actions` on((`view_lines`.`RUID` = `mview_ex_actions`.`RUID`))) left join `mview_ex_uppercased` on((`view_lines`.`RUID` = `mview_ex_uppercased`.`RUID`))) */;
+/*!50001 VIEW `view_query_lines` AS select `view_lines`.`RUID` AS `RUID`,`view_lines`.`l_00` AS `l_00`,`view_lines`.`l_01` AS `l_01`,`view_lines`.`l_02` AS `l_02`,`view_lines`.`l_03` AS `l_03`,`view_lines`.`l_04` AS `l_04`,`view_lines`.`l_05` AS `l_05`,`view_lines`.`l_06` AS `l_06`,`view_lines`.`l_07` AS `l_07`,`view_lines`.`l_08` AS `l_08`,`view_lines`.`l_09` AS `l_09`,`view_lines`.`l_10` AS `l_10`,`view_lines`.`l_11` AS `l_11`,`view_lines`.`l_12` AS `l_12`,`view_lines`.`l_13` AS `l_13`,`view_lines`.`l_14` AS `l_14`,`view_lines`.`l_15` AS `l_15`,`view_lines`.`l_16` AS `l_16`,`view_lines`.`l_17` AS `l_17`,`view_lines`.`l_18` AS `l_18`,`view_lines`.`l_19` AS `l_19`,`view_lines`.`l_20` AS `l_20`,`view_lines`.`l_21` AS `l_21`,`view_lines`.`l_22` AS `l_22`,`view_lines`.`l_23` AS `l_23`,`view_lines`.`l_night` AS `l_night`,`view_lines`.`l_morning` AS `l_morning`,`view_lines`.`l_afternoon` AS `l_afternoon`,`view_lines`.`l_evening` AS `l_evening`,`view_lines`.`l_total` AS `l_total`,`view_lines`.`l_mon_night` AS `l_mon_night`,`view_lines`.`l_mon_morning` AS `l_mon_morning`,`view_lines`.`l_mon_afternoon` AS `l_mon_afternoon`,`view_lines`.`l_mon_evening` AS `l_mon_evening`,`view_lines`.`l_tue_night` AS `l_tue_night`,`view_lines`.`l_tue_morning` AS `l_tue_morning`,`view_lines`.`l_tue_afternoon` AS `l_tue_afternoon`,`view_lines`.`l_tue_evening` AS `l_tue_evening`,`view_lines`.`l_wed_night` AS `l_wed_night`,`view_lines`.`l_wed_morning` AS `l_wed_morning`,`view_lines`.`l_wed_afternoon` AS `l_wed_afternoon`,`view_lines`.`l_wed_evening` AS `l_wed_evening`,`view_lines`.`l_thu_night` AS `l_thu_night`,`view_lines`.`l_thu_morning` AS `l_thu_morning`,`view_lines`.`l_thu_afternoon` AS `l_thu_afternoon`,`view_lines`.`l_thu_evening` AS `l_thu_evening`,`view_lines`.`l_fri_night` AS `l_fri_night`,`view_lines`.`l_fri_morning` AS `l_fri_morning`,`view_lines`.`l_fri_afternoon` AS `l_fri_afternoon`,`view_lines`.`l_fri_evening` AS `l_fri_evening`,`view_lines`.`l_sat_night` AS `l_sat_night`,`view_lines`.`l_sat_morning` AS `l_sat_morning`,`view_lines`.`l_sat_afternoon` AS `l_sat_afternoon`,`view_lines`.`l_sat_evening` AS `l_sat_evening`,`view_lines`.`l_sun_night` AS `l_sun_night`,`view_lines`.`l_sun_morning` AS `l_sun_morning`,`view_lines`.`l_sun_afternoon` AS `l_sun_afternoon`,`view_lines`.`l_sun_evening` AS `l_sun_evening`,`view_lines`.`URLs` AS `URLs`,`view_lines`.`words` AS `words`,`view_lines`.`characters` AS `characters`,`view_lines`.`monologues` AS `monologues`,`view_lines`.`topMonologue` AS `topMonologue`,`view_activeDays`.`activeDays` AS `activeDays`,`view_lines`.`slaps` AS `slaps`,`view_lines`.`slapped` AS `slapped`,`view_lines`.`exclamations` AS `exclamations`,`view_lines`.`questions` AS `questions`,`view_lines`.`actions` AS `actions`,`view_lines`.`uppercased` AS `uppercased`,`mview_quote`.`quote` AS `quote`,`mview_ex_exclamations`.`ex_exclamations` AS `ex_exclamations`,`mview_ex_questions`.`ex_questions` AS `ex_questions`,`mview_ex_actions`.`ex_actions` AS `ex_actions`,`mview_ex_uppercased`.`ex_uppercased` AS `ex_uppercased`,`view_lines`.`lastTalked` AS `lastTalked` from ((((((`view_lines` left join `view_activeDays` on((`view_lines`.`RUID` = `view_activeDays`.`RUID`))) left join `mview_quote` on((`view_lines`.`RUID` = `mview_quote`.`RUID`))) left join `mview_ex_exclamations` on((`view_lines`.`RUID` = `mview_ex_exclamations`.`RUID`))) left join `mview_ex_questions` on((`view_lines`.`RUID` = `mview_ex_questions`.`RUID`))) left join `mview_ex_actions` on((`view_lines`.`RUID` = `mview_ex_actions`.`RUID`))) left join `mview_ex_uppercased` on((`view_lines`.`RUID` = `mview_ex_uppercased`.`RUID`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -2095,7 +1828,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_quote` AS select `view_quote_1`.`RUID` AS `RUID`,`view_quote_1`.`quote` AS `quote` from (`view_quote_1` join `view_quote_2` on((`view_quote_1`.`RUID` = `view_quote_2`.`ruid`))) where (`view_quote_1`.`lastTalked` = `view_quote_2`.`lastTalked`) */;
+/*!50001 VIEW `view_quote` AS select `view_quote_1`.`RUID` AS `RUID`,`view_quote_1`.`quote` AS `quote` from (`view_quote_1` join `view_quote_2` on((`view_quote_1`.`RUID` = `view_quote_2`.`RUID`))) where (`view_quote_1`.`lastTalked` = `view_quote_2`.`lastTalked`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -2114,7 +1847,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_quote_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`quote` AS `quote`,`user_lines`.`lastTalked` AS `lastTalked` from (`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) where (`user_lines`.`quote` <> _latin1'') */;
+/*!50001 VIEW `view_quote_1` AS select `user_status`.`RUID` AS `RUID`,`user_lines`.`quote` AS `quote`,`user_lines`.`lastTalked` AS `lastTalked` from (`user_lines` join `user_status` on((`user_lines`.`UID` = `user_status`.`UID`))) where (`user_lines`.`quote` <> '') */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -2133,7 +1866,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_quote_2` AS select `view_quote_1`.`RUID` AS `ruid`,max(`view_quote_1`.`lastTalked`) AS `lastTalked` from `view_quote_1` group by `view_quote_1`.`RUID` */;
+/*!50001 VIEW `view_quote_2` AS select `view_quote_1`.`RUID` AS `RUID`,max(`view_quote_1`.`lastTalked`) AS `lastTalked` from `view_quote_1` group by `view_quote_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -2147,4 +1880,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-07-06 15:26:55
+-- Dump completed on 2010-07-15  3:58:21
