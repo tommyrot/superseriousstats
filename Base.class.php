@@ -43,7 +43,8 @@ abstract class Base
 	/**
 	 * Create part of the MySQL query containing new data.
 	 */
-	final protected function createInsertQuery($columns) {
+	final protected function createInsertQuery($columns)
+	{
 		$changes = FALSE;
 
 		foreach ($columns as $c) {
@@ -66,7 +67,8 @@ abstract class Base
 	/**
 	 * Create part of the MySQL query containing updated data.
 	 */
-	final protected function createUpdateQuery($columns, $exclude) {
+	final protected function createUpdateQuery($columns, $exclude)
+	{
 		$changes = FALSE;
 
 		foreach ($columns as $c => $v) {
