@@ -1448,7 +1448,7 @@ CREATE TABLE `words` (
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_actions` AS select `view_ex_actions_1`.`RUID` AS `RUID`,`view_ex_actions_1`.`ex_actions` AS `ex_actions` from (`view_ex_actions_1` join `view_ex_actions_2` on((`view_ex_actions_1`.`RUID` = `view_ex_actions_2`.`RUID`))) where (`view_ex_actions_1`.`lastSeen` = `view_ex_actions_2`.`lastSeen`) */;
+/*!50001 VIEW `view_ex_actions` AS select `view_ex_actions_1`.`RUID` AS `RUID`,`view_ex_actions_1`.`ex_actions` AS `ex_actions` from (`view_ex_actions_1` join `view_ex_actions_2` on((`view_ex_actions_1`.`RUID` = `view_ex_actions_2`.`RUID`))) where (`view_ex_actions_1`.`lastSeen` = `view_ex_actions_2`.`lastSeen`) group by `view_ex_actions_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1505,7 +1505,7 @@ CREATE TABLE `words` (
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_exclamations` AS select `view_ex_exclamations_1`.`RUID` AS `RUID`,`view_ex_exclamations_1`.`ex_exclamations` AS `ex_exclamations` from (`view_ex_exclamations_1` join `view_ex_exclamations_2` on((`view_ex_exclamations_1`.`RUID` = `view_ex_exclamations_2`.`RUID`))) where (`view_ex_exclamations_1`.`lastTalked` = `view_ex_exclamations_2`.`lastTalked`) */;
+/*!50001 VIEW `view_ex_exclamations` AS select `view_ex_exclamations_1`.`RUID` AS `RUID`,`view_ex_exclamations_1`.`ex_exclamations` AS `ex_exclamations` from (`view_ex_exclamations_1` join `view_ex_exclamations_2` on((`view_ex_exclamations_1`.`RUID` = `view_ex_exclamations_2`.`RUID`))) where (`view_ex_exclamations_1`.`lastTalked` = `view_ex_exclamations_2`.`lastTalked`) group by `view_ex_exclamations_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1638,7 +1638,7 @@ CREATE TABLE `words` (
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_questions` AS select `view_ex_questions_1`.`RUID` AS `RUID`,`view_ex_questions_1`.`ex_questions` AS `ex_questions` from (`view_ex_questions_1` join `view_ex_questions_2` on((`view_ex_questions_1`.`RUID` = `view_ex_questions_2`.`RUID`))) where (`view_ex_questions_1`.`lastTalked` = `view_ex_questions_2`.`lastTalked`) */;
+/*!50001 VIEW `view_ex_questions` AS select `view_ex_questions_1`.`RUID` AS `RUID`,`view_ex_questions_1`.`ex_questions` AS `ex_questions` from (`view_ex_questions_1` join `view_ex_questions_2` on((`view_ex_questions_1`.`RUID` = `view_ex_questions_2`.`RUID`))) where (`view_ex_questions_1`.`lastTalked` = `view_ex_questions_2`.`lastTalked`) group by `view_ex_questions_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1695,7 +1695,7 @@ CREATE TABLE `words` (
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_ex_uppercased` AS select `view_ex_uppercased_1`.`RUID` AS `RUID`,`view_ex_uppercased_1`.`ex_uppercased` AS `ex_uppercased` from (`view_ex_uppercased_1` join `view_ex_uppercased_2` on((`view_ex_uppercased_1`.`RUID` = `view_ex_uppercased_2`.`RUID`))) where (`view_ex_uppercased_1`.`lastTalked` = `view_ex_uppercased_2`.`lastTalked`) */;
+/*!50001 VIEW `view_ex_uppercased` AS select `view_ex_uppercased_1`.`RUID` AS `RUID`,`view_ex_uppercased_1`.`ex_uppercased` AS `ex_uppercased` from (`view_ex_uppercased_1` join `view_ex_uppercased_2` on((`view_ex_uppercased_1`.`RUID` = `view_ex_uppercased_2`.`RUID`))) where (`view_ex_uppercased_1`.`lastTalked` = `view_ex_uppercased_2`.`lastTalked`) group by `view_ex_uppercased_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1828,7 +1828,7 @@ CREATE TABLE `words` (
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
-/*!50001 VIEW `view_quote` AS select `view_quote_1`.`RUID` AS `RUID`,`view_quote_1`.`quote` AS `quote` from (`view_quote_1` join `view_quote_2` on((`view_quote_1`.`RUID` = `view_quote_2`.`RUID`))) where (`view_quote_1`.`lastTalked` = `view_quote_2`.`lastTalked`) */;
+/*!50001 VIEW `view_quote` AS select `view_quote_1`.`RUID` AS `RUID`,`view_quote_1`.`quote` AS `quote` from (`view_quote_1` join `view_quote_2` on((`view_quote_1`.`RUID` = `view_quote_2`.`RUID`))) where (`view_quote_1`.`lastTalked` = `view_quote_2`.`lastTalked`) group by `view_quote_1`.`RUID` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -1880,4 +1880,4 @@ CREATE TABLE `words` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-07-15  4:12:37
+-- Dump completed on 2010-07-16  2:57:12
