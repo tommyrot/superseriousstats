@@ -135,7 +135,7 @@ body {
 }
 .map td.k3,.map td.v3 {
 	padding-left:2px;
-	width:148px;
+	width:138px;
 }
 .map td.k4,.map td.v4 {
 	width:54px;
@@ -145,11 +145,11 @@ body {
 	width:98px;
 }
 .map td.k6,.map td.v6 {
-	width:327px;
+	width:326px;
 }
 .map td.pos {
 	text-align:center;
-	width:25px;
+	width:36px;
 }
 
 /* Specific table styling: time of day */
@@ -216,12 +216,12 @@ body {
 }
 .small td.k2,.small td.v2,.large td.k2,.large td.v2 {
 	padding-left:2px;
-	width:148px;
+	width:138px;
 }
 .large td.k3,.large td.v3 {
 	width:560px;
 }
 .small td.pos,.large td.pos {
 	text-align:center;
-	width:26px;
+	width:36px;
 }
