@@ -165,7 +165,7 @@ final class Maintenance extends Base
 	 */
 	private function makeMaterializedViews()
 	{
-		$views = array('ex_kicks', 'ex_kicked', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased');
+		$views = array('ex_kicks', 'ex_kicked', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased', 'activity_by_day', 'activity_by_month', 'activity_by_year');
 
 		foreach ($views as $view) {
 			@mysqli_query($this->mysqli, 'DROP TABLE IF EXISTS `new_mview_'.$view.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
@@ -174,6 +174,9 @@ final class Maintenance extends Base
 			@mysqli_query($this->mysqli, 'RENAME TABLE `new_mview_'.$view.'` TO `mview_'.$view.'`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		}
 
+		/**
+		 * The following views have a template to base their materialized view on.
+		 */
 		$query_tables = array('query_events', 'query_lines', 'query_smileys');
 
 		foreach ($query_tables as $query_table) {
