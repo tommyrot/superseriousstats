@@ -418,7 +418,7 @@ final class Nick extends Base
 		 */
 		if (!empty($this->topics_list)) {
 			foreach ($this->topics_list as $topic) {
-				$query = @mysqli_query($this->mysqli, 'SELECT `TID` FROM `user_topics` WHERE `csTopic` = \''.mysqli_real_escape_string($this->mysqli, $topic).'\' GROUP BY `csTopic`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+				$query = @mysqli_query($this->mysqli, 'SELECT `TID` FROM `user_topics` WHERE `csTopic` = \''.mysqli_real_escape_string($this->mysqli, $topic['csTopic']).'\' GROUP BY `csTopic`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$rows = mysqli_num_rows($query);
 
 				if (empty($rows)) {
