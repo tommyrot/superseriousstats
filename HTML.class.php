@@ -319,7 +319,7 @@ final class HTML extends Base
 			$t->setValue('key2', 'User');
 			$t->setValue('minRows', $this->minRows);
 			$t->setValue('percentage', TRUE);
-			$t->setValue('query_main', 'SELECT (`activeDays` / '.(round((strtotime($this->date_last) - strtotime($this->date_first)) / 86400) + 1).') * 100 AS `v1`, `csNick` AS `v2` FROM `user_status` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`RUID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `status` != 3 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
+			$t->setValue('query_main', 'SELECT (`activeDays` / '.(((strtotime($this->date_last) - strtotime($this->date_first)) / 86400) + 1).') * 100 AS `v1`, `csNick` AS `v2` FROM `user_status` JOIN `query_lines` ON `user_status`.`UID` = `query_lines`.`RUID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `status` != 3 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
 			$output .= $t->makeTable($this->mysqli);
 
 			$t = new Table('Most Active Chatters, '.$this->year);
