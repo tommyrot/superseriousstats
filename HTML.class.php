@@ -348,7 +348,7 @@ final class HTML extends Base
 			$t->setValue('minRows', $this->minRows);
 			$t->setValue('percentage', TRUE);
 			$t->setValue('query_main', 'SELECT (`exclamations` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_exclamations` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `exclamations` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
-			$t->setValue('size', 'large');
+			$t->setValue('type', 'large');
 			$output .= $t->makeTable($this->mysqli);
 
 			$t = new Table('Most Questions');
@@ -359,7 +359,7 @@ final class HTML extends Base
 			$t->setValue('minRows', $this->minRows);
 			$t->setValue('percentage', TRUE);
 			$t->setValue('query_main', 'SELECT (`questions` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_questions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `questions` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
-			$t->setValue('size', 'large');
+			$t->setValue('type', 'large');
 			$output .= $t->makeTable($this->mysqli);
 
 			$t = new Table('Most UPPERCASED Lines');
@@ -370,7 +370,7 @@ final class HTML extends Base
 			$t->setValue('minRows', $this->minRows);
 			$t->setValue('percentage', TRUE);
 			$t->setValue('query_main', 'SELECT (`uppercased` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_uppercased` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `uppercased` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
-			$t->setValue('size', 'large');
+			$t->setValue('type', 'large');
 			$output .= $t->makeTable($this->mysqli);
 
 			$t = new Table('Most URLs, by Users');
@@ -428,7 +428,7 @@ final class HTML extends Base
 			$t->setValue('minRows', $this->minRows);
 			$t->setValue('percentage', TRUE);
 			$t->setValue('query_main', 'SELECT (`actions` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_actions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `actions` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
-			$t->setValue('size', 'large');
+			$t->setValue('type', 'large');
 			$output .= $t->makeTable($this->mysqli);
 
 			$t = new Table('Most Mentioned Nicks');
@@ -493,7 +493,7 @@ final class HTML extends Base
 			$t->setValue('minRows', $this->minRows);
 			$t->setValue('query_main', 'SELECT `kicks` AS `v1`, `csNick` AS `v2`, `ex_kicks` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `kicks` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
 			$t->setValue('query_total', 'SELECT SUM(`kicks`) AS `total` FROM `query_events`');
-			$t->setValue('size', 'large');
+			$t->setValue('type', 'large');
 			$output .= $t->makeTable($this->mysqli);
 
 			$t = new Table('Most Kicked');
@@ -503,7 +503,7 @@ final class HTML extends Base
 			$t->setValue('minRows', $this->minRows);
 			$t->setValue('query_main', 'SELECT `kicked` AS `v1`, `csNick` AS `v2`, `ex_kicked` AS `v3` FROM `query_events` JOIN `user_details` ON `query_events`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_events`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `kicked` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
 			$t->setValue('query_total', 'SELECT SUM(`kicked`) AS `total` FROM `query_events`');
-			$t->setValue('size', 'large');
+			$t->setValue('type', 'large');
 			$output .= $t->makeTable($this->mysqli);
 
 			$t = new Table('Most Joins');
@@ -554,14 +554,14 @@ final class HTML extends Base
 			$t->setValue('query_total', 'SELECT SUM(`topics`) AS `total` FROM `query_events`');
 			$output .= $t->makeTable($this->mysqli);
 
-			$output .= $this->makeTable_Topics(array(
-				'rows' => 5,
-				'head1' => 'Most Recent Topics',
-				'head2' => 'Longest Standing Topics',
-				'key1a' => 'Days',
-				'key1b' => 'Days Ago',
-				'key2' => 'User',
-				'key3' => 'Topic'));
+			$t = new Table('Most Recent Topics');
+			$t->setValue('key1', 'Date');
+			$t->setValue('key2', 'User');
+			$t->setValue('key3', 'Topic');
+			$t->setValue('minRows', $this->minRows);
+			$t->setValue('query_main', 'SELECT `setDate` AS `v1`, `csNick` AS `v2`, `csTopic` AS `v3` FROM `user_topics` JOIN `user_status` ON `user_topics`.`UID` = `user_status`.`UID` JOIN `user_details` ON `user_details`.`UID` = `user_status`.`RUID` ORDER BY `v1` DESC LIMIT 5');
+			$t->setValue('type', 'topics');
+			$output .= $t->makeTable($this->mysqli);
 
 			if (!empty($output)) {
 				$this->output .= '<div class="head">Events</div>'."\n".$output;
@@ -621,13 +621,16 @@ final class HTML extends Base
 		 */
 		if ($this->sectionbits & 32) {
 			$output = '';
-			$output .= $this->makeTable_URLs(array(
-				'rows' => 100,
-				'head' => 'Newest URLs',
-				'key1' => 'Date',
-				'key2' => 'Nick',
-				'key3' => 'URL',
-				'query_main' => 'SELECT `v1`, `v2`, `v3` FROM (SELECT `LID`, `firstUsed` AS `v1`, `csNick` AS `v2`, `csURL` AS `v3` FROM `user_URLs` JOIN `user_details` ON `user_URLs`.`UID` = `user_details`.`UID` ORDER BY `v1` ASC, `user_URLs`.`UID` ASC) AS `sub` GROUP BY `LID` ORDER BY `v1` DESC, `LID` DESC LIMIT 100'));
+
+			$t = new Table('Most Recent URLs');
+			$t->setValue('key1', 'Date');
+			$t->setValue('key2', 'User');
+			$t->setValue('key3', 'URL');
+			$t->setValue('minRows', $this->minRows);
+			$t->setValue('query_main', 'SELECT `lastUsed` AS `v1`, `csNick` AS `v2`, `csURL` AS `v3` FROM `user_URLs` JOIN `user_status` ON `user_URLs`.`UID` = `user_status`.`UID` JOIN `user_details` ON `user_details`.`UID` = `user_status`.`RUID` ORDER BY `v1` DESC LIMIT 100');
+			$t->setValue('rows', 100);
+			$t->setValue('type', 'URLs');
+			$output .= $t->makeTable($this->mysqli);
 
 			if (!empty($output)) {
 				$this->output .= '<div class="head">URLs</div>'."\n".$output;
@@ -642,45 +645,6 @@ final class HTML extends Base
 		@mysqli_close($this->mysqli);
 		$this->output('notice', 'makeHTML(): finished creating statspage');
 		return $this->output;
-	}
-
-	/**
-	 * Create a table for URLs.
-	 */
-	private function makeTable_URLs($settings)
-	{
-		$query = @mysqli_query($this->mysqli, $settings['query_main']) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		$prevDate = '';
-		$i = 0;
-
-		while ($result = mysqli_fetch_object($query)) {
-			if  ($i >= $settings['rows']) {
-				break;
-			}
-
-			$i++;
-			$date = date('Y-m-d', strtotime($result->v1));
-
-			if ($date == $prevDate) {
-				$date = '';
-			} else {
-				$prevDate = $date;
-			}
-
-			$content[] = array($i, $date, htmlspecialchars($result->v2), htmlspecialchars($result->v3));
-		}
-
-		$output = '<table class="large">'
-			. '<tr><th colspan="3"><span class="left">'.htmlspecialchars($settings['head']).'</span></th></tr>'
-			. '<tr><td class="k1">'.htmlspecialchars($settings['key1']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
-
-		foreach ($content as $row) {
-			// TODO: <div> inside <a> doesn't validate! other way around breaks ellipsis..
-			$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'"><div>'.htmlspecialchars($row[3]).'</div></a></td></tr>';
-		}
-
-		$output .= '</table>'."\n";
-		return $output;
 	}
 
 	/**
@@ -1144,123 +1108,6 @@ final class HTML extends Base
 
 		return $output.'</table>'."\n";
 	}
-
-	/**
-	 * Create the topics table.
-	 */
-	private function makeTable_Topics($settings)
-	{
-		$query = @mysqli_query($this->mysqli, 'SELECT `TID`, `setDate` FROM `user_topics` ORDER BY `setDate` ASC, `TID` ASC');
-		$rows = mysqli_num_rows($query);
-		$output = '';
-
-		if (empty($rows)) {
-			return;
-		}
-
-		$prevTID = 0;
-		$prevDate = $this->date_first;
-		$TIDs = array();
-
-		while ($result = mysqli_fetch_object($query)) {
-			$hoursPassed = floor((strtotime($result->setDate) - strtotime($prevDate)) / 3600);
-
-			if ($prevTID != 0) {
-				$topicTime[$prevTID] += $hoursPassed;
-			}
-
-			if (!in_array($result->TID, $TIDs)) {
-				$TIDs[] = $result->TID;
-				$topicTime[$result->TID] = 0;
-			}
-
-			$prevTID = $result->TID;
-			$prevDate = $result->setDate;
-		}
-
-		/**
-		 * Time between yesterday midnight and setDate from last topic will be added to the last topic.
-		 * No.
-		 * Think we should use time of NOW instead of yesterday.
-		 */
-		$hoursPassed = floor((strtotime('now') - strtotime($prevDate)) / 3600);
-		$topicTime[$prevTID] += $hoursPassed;
-
-		/**
-		 * Order the results and fill the longest standing topics table.
-		 */
-		arsort($topicTime);
-		$i = 0;
-
-		foreach ($topicTime as $TID => $hoursPassed) {
-			if ($i >= $settings['rows']) {
-				break;
-			}
-
-			$i++;
-			$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-			$result_csTopic = mysqli_fetch_object($query_csTopic);
-			$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-			$result_csNick = mysqli_fetch_object($query_csNick);
-			$content2[] = array($i, number_format(floor($hoursPassed / 24)), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
-		}
-
-		/**
-		* If there are less rows to display than the desired minimum amount of rows we skip this table.
-		*/
-		if ($i >= $this->minRows) {
-			for ($i = count($content2); $i < $settings['rows']; $i++) {
-				$content2[] = array('&nbsp;', '', '', '');
-			}
-
-			$output .= '<table class="large">'
-				.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head2']).'</span></th></tr>'
-				.  '<tr><td class="k1">'.htmlspecialchars($settings['key1a']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
-
-			foreach ($content2 as $row) {
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
-			}
-
-			$output .= '</table>'."\n";
-		}
-
-		/**
-		 * Most recent topics table.
-		 */
-		$query = @mysqli_query($this->mysqli, 'SELECT DISTINCT(`TID`), `setDate` FROM `user_topics` ORDER BY `setDate` DESC LIMIT 5') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		$i = 0;
-
-		while ($result = mysqli_fetch_object($query)) {
-			$i++;
-			$query_csTopic = @mysqli_query($this->mysqli, 'SELECT `csTopic` FROM `user_topics` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-			$result_csTopic = mysqli_fetch_object($query_csTopic);
-			$query_csNick = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_topics` ON `user_details`.`UID` = `user_topics`.`UID` WHERE `TID` = '.$result->TID.' ORDER BY `setDate` ASC LIMIT 1') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-			$result_csNick = mysqli_fetch_object($query_csNick);
-			$daysPassed = round((strtotime('now') - strtotime($result->setDate)) / 86400);
-			$content1[] = array($i, number_format($daysPassed), htmlspecialchars($result_csNick->csNick), htmlspecialchars($result_csTopic->csTopic));
-		}
-
-		/**
-		* If there are less rows to display than the desired minimum amount of rows we skip this table.
-		*/
-		if ($i >= $this->minRows) {
-			for ($i = count($content1); $i < $settings['rows']; $i++) {
-				$content1[] = array('&nbsp;', '', '', '');
-			}
-
-			$output .= '<table class="large">'
-				.  '<tr><th colspan="4"><span class="left">'.htmlspecialchars($settings['head1']).'</span></th></tr>'
-				.  '<tr><td class="k1">'.htmlspecialchars($settings['key1b']).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($settings['key2']).'</td><td class="k3">'.htmlspecialchars($settings['key3']).'</td></tr>';
-
-			foreach ($content1 as $row) {
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
-			}
-
-			$output .= '</table>'."\n";
-		}
-
-		return $output;
-	}
 }
 
 /**
@@ -1278,10 +1125,8 @@ final class Table extends Base
 	protected $query_main = '';
 	protected $query_total = '';
 	protected $rows = 5;
-	protected $size = 'small';
+	protected $type = 'small';
 	protected $total = 0;
-	//protected $with_date = FALSE;
-	//protected $with_date_no_repeat = FALSE;
 
 	public function __construct($head)
 	{
@@ -1313,10 +1158,12 @@ final class Table extends Base
 				break;
 			}
 
-			if ($this->size == 'small') {
+			if ($this->type == 'small') {
 				$content[] = array($i, number_format($result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2));
-			} elseif ($this->size == 'large') {
+			} elseif ($this->type == 'large') {
 				$content[] = array($i, number_format($result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
+			} elseif ($this->type == 'topics' || $this->type == 'URLs') {
+				$content[] = array($i, date('j M \'y', strtotime($result->v1)), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			}
 		}
 
@@ -1324,9 +1171,9 @@ final class Table extends Base
 		 * Fill the remainder of the table with empty values.
 		 */
 		for ($i = count($content) + 1; $i <= $this->rows; $i++) {
-			if ($this->size == 'small') {
+			if ($this->type == 'small') {
 				$content[] = array('&nbsp;', '', '');
-			} elseif ($this->size == 'large') {
+			} elseif ($this->type == 'large') {
 				$content[] = array('&nbsp;', '', '', '');
 			}
 		}
@@ -1343,7 +1190,7 @@ final class Table extends Base
 		/**
 		 * Finally put everything together and return $output.
 		 */
-		if ($this->size == 'small') {
+		if ($this->type == 'small') {
 			$output = '<table class="small">'
 				. '<tr><th colspan="3"><span class="left">'.htmlspecialchars($this->head).'</span>'.(empty($this->total) ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>'
 				. '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td></tr>';
@@ -1353,13 +1200,38 @@ final class Table extends Base
 			}
 
 			$output .= '</table>'."\n";
-		} elseif ($this->size == 'large') {
+		} elseif ($this->type == 'large') {
 			$output = '<table class="large">'
 				. '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span>'.(empty($this->total) ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>'
 				. '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
 
 			foreach ($content as $row) {
 				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
+			}
+
+			$output .= '</table>'."\n";
+		} elseif ($this->type == 'topics') {
+			$output = '<table class="large">'
+				. '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span></th></tr>'
+				. '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
+			$prevDate = '';
+
+			foreach ($content as $row) {
+				$output .= '<tr><td class="v1">'.($row[1] != $prevDate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
+				$prevDate = $row[1];
+			}
+
+			$output .= '</table>'."\n";
+		} elseif ($this->type == 'URLs') {
+			$output = '<table class="large">'
+				. '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span></th></tr>'
+				. '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
+			$prevDate = '';
+
+			foreach ($content as $row) {
+				// TODO: <div> inside <a> doesn't validate! other way around breaks ellipsis..
+				$output .= '<tr><td class="v1">'.($row[1] != $prevDate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'"><div>'.$row[3].'</div></a></td></tr>';
+				$prevDate = $row[1];
 			}
 
 			$output .= '</table>'."\n";
