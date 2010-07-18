@@ -849,6 +849,63 @@ SET character_set_client = utf8;
 SET character_set_client = @saved_cs_client;
 
 --
+-- Temporary table structure for view `view_activity_by_day`
+--
+
+DROP TABLE IF EXISTS `view_activity_by_day`;
+/*!50001 DROP VIEW IF EXISTS `view_activity_by_day`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `view_activity_by_day` (
+  `RUID` int(10) unsigned,
+  `date` date,
+  `l_night` decimal(33,0),
+  `l_morning` decimal(33,0),
+  `l_afternoon` decimal(33,0),
+  `l_evening` decimal(33,0),
+  `l_total` decimal(33,0)
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `view_activity_by_month`
+--
+
+DROP TABLE IF EXISTS `view_activity_by_month`;
+/*!50001 DROP VIEW IF EXISTS `view_activity_by_month`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `view_activity_by_month` (
+  `RUID` int(10) unsigned,
+  `date` varchar(7),
+  `l_night` decimal(33,0),
+  `l_morning` decimal(33,0),
+  `l_afternoon` decimal(33,0),
+  `l_evening` decimal(33,0),
+  `l_total` decimal(33,0)
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `view_activity_by_year`
+--
+
+DROP TABLE IF EXISTS `view_activity_by_year`;
+/*!50001 DROP VIEW IF EXISTS `view_activity_by_year`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `view_activity_by_year` (
+  `RUID` int(10) unsigned,
+  `date` int(4),
+  `l_night` decimal(33,0),
+  `l_morning` decimal(33,0),
+  `l_afternoon` decimal(33,0),
+  `l_evening` decimal(33,0),
+  `l_total` decimal(33,0)
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Temporary table structure for view `view_events`
 --
 
@@ -1416,6 +1473,63 @@ CREATE TABLE `words` (
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
+-- Final view structure for view `view_activity_by_day`
+--
+
+/*!50001 DROP TABLE IF EXISTS `view_activity_by_day`*/;
+/*!50001 DROP VIEW IF EXISTS `view_activity_by_day`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
+/*!50001 VIEW `view_activity_by_day` AS select `user_status`.`RUID` AS `RUID`,`user_activity`.`date` AS `date`,sum(`user_activity`.`l_night`) AS `l_night`,sum(`user_activity`.`l_morning`) AS `l_morning`,sum(`user_activity`.`l_afternoon`) AS `l_afternoon`,sum(`user_activity`.`l_evening`) AS `l_evening`,sum(`user_activity`.`l_total`) AS `l_total` from (`user_activity` join `user_status` on((`user_activity`.`UID` = `user_status`.`UID`))) group by `user_status`.`RUID`,`user_activity`.`date` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `view_activity_by_month`
+--
+
+/*!50001 DROP TABLE IF EXISTS `view_activity_by_month`*/;
+/*!50001 DROP VIEW IF EXISTS `view_activity_by_month`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
+/*!50001 VIEW `view_activity_by_month` AS select `user_status`.`RUID` AS `RUID`,date_format(`user_activity`.`date`,'%Y-%m') AS `date`,sum(`user_activity`.`l_night`) AS `l_night`,sum(`user_activity`.`l_morning`) AS `l_morning`,sum(`user_activity`.`l_afternoon`) AS `l_afternoon`,sum(`user_activity`.`l_evening`) AS `l_evening`,sum(`user_activity`.`l_total`) AS `l_total` from (`user_activity` join `user_status` on((`user_activity`.`UID` = `user_status`.`UID`))) group by `user_status`.`RUID`,date_format(`user_activity`.`date`,'%Y-%m') */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `view_activity_by_year`
+--
+
+/*!50001 DROP TABLE IF EXISTS `view_activity_by_year`*/;
+/*!50001 DROP VIEW IF EXISTS `view_activity_by_year`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=CURRENT_USER SQL SECURITY DEFINER */
+/*!50001 VIEW `view_activity_by_year` AS select `user_status`.`RUID` AS `RUID`,year(`user_activity`.`date`) AS `date`,sum(`user_activity`.`l_night`) AS `l_night`,sum(`user_activity`.`l_morning`) AS `l_morning`,sum(`user_activity`.`l_afternoon`) AS `l_afternoon`,sum(`user_activity`.`l_evening`) AS `l_evening`,sum(`user_activity`.`l_total`) AS `l_total` from (`user_activity` join `user_status` on((`user_activity`.`UID` = `user_status`.`UID`))) group by `user_status`.`RUID`,year(`user_activity`.`date`) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `view_events`
 --
 
@@ -1880,4 +1994,4 @@ CREATE TABLE `words` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-07-16  2:57:12
+-- Dump completed on 2010-07-18  1:54:52
