@@ -58,6 +58,60 @@ CREATE TABLE `channel` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `mview_activity_by_day`
+--
+
+DROP TABLE IF EXISTS `mview_activity_by_day`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mview_activity_by_day` (
+  `RUID` int(10) unsigned NOT NULL DEFAULT '0',
+  `date` date NOT NULL DEFAULT '0000-00-00',
+  `l_night` decimal(33,0) DEFAULT NULL,
+  `l_morning` decimal(33,0) DEFAULT NULL,
+  `l_afternoon` decimal(33,0) DEFAULT NULL,
+  `l_evening` decimal(33,0) DEFAULT NULL,
+  `l_total` decimal(33,0) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mview_activity_by_month`
+--
+
+DROP TABLE IF EXISTS `mview_activity_by_month`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mview_activity_by_month` (
+  `RUID` int(10) unsigned NOT NULL DEFAULT '0',
+  `date` varchar(7) DEFAULT NULL,
+  `l_night` decimal(33,0) DEFAULT NULL,
+  `l_morning` decimal(33,0) DEFAULT NULL,
+  `l_afternoon` decimal(33,0) DEFAULT NULL,
+  `l_evening` decimal(33,0) DEFAULT NULL,
+  `l_total` decimal(33,0) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mview_activity_by_year`
+--
+
+DROP TABLE IF EXISTS `mview_activity_by_year`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mview_activity_by_year` (
+  `RUID` int(10) unsigned NOT NULL DEFAULT '0',
+  `date` int(4) DEFAULT NULL,
+  `l_night` decimal(33,0) DEFAULT NULL,
+  `l_morning` decimal(33,0) DEFAULT NULL,
+  `l_afternoon` decimal(33,0) DEFAULT NULL,
+  `l_evening` decimal(33,0) DEFAULT NULL,
+  `l_total` decimal(33,0) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `mview_ex_actions`
 --
 
@@ -1994,4 +2048,4 @@ CREATE TABLE `words` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-07-18  1:54:52
+-- Dump completed on 2010-07-18  3:45:31
