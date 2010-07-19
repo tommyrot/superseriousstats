@@ -119,18 +119,6 @@ final class HTML extends Base
 	}
 
 	/**
-	 * Get the case sensitive nick and status for a given UID.
-	 */
-	private function getDetails($UID)
-	{
-		$query = @mysqli_query($this->mysqli, 'SELECT `csNick`, `status` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE `user_details`.`UID` = '.$UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
-
-		return array('csNick' => $result->csNick
-			    ,'status' => $result->status);
-	}
-
-	/**
 	 * Generate the HTML page.
 	 */
 	public function makeHTML($mysqli)
