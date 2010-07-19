@@ -1136,7 +1136,7 @@ final class Table extends Base
 	public function makeTable($mysqli)
 	{
 		/**
-		 * Fetch data from db and fill our table with the results.
+		 * Fetch data from db.
 		 */
 		if (empty($this->query_main)) {
 			return;
@@ -1149,6 +1149,9 @@ final class Table extends Base
 			return;
 		}
 
+		/**
+		 * Put the results into $content[].
+		 */
 		$i = 0;
 
 		while ($result = mysqli_fetch_object($query)) {
@@ -1159,21 +1162,21 @@ final class Table extends Base
 			}
 
 			if ($this->type == 'small') {
-				$content[] = array($i, number_format($result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2));
+				$content[] = array($i, number_format((float) $result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2));
 			} elseif ($this->type == 'large') {
-				$content[] = array($i, number_format($result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
+				$content[] = array($i, number_format((float) $result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			} elseif ($this->type == 'topics' || $this->type == 'URLs') {
 				$content[] = array($i, date('j M \'y', strtotime($result->v1)), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			}
 		}
 
 		/**
-		 * Fill the remainder of the table with empty values.
+		 * Fill $content[] with empty values to reach desired amount of rows for display.
 		 */
 		for ($i = count($content) + 1; $i <= $this->rows; $i++) {
 			if ($this->type == 'small') {
 				$content[] = array('&nbsp;', '', '');
-			} elseif ($this->type == 'large') {
+			} else {
 				$content[] = array('&nbsp;', '', '', '');
 			}
 		}
@@ -1184,60 +1187,52 @@ final class Table extends Base
 		if (!empty($this->query_total)) {
 			$query = @mysqli_query($mysqli, $this->query_total) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
 			$result = mysqli_fetch_object($query);
-			$this->total = $result->total;
+			$this->total = (int) $result->total;
 		}
 
 		/**
-		 * Finally put everything together and return $output.
+		 * Finally put everything together and return the table.
 		 */
 		if ($this->type == 'small') {
-			$output = '<table class="small">'
-				. '<tr><th colspan="3"><span class="left">'.htmlspecialchars($this->head).'</span>'.(empty($this->total) ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>'
-				. '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td></tr>';
+			$tr1 = '<tr><th colspan="3"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
+			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td></tr>';
+			$trx = '';
+		} else {
+			$tr1 = '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
+			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
+			$trx = '';
+		}
 
+		if ($this->type == 'small') {
 			foreach ($content as $row) {
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
+				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
 			}
-
-			$output .= '</table>'."\n";
 		} elseif ($this->type == 'large') {
-			$output = '<table class="large">'
-				. '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span>'.(empty($this->total) ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>'
-				. '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
-
 			foreach ($content as $row) {
-				$output .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
+				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
 			}
-
-			$output .= '</table>'."\n";
 		} elseif ($this->type == 'topics') {
-			$output = '<table class="large">'
-				. '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span></th></tr>'
-				. '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
 			$prevDate = '';
 
 			foreach ($content as $row) {
-				$output .= '<tr><td class="v1">'.($row[1] != $prevDate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
+				$trx .= '<tr><td class="v1">'.($row[1] != $prevDate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
 				$prevDate = $row[1];
 			}
-
-			$output .= '</table>'."\n";
 		} elseif ($this->type == 'URLs') {
-			$output = '<table class="large">'
-				. '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span></th></tr>'
-				. '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
 			$prevDate = '';
 
 			foreach ($content as $row) {
 				// TODO: <div> inside <a> doesn't validate! other way around breaks ellipsis..
-				$output .= '<tr><td class="v1">'.($row[1] != $prevDate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'"><div>'.$row[3].'</div></a></td></tr>';
+				$trx .= '<tr><td class="v1">'.($row[1] != $prevDate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'"><div>'.$row[3].'</div></a></td></tr>';
 				$prevDate = $row[1];
 			}
-
-			$output .= '</table>'."\n";
 		}
 
-		return $output;
+		if ($this->type == 'small') {
+			return '<table class="small">'.$tr1.$tr2.$trx.'</table>'."\n";
+		} else {
+			return '<table class="large">'.$tr1.$tr2.$trx.'</table>'."\n";
+		}
 	}
 }
 
