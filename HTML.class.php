@@ -200,16 +200,10 @@ final class HTML extends Base
 		if ($this->sectionbits & 1) {
 			$this->output .= '<div class="head">Activity</div>'."\n";
 			$this->output .= $this->makeTable_MostActiveTimes();
-			$this->output .= $this->makeTable_Activity(array(
-				'type' => 'days',
-				'head' => 'Daily Activity'));
-			$this->output .= $this->makeTable_Activity(array(
-				'type' => 'months',
-				'head' => 'Monthly Activity'));
+			$this->output .= $this->makeTable_Activity('daily');
+			$this->output .= $this->makeTable_Activity('monthly');
 			$this->output .= $this->makeTable_MostActiveDays();
-			$this->output .= $this->makeTable_Activity(array(
-				'type' => 'years',
-				'head' => 'Yearly Activity'));
+			$this->output .= $this->makeTable_Activity('yearly');
 			$this->output .= $this->makeTable_MostActivePeople(array(
 				'type' => 'alltime',
 				'rows' => 30,
@@ -636,171 +630,139 @@ final class HTML extends Base
 	/**
 	 * Create activity tables.
 	 */
-	private function makeTable_Activity($settings)
+	private function makeTable_Activity($type)
 	{
-		switch ($settings['type']) {
-			case 'days':
-				$table_class = 'graph';
-				$cols = 24;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day_of_month - 24, $this->year)).'\'') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-				break;
-			case 'months':
-				$table_class = 'graph';
-				$cols = 24;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE DATE_FORMAT(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' GROUP BY YEAR(`date`), MONTH(`date`)') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-				break;
-			case 'years':
-				$table_class = 'yearly';
-				$cols = $this->years;
-				$query = @mysqli_query($this->mysqli, 'SELECT `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` GROUP BY YEAR(`date`)') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-				break;
+		if ($type == 'daily') {
+			$class = 'graph';
+			$cols = 24;
+
+			for ($i = 23; $i >= 0; $i--) {
+				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day_of_month - $i, $this->year));
+			}
+
+			$head = 'Daily Activity';
+			$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `channel` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day_of_month - 24, $this->year)).'\'') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		} elseif ($type == 'monthly') {
+			$class = 'graph';
+			$cols = 24;
+
+			for ($i = 23; $i >= 0; $i--) {
+				$dates[] = date('Y-m', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
+			}
+
+			$head = 'Monthly Activity';
+			$query = @mysqli_query($this->mysqli, 'SELECT DATE_FORMAT(`date`, \'%Y-%m\') AS `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` WHERE DATE_FORMAT(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' GROUP BY YEAR(`date`), MONTH(`date`)') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		} elseif ($type == 'yearly') {
+			$class = 'yearly';
+			$cols = $this->years;
+
+			for ($i = $this->years - 1; $i >= 0; $i--) {
+				$dates[] = $this->year - $i;
+			}
+
+			$head = 'Yearly Activity';
+			$query = @mysqli_query($this->mysqli, 'SELECT YEAR(`date`) AS `date`, SUM(`l_total`) AS `l_total`, SUM(`l_night`) AS `l_night`, SUM(`l_morning`) AS `l_morning`, SUM(`l_afternoon`) AS `l_afternoon`, SUM(`l_evening`) AS `l_evening` FROM `channel` GROUP BY YEAR(`date`)') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 		}
 
-		$sums = array('l_total', 'l_night', 'l_morning', 'l_afternoon', 'l_evening');
-		$l_total_high = 0;
-		$l_total_high_date = '';
+		$rows = mysqli_num_rows($query);
 
-		while ($result = mysqli_fetch_object($query)) {
-			switch ($settings['type']) {
-				case 'days':
-					$year = date('Y', strtotime($result->date));
-					$month = date('n', strtotime($result->date));
-					$day = date('j', strtotime($result->date));
-					break;
-				case 'months':
-					$year = date('Y', strtotime($result->date));
-					$month = date('n', strtotime($result->date));
-					$day = 1;
-					break;
-				case 'years':
-					$year = date('Y', strtotime($result->date));
-					$month = 1;
-					$day = 1;
-					break;
-			}
-
-			foreach ($sums as $sum) {
-				$activity[$year][$month][$day][$sum] = $result->$sum;
-			}
-
-			if ($result->l_total > $l_total_high) {
-				$l_total_high = $result->l_total;
-				$l_total_high_date = date('Y-m-d', mktime(0, 0, 0, $month, $day, $year));
-			}
-		}
-
-		if ($l_total_high == 0) {
+		if (empty($rows)) {
 			return;
 		}
 
-		$output = '<table class="'.$table_class.'"><tr><th colspan="'.$cols.'">'.htmlspecialchars($settings['head']).'</th></tr><tr class="bars">';
+		$high_date = '';
+		$high_value = 0;
 
-		for ($i = $cols - 1; $i >= 0; $i--) {
-			switch ($settings['type']) {
-				case 'days':
-					$year = date('Y', mktime(0, 0, 0, $this->month, $this->day_of_month - $i, $this->year));
-					$month = date('n', mktime(0, 0, 0, $this->month, $this->day_of_month - $i, $this->year));
-					$day = date('j', mktime(0, 0, 0, $this->month, $this->day_of_month - $i, $this->year));
-					break;
-				case 'months':
-					$year = date('Y', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
-					$month = date('n', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
-					$day = 1;
-					break;
-				case 'years':
-					$year = date('Y', mktime(0, 0, 0, 1, 1, $this->year - $i));
-					$month = 1;
-					$day = 1;
-					break;
+		while ($result = mysqli_fetch_object($query)) {
+			$l_night[$result->date] = (int) $result->l_night;
+			$l_morning[$result->date] = (int) $result->l_morning;
+			$l_afternoon[$result->date] = (int) $result->l_afternoon;
+			$l_evening[$result->date] = (int) $result->l_evening;
+			$l_total[$result->date] = $l_night[$result->date] + $l_morning[$result->date] + $l_afternoon[$result->date] + $l_evening[$result->date];
+
+			if ((int) $result->l_total > $high_value) {
+				$high_date = $result->date;
+				$high_value = (int) $result->l_total;
 			}
+		}
 
-			if (!empty($activity[$year][$month][$day]['l_total'])) {
-				$output .= '<td>';
+		$tr1 = '<tr><th colspan="'.$cols.'">'.$head.'</th></tr>';
+		$tr2 = '<tr class="bars">';
+		$tr3 = '<tr class="sub">';
 
-				if ($activity[$year][$month][$day]['l_total'] >= 999500) {
-					$output .= number_format(($activity[$year][$month][$day]['l_total'] / 1000000), 1).'M';
-				} elseif ($activity[$year][$month][$day]['l_total'] >= 10000) {
-					$output .= round($activity[$year][$month][$day]['l_total'] / 1000).'K';
-				} else {
-					$output .= $activity[$year][$month][$day]['l_total'];
-				}
+		//$output = '<table class="'.$table_class.'">';
 
-				if ($activity[$year][$month][$day]['l_evening'] != 0) {
-					$l_evening_height = round(($activity[$year][$month][$day]['l_evening'] / $l_total_high) * 100);
-
-					if ($l_evening_height != 0) {
-						$output .= '<img src="'.$this->bar_evening.'" height="'.$l_evening_height.'" alt="" title="" />';
-					}
-				}
-
-				if ($activity[$year][$month][$day]['l_afternoon'] != 0) {
-					$l_afternoon_height = round(($activity[$year][$month][$day]['l_afternoon'] / $l_total_high) * 100);
-
-					if ($l_afternoon_height != 0) {
-						$output .= '<img src="'.$this->bar_afternoon.'" height="'.$l_afternoon_height.'" alt="" title="" />';
-					}
-				}
-
-				if ($activity[$year][$month][$day]['l_morning'] != 0) {
-					$l_morning_height = round(($activity[$year][$month][$day]['l_morning'] / $l_total_high) * 100);
-
-					if ($l_morning_height != 0) {
-						$output .= '<img src="'.$this->bar_morning.'" height="'.$l_morning_height.'" alt="" title="" />';
-					}
-				}
-
-				if ($activity[$year][$month][$day]['l_night'] != 0) {
-					$l_night_height = round(($activity[$year][$month][$day]['l_night'] / $l_total_high) * 100);
-
-					if ($l_night_height != 0) {
-						$output .= '<img src="'.$this->bar_night.'" height="'.$l_night_height.'" alt="" title="" />';
-					}
-				}
-
-				$output .= '</td>';
+		foreach ($dates as $date) {
+			if ($l_total[$date] == 0) {
+				$tr2 .= '<td><span class="grey">n/a</span></td>';
 			} else {
-				$output .= '<td><span class="grey">n/a</span></td>';
+				if ($l_total[$date] >= 999500) {
+					$tr2 .= '<td>'.number_format($l_total[$date] / 1000000, 1).'M';
+				} elseif ($l_total[$date] >= 10000) {
+					$tr2 .= '<td>'.round($l_total[$date] / 1000).'K';
+				} else {
+					$tr2 .= '<td>'.$l_total[$date];
+				}
+
+				if ($l_evening[$date] != 0) {
+					$height = round(($l_evening[$date] / $high_value) * 100);
+
+					if ($height != 0) {
+						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="" />';
+					}
+				}
+
+				if ($l_afternoon[$date] != 0) {
+					$height = round(($l_afternoon[$date] / $high_value) * 100);
+
+					if ($height != 0) {
+						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="" />';
+					}
+				}
+
+				if ($l_morning[$date] != 0) {
+					$height = round(($l_morning[$date] / $high_value) * 100);
+
+					if ($height != 0) {
+						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="" />';
+					}
+				}
+
+				if ($l_night[$date] != 0) {
+					$height = round(($l_night[$date] / $high_value) * 100);
+
+					if ($height != 0) {
+						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="" />';
+					}
+				}
+
+				$tr2 .= '</td>';
+				
+				if ($type == 'daily') {
+					if ($high_date == $date) {
+						$tr3 .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+					} else {
+						$tr3 .= '<td>'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+					}
+				} elseif ($type == 'monthly') {
+					if ($high_date == $date) {
+						$tr3 .= '<td class="bold">'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
+					} else {
+						$tr3 .= '<td>'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
+					}
+				} elseif ($type == 'yearly') {
+					if ($high_date == $date) {
+						$tr3 .= '<td class="bold">'.date('\'y', strtotime($date.'-01-01')).'</td>';
+					} else {
+						$tr3 .= '<td>'.date('\'y', strtotime($date.'-01-01')).'</td>';
+					}
+				}
 			}
 		}
 
-		$output .= '</tr><tr class="sub">';
-
-		for ($i = $cols - 1; $i >= 0; $i--) {
-			switch ($settings['type']) {
-				case 'days':
-					$date = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day_of_month - $i, $this->year));
-
-					if ($l_total_high_date == $date) {
-						$output .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
-					} else {
-						$output .= '<td>'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
-					}
-
-					break;
-				case 'months':
-					$date = date('Y-m-d', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
-
-					if ($l_total_high_date == $date) {
-						$output .= '<td class="bold">'.date('M', strtotime($date)).'<br />'.date('\'y', strtotime($date)).'</td>';
-					} else {
-						$output .= '<td>'.date('M', strtotime($date)).'<br />'.date('\'y', strtotime($date)).'</td>';
-					}
-
-					break;
-				case 'years':
-					$date = date('Y-m-d', mktime(0, 0, 0, 1, 1, $this->year - $i));
-
-					if ($l_total_high_date == $date) {
-						$output .= '<td class="bold">'.date('\'y', strtotime($date)).'</td>';
-					} else {
-						$output .= '<td>'.date('\'y', strtotime($date)).'</td>';
-					}
-
-					break;
-			}
-		}
-
-		return $output.'</tr></table>'."\n";
+		$tr2 .= '</tr>';
+		$tr3 .= '</tr>';
+		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	/**
@@ -809,6 +771,12 @@ final class HTML extends Base
 	private function makeTable_MostActiveDays()
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_mon_night`) AS `l_mon_night`, SUM(`l_mon_morning`) AS `l_mon_morning`, SUM(`l_mon_afternoon`) AS `l_mon_afternoon`, SUM(`l_mon_evening`) AS `l_mon_evening`, SUM(`l_tue_night`) AS `l_tue_night`, SUM(`l_tue_morning`) AS `l_tue_morning`, SUM(`l_tue_afternoon`) AS `l_tue_afternoon`, SUM(`l_tue_evening`) AS `l_tue_evening`, SUM(`l_wed_night`) AS `l_wed_night`, SUM(`l_wed_morning`) AS `l_wed_morning`, SUM(`l_wed_afternoon`) AS `l_wed_afternoon`, SUM(`l_wed_evening`) AS `l_wed_evening`, SUM(`l_thu_night`) AS `l_thu_night`, SUM(`l_thu_morning`) AS `l_thu_morning`, SUM(`l_thu_afternoon`) AS `l_thu_afternoon`, SUM(`l_thu_evening`) AS `l_thu_evening`, SUM(`l_fri_night`) AS `l_fri_night`, SUM(`l_fri_morning`) AS `l_fri_morning`, SUM(`l_fri_afternoon`) AS `l_fri_afternoon`, SUM(`l_fri_evening`) AS `l_fri_evening`, SUM(`l_sat_night`) AS `l_sat_night`, SUM(`l_sat_morning`) AS `l_sat_morning`, SUM(`l_sat_afternoon`) AS `l_sat_afternoon`, SUM(`l_sat_evening`) AS `l_sat_evening`, SUM(`l_sun_night`) AS `l_sun_night`, SUM(`l_sun_morning`) AS `l_sun_morning`, SUM(`l_sun_afternoon`) AS `l_sun_afternoon`, SUM(`l_sun_evening`) AS `l_sun_evening` FROM `query_lines`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (empty($rows)) {
+			return;
+		}
+
 		$result = mysqli_fetch_object($query);
 		$high_day = '';
 		$high_value = 0;
@@ -980,6 +948,12 @@ final class HTML extends Base
 	private function makeTable_MostActiveTimes()
 	{
 		$query = @mysqli_query($this->mysqli, 'SELECT SUM(`l_00`) AS `l_00`, SUM(`l_01`) AS `l_01`, SUM(`l_02`) AS `l_02`, SUM(`l_03`) AS `l_03`, SUM(`l_04`) AS `l_04`, SUM(`l_05`) AS `l_05`, SUM(`l_06`) AS `l_06`, SUM(`l_07`) AS `l_07`, SUM(`l_08`) AS `l_08`, SUM(`l_09`) AS `l_09`, SUM(`l_10`) AS `l_10`, SUM(`l_11`) AS `l_11`, SUM(`l_12`) AS `l_12`, SUM(`l_13`) AS `l_13`, SUM(`l_14`) AS `l_14`, SUM(`l_15`) AS `l_15`, SUM(`l_16`) AS `l_16`, SUM(`l_17`) AS `l_17`, SUM(`l_18`) AS `l_18`, SUM(`l_19`) AS `l_19`, SUM(`l_20`) AS `l_20`, SUM(`l_21`) AS `l_21`, SUM(`l_22`) AS `l_22`, SUM(`l_23`) AS `l_23` FROM `channel`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (empty($rows)) {
+			return;
+		}
+
 		$result = mysqli_fetch_object($query);
 		$high_key = '';
 		$high_value = 0;
