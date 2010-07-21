@@ -949,7 +949,6 @@ final class HTML extends Base
 
 			if ((int) $v == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
-				$tr3 .= '<td>'.$hour.'h</td>';
 			} else {
 				$perc = ((int) $v / $this->l_total) * 100;
 
@@ -974,12 +973,12 @@ final class HTML extends Base
 				}
 
 				$tr2 .= '</td>';
-			}
 
-			if ($high_key == $k) {
-				$tr3 .= '<td class="bold">'.$hour.'h</td>';
-			} else {
-				$tr3 .= '<td>'.$hour.'h</td>';
+				if ($high_key == $k) {
+					$tr3 .= '<td class="bold">'.$hour.'h</td>';
+				} else {
+					$tr3 .= '<td>'.$hour.'h</td>';
+				}
 			}
 		}
 
