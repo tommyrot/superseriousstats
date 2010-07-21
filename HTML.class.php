@@ -708,25 +708,25 @@ final class HTML extends Base
 				}
 
 				$tr2 .= '</td>';
+			}
 
-				if ($type == 'daily') {
-					if ($high_date == $date) {
-						$tr3 .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
-					} else {
-						$tr3 .= '<td>'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
-					}
-				} elseif ($type == 'monthly') {
-					if ($high_date == $date) {
-						$tr3 .= '<td class="bold">'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
-					} else {
-						$tr3 .= '<td>'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
-					}
-				} elseif ($type == 'yearly') {
-					if ($high_date == $date) {
-						$tr3 .= '<td class="bold">'.date('\'y', strtotime($date.'-01-01')).'</td>';
-					} else {
-						$tr3 .= '<td>'.date('\'y', strtotime($date.'-01-01')).'</td>';
-					}
+			if ($type == 'daily') {
+				if ($high_date == $date) {
+					$tr3 .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+				} else {
+					$tr3 .= '<td>'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+				}
+			} elseif ($type == 'monthly') {
+				if ($high_date == $date) {
+					$tr3 .= '<td class="bold">'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
+				} else {
+					$tr3 .= '<td>'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
+				}
+			} elseif ($type == 'yearly') {
+				if ($high_date == $date) {
+					$tr3 .= '<td class="bold">'.date('\'y', strtotime($date.'-01-01')).'</td>';
+				} else {
+					$tr3 .= '<td>'.date('\'y', strtotime($date.'-01-01')).'</td>';
 				}
 			}
 		}
@@ -795,12 +795,12 @@ final class HTML extends Base
 				}
 
 				$tr2 .= '</td>';
+			}
 
-				if ($high_day == $day) {
-					$tr3 .= '<td class="bold">'.ucfirst($day).'</td>';
-				} else {
-					$tr3 .= '<td>'.ucfirst($day).'</td>';
-				}
+			if ($high_day == $day) {
+				$tr3 .= '<td class="bold">'.ucfirst($day).'</td>';
+			} else {
+				$tr3 .= '<td>'.ucfirst($day).'</td>';
 			}
 		}
 
@@ -930,11 +930,9 @@ final class HTML extends Base
 		$high_value = 0;
 
 		foreach ($result as $k => $v) {
-			$v = (int) $v;
-
-			if ($v > $high_value) {
+			if ((int) $v > $high_value) {
 				$high_key = $k;
-				$high_value = $v;
+				$high_value = (int) $v;
 			}
 		}
 
@@ -943,19 +941,17 @@ final class HTML extends Base
 		$tr3 = '<tr class="sub">';
 
 		foreach ($result as $k => $v) {
-			$v = (int) $v;
-
 			if (substr($k, -2, 1) == '0') {
 				$hour = (int) substr($k, -1);
 			} else {
 				$hour = (int) substr($k, -2);
 			}
 
-			if ($v == 0) {
+			if ((int) $v == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
 				$tr3 .= '<td>'.$hour.'h</td>';
 			} else {
-				$perc = ($v / $this->l_total) * 100;
+				$perc = ((int) $v / $this->l_total) * 100;
 
 				if ($perc >= 9.95) {
 					$tr2 .= '<td>'.round($perc).'%';
@@ -963,27 +959,27 @@ final class HTML extends Base
 					$tr2 .= '<td>'.number_format($perc, 1).'%';
 				}
 
-				$height = round(($v / $high_value) * 100);
+				$height = round(((int) $v / $high_value) * 100);
 
 				if ($height != 0) {
 					if ($hour >= 0 && $hour <= 5) {
-						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format($v).'" />';
+						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $v).'" />';
 					} elseif ($hour >= 6 && $hour <= 11) {
-						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format($v).'" />';
+						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $v).'" />';
 					} elseif ($hour >= 12 && $hour <= 17) {
-						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format($v).'" />';
+						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $v).'" />';
 					} elseif ($hour >= 18 && $hour <= 23) {
-						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format($v).'" />';
+						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $v).'" />';
 					}
 				}
 
 				$tr2 .= '</td>';
+			}
 
-				if ($high_key == $k) {
-					$tr3 .= '<td class="bold">'.$hour.'h</td>';
-				} else {
-					$tr3 .= '<td>'.$hour.'h</td>';
-				}
+			if ($high_key == $k) {
+				$tr3 .= '<td class="bold">'.$hour.'h</td>';
+			} else {
+				$tr3 .= '<td>'.$hour.'h</td>';
 			}
 		}
 
