@@ -1015,16 +1015,13 @@ final class HTML extends Base
 			}
 		}
 
-
-		//$output = '<table class="tod">';
-		'';
 		$tr1 = '<tr><th colspan="5">Activity, by Time of Day</th></tr>';
 		$tr2 = '<tr><td class="pos"></td><td class="k">Nightcrawlers<br />0h - 5h</td><td class="k">Early Birds<br />6h - 11h</td><td class="k">Afternoon Shift<br />12h - 17h</td><td class="k">Evening Chatters<br />18h - 23h</td></tr>';
 		$tr3 = '';
 
 		for ($i = 1; $i <= $rows; $i++) {
 			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
-				$tr3 .= '<tr><td class="pos">'.$i.'</td><td class="v"></td><td class="v"></td><td class="v"></td><td class="v"></td></tr>';
+				break;
 			} else {
 				$tr3 .= '<tr><td class="pos">'.$i.'</td>';
 
