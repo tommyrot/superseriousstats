@@ -303,7 +303,7 @@ final class Nick extends Base
 			$createdQuery = $this->createUpdateQuery($result, array('UID', 'csNick'));
 
 			if (!is_null($createdQuery)) {
-				@mysqli_query($this->mysqli, 'UPDATE `user_details` SET'.$createdQuery.' WHERE `UID` = '.$this->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+				@mysqli_query($this->mysqli, 'UPDATE `user_details` SET `csNick` = \''.mysqli_real_escape_string($this->mysqli, $this->csNick).'\','.$createdQuery.' WHERE `UID` = '.$this->UID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			}
 		}
 
