@@ -690,8 +690,6 @@ final class HTML extends Base
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
-		//$output = '<table class="'.$table_class.'">';
-
 		foreach ($dates as $date) {
 			if ($l_total[$date] == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
