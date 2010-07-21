@@ -17,9 +17,7 @@
  */
 
 /**
- * Class for creating the statspage.
- * Note: data is always one day old (we are generating stats from data up to and including yesterday).
- * ^^^ NO LONGER TRUE!
+ * Class for creating the main statspage.
  */
 final class HTML extends Base
 {
@@ -702,40 +700,20 @@ final class HTML extends Base
 					$tr2 .= '<td>'.$l_total[$date];
 				}
 
-				if ($l_evening[$date] != 0) {
-					$height = round(($l_evening[$date] / $high_value) * 100);
+				$times = array('evening', 'afternoon', 'morning', 'night');
 
-					if ($height != 0) {
-						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="" />';
-					}
-				}
+				foreach ($times as $time) {
+					if (${'l_'.$time}[$date] != 0) {
+						$height = round((${'l_'.$time}[$date] / $high_value) * 100);
 
-				if ($l_afternoon[$date] != 0) {
-					$height = round(($l_afternoon[$date] / $high_value) * 100);
-
-					if ($height != 0) {
-						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="" />';
-					}
-				}
-
-				if ($l_morning[$date] != 0) {
-					$height = round(($l_morning[$date] / $high_value) * 100);
-
-					if ($height != 0) {
-						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="" />';
-					}
-				}
-
-				if ($l_night[$date] != 0) {
-					$height = round(($l_night[$date] / $high_value) * 100);
-
-					if ($height != 0) {
-						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="" />';
+						if ($height != 0) {
+							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
+						}
 					}
 				}
 
 				$tr2 .= '</td>';
-				
+
 				if ($type == 'daily') {
 					if ($high_date == $date) {
 						$tr3 .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
@@ -813,10 +791,10 @@ final class HTML extends Base
 
 				foreach ($times as $time) {
 					if (${'l_'.$time}[$day] != 0) {
-						${'l_'.$time.'_height'} = round((${'l_'.$time}[$day] / $high_value) * 100);
+						$height = round((${'l_'.$time}[$day] / $high_value) * 100);
 
-						if (${'l_'.$time.'_height'} != 0) {
-							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.${'l_'.$time.'_height'}.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						if ($height != 0) {
+							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="'.number_format($l_total[$day]).'" />';
 						}
 					}
 				}
