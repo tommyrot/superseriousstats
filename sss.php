@@ -227,7 +227,7 @@ final class sss extends Base
 			/**
 			 * If the stored number of parsed lines is equal to the amount of lines in the logfile we can skip writing to db and performing maintenance.
 			 */
-			if ($this->writeData && $parser->getValue('lineNum') > (int) $result->lines_parsed) {
+			if ($this->writeData && $parser->getValue('lineNum') > $firstLine) {
 				$parser->writeData($this->mysqli);
 				@mysqli_query($this->mysqli, 'INSERT INTO `parse_history` SET `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\', `lines_parsed` = '.$parser->getValue('lineNum').' ON DUPLICATE KEY UPDATE `lines_parsed` = '.$parser->getValue('lineNum')) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 				$needMaintenance = TRUE;
