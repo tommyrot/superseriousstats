@@ -46,6 +46,7 @@ abstract class Base
 	final protected function createInsertQuery($columns)
 	{
 		$changes = FALSE;
+		$query = '';
 
 		foreach ($columns as $c) {
 			if (is_int($this->$c) && $this->$c != 0) {
@@ -70,6 +71,7 @@ abstract class Base
 	final protected function createUpdateQuery($columns, $exclude)
 	{
 		$changes = FALSE;
+		$query = '';
 
 		foreach ($columns as $c => $v) {
 			if (in_array($c, $exclude)) {
