@@ -180,7 +180,6 @@ final class HTML extends Base
 			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="ellipsis.css" />'."\n"
-			      . '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n"
 			      . '<style type="text/css">'."\n".'  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n".'</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"

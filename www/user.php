@@ -139,7 +139,6 @@ final class User
 			      . '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
 			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
-			      . '<!--[if IE]>'."\n".'  <link rel="stylesheet" type="text/css" href="iefix.css" />'."\n".'<![endif]-->'."\n"
 			      . '<style type="text/css">'."\n".'  table.yearly {width:'.(2 + ($this->years * 34)).'px}'."\n".'</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"
