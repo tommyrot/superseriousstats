@@ -34,7 +34,7 @@ final class User
 	private $db_port = 3306;
 	private $db_user = 'user';
 	private $db_pass = 'pass';
-	private $db_name = 'superseriousstats';
+	private $db_name = 'sss';
 	private $debug = FALSE; //only set to TRUE when troubleshooting
 	private $stylesheet = 'default.css';
 	private $timezone = 'Europe/Amsterdam';
