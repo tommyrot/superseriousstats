@@ -97,7 +97,7 @@ final class HTML extends Base
 	 */
 	private function dateTime2DaysAgo($dateTime)
 	{
-		$daysAgo = round((strtotime($this->date_lastLogParsed) - strtotime(substr($dateTime, 0, 10))) / 86400);
+		$daysAgo = round((strtotime('today') - strtotime(substr($dateTime, 0, 10))) / 86400);
 
 		if (($daysAgo / 365) >= 1) {
 			$daysAgo = str_replace('.0', '', number_format($daysAgo / 365, 1));
