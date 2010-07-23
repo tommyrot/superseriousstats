@@ -139,7 +139,9 @@ final class User
 			      . '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
 			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
-			      . '<style type="text/css">'."\n".'  table.yearly {width:'.(2 + ($this->years * 34)).'px}'."\n".'</style>'."\n"
+			      . '<style type="text/css">'."\n"
+			      . '  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n"
+			      . '</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"
 			      . '<div class="info">'.htmlspecialchars($this->csNick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstSeen)).' and last seen on '.date('M j, Y', strtotime($this->lastSeen)).'.<br />'
