@@ -180,7 +180,9 @@ final class HTML extends Base
 			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="ellipsis.css" />'."\n"
-			      . '<style type="text/css">'."\n".'  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n".'</style>'."\n"
+			      . '<style type="text/css">'."\n"
+			      . '  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n"
+			      . '</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"
 			      . '<div class="info">'.htmlspecialchars($this->channel).', seriously.<br /><br />'.number_format($this->days).' day'.($this->days > 1 ? 's logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)) : ' logged on '.date('M j, Y', strtotime($this->date_first))).'.<br />'
@@ -1103,7 +1105,6 @@ final class Table extends Base
 			$prevDate = '';
 
 			foreach ($content as $row) {
-				// TODO: <div> inside <a> doesn't validate! other way around breaks ellipsis..
 				$trx .= '<tr><td class="v1">'.($row[1] != $prevDate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'"><div>'.$row[3].'</div></a></td></tr>';
 				$prevDate = $row[1];
 			}
