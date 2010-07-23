@@ -573,7 +573,7 @@ final class HTML extends Base
 			$t->setValue('key1', 'Date');
 			$t->setValue('key2', 'User');
 			$t->setValue('key3', 'URL');
-			$t->setValue('minRows', $this->minRows);
+			$t->setValue('minRows', 100);
 			$t->setValue('query_main', 'SELECT `lastUsed` AS `v1`, `csNick` AS `v2`, `csURL` AS `v3` FROM `user_URLs` JOIN `user_status` ON `user_URLs`.`UID` = `user_status`.`UID` JOIN `user_details` ON `user_details`.`UID` = `user_status`.`RUID` ORDER BY `v1` DESC LIMIT 100');
 			$t->setValue('rows', 100);
 			$t->setValue('type', 'URLs');
