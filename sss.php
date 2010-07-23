@@ -183,7 +183,8 @@ final class sss extends Base
 			$date = date('Y-m-d', strtotime($date));
 
 			/**
-			 * If current log is older than the last log parsed we skip it. We do process the log with the same date as the last log parsed as it may contain new lines that haven't been processed yet.
+			 * Logs must be parsed in chronological order. If current log is older than the last log parsed we skip it.
+			 * We do process the log with the same date as the last log parsed as it may contain new lines that haven't been processed yet.
 			 */
 			if (!is_null($date_lastLogParsed) && strtotime($date) < strtotime($date_lastLogParsed)) {
 				continue;
@@ -194,7 +195,7 @@ final class sss extends Base
 			$parser->setValue('date', $date);
 
 			/**
-			 * Get the streak history, we assume that logs are being parsed in chronological order.
+			 * Get the streak history.
 			 */
 			$query = @mysqli_query($this->mysqli, 'SELECT * FROM `streak_history`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query);
