@@ -54,25 +54,25 @@ final class Parser_Irssi extends Parser
 		/**
 		 * "Normal" lines.
 		 */
-		if (preg_match('/^(?<time>\d{2}:\d{2}) <[\x20~&@%+!*](?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+		if (preg_match('/^(?<time>\d{2}:\d{2})(:\d{2})? <[\x20~&@%+!*](?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->setNormal($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 
 		/**
 		 * "Join" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) \[~?(?<host>\S+)\] has joined [#&!+]\S+$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2})(:\d{2})? -!- (?<nick>\S+) \[~?(?<host>\S+)\] has joined [#&!+]\S+$/', $line, $matches)) {
 			$this->setJoin($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Quit" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) \[~?(?<host>\S+)\] has quit \[.*\]$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2})(:\d{2})? -!- (?<nick>\S+) \[~?(?<host>\S+)\] has quit \[.*\]$/', $line, $matches)) {
 			$this->setQuit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (ServerMode|mode)\/[#&!+]\S+ \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)(, \S+)*$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2})(:\d{2})? -!- (ServerMode|mode)\/[#&!+]\S+ \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)(, \S+)*$/', $line, $matches)) {
 			$nicks = explode(' ', $matches['nicks']);
 			$modeNum = 0;
 
@@ -90,7 +90,7 @@ final class Parser_Irssi extends Parser
 		/**
 		 * "Action" and "slap" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) \* (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2})(:\d{2})? \* (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
 			if (!empty($matches['slap'])) {
 				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : NULL));
 			}
@@ -100,25 +100,25 @@ final class Parser_Irssi extends Parser
 		/**
 		 * "Nickchange" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick1>\S+) is now known as (?<nick2>\S+)$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2})(:\d{2})? -!- (?<nick1>\S+) is now known as (?<nick2>\S+)$/', $line, $matches)) {
 			$this->setNickchange($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2']);
 
 		/**
 		 * "Part" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) \[~?(?<host>\S+)\] has left [#&!+]\S+ \[.*\]$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2})(:\d{2})? -!- (?<nick>\S+) \[~?(?<host>\S+)\] has left [#&!+]\S+ \[.*\]$/', $line, $matches)) {
 			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Topic" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<nick>\S+) changed the topic of [#&!+]\S+ to: (?<line>.+)$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2})(:\d{2})? -!- (?<nick>\S+) changed the topic of [#&!+]\S+ to: (?<line>.+)$/', $line, $matches)) {
 			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], NULL, $matches['line']);
 
 		/**
 		 * "Kick" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}) -!- (?<line>(?<nick2>\S+) was kicked from [#&!+]\S+ by (?<nick1>\S+) \[.*\])$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2})(:\d{2})? -!- (?<line>(?<nick2>\S+) was kicked from [#&!+]\S+ by (?<nick1>\S+) \[.*\])$/', $line, $matches)) {
 			$this->setKick($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2'], $matches['line']);
 
 		/**
