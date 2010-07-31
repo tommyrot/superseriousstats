@@ -58,25 +58,25 @@ final class Parser_Eggdrop extends Parser
 		/**
 		 * "Normal" lines.
 		 */
-		if (preg_match('/^\[(?<time>\d{2}:\d{2})\] <(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+		if (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] <(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->setNormal($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 
 		/**
 		 * "Join" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] (?<nick>\S+) \(~?(?<host>\S+)\) joined [#&!+]\S+\.$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] (?<nick>\S+) \(~?(?<host>\S+)\) joined [#&!+]\S+\.$/', $line, $matches)) {
 			$this->setJoin($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Quit" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] (?<nick>\S+) \(~?(?<host>\S+)\) left irc:( .+)?$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] (?<nick>\S+) \(~?(?<host>\S+)\) left irc:( .+)?$/', $line, $matches)) {
 			$this->setQuit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] [#&!+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+?)(!(~?(?<host>\S+))?)?$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] [#&!+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+?)(!(~?(?<host>\S+))?)?$/', $line, $matches)) {
 			$nicks = explode(' ', $matches['nicks']);
 			$modeNum = 0;
 
@@ -94,7 +94,7 @@ final class Parser_Eggdrop extends Parser
 		/**
 		 * "Action" and "slap" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Action: (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] Action: (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
 			if (!empty($matches['slap'])) {
 				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : NULL));
 			}
@@ -104,32 +104,32 @@ final class Parser_Eggdrop extends Parser
 		/**
 		 * "Nickchange" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Nick change: (?<nick1>\S+) -> (?<nick2>\S+)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] Nick change: (?<nick1>\S+) -> (?<nick2>\S+)$/', $line, $matches)) {
 			$this->setNickchange($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2']);
 
 		/**
 		 * "Part" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] (?<nick>\S+) \(~?(?<host>\S+)\) left [#&!+]\S+( \(.*\))?\.$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] (?<nick>\S+) \(~?(?<host>\S+)\) left [#&!+]\S+( \(.*\))?\.$/', $line, $matches)) {
 			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Topic" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Topic changed on [#&!+]\S+ by (?<nick>\S+?)(!(~?(?<host>\S+))?)?: (?<line>.+)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] Topic changed on [#&!+]\S+ by (?<nick>\S+?)(!(~?(?<host>\S+))?)?: (?<line>.+)$/', $line, $matches)) {
 			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], (!empty($matches['host']) ? $matches['host'] : NULL), $matches['line']);
 
 		/**
 		 * "Kick" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] (?<line>(?<nick2>\S+) kicked from [#&!+]\S+ by (?<nick1>\S+):( .+)?)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] (?<line>(?<nick2>\S+) kicked from [#&!+]\S+ by (?<nick1>\S+):( .+)?)$/', $line, $matches)) {
 			$this->setKick($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2'], $matches['line']);
 
 		/**
 		 * Eggdrop logs repeated lines (case insensitive matches) in the format: "Last message repeated NUM time(s).".
 		 * We process the previous line NUM times.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})\] Last message repeated (?<num>\d+) time\(s\)\.$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] Last message repeated (?<num>\d+) time\(s\)\.$/', $line, $matches)) {
 			/**
 			 * Prevent the parser from repeating a preceding repeat line.
 			 * Also, skip processing if we find a repeat line on the first line of the logfile. We can't look back across files.
