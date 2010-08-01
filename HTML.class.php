@@ -520,6 +520,17 @@ final class HTML extends Base
 		 */
 		if ($this->sectionbits & 16) {
 			$output = '';
+
+			$t = new Table('Moodiest People');
+			$t->setValue('key1', 'Smileys');
+			$t->setValue('key2', 'User');
+			$t->setValue('minRows', $this->minRows);
+			$t->setValue('query_main', 'SELECT `s_01` + `s_02` + `s_03` + `s_04` + `s_05` + `s_06` + `s_07` + `s_08` + `s_09` + `s_10` + `s_11` + `s_12` + `s_13` + `s_14` + `s_15` + `s_16` + `s_17` + `s_18` + `s_19` AS `v1`, `csNick` AS `v2` FROM `query_smileys` JOIN `user_details` ON `query_smileys`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_smileys`.`RUID` = `user_status`.`UID` WHERE `status` != 3 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
+			$t->setValue('query_total', 'SELECT SUM(`s_01`) + SUM(`s_02`) + SUM(`s_03`) + SUM(`s_04`) + SUM(`s_05`) + SUM(`s_06`) + SUM(`s_07`) + SUM(`s_08`) + SUM(`s_09`) + SUM(`s_10`) + SUM(`s_11`) + SUM(`s_12`) + SUM(`s_13`) + SUM(`s_14`) + SUM(`s_15`) + SUM(`s_16`) + SUM(`s_17`) + SUM(`s_18`) + SUM(`s_19`) AS `total` FROM `query_smileys`');
+			$output .= $t->makeTable($this->mysqli);
+
+			$query = @mysqli_query($this->mysqli, 'SELECT SUM(`s_01`) AS `s_01`, SUM(`s_02`) AS `s_02`, SUM(`s_03`) AS `s_03`, SUM(`s_04`) AS `s_04`, SUM(`s_05`) AS `s_05`, SUM(`s_06`) AS `s_06`, SUM(`s_07`) AS `s_07`, SUM(`s_08`) AS `s_08`, SUM(`s_09`) AS `s_09`, SUM(`s_10`) AS `s_10`, SUM(`s_11`) AS `s_11`, SUM(`s_12`) AS `s_12`, SUM(`s_13`) AS `s_13`, SUM(`s_14`) AS `s_14`, SUM(`s_15`) AS `s_15`, SUM(`s_16`) AS `s_16`, SUM(`s_17`) AS `s_17`, SUM(`s_18`) AS `s_18`, SUM(`s_19`) AS `s_19` FROM `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$result = mysqli_fetch_object($query);
 			$smileys = array(
 				'Big Cheerful Smile' => array('=]', 's_01'),
 				'Cheerful Smile' => array('=)', 's_02'),
@@ -540,9 +551,6 @@ final class HTML extends Base
 				'Happy' => array(':)', 's_17'),
 				'Sad' => array(':(', 's_18'),
 				'Cheer' => array('\\o/', 's_19'));
-
-			$query = @mysqli_query($this->mysqli, 'SELECT SUM(`s_01`) AS `s_01`, SUM(`s_02`) AS `s_02`, SUM(`s_03`) AS `s_03`, SUM(`s_04`) AS `s_04`, SUM(`s_05`) AS `s_05`, SUM(`s_06`) AS `s_06`, SUM(`s_07`) AS `s_07`, SUM(`s_08`) AS `s_08`, SUM(`s_09`) AS `s_09`, SUM(`s_10`) AS `s_10`, SUM(`s_11`) AS `s_11`, SUM(`s_12`) AS `s_12`, SUM(`s_13`) AS `s_13`, SUM(`s_14`) AS `s_14`, SUM(`s_15`) AS `s_15`, SUM(`s_16`) AS `s_16`, SUM(`s_17`) AS `s_17`, SUM(`s_18`) AS `s_18`, SUM(`s_19`) AS `s_19` FROM `query_smileys`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
-			$result = mysqli_fetch_object($query);
 
 			foreach ($smileys as $key => $value) {
 				if ($result->$value[1] < $this->minLines) {
