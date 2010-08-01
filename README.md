@@ -5,29 +5,29 @@ A small and efficient program written in PHP for creating a Web page with statis
 
 Suitable for high volume IRC channels and large log archives. Once you have superseriousstats running it is relatively easy to set up your own IRC services (e.g. bots) to interact with the database and provide last seen information and many other statistics directly in your channel.
 
-superseriousstats is released under the [ISC license] (http://opensource.org/licenses/isc-license.txt).
+superseriousstats is released under the [ISC license](http://opensource.org/licenses/isc-license.txt).
 
 Source
 ------
 
-The source code is available at [GitHub] (http://github.com/tommyrot/superseriousstats).
+The source code is available at [GitHub](http://github.com/tommyrot/superseriousstats).
 
     git clone git://github.com/tommyrot/superseriousstats.git
 
 Releases
 --------
 
-After significant changes have been made there follows a release. Releases are tested and the best option for obtaining a working version. Download the latest version [here] (http://code.google.com/p/superseriousstats/downloads/list).
+After significant changes have been made there follows a release. Releases are tested and the best option for obtaining a working version. Download the latest version [here](http://code.google.com/p/superseriousstats/downloads/list).
 
 Demo
 ----
 
-You can view a [live demo] (http://sss.dutnie.nl) made for the superseriousstats support channel. It is a low volume channel which updates once a day.
+You can view a [live demo](http://sss.dutnie.nl) made for the superseriousstats support channel. It is a low volume channel which updates once a day.
 
 Documentation
 =============
 
-All documentation can be found on the [Wiki] (http://code.google.com/p/superseriousstats/w/list).
+All documentation can be found on the [Wiki](http://code.google.com/p/superseriousstats/w/list).
 
 Contributing
 ============
@@ -37,7 +37,7 @@ We are glad to help you get the program running. We are also happy to hear of an
 Issues
 ------
 
-Bug reports and feature requests can be filed [here] (http://code.google.com/p/superseriousstats/issues/list). Keep it real.
+Bug reports and feature requests can be filed [here](http://code.google.com/p/superseriousstats/issues/list). Keep it real.
 
 Logfile formats
 ---------------
