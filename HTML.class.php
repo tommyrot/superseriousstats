@@ -667,7 +667,7 @@ final class HTML extends Base
 		$tr3 = '<tr class="sub">';
 
 		foreach ($dates as $date) {
-			if (empty($l_total[$date])) {
+			if (!array_key_exists($date, $l_total) || $l_total[$date] == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
 			} else {
 				if ($l_total[$date] >= 999500) {

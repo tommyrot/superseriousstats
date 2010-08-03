@@ -304,7 +304,7 @@ final class User
 		$tr3 = '<tr class="sub">';
 
 		foreach ($dates as $date) {
-			if ($l_total[$date] == 0) {
+			if (!array_key_exists($date, $l_total) || $l_total[$date] == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
 			} else {
 				if ($l_total[$date] >= 999500) {
