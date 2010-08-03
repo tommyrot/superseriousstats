@@ -48,7 +48,7 @@ body {
 }
 
 /* Global table styling */
-.graph,.mad,.yearly,.map,.tod,.small,.large {
+.graph,.mad,.yearly,.map,.nqsap,.tod,.small,.large {
 	background-color:#EEE;
 	border-collapse:separate;
 	border-color:#666;
@@ -153,6 +153,40 @@ body {
 .map td.pos {
 	text-align:center;
 	width:36px;
+}
+
+/* Specific table styling: not quite so active people */
+.nqsap {
+	text-align:left;
+	width:818px;
+}
+.nqsap th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
+	text-align:left;
+}
+.nqsap td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+.nqsap td.k1,.nqsap td.k2,.nqsap td.pos {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.nqsap td.k1,.nqsap td.v1 {
+	padding-right:2px;
+	text-align:right;
+	width:53px;
+}
+.nqsap td.k2,.nqsap td.v2 {
+	padding-left:2px;
+	width:123px;
+}
+.nqsap td.pos {
+	text-align:center;
+	width:24px;
 }
 
 /* Specific table styling: time of day */

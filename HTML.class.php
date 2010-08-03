@@ -204,6 +204,7 @@ final class HTML extends Base
 			$this->output .= $this->makeTable_MostActiveDays();
 			$this->output .= $this->makeTable_Activity('yearly');
 			$this->output .= $this->makeTable_MostActivePeople('alltime', 30);
+			$this->output .= $this->makeTable_NotQuiteSoActivePeople(30, 40);
 			$this->output .= $this->makeTable_MostActivePeople('year', 10);
 			$this->output .= $this->makeTable_MostActivePeople('month', 10);
 			$this->output .= $this->makeTable_TimeOfDay(10);
@@ -944,6 +945,57 @@ final class HTML extends Base
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
 		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
+	/**
+	 * Create not quite so active people table.
+	 * $row_count must be a multiple of 4 so we get a clean table without gaps.
+	 */
+	private function makeTable_NotQuiteSoActivePeople($offset, $row_count)
+	{
+		$query = mysqli_query($this->mysqli, 'SELECT `query_lines`.`RUID`, `csNick`, `l_total` FROM `query_lines` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` JOIN `user_details` ON `user_details`.`UID` = `user_status`.`RUID` WHERE STATUS != 3 AND `l_total` != 0 ORDER BY `l_total` DESC LIMIT '.$offset.', '.$row_count) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (empty($rows) || $rows < $row_count) {
+			return;
+		}
+
+		$rows_per_column = $row_count / 4;
+		$current_column = 1;
+		$current_row = 1;
+
+		while ($result = mysqli_fetch_object($query)) {
+			if ($current_row > $rows_per_column) {
+				$current_column++;
+				$current_row = 1;
+
+				if ($current_column > 4) {
+					break;
+				}
+			}
+
+			${'column'.$current_column}[$current_row] = array($result->RUID, $result->csNick, (int) $result->l_total);
+			$current_row++;
+		}
+
+		$query = @mysqli_query($this->mysqli, 'SELECT COUNT(*) AS `total` FROM `query_lines` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE STATUS != 3') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$result = mysqli_fetch_object($query);
+		$total = (int) $result->total - $offset - $row_count;
+		$tr1 = '<tr><th colspan="12"><span class="left">Not Quite so Active People, Alltime</span>'.($total == 0 ? '' : '<span class="right">'.number_format($total).' people had even less to say..</span>').'</th></tr>';
+		$tr2 = '<tr><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td></tr>';
+		$trx = '';
+
+		for ($i = 1; $i <= $rows_per_column; $i++) {
+			$trx .= '<tr>';
+
+			for ($j = 1; $j <= 4; $j++) {
+				$trx .= '<td class="v1">'.number_format(${'column'.$j}[$i][2]).'</td><td class="pos">'.($offset + ($j > 1 ? ($j - 1) * $rows_per_column : 0) + $i).'</td><td class="v2">'.($this->userstats ? '<a href="user.php?uid='.${'column'.$j}[$i][0].'">'.htmlspecialchars(${'column'.$j}[$i][1]).'</a>' : htmlspecialchars(${'column'.$j}[$i][1])).'</td>';
+			}
+
+			$trx .= '</tr>';
+		}
+
+		return '<table class="nqsap">'.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
 	/**
