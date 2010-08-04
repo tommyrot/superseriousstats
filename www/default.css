@@ -22,7 +22,7 @@ body {
 	background-color:#EEE;
 	color:#666;
 	float:left;
-	font-family:verdana, sans-serif;
+	font-family:verdana,sans-serif;
 	font-size:12px;
 	font-weight:bold;
 	margin:15px 22px 7px 0;
@@ -32,7 +32,7 @@ body {
 .info {
 	color:#666;
 	float:left;
-	font-family:verdana, sans-serif;
+	font-family:verdana,sans-serif;
 	font-size:12px;
 	font-weight:bold;
 	margin:15px 22px 7px 0;
@@ -48,7 +48,7 @@ body {
 }
 
 /* Global table styling */
-.graph,.mad,.yearly,.map,.nqsap,.tod,.small,.large {
+.graph,.mad,.yearly,.map,.nqsap,.tod,.small,.medium,.large {
 	background-color:#EEE;
 	border-collapse:separate;
 	border-color:#666;
@@ -57,7 +57,7 @@ body {
 	border-width:3px 1px 1px 1px;
 	color:#333;
 	float:left;
-	font-family:verdana, sans-serif;
+	font-family:verdana,sans-serif;
 	font-size:10px;
 	margin:15px 22px 7px 0;
 }
@@ -79,7 +79,7 @@ body {
 	width:240px;
 }
 .yearly {
-	/* Variable width, specified in HTML */
+	/* Variable width specified in HTML */
 }
 .graph th,.mad th,.yearly th {
 	color:#666;
@@ -222,31 +222,34 @@ body {
 	width:28px;
 }
 
-/* Specific table styling: small, large */
-.small,.large {
+/* Specific table styling: small, medium, large */
+.small,.medium,.large {
 	text-align:left;
 }
 .small {
 	width:258px;
 }
+.medium {
+	width:538px;
+}
 .large {
 	width:818px;
 }
-.small th,.large th {
+.small th,.medium th,.large th {
 	color:#666;
 	font-weight:bold;
 	padding:1px 3px 1px 3px;
 }
-.small td,.large td {
+.small td,.medium td,.large td {
 	padding:1px 0 1px 0;
 	vertical-align:top;
 }
-.small td.k1,.small td.k2,.small td.pos,.large td.k1,.large td.k2,.large td.k3,.large td.pos {
+.small td.k1,.small td.k2,.small td.pos,.medium td.k1,.medium td.k2,.medium td.pos,.large td.k1,.large td.k2,.large td.k3,.large td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.small td.k1,.small td.v1,.large td.k1,.large td.v1 {
+.small td.k1,.small td.v1,.medium td.k1,.medium td.v1,.large td.k1,.large td.v1 {
 	padding-right:2px;
 	text-align:right;
 	width:78px;
@@ -255,10 +258,14 @@ body {
 	padding-left:2px;
 	width:138px;
 }
+.medium td.k2,.medium td.v2 {
+	padding-left:2px;
+	width:418px;
+}
 .large td.k3,.large td.v3 {
 	width:560px;
 }
-.small td.pos,.large td.pos {
+.small td.pos,.medium td.pos,.large td.pos {
 	text-align:center;
 	width:36px;
 }

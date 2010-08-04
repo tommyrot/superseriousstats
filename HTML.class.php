@@ -578,6 +578,15 @@ final class HTML extends Base
 		if ($this->sectionbits & 32) {
 			$output = '';
 
+			$t = new Table('Most Referenced Domains');
+			$t->setValue('key1', 'References');
+			$t->setValue('key2', 'Domain');
+			$t->setValue('minRows', 10);
+			$t->setValue('query_main', 'SELECT SUM(`total`) AS `v1`, SUBSTRING_INDEX(`csURL`, \'/\', 3) AS `v2` FROM `user_URLs` GROUP BY `v2` ORDER BY `v1` DESC LIMIT 15');
+			$t->setValue('rows', 10);
+			$t->setValue('type', 'domains');
+			$output .= $t->makeTable($this->mysqli);
+
 			$t = new Table('Most Recent URLs');
 			$t->setValue('key1', 'Date');
 			$t->setValue('key2', 'User');
@@ -1077,7 +1086,7 @@ final class HTML extends Base
 }
 
 /**
- * Class for creating a small or large generic table.
+ * Class for creating a small, medium or large generic table.
  */
 final class Table extends Base
 {
@@ -1127,7 +1136,7 @@ final class Table extends Base
 				break;
 			}
 
-			if ($this->type == 'small') {
+			if ($this->type == 'small' || $this->type == 'medium' || $this->type == 'domains') {
 				$content[] = array($i, number_format((float) $result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2));
 			} elseif ($this->type == 'large') {
 				$content[] = array($i, number_format((float) $result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
@@ -1140,9 +1149,9 @@ final class Table extends Base
 		 * Fill $content[] with empty values to reach desired amount of rows for display.
 		 */
 		for ($i = count($content) + 1; $i <= $this->rows; $i++) {
-			if ($this->type == 'small') {
+			if ($this->type == 'small' || $this->type == 'medium' || $this->type == 'domains') {
 				$content[] = array('&nbsp;', '', '');
-			} else {
+			} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'URLs') {
 				$content[] = array('&nbsp;', '', '', '');
 			}
 		}
@@ -1159,23 +1168,30 @@ final class Table extends Base
 		/**
 		 * Finally put everything together and return the table.
 		 */
-		if ($this->type == 'small') {
+		if ($this->type == 'small' || $this->type == 'medium' || $this->type == 'domains') {
 			$tr1 = '<tr><th colspan="3"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td></tr>';
 			$trx = '';
-		} else {
+		} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'URLs') {
 			$tr1 = '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
 			$trx = '';
 		}
 
-		if ($this->type == 'small') {
+		if ($this->type == 'small' || $this->type == 'medium') {
 			foreach ($content as $row) {
 				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
 			}
 		} elseif ($this->type == 'large') {
 			foreach ($content as $row) {
 				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
+			}
+		} elseif ($this->type == 'domains') {
+			$prevDate = '';
+
+			foreach ($content as $row) {
+				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2"><a href="'.$row[2].'">'.$row[2].'</a></td></tr>';
+				$prevDate = $row[1];
 			}
 		} elseif ($this->type == 'topics') {
 			$prevDate = '';
@@ -1195,7 +1211,9 @@ final class Table extends Base
 
 		if ($this->type == 'small') {
 			return '<table class="small">'.$tr1.$tr2.$trx.'</table>'."\n";
-		} else {
+		} elseif ($this->type == 'medium'  || $this->type == 'domains') {
+			return '<table class="medium">'.$tr1.$tr2.$trx.'</table>'."\n";
+		} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'URLs') {
 			return '<table class="large">'.$tr1.$tr2.$trx.'</table>'."\n";
 		}
 	}
