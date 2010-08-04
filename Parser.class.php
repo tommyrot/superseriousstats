@@ -29,7 +29,7 @@ abstract class Parser extends Base
 	private $nick_maxLen = 255;
 	private $nick_minLen = 1;
 	private $quote_prefLen = 25;
-	private $wordTracking = FALSE;
+	private $wordTracking = TRUE;
 
 	/**
 	 * Variables used in database table "channel".
