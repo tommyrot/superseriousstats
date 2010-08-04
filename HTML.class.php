@@ -587,6 +587,14 @@ final class HTML extends Base
 			$t->setValue('type', 'domains');
 			$output .= $t->makeTable($this->mysqli);
 
+			$t = new Table('Most Referenced TLDs');
+			$t->setValue('key1', 'References');
+			$t->setValue('key2', 'TLD');
+			$t->setValue('minRows', 10);
+			$t->setValue('query_main', 'SELECT COUNT(*) AS `v1`, CONCAT(\'.\', SUBSTRING_INDEX(SUBSTRING_INDEX(`csURL`, \'/\', 3), \'.\', -1)) AS `v2` FROM `user_URLs` GROUP BY `v2` HAVING `v2` REGEXP \'^\.[a-z]+$\' ORDER BY `v1` DESC, `v2` ASC LIMIT 15');
+			$t->setValue('rows', 10);
+			$output .= $t->makeTable($this->mysqli);
+
 			$t = new Table('Most Recent URLs');
 			$t->setValue('key1', 'Date');
 			$t->setValue('key2', 'User');
