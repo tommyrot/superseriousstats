@@ -321,28 +321,26 @@ final class HTML extends Base
 			$t->setValue('type', 'large');
 			$output .= $t->makeTable($this->mysqli);
 
-			$t = new Table('Most URLs, by Users');
-			$t->setValue('key1', 'URLs');
-			$t->setValue('key2', 'User');
-			$t->setValue('minRows', $this->minRows);
-			$t->setValue('query_main', 'SELECT `URLs` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `URLs` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
-			$t->setValue('query_total', 'SELECT SUM(`URLs`) AS `total` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3');
-			$output .= $t->makeTable($this->mysqli);
-
-			$t = new Table('Most URLs, by Bots');
-			$t->setValue('key1', 'URLs');
-			$t->setValue('key2', 'Bot');
-			$t->setValue('minRows', $this->minRows);
-			$t->setValue('query_main', 'SELECT `URLs` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` = 3 AND `URLs` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
-			$t->setValue('query_total', 'SELECT SUM(`URLs`) AS `total` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` = 3');
-			$output .= $t->makeTable($this->mysqli);
-
 			$t = new Table('Most Monologues');
 			$t->setValue('key1', 'Monologues');
 			$t->setValue('key2', 'User');
 			$t->setValue('minRows', $this->minRows);
 			$t->setValue('query_main', 'SELECT `monologues` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `monologues` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
 			$t->setValue('query_total', 'SELECT SUM(`monologues`) AS `total` FROM `query_lines`');
+			$output .= $t->makeTable($this->mysqli);
+
+			$t = new Table('Longest Monologue');
+			$t->setValue('key1', 'Lines');
+			$t->setValue('key2', 'User');
+			$t->setValue('minRows', $this->minRows);
+			$t->setValue('query_main', 'SELECT `topMonologue` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `topMonologue` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
+			$output .= $t->makeTable($this->mysqli);
+
+			$t = new Table('Most Mentioned Nicks');
+			$t->setValue('key1', 'Mentioned');
+			$t->setValue('key2', 'Nick');
+			$t->setValue('minRows', $this->minRows);
+			$t->setValue('query_main', 'SELECT `total` AS `v1`, `csNick` AS `v2` FROM `user_details` JOIN `words` ON `user_details`.`csNick` = `words`.`word` JOIN `user_activity` ON `user_details`.`UID` = `user_activity`.`UID` GROUP BY `user_details`.`UID` HAVING SUM(`l_total`) >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
 			$output .= $t->makeTable($this->mysqli);
 
 			$t = new Table('Most Slaps, Given');
@@ -361,11 +359,11 @@ final class HTML extends Base
 			$t->setValue('query_total', 'SELECT SUM(`slapped`) AS `total` FROM `query_lines`');
 			$output .= $t->makeTable($this->mysqli);
 
-			$t = new Table('Longest Monologue');
+			$t = new Table('Most Chatty Bots');
 			$t->setValue('key1', 'Lines');
-			$t->setValue('key2', 'User');
+			$t->setValue('key2', 'Bot');
 			$t->setValue('minRows', $this->minRows);
-			$t->setValue('query_main', 'SELECT `topMonologue` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `topMonologue` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
+			$t->setValue('query_main', 'SELECT `l_total` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` = 3 AND `l_total` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
 			$output .= $t->makeTable($this->mysqli);
 
 			$t = new Table('Most Actions');
@@ -377,20 +375,6 @@ final class HTML extends Base
 			$t->setValue('percentage', TRUE);
 			$t->setValue('query_main', 'SELECT (`actions` / `l_total`) * 100 AS `v1`, `csNick` AS `v2`, `ex_actions` AS `v3` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `actions` != 0 AND `l_total` >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
 			$t->setValue('type', 'large');
-			$output .= $t->makeTable($this->mysqli);
-
-			$t = new Table('Most Mentioned Nicks');
-			$t->setValue('key1', 'Mentioned');
-			$t->setValue('key2', 'Nick');
-			$t->setValue('minRows', $this->minRows);
-			$t->setValue('query_main', 'SELECT `total` AS `v1`, `csNick` AS `v2` FROM `user_details` JOIN `words` ON `user_details`.`csNick` = `words`.`word` JOIN `user_activity` ON `user_details`.`UID` = `user_activity`.`UID` GROUP BY `user_details`.`UID` HAVING SUM(`l_total`) >= '.$this->minLines.' ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
-			$output .= $t->makeTable($this->mysqli);
-
-			$t = new Table('Most Chatty Bots');
-			$t->setValue('key1', 'Lines');
-			$t->setValue('key2', 'Bot');
-			$t->setValue('minRows', $this->minRows);
-			$t->setValue('query_main', 'SELECT `l_total` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` = 3 AND `l_total` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
 			$output .= $t->makeTable($this->mysqli);
 
 			if (!empty($output)) {
@@ -603,6 +587,22 @@ final class HTML extends Base
 			$t->setValue('query_main', 'SELECT `lastUsed` AS `v1`, `csNick` AS `v2`, `csURL` AS `v3` FROM `user_URLs` JOIN `user_status` ON `user_URLs`.`UID` = `user_status`.`UID` JOIN `user_details` ON `user_details`.`UID` = `user_status`.`RUID` ORDER BY `v1` DESC LIMIT 100');
 			$t->setValue('rows', 100);
 			$t->setValue('type', 'URLs');
+			$output .= $t->makeTable($this->mysqli);
+
+			$t = new Table('Most URLs, by Users');
+			$t->setValue('key1', 'URLs');
+			$t->setValue('key2', 'User');
+			$t->setValue('minRows', $this->minRows);
+			$t->setValue('query_main', 'SELECT `URLs` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `URLs` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
+			$t->setValue('query_total', 'SELECT SUM(`URLs`) AS `total` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` != 3');
+			$output .= $t->makeTable($this->mysqli);
+
+			$t = new Table('Most URLs, by Bots');
+			$t->setValue('key1', 'URLs');
+			$t->setValue('key2', 'Bot');
+			$t->setValue('minRows', $this->minRows);
+			$t->setValue('query_main', 'SELECT `URLs` AS `v1`, `csNick` AS `v2` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` = 3 AND `URLs` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
+			$t->setValue('query_total', 'SELECT SUM(`URLs`) AS `total` FROM `query_lines` JOIN `user_details` ON `query_lines`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`UID` WHERE `status` = 3');
 			$output .= $t->makeTable($this->mysqli);
 
 			if (!empty($output)) {
