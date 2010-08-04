@@ -563,7 +563,7 @@ final class HTML extends Base
 				$t->setValue('key2', 'User');
 				$t->setValue('minRows', $this->minRows);
 				$t->setValue('query_main', 'SELECT `'.$value[1].'` AS `v1`, `csNick` AS `v2` FROM `query_smileys` JOIN `user_details` ON `query_smileys`.`RUID` = `user_details`.`UID` JOIN `user_status` ON `query_smileys`.`RUID` = `user_status`.`UID` WHERE `status` != 3 AND `'.$value[1].'` != 0 ORDER BY `v1` DESC, `v2` ASC LIMIT 5');
-				$t->setValue('total', $result->$value[1]);
+				$t->setValue('total', (int) $result->$value[1]);
 				$output .= $t->makeTable($this->mysqli);
 			}
 
@@ -607,7 +607,7 @@ final class HTML extends Base
 				$t->setValue('key2', 'Word');
 				$t->setValue('minRows', $this->minRows);
 				$t->setValue('query_main', 'SELECT `total` AS `v1`, `word` AS `v2` FROM `words` where LENGTH(`word`) = '.$result->length.' ORDER BY `total` DESC, `word` ASC LIMIT 5');
-				$t->setValue('total', $result->total);
+				$t->setValue('total', (int) $result->total);
 				$output .= $t->makeTable($this->mysqli);
 			}
 
