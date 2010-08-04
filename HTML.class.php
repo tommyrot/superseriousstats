@@ -32,7 +32,7 @@ final class HTML extends Base
 	private $channel = '#yourchan';
 	private $minLines = 500;
 	private $minRows = 3;
-	private $sectionbits = 63;
+	private $sectionbits = 127;
 	private $stylesheet = 'default.css';
 	private $userstats = FALSE;
 
@@ -590,6 +590,29 @@ final class HTML extends Base
 
 			if (!empty($output)) {
 				$this->output .= '<div class="head">URLs</div>'."\n".$output;
+			}
+		}
+
+		/**
+		 * Words section
+		 */
+		if ($this->sectionbits & 64) {
+			$output = '';
+
+			$query = @mysqli_query($this->mysqli, 'SELECT LENGTH(`word`) AS `length`, COUNT(*) AS `total` FROM `words` GROUP BY `length` ORDER BY `total` DESC, `length` DESC LIMIT 9') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+
+			while ($result = mysqli_fetch_object($query)) {
+				$t = new Table('Words of '.$result->length.' Characters');
+				$t->setValue('key1', 'Times Used');
+				$t->setValue('key2', 'Word');
+				$t->setValue('minRows', $this->minRows);
+				$t->setValue('query_main', 'SELECT `total` AS `v1`, `word` AS `v2` FROM `words` where LENGTH(`word`) = '.$result->length.' ORDER BY `total` DESC, `word` ASC LIMIT 5');
+				$t->setValue('total', $result->total);
+				$output .= $t->makeTable($this->mysqli);
+			}
+
+			if (!empty($output)) {
+				$this->output .= '<div class="head">Words</div>'."\n".$output;
 			}
 		}
 
