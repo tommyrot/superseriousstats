@@ -112,7 +112,9 @@ final class Parser_mIRC6 extends Parser
 		 * "Topic" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] \* (?<nick>\S+) changes topic to \'(?<line>.+)\'$/', $line, $matches)) {
-			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], NULL, $matches['line']);
+			if ($matches['line'] != ' ') {
+				$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], NULL, $matches['line']);
+			}
 
 		/**
 		 * "Kick" lines.
