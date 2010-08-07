@@ -96,7 +96,7 @@ final class User
 		$result = mysqli_fetch_object($query);
 		$this->RUID = $result->RUID;
 		$this->csNick = $result->csNick;
-		$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen`, `l_total`, (`l_total` / `activeDays`) AS `l_avg` FROM `query_lines` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`RUID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `query_lines`.`RUID` = '.$this->RUID.' GROUP BY `query_lines`.`RUID`') or $this->output(NULL, mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen`, `l_total`, (`l_total` / `activeDays`) AS `l_avg` FROM `query_lines` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`RUID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `query_lines`.`RUID` = '.$this->RUID.' AND `firstSeen` != '0000-00-00 00:00:00' GROUP BY `query_lines`.`RUID`') or $this->output(NULL, mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 
 		if ($result->l_total == 0) {
