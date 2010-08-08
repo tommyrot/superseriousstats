@@ -294,9 +294,9 @@ final class sss extends base
 			} elseif ($type == 'int') {
 				$this->$key = (int) $this->settings[$key];
 			} elseif ($type == 'bool') {
-				if (strtoupper($this->settings[$key]) == 'true') {
+				if (strtolower($this->settings[$key]) == 'true') {
 					$this->$key = true;
-				} elseif (strtoupper($this->settings[$key]) == 'false') {
+				} elseif (strtolower($this->settings[$key]) == 'false') {
 					$this->$key = false;
 				}
 			}

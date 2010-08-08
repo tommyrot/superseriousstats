@@ -80,9 +80,9 @@ final class html extends base
 			} elseif ($type == 'int') {
 				$this->$key = (int) $settings[$key];
 			} elseif ($type == 'bool') {
-				if (strtoupper($settings[$key]) == 'true') {
+				if (strtolower($settings[$key]) == 'true') {
 					$this->$key = true;
-				} elseif (strtoupper($settings[$key]) == 'false') {
+				} elseif (strtolower($settings[$key]) == 'false') {
 					$this->$key = false;
 				}
 			}
