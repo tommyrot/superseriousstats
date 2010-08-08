@@ -121,13 +121,12 @@ final class html extends base
 		$this->mysqli = $mysqli;
 		$this->output('notice', 'make_html(): creating statspage');
 		$query = @mysqli_query($this->mysqli, 'select min(`date`) as `date_first`, max(`date`) as `date_last`, count(*) as `days`, avg(`l_total`) as `l_avg`, sum(`l_total`) as `l_total` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
+		$result = mysqli_fetch_object($query);
 
-		if (empty($rows)) {
+		if ((int) $result->days == 0) {
 			$this->output('critical', 'make_html(): database is empty');
 		}
 
-		$result = mysqli_fetch_object($query);
 		$this->date_first = $result->date_first;
 		$this->date_last = $result->date_last;
 		$this->days = $result->days;
