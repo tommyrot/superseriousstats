@@ -19,7 +19,7 @@
 /**
  * Class with common functions.
  */
-abstract class Base
+abstract class base
 {
 	/**
 	 * Default settings for this script, can be overridden in the config file.
@@ -30,31 +30,28 @@ abstract class Base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $prevOutput = array();
+	private $prevoutput = array();
 
-	/**
-	 * Add a value to a variable.
-	 */
-	final public function addValue($var, $value)
+	final public function add_value($var, $value)
 	{
 		$this->$var += $value;
 	}
 
 	/**
-	 * Create part of the MySQL query containing new data.
+	 * Create part of the mysql insert query containing new data.
 	 */
-	final protected function createInsertQuery($columns)
+	final protected function create_insert_query($columns)
 	{
-		$changes = FALSE;
+		$changes = false;
 		$query = '';
 
 		foreach ($columns as $c) {
 			if (is_int($this->$c) && $this->$c != 0) {
 				$query .= ' `'.$c.'` = '.$this->$c.',';
-				$changes = TRUE;
+				$changes = true;
 			} elseif (is_string($this->$c) && $this->$c != '') {
 				$query .= ' `'.$c.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$c).'\',';
-				$changes = TRUE;
+				$changes = true;
 			}
 		}
 
@@ -66,11 +63,11 @@ abstract class Base
 	}
 
 	/**
-	 * Create part of the MySQL query containing updated data.
+	 * Create part of the mysql update query containing new data.
 	 */
-	final protected function createUpdateQuery($columns, $exclude)
+	final protected function create_update_query($columns, $exclude)
 	{
-		$changes = FALSE;
+		$changes = false;
 		$query = '';
 
 		foreach ($columns as $c => $v) {
@@ -78,26 +75,26 @@ abstract class Base
 				continue;
 			}
 
-			if ($c == 'firstSeen' && $v != '0000-00-00 00:00:00' && strtotime($this->firstSeen) >= strtotime($v)) {
+			if ($c == 'firstseen' && $v != '0000-00-00 00:00:00' && strtotime($this->firstseen) >= strtotime($v)) {
 				continue;
-			} elseif ($c == 'firstUsed' && $v != '0000-00-00 00:00:00' && strtotime($this->firstUsed) >= strtotime($v)) {
+			} elseif ($c == 'firstused' && $v != '0000-00-00 00:00:00' && strtotime($this->firstused) >= strtotime($v)) {
 				continue;
-			} elseif ($c == 'lastSeen' && $v != '0000-00-00 00:00:00' && strtotime($this->lastSeen) <= strtotime($v)) {
+			} elseif ($c == 'lastseen' && $v != '0000-00-00 00:00:00' && strtotime($this->lastseen) <= strtotime($v)) {
 				continue;
-			} elseif ($c == 'lastUsed' && $v != '0000-00-00 00:00:00' && strtotime($this->lastUsed) <= strtotime($v)) {
+			} elseif ($c == 'lastused' && $v != '0000-00-00 00:00:00' && strtotime($this->lastused) <= strtotime($v)) {
 				continue;
-			} elseif ($c == 'lastTalked' && $v != '0000-00-00 00:00:00' && strtotime($this->lastTalked) <= strtotime($v)) {
+			} elseif ($c == 'lasttalked' && $v != '0000-00-00 00:00:00' && strtotime($this->lasttalked) <= strtotime($v)) {
 				continue;
-			} elseif ($c == 'topMonologue' && $this->topMonologue <= $v) {
+			} elseif ($c == 'topmonologue' && $this->topmonologue <= $v) {
 				continue;
 			}
 
 			if (is_int($this->$c) && $this->$c != 0) {
 				$query .= ' `'.$c.'` = '.($v + $this->$c).',';
-				$changes = TRUE;
+				$changes = true;
 			} elseif (is_string($this->$c) && $this->$c != '') {
 				$query .= ' `'.$c.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$c).'\',';
-				$changes = TRUE;
+				$changes = true;
 			}
 		}
 
@@ -108,10 +105,7 @@ abstract class Base
 		}
 	}
 
-	/**
-	 * Get the value of a variable.
-	 */
-	final public function getValue($var)
+	final public function get_value($var)
 	{
 		return $this->$var;
 	}
@@ -124,49 +118,46 @@ abstract class Base
 		/**
 		 * Don't output the same thing twice, like mode errors and repeated lines.
 		 */
-		if (in_array($msg, $this->prevOutput)) {
+		if (in_array($msg, $this->prevoutput)) {
 			return;
 		}
 
-		$this->prevOutput[] = $msg;
-		$dateTime = date('M d H:i:s');
+		$this->prevoutput[] = $msg;
+		$datetime = date('M d H:i:s');
 
-		if (substr($dateTime, 4, 1) === '0') {
-			$dateTime = substr_replace($dateTime, ' ', 4, 1);
+		if (substr($datetime, 4, 1) === '0') {
+			$datetime = substr_replace($datetime, ' ', 4, 1);
 		}
 
 		switch ($type) {
 			case 'debug':
 				if ($this->outputbits & 8) {
-					echo $dateTime.' [debug] '.$msg."\n";
+					echo $datetime.' [debug] '.$msg."\n";
 				}
 
 				break;
 			case 'notice':
 				if ($this->outputbits & 4) {
-					echo $dateTime.' [notice] '.$msg."\n";
+					echo $datetime.' [notice] '.$msg."\n";
 				}
 
 				break;
 			case 'warning':
 				if ($this->outputbits & 2) {
-					echo $dateTime.' [warning] '.$msg."\n";
+					echo $datetime.' [warning] '.$msg."\n";
 				}
 
 				break;
 			case 'critical':
 				if ($this->outputbits & 1) {
-					echo $dateTime.' [critical] '.$msg."\n";
+					echo $datetime.' [critical] '.$msg."\n";
 				}
 
 				exit;
 		}
 	}
 
-	/**
-	 * Set the value of a variable.
-	 */
-	final public function setValue($var, $value)
+	final public function set_value($var, $value)
 	{
 		$this->$var = $value;
 	}

@@ -19,31 +19,25 @@
 /**
  * Class for handling word data.
  */
-final class Word extends Base
+final class word extends base
 {
 	/**
-	 * Variables used in database table "user_words".
+	 * Variables that shouldn't be tampered with.
 	 */
-	protected $word = '';
 	protected $total = 0;
+	protected $word = '';
 
-	/**
-	 * Constructor.
-	 */
 	public function __construct($word)
 	{
 		$this->word = $word;
 	}
 
-	/**
-	 * Write word data to the database.
-	 */
-	public function writeData($mysqli)
+	public function write_data($mysqli)
 	{
 		/**
 		 * Write data to database table "words".
 		 */
-		@mysqli_query($mysqli, 'INSERT INTO `words` SET `word` = \''.mysqli_real_escape_string($mysqli, $this->word).'\', `total` = '.$this->total.' ON DUPLICATE KEY UPDATE `total` = `total` + '.$this->total) or $this->output('critical', 'MySQLi: '.mysqli_error($mysqli));
+		@mysqli_query($mysqli, 'insert into `words` set `word` = \''.mysqli_real_escape_string($mysqli, $this->word).'\', `total` = '.$this->total.' on duplicate key update `total` = `total` + '.$this->total) or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
 	}
 }
 

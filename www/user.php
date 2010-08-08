@@ -7,11 +7,11 @@
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * THE SOFTWARE IS PROVIDED "AS IS" and THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * MERCHANTABILITY and FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * WHATSOEVER RESULTING from LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
@@ -19,7 +19,7 @@
 /**
  * Class for creating userstats.
  */
-final class User
+final class user
 {
 	/**
 	 * Make sure to **EDIT** the following settings to correspond with
@@ -35,7 +35,7 @@ final class User
 	private $db_user = 'user';
 	private $db_pass = 'pass';
 	private $db_name = 'sss';
-	private $debug = FALSE; //only set to TRUE when troubleshooting
+	private $debug = false; //only set to true when troubleshooting
 	private $stylesheet = 'default.css';
 	private $timezone = 'Europe/Amsterdam';
 	/**
@@ -43,30 +43,28 @@ final class User
 	 */
 
 	/**
-	 * The following variables shouldn't be tampered with.
+	 * Variables that shouldn't be tampered with.
 	 */
-        private $RUID = 0;
-        private $UID = 0;
-        private $csNick = '';
-        private $date_lastLogParsed = '';
+        private $csnick = '';
+        private $date_lastlogparsed = '';
         private $date_max = '';
-        private $firstSeen = '';
+	private $dayofmonth = '';
+        private $firstseen = '';
         private $l_avg = 0;
         private $l_max = 0;
         private $l_total = 0;
-        private $lastSeen = '';
+        private $lastseen = '';
         private $month = 0;
         private $mysqli;
         private $output = '';
+        private $ruid = 0;
+        private $uid = 0;
         private $year = 0;
         private $years = 0;
 
-	/**
-	 * Constructor.
-	 */
-	public function __construct($UID)
+	public function __construct($uid)
 	{
-		$this->UID = $UID;
+		$this->uid = $uid;
 		date_default_timezone_set($this->timezone);
 	}
 
@@ -80,13 +78,10 @@ final class User
 		}
 	}
 
-	/**
-	 * Generate the HTML page.
-	 */
-	public function makeHTML()
+	public function make_html()
 	{
-		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output(NULL, mysqli_connect_error());
-		$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `csNick` FROM `user_status` JOIN `user_details` ON `user_status`.`RUID` = `user_details`.`UID` WHERE `user_status`.`UID` = '.$this->UID) or $this->output(NULL, mysqli_error($this->mysqli));
+		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output(null, mysqli_connect_error());
+		$query = @mysqli_query($this->mysqli, 'select `ruid`, `csnick` from `user_status` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` where `user_status`.`uid` = '.$this->uid) or $this->output(null, mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -94,30 +89,30 @@ final class User
 		}
 
 		$result = mysqli_fetch_object($query);
-		$this->RUID = $result->RUID;
-		$this->csNick = $result->csNick;
-		$query = @mysqli_query($this->mysqli, 'SELECT MIN(`firstSeen`) AS `firstSeen`, MAX(`lastSeen`) AS `lastSeen`, `l_total`, (`l_total` / `activeDays`) AS `l_avg` FROM `query_lines` JOIN `user_status` ON `query_lines`.`RUID` = `user_status`.`RUID` JOIN `user_details` ON `user_status`.`UID` = `user_details`.`UID` WHERE `query_lines`.`RUID` = '.$this->RUID.' AND `firstSeen` != '0000-00-00 00:00:00' GROUP BY `query_lines`.`RUID`') or $this->output(NULL, mysqli_error($this->mysqli));
+		$this->ruid = $result->ruid;
+		$this->csnick = $result->csnick;
+		$query = @mysqli_query($this->mysqli, 'select min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `actviedays`) as `l_avg` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `q_lines`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\' group by `q_lines`.`ruid`') or $this->output(null, mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 
 		if ($result->l_total == 0) {
 			exit('This user has no lines.'."\n");
 		}
 
-		$this->firstSeen = $result->firstSeen;
-		$this->lastSeen = $result->lastSeen;
+		$this->firstseen = $result->firstseen;
+		$this->lastseen = $result->lastseen;
 		$this->l_avg = $result->l_avg;
 		$this->l_total = (int) $result->l_total;
 
 		/**
 		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
 		 */
-		$query = @mysqli_query($this->mysqli, 'SELECT MAX(`date`) AS `date` FROM `parse_history`') or $this->output(NULL, 'MySQLi: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output(null, 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
-		$this->date_lastLogParsed = $result->date;
-		$this->day_of_month = date('j', strtotime($this->date_lastLogParsed));
-		$this->month = date('n', strtotime($this->date_lastLogParsed));
-		$this->year = date('Y', strtotime($this->date_lastLogParsed));
-		$this->years = $this->year - date('Y', strtotime($this->firstSeen)) + 1;
+		$this->date_lastlogparsed = $result->date;
+		$this->dayofmonth = date('j', strtotime($this->date_lastlogparsed));
+		$this->month = date('n', strtotime($this->date_lastlogparsed));
+		$this->year = date('Y', strtotime($this->date_lastlogparsed));
+		$this->years = $this->year - date('Y', strtotime($this->firstseen)) + 1;
 
 		/**
 		 * If we have less than 3 years of data we set the amount of years to 3 so we have that many columns in our table. Looks better.
@@ -129,13 +124,13 @@ final class User
 		/**
 		 * HTML Head
 		 */
-		$query = @mysqli_query($this->mysqli, 'SELECT `date` AS `date_max`, `l_total` AS `l_max` FROM `mview_activity_by_day` WHERE `RUID` = '.$this->RUID.' ORDER BY `l_total` DESC, `date` ASC LIMIT 1') or $this->output(NULL, mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `q_activity_by_day` where `ruid` = '.$this->ruid.' order by `l_total` desc, `date` asc limit 1') or $this->output(null, mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->date_max = $result->date_max;
 		$this->l_max = $result->l_max;
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
-			      . '<head>'."\n".'<title>'.htmlspecialchars($this->csNick).', seriously.</title>'."\n"
+			      . '<head>'."\n".'<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
 			      . '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
 			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
@@ -144,18 +139,18 @@ final class User
 			      . '</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"
-			      . '<div class="info">'.htmlspecialchars($this->csNick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstSeen)).' and last seen on '.date('M j, Y', strtotime($this->lastSeen)).'.<br />'
-			      . '<br />'.htmlspecialchars($this->csNick).' typed '.number_format($this->l_total).' lines on '.htmlspecialchars($this->channel).', an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($result->l_max).' lines typed.</div>'."\n";
+			      . '<div class="info">'.htmlspecialchars($this->csnick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
+			      . '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' lines on '.htmlspecialchars($this->channel).', an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($result->l_max).' lines typed.</div>'."\n";
 
 		/**
 		 * Activity section
 		 */
 		$this->output .= '<div class="head">Activity</div>'."\n";
-		$this->output .= $this->makeTable_MostActiveTimes();
-		$this->output .= $this->makeTable_Activity('daily');
-		$this->output .= $this->makeTable_Activity('monthly');
-		$this->output .= $this->makeTable_MostActiveDays();
-		$this->output .= $this->makeTable_Activity('yearly');
+		$this->output .= $this->make_table_mostactivetimes();
+		$this->output .= $this->make_table_activity('daily');
+		$this->output .= $this->make_table_activity('monthly');
+		$this->output .= $this->make_table_mostactivedays();
+		$this->output .= $this->make_table_activity('yearly');
 
 		/**
 		 * HTML Foot
@@ -166,12 +161,9 @@ final class User
 		return $this->output;
 	}
 
-	/**
-	 * Create the most active times table.
-	 */
-	private function makeTable_MostActiveTimes()
+	private function make_table_mostactivetimes()
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23` FROM `query_lines` WHERE `RUID` = '.$this->RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -240,21 +232,18 @@ final class User
 		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	/**
-	 * Create activity tables.
-	 */
-	private function makeTable_Activity($type)
+	private function make_table_activity($type)
 	{
 		if ($type == 'daily') {
 			$class = 'graph';
 			$cols = 24;
 
 			for ($i = 23; $i >= 0; $i--) {
-				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day_of_month - $i, $this->year));
+				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - $i, $this->year));
 			}
 
 			$head = 'Daily Activity';
-			$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `mview_activity_by_day` WHERE `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->day_of_month - 24, $this->year)).'\' AND `RUID` = '.$this->RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_day` where `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\' and `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'monthly') {
 			$class = 'graph';
 			$cols = 24;
@@ -264,7 +253,7 @@ final class User
 			}
 
 			$head = 'Monthly Activity';
-			$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `mview_activity_by_month` WHERE `date` > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' AND `RUID` = '.$this->RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_month` where `date` > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' and `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'yearly') {
 			$class = 'yearly';
 			$cols = $this->years;
@@ -274,7 +263,7 @@ final class User
 			}
 
 			$head = 'Yearly Activity';
-			$query = @mysqli_query($this->mysqli, 'SELECT `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` FROM `mview_activity_by_year` WHERE `RUID` = '.$this->RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_year` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 
 		$rows = mysqli_num_rows($query);
@@ -356,12 +345,9 @@ final class User
 		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	/**
-	 * Create the most active days table.
-	 */
-	private function makeTable_MostActiveDays()
+	private function make_table_mostactivedays()
 	{
-		$query = @mysqli_query($this->mysqli, 'SELECT `l_mon_night`, `l_mon_morning`, `l_mon_afternoon`, `l_mon_evening`, `l_tue_night`, `l_tue_morning`, `l_tue_afternoon`, `l_tue_evening`, `l_wed_night`, `l_wed_morning`, `l_wed_afternoon`, `l_wed_evening`, `l_thu_night`, `l_thu_morning`, `l_thu_afternoon`, `l_thu_evening`, `l_fri_night`, `l_fri_morning`, `l_fri_afternoon`, `l_fri_evening`, `l_sat_night`, `l_sat_morning`, `l_sat_afternoon`, `l_sat_evening`, `l_sun_night`, `l_sun_morning`, `l_sun_afternoon`, `l_sun_evening` FROM `query_lines` WHERE `RUID` = '.$this->RUID) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `l_mon_night`, `l_mon_morning`, `l_mon_afternoon`, `l_mon_evening`, `l_tue_night`, `l_tue_morning`, `l_tue_afternoon`, `l_tue_evening`, `l_wed_night`, `l_wed_morning`, `l_wed_afternoon`, `l_wed_evening`, `l_thu_night`, `l_thu_morning`, `l_thu_afternoon`, `l_thu_evening`, `l_fri_night`, `l_fri_morning`, `l_fri_afternoon`, `l_fri_evening`, `l_sat_night`, `l_sat_morning`, `l_sat_afternoon`, `l_sat_evening`, `l_sun_night`, `l_sun_morning`, `l_sun_afternoon`, `l_sun_evening` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -431,8 +417,8 @@ final class User
 }
 
 if (preg_match('/^[1-9][0-9]{0,5}$/', $_GET['uid'])) {
-	$user = new User($_GET['uid']);
-	echo $user->makeHTML();
+	$user = new user($_GET['uid']);
+	echo $user->make_html();
 }
 
 ?>

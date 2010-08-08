@@ -19,7 +19,7 @@
 /**
  * Class for linking nicks.
  */
-final class nicklinker extends Base
+final class nicklinker extends base
 {
 	/**
 	 * Default settings for this script, can be overridden in the config file.
@@ -45,11 +45,8 @@ final class nicklinker extends Base
 		'db_user' => 'string',
 		'outputbits' => 'int',
 		'timezone' => 'string');
-	private $settings_required_list = array('db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'timezone');
+	private $settings_list_required = array('db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'timezone');
 
-	/**
-	 * Constructor.
-	 */
 	public function __construct()
 	{
 		/**
@@ -63,16 +60,16 @@ final class nicklinker extends Base
 		$options = getopt('c:i:o:');
 
 		if (empty($options)) {
-			$this->printManual();
+			$this->print_manual();
 		}
 
 		if (array_key_exists('c', $options)) {
-			$this->readConfig($options['c']);
+			$this->read_config($options['c']);
 		} else {
-			$this->readConfig(dirname(__FILE__).'/sss.conf');
+			$this->read_config(dirname(__FILE__).'/sss.conf');
 		}
 
-		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'MySQLi: '.mysqli_connect_error());
+		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
 		$this->output('notice', '__construct(): succesfully connected to '.$this->db_host.':'.$this->db_port.', database: \''.$this->db_name.'\'');
 
 		if (array_key_exists('i', $options)) {
@@ -86,30 +83,27 @@ final class nicklinker extends Base
 		@mysqli_close($this->mysqli);
 	}
 
-	/**
-	 * Export nicks.
-	 */
 	private function export($file)
 	{
 		$this->output('notice', 'export(): exporting nicks');
-		$query = @mysqli_query($this->mysqli, 'SELECT `RUID`, `status` FROM `user_status` WHERE `status` = 1 OR `status` = 3 ORDER BY `RUID` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `ruid`, `status` from `user_status` where `status` = 1 or `status` = 3 order by `ruid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 		$output = '';
 
 		if (!empty($rows)) {
 			while ($result = mysqli_fetch_object($query)) {
-				$RUIDs[] = $result->RUID;
-				$status[$result->RUID] = $result->status;
+				$ruids[] = $result->ruid;
+				$status[$result->ruid] = $result->status;
 			}
 
-			foreach ($RUIDs as $RUID) {
-				$output .= $status[$RUID];
-				$query = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` AND `RUID` = '.$RUID.' ORDER BY `csNick` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			foreach ($ruids as $ruid) {
+				$output .= $status[$ruid];
+				$query = @mysqli_query($this->mysqli, 'select `csnick` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` and `ruid` = '.$ruid.' order by `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				$rows = mysqli_num_rows($query);
 
 				if (!empty($rows)) {
 					while ($result = mysqli_fetch_object($query)) {
-						$output .= ','.$result->csNick;
+						$output .= ','.$result->csnick;
 					}
 				}
 
@@ -117,20 +111,20 @@ final class nicklinker extends Base
 			}
 		}
 
-		$query = @mysqli_query($this->mysqli, 'SELECT `csNick` FROM `user_details` JOIN `user_status` ON `user_details`.`UID` = `user_status`.`UID` WHERE STATUS = 0 ORDER BY `csNick` ASC') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `csnick` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `status` = 0 order by `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
 			$output .= '*';
 
 			while ($result = mysqli_fetch_object($query)) {
-				$output .= ','.$result->csNick;
+				$output .= ','.$result->csnick;
 			}
 
 			$output .= "\n";
 		}
 
-		if (($fp = @fopen($file, 'wb')) === FALSE) {
+		if (($fp = @fopen($file, 'wb')) === false) {
 			$this->output('critical', 'export(): failed to open file: \''.$file.'\'');
 		}
 
@@ -139,13 +133,10 @@ final class nicklinker extends Base
 		$this->output('notice', 'export(): export completed');
 	}
 
-	/**
-	 * Import nicks.
-	 */
 	private function import($file)
 	{
 		$this->output('notice', 'import(): importing nicks');
-		$query = @mysqli_query($this->mysqli, 'SELECT `UID`, `csNick` FROM `user_details`') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `uid`, `csnick` from `user_details`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		/**
@@ -156,26 +147,26 @@ final class nicklinker extends Base
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
-			$nick2UID[strtolower($result->csNick)] = $result->UID;
+			$nick2uid[strtolower($result->csnick)] = $result->uid;
 		}
 
 		/**
 		 * Set all nicks to their default status before updating any records from the input file.
 		 */
-		@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = 0') or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
-		if (($rp = realpath($file)) === FALSE) {
+		if (($rp = realpath($file)) === false) {
 			$this->output('critical', 'import(): no such file: \''.$file.'\'');
 		}
 
-		if (($fp = @fopen($rp, 'rb')) === FALSE) {
+		if (($fp = @fopen($rp, 'rb')) === false) {
 			$this->output('critical', 'import(): failed to open file: \''.$file.'\'');
 		}
 
 		while (!feof($fp)) {
 			$line = fgets($fp);
-			$lineParts = explode(',', strtolower($line));
-			$status = trim($lineParts[0]);
+			$lineparts = explode(',', strtolower($line));
+			$status = trim($lineparts[0]);
 
 			/**
 			 * Only lines starting with the number 1 (normal user) or 3 (bot) will be used when updating the user records.
@@ -188,16 +179,16 @@ final class nicklinker extends Base
 				continue;
 			}
 
-			$nick_main = trim($lineParts[1]);
+			$nick_main = trim($lineparts[1]);
 
-			if (!empty($nick_main) && array_key_exists($nick_main, $nick2UID)) {
-				@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = `UID`, `status` = '.$status.' WHERE `UID` = '.$nick2UID[$nick_main]) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+			if (!empty($nick_main) && array_key_exists($nick_main, $nick2uid)) {
+				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = '.$status.' where `uid` = '.$nick2uid[$nick_main]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
-				for ($i = 2, $j = count($lineParts); $i < $j; $i++) {
-					$nick = trim($lineParts[$i]);
+				for ($i = 2, $j = count($lineparts); $i < $j; $i++) {
+					$nick = trim($lineparts[$i]);
 
-					if (!empty($nick) && array_key_exists($nick, $nick2UID)) {
-						@mysqli_query($this->mysqli, 'UPDATE `user_status` SET `RUID` = '.$nick2UID[$nick_main].', `status` = 2 WHERE `UID` = '.$nick2UID[$nick]) or $this->output('critical', 'MySQLi: '.mysqli_error($this->mysqli));
+					if (!empty($nick) && array_key_exists($nick, $nick2uid)) {
+						@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$nick2uid[$nick_main].', `status` = 2 where `uid` = '.$nick2uid[$nick]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 					}
 				}
 			}
@@ -207,14 +198,11 @@ final class nicklinker extends Base
 		$this->output('notice', 'import(): import completed, don\'t forget to run "php sss.php -m"');
 	}
 
-	/**
-	 * Print the manual and exit.
-	 */
-	private function printManual()
+	private function print_manual()
 	{
-		$man = 'usage: php nicklinker.php [-c <config>] [-i <file>]'."\n"
-		     . '       php nicklinker.php [-c <config>] [-o <file>]'."\n\n"
-		     . 'The options are:'."\n"
+		$man = 'usage:	php nicklinker.php [-c <config>] [-i <file>]'."\n"
+		     . '	php nicklinker.php [-c <config>] [-o <file>]'."\n\n"
+		     . 'options:'."\n"
 		     . '	-c	Read settings from <config>.'."\n"
 		     . '		If unspecified sss.conf will be used.'."\n"
 		     . '	-i	Import all user relations from <file> to the database. It is'."\n"
@@ -230,14 +218,14 @@ final class nicklinker extends Base
 	/**
 	 * Read settings from the config file and put them into $settings[] so we can pass them along to other classes.
 	 */
-	private function readConfig($file)
+	private function read_config($file)
 	{
-		if (($rp = realpath($file)) === FALSE) {
-			$this->output('critical', 'readConfig(): no such file: \''.$file.'\'');
+		if (($rp = realpath($file)) === false) {
+			$this->output('critical', 'read_config(): no such file: \''.$file.'\'');
 		}
 
-		if (($fp = @fopen($rp, 'rb')) === FALSE) {
-			$this->output('critical', 'readConfig(): failed to open file: \''.$rp.'\'');
+		if (($fp = @fopen($rp, 'rb')) === false) {
+			$this->output('critical', 'read_config(): failed to open file: \''.$rp.'\'');
 		}
 
 		while (!feof($fp)) {
@@ -254,9 +242,9 @@ final class nicklinker extends Base
 		/**
 		 * Exit if any crucial settings aren't present in the config file.
 		 */
-		foreach ($this->settings_required_list as $key) {
+		foreach ($this->settings_list_required as $key) {
 			if (!array_key_exists($key, $this->settings)) {
-				$this->output('critical', 'readConfig(): missing setting: \''.$key.'\'');
+				$this->output('critical', 'read_config(): missing setting: \''.$key.'\'');
 			}
 		}
 
@@ -270,30 +258,30 @@ final class nicklinker extends Base
 			} elseif ($type == 'int') {
 				$this->$key = (int) $this->settings[$key];
 			} elseif ($type == 'bool') {
-				if (strtoupper($this->settings[$key]) == 'TRUE') {
-					$this->$key = TRUE;
-				} elseif (strtoupper($this->settings[$key]) == 'FALSE') {
-					$this->$key = FALSE;
+				if (strtoupper($this->settings[$key]) == 'true') {
+					$this->$key = true;
+				} elseif (strtoupper($this->settings[$key]) == 'false') {
+					$this->$key = false;
 				}
 			}
 		}
 
-		if (date_default_timezone_set($this->timezone) == FALSE) {
-			$this->output('critical', 'readConfig(): invalid timezone: \''.$this->timezone.'\'');
+		if (date_default_timezone_set($this->timezone) == false) {
+			$this->output('critical', 'read_config(): invalid timezone: \''.$this->timezone.'\'');
 		}
 	}
 }
 
 if (substr(phpversion(), 0, 3) != '5.3') {
-	exit('PHP version 5.3 required, currently running with version '.phpversion()."\n");
+	exit('php version 5.3 required, currently running with version '.phpversion()."\n");
 }
 
 if (!extension_loaded('mysqli')) {
-	exit('MySQLi extension isn\'t loaded'."\n");
+	exit('mysqli extension isn\'t loaded'."\n");
 }
 
 /**
- * Class autoloader.
+ * Class autoloader. Important piece of code right here.
  */
 function __autoload($class)
 {

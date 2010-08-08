@@ -36,58 +36,58 @@
  * +------------+-------------------------------------------------------+->
  *
  * Notes:
- * - parseLog() normalizes all lines before passing them on to parseLine().
+ * - parse_log() normalizes all lines before passing them on to parse_line().
  * - Given that nicks can't contain "<", ">" or ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
  * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
  * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
  * - Some converted mIRC logs do include "!" in "mode" and "topic" lines while there is no host.
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value.
  */
-final class Parser_Eggdrop extends Parser
+final class parser_eggdrop extends parser
 {
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $repeatLock = FALSE;
+	private $repeatlock = false;
 
 	/**
 	 * Parse a line for various chat data.
 	 */
-	protected function parseLine($line)
+	protected function parse_line($line)
 	{
 		/**
 		 * "Normal" lines.
 		 */
 		if (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] <(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
-			$this->setNormal($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
+			$this->set_normal($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 
 		/**
 		 * "Join" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] (?<nick>\S+) \(~?(?<host>\S+)\) joined [#&!+]\S+\.$/', $line, $matches)) {
-			$this->setJoin($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+			$this->set_join($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Quit" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] (?<nick>\S+) \(~?(?<host>\S+)\) left irc:( .+)?$/', $line, $matches)) {
-			$this->setQuit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+			$this->set_quit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Mode" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] [#&!+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+?)(!(~?(?<host>\S+))?)?$/', $line, $matches)) {
 			$nicks = explode(' ', $matches['nicks']);
-			$modeNum = 0;
+			$modenum = 0;
 
 			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
 				$mode = substr($matches['modes'], $i, 1);
 
 				if ($mode == '-' || $mode == '+') {
-					$modeSign = $mode;
+					$modesign = $mode;
 				} else {
-					$this->setMode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modeNum], $modeSign.$mode, (!empty($matches['host']) ? $matches['host'] : NULL));
-					$modeNum++;
+					$this->set_mode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modenum], $modesign.$mode, (!empty($matches['host']) ? $matches['host'] : null));
+					$modenum++;
 				}
 			}
 
@@ -96,34 +96,34 @@ final class Parser_Eggdrop extends Parser
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] Action: (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
 			if (!empty($matches['slap'])) {
-				$this->setSlap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : NULL));
+				$this->set_slap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : null));
 			}
 
-			$this->setAction($this->date.' '.$matches['time'], $matches['nick1'], $matches['line']);
+			$this->set_action($this->date.' '.$matches['time'], $matches['nick1'], $matches['line']);
 
 		/**
 		 * "Nickchange" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] Nick change: (?<nick1>\S+) -> (?<nick2>\S+)$/', $line, $matches)) {
-			$this->setNickchange($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2']);
+			$this->set_nickchange($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2']);
 
 		/**
 		 * "Part" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] (?<nick>\S+) \(~?(?<host>\S+)\) left [#&!+]\S+( \(.*\))?\.$/', $line, $matches)) {
-			$this->setPart($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+			$this->set_part($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
 
 		/**
 		 * "Topic" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] Topic changed on [#&!+]\S+ by (?<nick>\S+?)(!(~?(?<host>\S+))?)?: (?<line>.+)$/', $line, $matches)) {
-			$this->setTopic($this->date.' '.$matches['time'], $matches['nick'], (!empty($matches['host']) ? $matches['host'] : NULL), $matches['line']);
+			$this->set_topic($this->date.' '.$matches['time'], $matches['nick'], (!empty($matches['host']) ? $matches['host'] : null), $matches['line']);
 
 		/**
 		 * "Kick" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2})(:\d{2})?\] (?<line>(?<nick2>\S+) kicked from [#&!+]\S+ by (?<nick1>\S+):( .+)?)$/', $line, $matches)) {
-			$this->setKick($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2'], $matches['line']);
+			$this->set_kick($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2'], $matches['line']);
 
 		/**
 		 * Eggdrop logs repeated lines (case insensitive matches) in the format: "Last message repeated NUM time(s).".
@@ -134,26 +134,26 @@ final class Parser_Eggdrop extends Parser
 			 * Prevent the parser from repeating a preceding repeat line.
 			 * Also, skip processing if we find a repeat line on the first line of the logfile. We can't look back across files.
 			 */
-			if ($this->lineNum == 1 || $this->repeatLock) {
+			if ($this->linenum == 1 || $this->repeatlock) {
 				return;
 			}
 
-			$this->repeatLock = TRUE;
-			$this->lineNum--;
-			$this->output('notice', 'parseLine(): repeating line '.$this->lineNum.': '.$matches['num'].' time'.(($matches['num'] != '1') ? 's' : ''));
+			$this->repeatlock = true;
+			$this->linenum--;
+			$this->output('notice', 'parse_line(): repeating line '.$this->linenum.': '.$matches['num'].' time'.(($matches['num'] != '1') ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; $i++) {
-				$this->parseLine($this->prevLine);
+				$this->parse_line($this->prevline);
 			}
 
-			$this->lineNum++;
-			$this->repeatLock = FALSE;
+			$this->linenum++;
+			$this->repeatlock = false;
 
 		/**
 		 * Skip everything else.
 		 */
 		} elseif ($line != '') {
-			$this->output('debug', 'parseLine(): skipping line '.$this->lineNum.': \''.$line.'\'');
+			$this->output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}
 }
