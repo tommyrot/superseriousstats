@@ -191,7 +191,7 @@ final class nick extends base
 			$this->urls_objs[$url] = new url($csurl);
 		} else {
 			/**
-			 * The last used case sensitivity will be stored.
+			 * The last used case sensitivity will be stored for any URL.
 			 */
 			$this->urls_objs[$url]->set_value('csurl', $csurl);
 		}

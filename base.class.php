@@ -85,12 +85,12 @@ abstract class base
 				continue;
 			} elseif ($c == 'lasttalked' && $v != '0000-00-00 00:00:00' && strtotime($this->lasttalked) <= strtotime($v)) {
 				continue;
-			} elseif ($c == 'topmonologue' && $this->topmonologue <= $v) {
+			} elseif ($c == 'topmonologue' && $this->topmonologue <= (int) $v) {
 				continue;
 			}
 
 			if (is_int($this->$c) && $this->$c != 0) {
-				$query .= ' `'.$c.'` = '.($v + $this->$c).',';
+				$query .= ' `'.$c.'` = '.((int) $v + $this->$c).',';
 				$changes = true;
 			} elseif (is_string($this->$c) && $this->$c != '') {
 				$query .= ' `'.$c.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$c).'\',';
@@ -130,9 +130,15 @@ abstract class base
 		}
 
 		switch ($type) {
-			case 'debug':
-				if ($this->outputbits & 8) {
-					echo $datetime.' [debug] '.$msg."\n";
+			case 'critical':
+				if ($this->outputbits & 1) {
+					echo $datetime.' [critical] '.$msg."\n";
+				}
+
+				exit;
+			case 'warning':
+				if ($this->outputbits & 2) {
+					echo $datetime.' [warning] '.$msg."\n";
 				}
 
 				break;
@@ -142,18 +148,12 @@ abstract class base
 				}
 
 				break;
-			case 'warning':
-				if ($this->outputbits & 2) {
-					echo $datetime.' [warning] '.$msg."\n";
+			case 'debug':
+				if ($this->outputbits & 8) {
+					echo $datetime.' [debug] '.$msg."\n";
 				}
 
 				break;
-			case 'critical':
-				if ($this->outputbits & 1) {
-					echo $datetime.' [critical] '.$msg."\n";
-				}
-
-				exit;
 		}
 	}
 

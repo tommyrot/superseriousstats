@@ -89,6 +89,7 @@ final class nicklinker extends base
 		$query = @mysqli_query($this->mysqli, 'select `ruid`, `status` from `user_status` where `status` = 1 or `status` = 3 order by `ruid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 		$output = '';
+		$i = 0;
 
 		if (!empty($rows)) {
 			while ($result = mysqli_fetch_object($query)) {
@@ -104,6 +105,7 @@ final class nicklinker extends base
 				if (!empty($rows)) {
 					while ($result = mysqli_fetch_object($query)) {
 						$output .= ','.$result->csnick;
+						$i++;
 					}
 				}
 
@@ -119,6 +121,7 @@ final class nicklinker extends base
 
 			while ($result = mysqli_fetch_object($query)) {
 				$output .= ','.$result->csnick;
+				$i++;
 			}
 
 			$output .= "\n";
@@ -130,7 +133,7 @@ final class nicklinker extends base
 
 		fwrite($fp, $output);
 		fclose($fp);
-		$this->output('notice', 'export(): export completed');
+		$this->output('notice', 'export(): '.number_format($i).' nicks exported');
 	}
 
 	private function import($file)
@@ -173,7 +176,6 @@ final class nicklinker extends base
 			 * The first nick on each line will initially be used as the "main" nick, and gets the status 1 or 3, as specified in the imported nicks file.
 			 * Additional nicks on the same line will be linked to this "main" nick and get the status 2, indicating it being an alias.
 			 * Run "php sss.php -m" afterwards to start database maintenance. This will ensure all userstats are properly accumulated according to your latest changes.
-			 * More info on http://code.google.com/p/superseriousstats/wiki/Nicklinker
 			 */
 			if ($status != '1' && $status != '3') {
 				continue;

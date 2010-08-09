@@ -681,11 +681,11 @@ final class html extends base
 			$l_morning[$result->date] = (int) $result->l_morning;
 			$l_afternoon[$result->date] = (int) $result->l_afternoon;
 			$l_evening[$result->date] = (int) $result->l_evening;
-			$l_total[$result->date] = $l_night[$result->date] + $l_morning[$result->date] + $l_afternoon[$result->date] + $l_evening[$result->date];
+			$l_total[$result->date] = (int) $result->l_total;
 
-			if ((int) $result->l_total > $high_value) {
+			if ($l_total[$result->date] > $high_value) {
 				$high_date = $result->date;
-				$high_value = (int) $result->l_total;
+				$high_value = $l_total[$result->date];
 			}
 		}
 

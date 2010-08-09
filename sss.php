@@ -145,7 +145,7 @@ final class sss extends base
 		/**
 		 * Retrieve the date of the last log parsed from the database.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `date` from `parse_history` order by `date` desc limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {

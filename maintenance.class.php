@@ -52,7 +52,7 @@ final class maintenance extends base
 	{
 		$this->mysqli = $mysqli;
 		$this->output('notice', 'do_maintenance(): performing database maintenance routines');
-		$query = @mysqli_query($this->mysqli, 'select count(*) from `user_status`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select * from `user_status` limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -67,7 +67,7 @@ final class maintenance extends base
 	}
 
 	/**
-	 * Fix userstatus errors.
+	 * Fix user status errors.
 	 *
 	 * | uid	| ruid		| status	| type
 	 * +------------+---------------+---------------+----------------------------------

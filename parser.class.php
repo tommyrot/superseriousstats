@@ -311,7 +311,7 @@ abstract class parser extends base
 			} else {
 				if ($this->streak >= $this->minstreak) {
 					/**
-					 * If the current line count is 0 then $prevnick is not known to us yet (seen in previous parse run).
+					 * If the current line count is 0 then $prevnick is not known to us yet (only seen in previous parse run).
 					 * It's safe to assume that $prevnick is a valid nick since it was set by set_normal().
 					 * We will create an object for it here so we can add the monologue data. Don't worry about $prevnick being lowercase,
 					 * we won't update "user_details" if $prevnick isn't seen plus $csnick will get a refresh on any other activity.
@@ -411,7 +411,7 @@ abstract class parser extends base
 					$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 					/**
-					 * Put "http://" scheme in front of all urls beginning with just "www.".
+					 * Put "http://" scheme in front of all URLs beginning with just "www.".
 					 */
 					$csurl = preg_replace('/^www\./i', 'http://$0', $csword);
 

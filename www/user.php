@@ -48,7 +48,7 @@ final class user
         private $csnick = '';
         private $date_lastlogparsed = '';
         private $date_max = '';
-	private $dayofmonth = '';
+	private $dayofmonth = 0;
         private $firstseen = '';
         private $l_avg = 0;
         private $l_max = 0;
@@ -56,7 +56,6 @@ final class user
         private $lastseen = '';
         private $month = 0;
         private $mysqli;
-        private $output = '';
         private $ruid = 0;
         private $uid = 0;
         private $year = 0;
@@ -91,18 +90,18 @@ final class user
 		}
 
 		$result = mysqli_fetch_object($query);
-		$this->ruid = $result->ruid;
+		$this->ruid = (int) $result->ruid;
 		$this->csnick = $result->csnick;
 		$query = @mysqli_query($this->mysqli, 'select min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `q_lines`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\' group by `q_lines`.`ruid`') or $this->output(null, mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 
-		if ($result->l_total == 0) {
+		if ((int) $result->l_total == 0) {
 			exit('This user has no lines.'."\n");
 		}
 
 		$this->firstseen = $result->firstseen;
 		$this->lastseen = $result->lastseen;
-		$this->l_avg = $result->l_avg;
+		$this->l_avg = (float) $result->l_avg;
 		$this->l_total = (int) $result->l_total;
 
 		/**
@@ -111,10 +110,10 @@ final class user
 		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output(null, 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->date_lastlogparsed = $result->date;
-		$this->dayofmonth = date('j', strtotime($this->date_lastlogparsed));
-		$this->month = date('n', strtotime($this->date_lastlogparsed));
-		$this->year = date('Y', strtotime($this->date_lastlogparsed));
-		$this->years = $this->year - date('Y', strtotime($this->firstseen)) + 1;
+		$this->dayofmonth = (int) date('j', strtotime($this->date_lastlogparsed));
+		$this->month = (int) date('n', strtotime($this->date_lastlogparsed));
+		$this->year = (int) date('Y', strtotime($this->date_lastlogparsed));
+		$this->years = $this->year - (int) date('Y', strtotime($this->firstseen)) + 1;
 
 		/**
 		 * If we have less than 3 years of data we set the amount of years to 3 so we have that many columns in our table. Looks better.
@@ -126,41 +125,41 @@ final class user
 		/**
 		 * HTML Head
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `q_activity_by_day` where `ruid` = '.$this->ruid.' order by `l_total` desc, `date` asc limit 1') or $this->output(null, mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `q_activity_by_day` where `ruid` = '.$this->ruid.' order by `l_max` desc, `date_max` asc limit 1') or $this->output(null, mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->date_max = $result->date_max;
-		$this->l_max = $result->l_max;
-		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
-			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
-			      . '<head>'."\n".'<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
-			      . '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
-			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
-			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
-			      . '<style type="text/css">'."\n"
-			      . '  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n"
-			      . '</style>'."\n"
-			      . '</head>'."\n\n".'<body>'."\n"
-			      . '<div class="box">'."\n\n"
-			      . '<div class="info">'.htmlspecialchars($this->csnick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
-			      . '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' lines on '.htmlspecialchars($this->channel).', an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($result->l_max).' lines typed.</div>'."\n";
+		$this->l_max = (int) $result->l_max;
+		$output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
+			. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
+			. '<head>'."\n".'<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
+			. '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
+			. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
+			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
+			. '<style type="text/css">'."\n"
+			. '  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n"
+			. '</style>'."\n"
+			. '</head>'."\n\n".'<body>'."\n"
+			. '<div class="box">'."\n\n"
+			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
+			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' lines on '.htmlspecialchars($this->channel).', an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.</div>'."\n";
 
 		/**
 		 * Activity section
 		 */
-		$this->output .= '<div class="head">Activity</div>'."\n";
-		$this->output .= $this->make_table_mostactivetimes();
-		$this->output .= $this->make_table_activity('daily');
-		$this->output .= $this->make_table_activity('monthly');
-		$this->output .= $this->make_table_mostactivedays();
-		$this->output .= $this->make_table_activity('yearly');
+		$output .= '<div class="head">Activity</div>'."\n";
+		$output .= $this->make_table_mostactivetimes();
+		$output .= $this->make_table_activity('daily');
+		$output .= $this->make_table_activity('monthly');
+		$output .= $this->make_table_mostactivedays();
+		$output .= $this->make_table_activity('yearly');
 
 		/**
 		 * HTML Foot
 		 */
-		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
-		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		$output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
+		$output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 		@mysqli_close($this->mysqli);
-		return $this->output;
+		return $output;
 	}
 
 	private function make_table_mostactivetimes()
@@ -282,11 +281,11 @@ final class user
 			$l_morning[$result->date] = (int) $result->l_morning;
 			$l_afternoon[$result->date] = (int) $result->l_afternoon;
 			$l_evening[$result->date] = (int) $result->l_evening;
-			$l_total[$result->date] = $l_night[$result->date] + $l_morning[$result->date] + $l_afternoon[$result->date] + $l_evening[$result->date];
+			$l_total[$result->date] = (int) $result->l_total;
 
-			if ((int) $result->l_total > $high_value) {
+			if ($l_total[$result->date] > $high_value) {
 				$high_date = $result->date;
-				$high_value = (int) $result->l_total;
+				$high_value = $l_total[$result->date];
 			}
 		}
 
@@ -419,7 +418,7 @@ final class user
 }
 
 if (preg_match('/^[1-9][0-9]{0,5}$/', $_GET['uid'])) {
-	$user = new user($_GET['uid']);
+	$user = new user((int) $_GET['uid']);
 	echo $user->make_html();
 }
 
