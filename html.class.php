@@ -486,7 +486,7 @@ final class html extends base
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Topic');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select `setdate` as `v1`, `csnick` as `v2`, `cstopic` as `v3` from `user_topics` join `user_status` on `user_topics`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc limit 5');
+			$t->set_value('query_main', 'select `setdate` as `v1`, `csnick` as `v2`, `cstopic` as `v3` from `user_topics` join `user_status` on `user_topics`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('type', 'topics');
 			$output .= $t->make_table($this->mysqli);
 
@@ -505,8 +505,8 @@ final class html extends base
 			$t->set_value('key1', 'Smileys');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select `s_01` + `s_02` + `s_03` + `s_04` + `s_05` + `s_06` + `s_07` + `s_08` + `s_09` + `s_10` + `s_11` + `s_12` + `s_13` + `s_14` + `s_15` + `s_16` + `s_17` + `s_18` + `s_19` as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 order by `v1` desc, `v2` asc limit 5');
-			$t->set_value('query_total', 'select sum(`s_01`) + sum(`s_02`) + sum(`s_03`) + sum(`s_04`) + sum(`s_05`) + sum(`s_06`) + sum(`s_07`) + sum(`s_08`) + sum(`s_09`) + sum(`s_10`) + sum(`s_11`) + sum(`s_12`) + sum(`s_13`) + sum(`s_14`) + sum(`s_15`) + sum(`s_16`) + sum(`s_17`) + sum(`s_18`) + sum(`s_19`) as `total` from `q_smileys`');
+			$t->set_value('query_main', 'select (`s_01` + `s_02` + `s_03` + `s_04` + `s_05` + `s_06` + `s_07` + `s_08` + `s_09` + `s_10` + `s_11` + `s_12` + `s_13` + `s_14` + `s_15` + `s_16` + `s_17` + `s_18` + `s_19`) as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_total', 'select (sum(`s_01`) + sum(`s_02`) + sum(`s_03`) + sum(`s_04`) + sum(`s_05`) + sum(`s_06`) + sum(`s_07`) + sum(`s_08`) + sum(`s_09`) + sum(`s_10`) + sum(`s_11`) + sum(`s_12`) + sum(`s_13`) + sum(`s_14`) + sum(`s_15`) + sum(`s_16`) + sum(`s_17`) + sum(`s_18`) + sum(`s_19`)) as `total` from `q_smileys`');
 			$output .= $t->make_table($this->mysqli);
 
 			/**
@@ -572,7 +572,7 @@ final class html extends base
 			$t->set_value('key1', 'References');
 			$t->set_value('key2', 'Domain');
 			$t->set_value('minrows', 10);
-			$t->set_value('query_main', 'select sum(`total`) as `v1`, substring_index(`csurl`, \'/\', 3) as `v2` from `user_urls` group by `v2` order by `v1` desc limit 15');
+			$t->set_value('query_main', 'select sum(`total`) as `v1`, substring_index(`csurl`, \'/\', 3) as `v2` from `user_urls` group by `v2` order by `v1` desc limit 10');
 			$t->set_value('rows', 10);
 			$t->set_value('type', 'domains');
 			$output .= $t->make_table($this->mysqli);
@@ -581,7 +581,7 @@ final class html extends base
 			$t->set_value('key1', 'References');
 			$t->set_value('key2', 'TLD');
 			$t->set_value('minrows', 10);
-			$t->set_value('query_main', 'select count(*) as `v1`, concat(\'.\', substring_index(substring_index(`csurl`, \'/\', 3), \'.\', -1)) as `v2` from `user_urls` group by `v2` having `v2` regexp \'^\.[a-z]+$\' order by `v1` desc, `v2` asc limit 15');
+			$t->set_value('query_main', 'select count(*) as `v1`, concat(\'.\', substring_index(substring_index(`csurl`, \'/\', 3), \'.\', -1)) as `v2` from `user_urls` group by `v2` having `v2` regexp \'^\.[a-z]+$\' order by `v1` desc, `v2` asc limit 10');
 			$t->set_value('rows', 10);
 			$output .= $t->make_table($this->mysqli);
 
@@ -632,7 +632,7 @@ final class html extends base
 				$t->set_value('key1', 'Times Used');
 				$t->set_value('key2', 'Word');
 				$t->set_value('minrows', $this->minrows);
-				$t->set_value('query_main', 'select `total` as `v1`, `word` as `v2` from `words` where length(`word`) = '.$result->length.' order by `total` desc, `word` asc limit 5');
+				$t->set_value('query_main', 'select `total` as `v1`, `word` as `v2` from `words` where length(`word`) = '.$result->length.' order by `v1` desc, `v2` asc limit 5');
 				$t->set_value('total', (int) $result->total);
 				$output .= $t->make_table($this->mysqli);
 			}
