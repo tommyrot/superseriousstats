@@ -378,23 +378,27 @@ final class html extends base
 		 */
 		if ($this->sectionbits & 4) {
 			$output = '';
+
+			/**
+			 * Display mode tables in fixed order.
+			 */
 			$modes = array(
-				'Most Ops \'+o\', Given' => array('Ops', 'm_op'),
-				'Most Ops \'+o\', Received' => array('Ops', 'm_opped'),
-				'Most deOps \'-o\', Given' => array('deOps', 'm_deop'),
-				'Most deOps \'-o\', Received' => array('deOps', 'm_deopped'),
-				'Most Voices \'+v\', Given' => array('Voices', 'm_voice'),
-				'Most Voices \'+v\', Received' => array('Voices', 'm_voiced'),
-				'Most deVoices \'-v\', Given' => array('deVoices', 'm_devoice'),
-				'Most deVoices \'-v\', Received' => array('deVoices', 'm_devoiced'));
+				'm_op' => array('Ops', 'Most Ops \'+o\', Given'),
+				'm_opped' => array('Ops', 'Most Ops \'+o\', Received'),
+				'm_deop' => array('deOps', 'Most deOps \'-o\', Given'),
+				'm_deopped' => array('deOps', 'Most deOps \'-o\', Received'),
+				'm_voice' => array('Voices', 'Most Voices \'+v\', Given'),
+				'm_voiced' => array('Voices', 'Most Voices \'+v\', Received'),
+				'm_devoice' => array('deVoices', 'Most deVoices \'-v\', Given'),
+				'm_devoiced' => array('deVoices', 'Most deVoices \'-v\', Received'));
 
 			foreach ($modes as $key => $value) {
-				$t = new table($key);
+				$t = new table($value[1]);
 				$t->set_value('key1', $value[0]);
 				$t->set_value('key2', 'User');
 				$t->set_value('minrows', $this->minrows);
-				$t->set_value('query_main', 'select `'.$value[1].'` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$value[1].'` != 0 order by `v1` desc, `v2` asc limit 5');
-				$t->set_value('query_total', 'select sum(`'.$value[1].'`) as `total` from `q_events`');
+				$t->set_value('query_main', 'select `'.$key.'` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$key.'` != 0 order by `v1` desc, `v2` asc limit 5');
+				$t->set_value('query_total', 'select sum(`'.$key.'`) as `total` from `q_events`');
 				$output .= $t->make_table($this->mysqli);
 			}
 
@@ -505,15 +509,18 @@ final class html extends base
 			$t->set_value('query_total', 'select sum(`s_01`) + sum(`s_02`) + sum(`s_03`) + sum(`s_04`) + sum(`s_05`) + sum(`s_06`) + sum(`s_07`) + sum(`s_08`) + sum(`s_09`) + sum(`s_10`) + sum(`s_11`) + sum(`s_12`) + sum(`s_13`) + sum(`s_14`) + sum(`s_15`) + sum(`s_16`) + sum(`s_17`) + sum(`s_18`) + sum(`s_19`) as `total` from `q_smileys`');
 			$output .= $t->make_table($this->mysqli);
 
+			/**
+			 * Display smiley tables ordered by totals.
+			 */
 			$query = @mysqli_query($this->mysqli, 'select sum(`s_01`) as `s_01`, sum(`s_02`) as `s_02`, sum(`s_03`) as `s_03`, sum(`s_04`) as `s_04`, sum(`s_05`) as `s_05`, sum(`s_06`) as `s_06`, sum(`s_07`) as `s_07`, sum(`s_08`) as `s_08`, sum(`s_09`) as `s_09`, sum(`s_10`) as `s_10`, sum(`s_11`) as `s_11`, sum(`s_12`) as `s_12`, sum(`s_13`) as `s_13`, sum(`s_14`) as `s_14`, sum(`s_15`) as `s_15`, sum(`s_16`) as `s_16`, sum(`s_17`) as `s_17`, sum(`s_18`) as `s_18`, sum(`s_19`) as `s_19` from `q_smileys`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$result = mysqli_fetch_object($query);
 
-			foreach ($result as $c => $v) {
-				if ((int) $v < $this->minlines) {
+			foreach ($result as $key => $value) {
+				if ((int) $value < $this->minlines) {
 					continue;
 				}
 
-				$topsmileys[$c] = (int) $v;
+				$topsmileys[$key] = (int) $value;
 			}
 
 			if (!empty($topsmileys)) {
@@ -539,13 +546,13 @@ final class html extends base
 					's_19' => array('\\o/', 'Cheer'));
 				arsort($topsmileys);
 
-				foreach ($topsmileys as $key => $total) {
+				foreach ($topsmileys as $key => $value) {
 					$t = new table($smileys[$key][1]);
 					$t->set_value('key1', $smileys[$key][0]);
 					$t->set_value('key2', 'User');
 					$t->set_value('minrows', $this->minrows);
 					$t->set_value('query_main', 'select `'.$key.'` as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$key.'` != 0 order by `v1` desc, `v2` asc limit 5');
-					$t->set_value('total', $total);
+					$t->set_value('total', $value);
 					$output .= $t->make_table($this->mysqli);
 				}
 			}
@@ -615,6 +622,9 @@ final class html extends base
 		if ($this->sectionbits & 64) {
 			$output = '';
 
+			/**
+			 * Display word tables ordered by totals.
+			 */
 			$query = @mysqli_query($this->mysqli, 'select length(`word`) as `length`, count(*) as `total` from `words` group by `length` order by `total` desc, `length` desc limit 9') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
 			while ($result = mysqli_fetch_object($query)) {
