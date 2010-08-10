@@ -1182,7 +1182,7 @@ final class table extends base
 			$prevdate = '';
 
 			foreach ($content as $row) {
-				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
+				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 				$prevdate = $row[1];
 			}
 		} elseif ($this->type == 'urls') {
