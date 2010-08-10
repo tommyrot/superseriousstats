@@ -331,7 +331,7 @@ final class html extends base
 			$t->set_value('key1', 'Mentioned');
 			$t->set_value('key2', 'Nick');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select `total` as `v1`, `csnick` as `v2` from `user_details` join `words` on `user_details`.`csnick` = `words`.`word` join `user_activity` on `user_details`.`uid` = `user_activity`.`uid` group by `user_details`.`uid` having sum(`l_total`) >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select `total` as `v1`, `csnick` as `v2` from `user_details` join `words` on `user_details`.`csnick` = `words`.`word` join `user_lines` on `user_details`.`uid` = `user_lines`.`uid` where `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Slaps, Given');
