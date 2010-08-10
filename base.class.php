@@ -45,12 +45,12 @@ abstract class base
 		$changes = false;
 		$query = '';
 
-		foreach ($columns as $c) {
-			if (is_int($this->$c) && $this->$c != 0) {
-				$query .= ' `'.$c.'` = '.$this->$c.',';
+		foreach ($columns as $key) {
+			if (is_int($this->$key) && $this->$key != 0) {
+				$query .= ' `'.$key.'` = '.$this->$key.',';
 				$changes = true;
-			} elseif (is_string($this->$c) && $this->$c != '') {
-				$query .= ' `'.$c.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$c).'\',';
+			} elseif (is_string($this->$key) && $this->$key != '') {
+				$query .= ' `'.$key.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$key).'\',';
 				$changes = true;
 			}
 		}
@@ -70,30 +70,30 @@ abstract class base
 		$changes = false;
 		$query = '';
 
-		foreach ($columns as $c => $v) {
-			if (in_array($c, $exclude)) {
+		foreach ($columns as $key => $value) {
+			if (in_array($key, $exclude)) {
 				continue;
 			}
 
-			if ($c == 'firstseen' && $v != '0000-00-00 00:00:00' && strtotime($this->firstseen) >= strtotime($v)) {
+			if ($key == 'firstseen' && $value != '0000-00-00 00:00:00' && strtotime($this->firstseen) >= strtotime($value)) {
 				continue;
-			} elseif ($c == 'firstused' && $v != '0000-00-00 00:00:00' && strtotime($this->firstused) >= strtotime($v)) {
+			} elseif ($key == 'firstused' && $value != '0000-00-00 00:00:00' && strtotime($this->firstused) >= strtotime($value)) {
 				continue;
-			} elseif ($c == 'lastseen' && $v != '0000-00-00 00:00:00' && strtotime($this->lastseen) <= strtotime($v)) {
+			} elseif ($key == 'lastseen' && $value != '0000-00-00 00:00:00' && strtotime($this->lastseen) <= strtotime($value)) {
 				continue;
-			} elseif ($c == 'lastused' && $v != '0000-00-00 00:00:00' && strtotime($this->lastused) <= strtotime($v)) {
+			} elseif ($key == 'lastused' && $value != '0000-00-00 00:00:00' && strtotime($this->lastused) <= strtotime($value)) {
 				continue;
-			} elseif ($c == 'lasttalked' && $v != '0000-00-00 00:00:00' && strtotime($this->lasttalked) <= strtotime($v)) {
+			} elseif ($key == 'lasttalked' && $value != '0000-00-00 00:00:00' && strtotime($this->lasttalked) <= strtotime($value)) {
 				continue;
-			} elseif ($c == 'topmonologue' && $this->topmonologue <= (int) $v) {
+			} elseif ($key == 'topmonologue' && $this->topmonologue <= (int) $value) {
 				continue;
 			}
 
-			if (is_int($this->$c) && $this->$c != 0) {
-				$query .= ' `'.$c.'` = '.((int) $v + $this->$c).',';
+			if (is_int($this->$key) && $this->$key != 0) {
+				$query .= ' `'.$key.'` = '.((int) $value + $this->$key).',';
 				$changes = true;
-			} elseif (is_string($this->$c) && $this->$c != '') {
-				$query .= ' `'.$c.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$c).'\',';
+			} elseif (is_string($this->$key) && $this->$key != '') {
+				$query .= ' `'.$key.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$key).'\',';
 				$changes = true;
 			}
 		}

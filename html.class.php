@@ -925,10 +925,10 @@ final class html extends base
 		$high_key = '';
 		$high_value = 0;
 
-		foreach ($result as $k => $v) {
-			if ((int) $v > $high_value) {
-				$high_key = $k;
-				$high_value = (int) $v;
+		foreach ($result as $key => $value) {
+			if ((int) $value > $high_value) {
+				$high_key = $key;
+				$high_value = (int) $value;
 			}
 		}
 
@@ -936,17 +936,17 @@ final class html extends base
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
-		foreach ($result as $k => $v) {
-			if (substr($k, -2, 1) == '0') {
-				$hour = (int) substr($k, -1);
+		foreach ($result as $key => $value) {
+			if (substr($key, -2, 1) == '0') {
+				$hour = (int) substr($key, -1);
 			} else {
-				$hour = (int) substr($k, -2);
+				$hour = (int) substr($key, -2);
 			}
 
-			if ((int) $v == 0) {
+			if ((int) $value == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
 			} else {
-				$perc = ((int) $v / $this->l_total) * 100;
+				$perc = ((int) $value / $this->l_total) * 100;
 
 				if ($perc >= 9.95) {
 					$tr2 .= '<td>'.round($perc).'%';
@@ -954,24 +954,24 @@ final class html extends base
 					$tr2 .= '<td>'.number_format($perc, 1).'%';
 				}
 
-				$height = round(((int) $v / $high_value) * 100);
+				$height = round(((int) $value / $high_value) * 100);
 
 				if ($height != 0) {
 					if ($hour >= 0 && $hour <= 5) {
-						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $v).'" />';
+						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
 					} elseif ($hour >= 6 && $hour <= 11) {
-						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $v).'" />';
+						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
 					} elseif ($hour >= 12 && $hour <= 17) {
-						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $v).'" />';
+						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
 					} elseif ($hour >= 18 && $hour <= 23) {
-						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $v).'" />';
+						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
 					}
 				}
 
 				$tr2 .= '</td>';
 			}
 
-			if ($high_key == $k) {
+			if ($high_key == $key) {
 				$tr3 .= '<td class="bold">'.$hour.'h</td>';
 			} else {
 				$tr3 .= '<td>'.$hour.'h</td>';

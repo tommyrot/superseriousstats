@@ -179,8 +179,9 @@ final class nick extends base
 
 	public function add_topic($cstopic, $datetime)
 	{
-		$this->topics_list[] = array('cstopic' => $cstopic
-					    ,'setdate' => $datetime);
+		$this->topics_list[] = array(
+			'cstopic' => $cstopic,
+			'setdate' => $datetime);
 	}
 
 	public function add_url($csurl, $datetime)
