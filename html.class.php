@@ -581,8 +581,9 @@ final class html extends base
 			$t = new table('Most Referenced Domains');
 			$t->set_value('key1', 'References');
 			$t->set_value('key2', 'Domain');
+			$t->set_value('key3', 'First Used');
 			$t->set_value('minrows', 10);
-			$t->set_value('query_main', 'select sum(`total`) as `v1`, substring_index(`csurl`, \'/\', 3) as `v2` from `user_urls` group by `v2` order by `v1` desc limit 10');
+			$t->set_value('query_main', 'select sum(`total`) as `v1`, substring_index(`csurl`, \'/\', 3) as `v2`, min(`firstused`) as `v3` from `user_urls` group by `v2` order by `v1` desc, `v3` asc limit 10');
 			$t->set_value('rows', 10);
 			$t->set_value('type', 'domains');
 			$output .= $t->make_table($this->mysqli);
@@ -1140,19 +1141,21 @@ final class table extends base
 				break;
 			}
 
-			if ($this->type == 'small' || $this->type == 'medium' || $this->type == 'domains') {
+			if ($this->type == 'small') {
 				$content[] = array($i, number_format((float) $result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2));
-			} elseif ($this->type == 'large') {
+			} elseif ($this->type == 'large' || $this->type == 'medium') {
 				$content[] = array($i, number_format((float) $result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			} elseif ($this->type == 'topics' || $this->type == 'urls') {
 				$content[] = array($i, date('j M \'y', strtotime($result->v1)), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
+			} elseif ($this->type == 'domains') {
+				$content[] = array($i, htmlspecialchars($result->v1), htmlspecialchars($result->v2), date('j M \'y', strtotime($result->v3)));
 			}
 		}
 
 		for ($i = count($content) + 1; $i <= $this->rows; $i++) {
-			if ($this->type == 'small' || $this->type == 'medium' || $this->type == 'domains') {
+			if ($this->type == 'small') {
 				$content[] = array('&nbsp;', '', '');
-			} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'urls') {
+			} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'urls' || $this->type == 'medium' || $this->type == 'domains') {
 				$content[] = array('&nbsp;', '', '', '');
 			}
 		}
@@ -1163,30 +1166,27 @@ final class table extends base
 			$this->total = (int) $result->total;
 		}
 
-		if ($this->type == 'small' || $this->type == 'medium' || $this->type == 'domains') {
+		if ($this->type == 'small') {
 			$tr1 = '<tr><th colspan="3"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td></tr>';
 			$trx = '';
-		} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'urls') {
+		} elseif ($this->type == 'large' || $this->type == 'domains' || $this->type == 'medium' || $this->type == 'topics' || $this->type == 'urls') {
 			$tr1 = '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
 			$trx = '';
 		}
 
-		if ($this->type == 'small' || $this->type == 'medium') {
+		if ($this->type == 'small') {
 			foreach ($content as $row) {
 				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
 			}
-		} elseif ($this->type == 'large') {
+		} elseif ($this->type == 'large' || $this->type == 'medium') {
 			foreach ($content as $row) {
 				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
 			}
 		} elseif ($this->type == 'domains') {
-			$prevdate = '';
-
 			foreach ($content as $row) {
-				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2"><a href="'.$row[2].'">'.$row[2].'</a></td></tr>';
-				$prevdate = $row[1];
+				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2"><a href="'.$row[2].'">'.$row[2].'</a></td><td class="v3">'.$row[3].'</td></tr>';
 			}
 		} elseif ($this->type == 'topics') {
 			$prevdate = '';
