@@ -32,6 +32,11 @@ final class html extends base
 	private $channel = '#yourchan';
 	private $minlines = 500;
 	private $minrows = 3;
+        private $rows_map_alltime = 30;
+        private $rows_map_month = 10;
+        private $rows_map_year = 10;
+        private $rows_mostrecenturls = 50;
+        private $rows_tod = 10;
 	private $sectionbits = 127;
 	private $stylesheet = 'default.css';
 	private $userstats = false;
@@ -62,6 +67,11 @@ final class html extends base
 		'minlines' => 'int',
 		'minrows' => 'int',
 		'outputbits' => 'int',
+		'rows_map_alltime' => 'int',
+		'rows_map_month' => 'int',
+		'rows_map_year' => 'int',
+		'rows_mostrecenturls' => 'int',
+		'rows_tod' => 'int',
 		'sectionbits' => 'int',
 		'stylesheet' => 'string',
 		'userstats' => 'bool');
@@ -194,11 +204,11 @@ final class html extends base
 			$this->output .= $this->make_table_activity('monthly');
 			$this->output .= $this->make_table_mostactivedays();
 			$this->output .= $this->make_table_activity('yearly');
-			$this->output .= $this->make_table_mostactivepeople('alltime', 30);
-			$this->output .= $this->make_table_notquitesoactivepeople(30, 40);
-			$this->output .= $this->make_table_mostactivepeople('year', 10);
-			$this->output .= $this->make_table_mostactivepeople('month', 10);
-			$this->output .= $this->make_table_timeofday(10);
+			$this->output .= $this->make_table_mostactivepeople('alltime', $this->rows_map_alltime);
+			$this->output .= $this->make_table_notquitesoactivepeople($this->rows_map_alltime, 40);
+			$this->output .= $this->make_table_mostactivepeople('year', $this->rows_map_year);
+			$this->output .= $this->make_table_mostactivepeople('month', $this->rows_map_month);
+			$this->output .= $this->make_table_timeofday($this->rows_tod);
 		}
 
 		/**
@@ -589,9 +599,9 @@ final class html extends base
 			$t->set_value('key1', 'Date');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'URL');
-			$t->set_value('minrows', 100);
+			$t->set_value('minrows', $this->rows_mostrecenturls);
 			$t->set_value('query_main', 'select `lastused` as `v1`, `csnick` as `v2`, `csurl` as `v3` from `user_urls` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc limit 100');
-			$t->set_value('rows', 100);
+			$t->set_value('rows', $this->rows_mostrecenturls);
 			$t->set_value('type', 'urls');
 			$output .= $t->make_table($this->mysqli);
 
