@@ -1148,7 +1148,7 @@ final class table extends base
 			} elseif ($this->type == 'topics' || $this->type == 'urls') {
 				$content[] = array($i, date('j M \'y', strtotime($result->v1)), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			} elseif ($this->type == 'domains') {
-				$content[] = array($i, htmlspecialchars($result->v1), htmlspecialchars($result->v2), date('j M \'y', strtotime($result->v3)));
+				$content[] = array($i, number_format((int) $result->v1), htmlspecialchars($result->v2), date('j M \'y', strtotime($result->v3)));
 			}
 		}
 
