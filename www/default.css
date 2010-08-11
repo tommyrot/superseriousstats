@@ -244,12 +244,12 @@ body {
 	padding:1px 0 1px 0;
 	vertical-align:top;
 }
-.small td.k1,.small td.k2,.small td.pos,.medium td.k1,.medium td.k2,.medium td.pos,.large td.k1,.large td.k2,.large td.k3,.large td.pos {
+.small td.k1,.small td.k2,.small td.pos,.medium td.k1,.medium td.k2,.medium td.k3,.medium td.pos,.large td.k1,.large td.k2,.large td.k3,.large td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.small td.k1,.small td.v1,.medium td.k1,.medium td.v1,.large td.k1,.large td.v1 {
+.small td.k1,.small td.v1,.medium td.k1,.medium td.v1,.medium td.k3,.medium td.v3,.large td.k1,.large td.v1 {
 	padding-right:2px;
 	text-align:right;
 	width:78px;
@@ -260,7 +260,7 @@ body {
 }
 .medium td.k2,.medium td.v2 {
 	padding-left:2px;
-	width:418px;
+	width:338px;
 }
 .large td.k3,.large td.v3 {
 	width:560px;
