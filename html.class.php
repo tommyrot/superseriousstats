@@ -30,6 +30,7 @@ final class html extends base
 	private $bar_morning = 'g.png';
 	private $bar_night = 'b.png';
 	private $channel = '#yourchan';
+	private $history = false;
 	private $minlines = 500;
 	private $minrows = 3;
         private $rows_map_alltime = 30;
@@ -64,6 +65,7 @@ final class html extends base
 		'bar_morning' => 'string',
 		'bar_night' => 'string',
 		'channel' => 'string',
+	        'history' => 'bool',
 		'minlines' => 'int',
 		'minrows' => 'int',
 		'outputbits' => 'int',
@@ -869,7 +871,7 @@ final class html extends base
 			return;
 		}
 
-		$tr1 = '<tr><th colspan="7">'.$head.'</th></tr>';
+		$tr1 = '<tr><th colspan="7"><span class="left">'.$head.'</span>'.($this->history ? '<span class="right"><a href="history.php">History</a></span>' : '').'</th></tr>';
 		$tr2 = '<tr><td class="k1">Percentage</td><td class="k2">Lines</td><td class="pos"></td><td class="k3">User</td><td class="k4">When?</td><td class="k5">Last Seen</td><td class="k6">Quote</td></tr>';
 		$trx = '';
 		$i = 0;

@@ -81,8 +81,8 @@ final class user
 
 	public function make_html()
 	{
-		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output(null, mysqli_connect_error());
-		$query = @mysqli_query($this->mysqli, 'select `ruid`, `csnick` from `user_status` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` where `user_status`.`uid` = '.$this->uid) or $this->output(null, mysqli_error($this->mysqli));
+		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
+		$query = @mysqli_query($this->mysqli, 'select `ruid`, `csnick` from `user_status` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` where `user_status`.`uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -92,7 +92,7 @@ final class user
 		$result = mysqli_fetch_object($query);
 		$this->ruid = (int) $result->ruid;
 		$this->csnick = $result->csnick;
-		$query = @mysqli_query($this->mysqli, 'select min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `q_lines`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\' group by `q_lines`.`ruid`') or $this->output(null, mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `q_lines`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\' group by `q_lines`.`ruid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 
 		if ((int) $result->l_total == 0) {
@@ -107,7 +107,7 @@ final class user
 		/**
 		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output(null, 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->date_lastlogparsed = $result->date;
 		$this->dayofmonth = (int) date('j', strtotime($this->date_lastlogparsed));
@@ -125,7 +125,7 @@ final class user
 		/**
 		 * HTML Head
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `q_activity_by_day` where `ruid` = '.$this->ruid.' order by `l_max` desc, `date_max` asc limit 1') or $this->output(null, mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `q_activity_by_day` where `ruid` = '.$this->ruid.' order by `l_max` desc, `date_max` asc limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->date_max = $result->date_max;
 		$this->l_max = (int) $result->l_max;
@@ -417,7 +417,7 @@ final class user
 	}
 }
 
-if (isset($_GET['uid']) && preg_match('/^[1-9][0-9]{0,5}$/', $_GET['uid'])) {
+if (isset($_GET['uid']) && preg_match('/^[1-9]\d{0,8}$/', $_GET['uid'])) {
 	$user = new user((int) $_GET['uid']);
 	echo $user->make_html();
 }
