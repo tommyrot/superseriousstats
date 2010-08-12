@@ -25,6 +25,8 @@ final class html extends base
 	 * Default settings for this script, can be overridden in the config file.
 	 * These should all appear in $settings_list[] along with their type.
 	 */
+	private $addhtml_foot = '';
+	private $addhtml_head = '';
 	private $bar_afternoon = 'y.png';
 	private $bar_evening = 'r.png';
 	private $bar_morning = 'g.png';
@@ -60,6 +62,8 @@ final class html extends base
 	private $mysqli;
 	private $output = '';
 	private $settings_list = array(
+	        'addhtml_foot' => 'string',
+	        'addhtml_head' => 'string',
 		'bar_afternoon' => 'string',
 		'bar_evening' => 'string',
 		'bar_morning' => 'string',
@@ -194,7 +198,7 @@ final class html extends base
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n\n"
 			      . '<div class="info">'.htmlspecialchars($this->channel).', seriously.<br /><br />'.number_format($this->days).' day'.($this->days > 1 ? 's logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)) : ' logged on '.date('M j, Y', strtotime($this->date_first))).'.<br />'
-			      . '<br />Logs contain '.number_format($this->l_total).' lines, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.</div>'."\n";
+			      . '<br />Logs contain '.number_format($this->l_total).' lines, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.'.($this->addhtml_head != '' ? '<br /><br />'.@file_get_contents($this->addhtml_head) : '').'</div>'."\n";
 
 		/**
 		 * Activity section
@@ -658,7 +662,7 @@ final class html extends base
 		/**
 		 * HTML Foot
 		 */
-		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
+		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.'.($this->addhtml_foot != '' ? '<br />'.@file_get_contents($this->addhtml_foot) : '').'</div>'."\n\n";
 		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 		$this->output('notice', 'make_html(): finished creating statspage');
 		return $this->output;
