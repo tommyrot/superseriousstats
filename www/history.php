@@ -37,7 +37,7 @@ final class history
 	private $db_name = 'sss';
 	private $debug = false; //only set to true when troubleshooting
 	private $rows_map_month = 30;
-        private $rows_map_year = 30;
+	private $rows_map_year = 30;
 	private $stylesheet = 'default.css';
 	private $timezone = 'Europe/Amsterdam';
 	private $userstats = false;
@@ -51,9 +51,9 @@ final class history
 	private $firstyearparsed = 0;
 	private $l_total = 0;
 	private $lastyearparsed = 0;
-        private $month = 0;
-        private $mysqli;
-        private $year = 0;
+	private $month = 0;
+	private $mysqli;
+	private $year = 0;
 
 	public function __construct($year, $month)
 	{

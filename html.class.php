@@ -35,11 +35,11 @@ final class html extends base
 	private $history = false;
 	private $minlines = 500;
 	private $minrows = 3;
-        private $rows_map_alltime = 30;
-        private $rows_map_month = 10;
-        private $rows_map_year = 10;
-        private $rows_mostrecenturls = 50;
-        private $rows_tod = 10;
+	private $rows_map_alltime = 30;
+	private $rows_map_month = 10;
+	private $rows_map_year = 10;
+	private $rows_mostrecenturls = 50;
+	private $rows_tod = 10;
 	private $sectionbits = 127;
 	private $stylesheet = 'default.css';
 	private $userstats = false;
@@ -62,14 +62,14 @@ final class html extends base
 	private $mysqli;
 	private $output = '';
 	private $settings_list = array(
-	        'addhtml_foot' => 'string',
-	        'addhtml_head' => 'string',
+		'addhtml_foot' => 'string',
+		'addhtml_head' => 'string',
 		'bar_afternoon' => 'string',
 		'bar_evening' => 'string',
 		'bar_morning' => 'string',
 		'bar_night' => 'string',
 		'channel' => 'string',
-	        'history' => 'bool',
+		'history' => 'bool',
 		'minlines' => 'int',
 		'minrows' => 'int',
 		'outputbits' => 'int',

@@ -45,21 +45,21 @@ final class user
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-        private $csnick = '';
-        private $date_lastlogparsed = '';
-        private $date_max = '';
+	private $csnick = '';
+	private $date_lastlogparsed = '';
+	private $date_max = '';
 	private $dayofmonth = 0;
-        private $firstseen = '';
-        private $l_avg = 0;
-        private $l_max = 0;
-        private $l_total = 0;
-        private $lastseen = '';
-        private $month = 0;
-        private $mysqli;
-        private $ruid = 0;
-        private $uid = 0;
-        private $year = 0;
-        private $years = 0;
+	private $firstseen = '';
+	private $l_avg = 0;
+	private $l_max = 0;
+	private $l_total = 0;
+	private $lastseen = '';
+	private $month = 0;
+	private $mysqli;
+	private $ruid = 0;
+	private $uid = 0;
+	private $year = 0;
+	private $years = 0;
 
 	public function __construct($uid)
 	{
