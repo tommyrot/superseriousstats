@@ -347,6 +347,10 @@ if (isset($_GET['y']) && preg_match('/^[12]\d{3}$/', $_GET['y']) && isset($_GET[
 	$history = new history((int) $_GET['y'], (int) $_GET['m']);
 	echo $history->make_html();
 } else {
+	/**
+	 * Use UTC until user specified timezone is loaded.
+	 */
+	date_default_timezone_set('UTC');
 	$history = new history(date('Y', strtotime('today')), date('m', strtotime('today')));
 	echo $history->make_html();
 }
