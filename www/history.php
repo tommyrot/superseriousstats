@@ -201,7 +201,7 @@ final class history
 			$total = (int) $result->l_total;
 			$query = @mysqli_query($this->mysqli, 'select `q_lines`.`ruid`, `csnick`, sum(`q_activity_by_year`.`l_total`) as `l_total`, sum(`q_activity_by_year`.`l_night`) as `l_night`, sum(`q_activity_by_year`.`l_morning`) as `l_morning`, sum(`q_activity_by_year`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_year`.`l_evening`) as `l_evening`, `quote` from `q_lines` join `q_activity_by_year` on `q_lines`.`ruid` = `q_activity_by_year`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = '.$this->year.' group by `q_lines`.`ruid` order by `q_activity_by_year`.`l_total` desc, `q_lines`.`ruid` asc limit '.$rows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
-			$head = 'Most Active People, '.date('M', mktime(0, 0, 0, $this->month, 1, $this->year)).' '.$this->year;
+			$head = 'Most Active People, '.date('F', mktime(0, 0, 0, $this->month, 1, $this->year)).' '.$this->year;
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_month` where `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' group by `date`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$result = mysqli_fetch_object($query);
 			$total = (int) $result->l_total;
@@ -351,7 +351,7 @@ if (isset($_GET['y']) && preg_match('/^[12]\d{3}$/', $_GET['y']) && isset($_GET[
 	 * Use UTC until user specified timezone is loaded.
 	 */
 	date_default_timezone_set('UTC');
-	$history = new history(date('Y', strtotime('today')), date('m', strtotime('today')));
+	$history = new history(date('Y', strtotime('today')), date('n', strtotime('today')));
 	echo $history->make_html();
 }
 
