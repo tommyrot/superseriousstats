@@ -191,7 +191,6 @@ final class html extends base
 			      . '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
 			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
-			      . '<link rel="stylesheet" type="text/css" href="ellipsis.css" />'."\n"
 			      . '<style type="text/css">'."\n"
 			      . '  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n"
 			      . '</style>'."\n"
@@ -924,7 +923,7 @@ final class html extends base
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$result->ruid.'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6"><div>'.htmlspecialchars($result->quote).'</div></td></tr>';
+			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$result->ruid.'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
 		}
 
 		return '<table class="map">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
@@ -1193,7 +1192,7 @@ final class table extends base
 			}
 		} elseif ($this->type == 'large' || $this->type == 'medium') {
 			foreach ($content as $row) {
-				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><div>'.$row[3].'</div></td></tr>';
+				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3">'.$row[3].'</td></tr>';
 			}
 		} elseif ($this->type == 'domains') {
 			foreach ($content as $row) {
@@ -1210,7 +1209,7 @@ final class table extends base
 			$prevdate = '';
 
 			foreach ($content as $row) {
-				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'"><div>'.$row[3].'</div></a></td></tr>';
+				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3"><a href="'.$row[3].'">'.$row[3].'</a></td></tr>';
 				$prevdate = $row[1];
 			}
 		}

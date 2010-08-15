@@ -1,4 +1,6 @@
-/* Global styling */
+/**
+ * Global styling
+ */
 a {
 	color:#333;
 }
@@ -55,9 +57,18 @@ body {
 	float:right;
 	font-weight:normal;
 }
-
-/* Global table styling */
-.graph,.mad,.yearly,.map,.nqsap,.tod,.small,.medium,.large {
+/**
+ * Global table styling
+ */
+.graph,
+.mad,
+.yearly,
+.map,
+.nqsap,
+.tod,
+.small,
+.medium,
+.large {
 	background-color:#EEE;
 	border-collapse:separate;
 	border-color:#666;
@@ -71,12 +82,17 @@ body {
 	margin:15px 22px 7px 0;
 	table-layout:fixed;
 }
-
-/* Specific table styling: activity graphs, most active days, yearly activity */
-.graph,.mad,.yearly {
+/**
+ * Specific table styling: activity graphs, most active days, yearly activity
+ */
+.graph,
+.mad,
+.yearly {
 	text-align:center;
 }
-.graph img,.mad img,.yearly img {
+.graph img,
+.mad img,
+.yearly img {
 	display:block;
 	margin-left:auto;
 	margin-right:auto;
@@ -89,35 +105,47 @@ body {
 	width:240px;
 }
 .yearly {
-	/* Variable width specified in HTML */
+	/**
+	 * Variable width specified in HTML
+	 */
 }
-.graph th,.mad th,.yearly th {
+.graph th,
+.mad th,
+.yearly th {
 	color:#666;
 	font-weight:bold;
 	padding:1px 0 0 3px;
 	text-align:left;
 }
-.graph tr.bars td,.mad tr.bars td,.yearly tr.bars td {
+.graph tr.bars td,
+.mad tr.bars td,
+.yearly tr.bars td {
 	height:125px;
 	padding:0;
 	vertical-align:bottom;
 }
-.graph tr.sub td,.mad tr.sub td,.yearly tr.sub td {
+.graph tr.sub td,
+.mad tr.sub td,
+.yearly tr.sub td {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 	padding:1px 0 1px 0;
 }
-.graph tr.sub td.bold,.mad tr.sub td.bold,.yearly tr.sub td.bold {
+.graph tr.sub td.bold,
+.mad tr.sub td.bold,
+.yearly tr.sub td.bold {
 	color:#666;
 }
-
-/* Specific table styling: most active people */
+/**
+ * Specific table styling: most active people
+ */
 .map {
 	text-align:left;
 	width:818px;
 }
-.map col.c1,.map col.c2 {
+.map col.c1,
+.map col.c2 {
 	width:80px;
 }
 .map col.c3 {
@@ -149,23 +177,36 @@ body {
 	padding:1px 0 1px 0;
 	vertical-align:top;
 }
-.map td.k1,.map td.k2,.map td.k3,.map td.k4,.map td.k5,.map td.k6,.map td.pos {
+.map td.k1,
+.map td.k2,
+.map td.k3,
+.map td.k4,
+.map td.k5,
+.map td.k6,
+.map td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.map td.k1,.map td.v1,.map td.k2,.map td.v2 {
+.map td.k1,
+.map td.v1,
+.map td.k2,
+.map td.v2 {
 	text-align:right;
 	padding-right:2px;
 }
-.map td.k3,.map td.v3,.map td.k5,.map td.v5 {
+.map td.k3,
+.map td.v3,
+.map td.k5,
+.map td.v5 {
 	padding-left:2px;
 }
 .map td.pos {
 	text-align:center;
 }
-
-/* Specific table styling: not quite so active people */
+/**
+ * Specific table styling: not quite so active people
+ */
 .nqsap {
 	text-align:left;
 	width:818px;
@@ -189,23 +230,28 @@ body {
 	padding:1px 0 1px 0;
 	vertical-align:top;
 }
-.nqsap td.k1,.nqsap td.k2,.nqsap td.pos {
+.nqsap td.k1,
+.nqsap td.k2,
+.nqsap td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.nqsap td.k1,.nqsap td.v1 {
+.nqsap td.k1,
+.nqsap td.v1 {
 	padding-right:2px;
 	text-align:right;
 }
-.nqsap td.k2,.nqsap td.v2 {
+.nqsap td.k2,
+.nqsap td.v2 {
 	padding-left:2px;
 }
 .nqsap td.pos {
 	text-align:center;
 }
-
-/* Specific table styling: time of day */
+/**
+ * Specific table styling: time of day
+ */
 .tod {
 	text-align:right;
 	width:818px;
@@ -230,20 +276,25 @@ body {
 	padding:1px 0 1px 0;
 	vertical-align:top;
 }
-.tod td.k,.tod td.pos {
+.tod td.k,
+.tod td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.tod td.k,.tod td.v {
+.tod td.k,
+.tod td.v {
 	padding-right:2px;
 }
 .tod td.pos {
 	text-align:center;
 }
-
-/* Specific table styling: small, medium, large */
-.small,.medium,.large {
+/**
+ * Specific table styling: small, medium, large
+ */
+.small,
+.medium,
+.large {
 	text-align:left;
 }
 .small {
@@ -255,10 +306,14 @@ body {
 .large {
 	width:818px;
 }
-.small col.c1,.medium col.c1,.medium col.c3,.large col.c1 {
+.small col.c1,
+.medium col.c1,
+.medium col.c3,
+.large col.c1 {
 	width:80px;
 }
-.small col.c2,.large col.c2 {
+.small col.c2,
+.large col.c2 {
 	width:140px;
 }
 .medium col.c2 {
@@ -267,30 +322,70 @@ body {
 .large col.c3 {
 	width:560px;
 }
-.small col.pos,.medium col.pos,.large col.pos {
+.small col.pos,
+.medium col.pos,
+.large col.pos {
 	width:36px;
 }
-.small th,.medium th,.large th {
+.small th,
+.medium th,
+.large th {
 	color:#666;
 	font-weight:bold;
 	padding:1px 3px 1px 3px;
 }
-.small td,.medium td,.large td {
+.small td,
+.medium td,
+.large td {
 	padding:1px 0 1px 0;
 	vertical-align:top;
 }
-.small td.k1,.small td.k2,.small td.pos,.medium td.k1,.medium td.k2,.medium td.k3,.medium td.pos,.large td.k1,.large td.k2,.large td.k3,.large td.pos {
+.small td.k1,
+.small td.k2,
+.small td.pos,
+.medium td.k1,
+.medium td.k2,
+.medium td.k3,
+.medium td.pos,
+.large td.k1,
+.large td.k2,
+.large td.k3,
+.large td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.small td.k1,.small td.v1,.medium td.k1,.medium td.v1,.medium td.k3,.medium td.v3,.large td.k1,.large td.v1 {
+.small td.k1,
+.small td.v1,
+.medium td.k1,
+.medium td.v1,
+.medium td.k3,
+.medium td.v3,
+.large td.k1,
+.large td.v1 {
 	padding-right:2px;
 	text-align:right;
 }
-.small td.k2,.small td.v2,.medium td.k2,.medium td.v2,.large td.k2,.large td.v2 {
+.small td.k2,
+.small td.v2,
+.medium td.k2,
+.medium td.v2,
+.large td.k2,
+.large td.v2 {
 	padding-left:2px;
 }
-.small td.pos,.medium td.pos,.large td.pos {
+.small td.pos,
+.medium td.pos,
+.large td.pos {
 	text-align:center;
+}
+/**
+ * Ellipsis, ahead of final CSS spec
+ */
+.map td.v6,
+.large td.v3 {
+	-o-text-overflow: ellipsis;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
 }
