@@ -875,6 +875,7 @@ final class html extends base
 			return;
 		}
 
+		$tr0 = '<col class="c1" /><col class="c2" /><col class="pos" /><col class="c3" /><col class="c4" /><col class="c5" /><col class="c6" />';
 		$tr1 = '<tr><th colspan="7"><span class="left">'.$head.'</span>'.($this->history ? '<span class="right"><a href="history.php">History</a></span>' : '').'</th></tr>';
 		$tr2 = '<tr><td class="k1">Percentage</td><td class="k2">Lines</td><td class="pos"></td><td class="k3">User</td><td class="k4">When?</td><td class="k5">Last Seen</td><td class="k6">Quote</td></tr>';
 		$trx = '';
@@ -926,7 +927,7 @@ final class html extends base
 			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$result->ruid.'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6"><div>'.htmlspecialchars($result->quote).'</div></td></tr>';
 		}
 
-		return '<table class="map">'.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="map">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
 	private function make_table_mostactivetimes()
@@ -1033,6 +1034,7 @@ final class html extends base
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$total = (int) $result->total - $offset - $rowcount;
+		$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" />';
 		$tr1 = '<tr><th colspan="12"><span class="left">Not Quite so Active People, Alltime</span>'.($total == 0 ? '' : '<span class="right">'.number_format($total).' people had even less to say..</span>').'</th></tr>';
 		$tr2 = '<tr><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td></tr>';
 		$trx = '';
@@ -1047,7 +1049,7 @@ final class html extends base
 			$trx .= '</tr>';
 		}
 
-		return '<table class="nqsap">'.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="nqsap">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
 	private function make_table_timeofday($rows)
@@ -1070,6 +1072,7 @@ final class html extends base
 			}
 		}
 
+		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
 		$tr1 = '<tr><th colspan="5">Activity, by Time of Day</th></tr>';
 		$tr2 = '<tr><td class="pos"></td><td class="k">Nightcrawlers<br />0h - 5h</td><td class="k">Early Birds<br />6h - 11h</td><td class="k">Afternoon Shift<br />12h - 17h</td><td class="k">Evening Chatters<br />18h - 23h</td></tr>';
 		$tr3 = '';
@@ -1098,7 +1101,7 @@ final class html extends base
 			}
 		}
 
-		return '<table class="tod">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="tod">'.$tr0.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 }
 
@@ -1173,10 +1176,12 @@ final class table extends base
 		}
 
 		if ($this->type == 'small') {
+			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" />';
 			$tr1 = '<tr><th colspan="3"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td></tr>';
 			$trx = '';
 		} elseif ($this->type == 'large' || $this->type == 'domains' || $this->type == 'medium' || $this->type == 'topics' || $this->type == 'urls') {
+			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c3" />';
 			$tr1 = '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
 			$trx = '';
@@ -1211,11 +1216,11 @@ final class table extends base
 		}
 
 		if ($this->type == 'small') {
-			return '<table class="small">'.$tr1.$tr2.$trx.'</table>'."\n";
+			return '<table class="small">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 		} elseif ($this->type == 'medium'  || $this->type == 'domains') {
-			return '<table class="medium">'.$tr1.$tr2.$trx.'</table>'."\n";
+			return '<table class="medium">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 		} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'urls') {
-			return '<table class="large">'.$tr1.$tr2.$trx.'</table>'."\n";
+			return '<table class="large">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 		}
 	}
 }
