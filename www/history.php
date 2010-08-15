@@ -131,7 +131,6 @@ final class history
 			. '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
 			. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
-			. '<link rel="stylesheet" type="text/css" href="ellipsis.css" />'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n\n"
 			. '<div class="info">'.htmlspecialchars($this->channel).', seriously.</div>'."\n";
@@ -212,6 +211,7 @@ final class history
 			return;
 		}
 
+		$tr0 = '<col class="c1" /><col class="c2" /><col class="pos" /><col class="c3" /><col class="c4" /><col class="c5" /><col class="c6" />';
 		$tr1 = '<tr><th colspan="7">'.$head.'</th></tr>';
 		$tr2 = '<tr><td class="k1">Percentage</td><td class="k2">Lines</td><td class="pos"></td><td class="k3">User</td><td class="k4">When?</td><td class="k5">Last Seen</td><td class="k6">Quote</td></tr>';
 		$trx = '';
@@ -260,10 +260,10 @@ final class history
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$result->ruid.'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6"><div>'.htmlspecialchars($result->quote).'</div></td></tr>';
+			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?uid='.$result->ruid.'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
 		}
 
-		return '<table class="map">'.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="map">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
 	private function make_table_mostactivetimes($type)
