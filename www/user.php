@@ -55,6 +55,7 @@ final class user
 	private $l_total = 0;
 	private $lastseen = '';
 	private $month = 0;
+	private $mood = '';
 	private $mysqli;
 	private $ruid = 0;
 	private $uid = 0;
@@ -105,6 +106,47 @@ final class user
 		$this->l_total = (int) $result->l_total;
 
 		/**
+		 * Fetch the users mood.
+		 */
+		$query = @mysqli_query($this->mysqli, 'select `s_01` as `s_01`, `s_02` as `s_02`, `s_03` as `s_03`, `s_04` as `s_04`, `s_05` as `s_05`, `s_06` as `s_06`, `s_07` as `s_07`, `s_08` as `s_08`, `s_09` as `s_09`, `s_10` as `s_10`, `s_11` as `s_11`, `s_12` as `s_12`, `s_13` as `s_13`, `s_14` as `s_14`, `s_15` as `s_15`, `s_16` as `s_16`, `s_17` as `s_17`, `s_18` as `s_18`, `s_19` as `s_19` from `q_smileys` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
+			$high_key = '';
+			$high_value = 0;
+
+			foreach ($result as $key => $value) {
+				if ((int) $value > $high_value) {
+					$high_key = $key;
+					$high_value = (int) $value;
+				}
+			}
+
+			$smileys = array(
+				's_01' => '=]',
+				's_02' => '=)',
+				's_03' => ';x',
+				's_04' => ';p',
+				's_05' => ';]',
+				's_06' => ';-)',
+				's_07' => ';)',
+				's_08' => ';(',
+				's_09' => ':x',
+				's_10' => ':P',
+				's_11' => ':D',
+				's_12' => ':>',
+				's_13' => ':]',
+				's_14' => ':\\',
+				's_15' => ':/',
+				's_16' => ':-)',
+				's_17' => ':)',
+				's_18' => ':(',
+				's_19' => '\\o/');
+			$this->mood = ' '.$smileys[$high_key][0];
+		}
+
+		/**
 		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
 		 */
 		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
@@ -140,7 +182,7 @@ final class user
 			. '</style>'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n\n"
-			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously.<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
+			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? $this->mood : '.').'<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
 			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' lines on '.htmlspecialchars($this->channel).', an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.</div>'."\n";
 
 		/**
