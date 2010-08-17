@@ -25,6 +25,7 @@ final class nicklinker extends base
 	 * Default settings for this script, can be overridden in the config file.
 	 * These should all appear in $settings_list[] along with their type.
 	 */
+	private $autolinknicks = true;
 	private $db_host = '';
 	private $db_name = '';
 	private $db_pass = '';
@@ -38,6 +39,7 @@ final class nicklinker extends base
 	private $mysqli;
 	private $settings = array();
 	private $settings_list = array(
+		'autolinknicks' => 'bool',
 		'db_host' => 'string',
 		'db_name' => 'string',
 		'db_pass' => 'string',
@@ -86,45 +88,51 @@ final class nicklinker extends base
 	private function export($file)
 	{
 		$this->output('notice', 'export(): exporting nicks');
-		$query = @mysqli_query($this->mysqli, 'select `ruid`, `status` from `user_status` where `status` = 1 or `status` = 3 order by `ruid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `user_status`.`uid`, `ruid`, `status`, `csnick` from `user_status` join `user_details` on `user_status`.`uid` = `user_details`.`uid` left join `user_lines` on `user_status`.`uid` = `user_lines`.`uid` order by `l_total` desc, `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
+
+		if (empty($rows)) {
+			$this->output('critical', 'export(): database is empty');
+		}
+
+		while ($result = mysqli_fetch_object($query)) {
+			$nick = strtolower($result->csnick);
+			$status[$result->uid] = (int) $result->status;
+			$users[$result->ruid][] = $nick;
+		}
+
 		$output = '';
 		$i = 0;
 
-		if (!empty($rows)) {
-			while ($result = mysqli_fetch_object($query)) {
-				$ruids[] = $result->ruid;
-				$status[$result->ruid] = $result->status;
-			}
-
-			foreach ($ruids as $ruid) {
+		foreach ($users as $ruid => $aliases) {
+			if ($status[$ruid] == 1 || $status[$ruid] == 3) {
 				$output .= $status[$ruid];
-				$query = @mysqli_query($this->mysqli, 'select `csnick` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` and `ruid` = '.$ruid.' order by `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				$rows = mysqli_num_rows($query);
 
-				if (!empty($rows)) {
-					while ($result = mysqli_fetch_object($query)) {
-						$output .= ','.$result->csnick;
-						$i++;
-					}
+				foreach ($aliases as $nick) {
+					$output .= ','.$nick;
+					$i++;
 				}
 
 				$output .= "\n";
+			} else {
+				$unlinked[] = $aliases[0];
 			}
 		}
 
-		$query = @mysqli_query($this->mysqli, 'select `csnick` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `status` = 0 order by `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (!empty($rows)) {
+		if (!empty($unlinked)) {
+			sort($unlinked);
 			$output .= '*';
 
-			while ($result = mysqli_fetch_object($query)) {
-				$output .= ','.$result->csnick;
+			foreach ($unlinked as $nick) {
+				$output .= ','.$nick;
 				$i++;
 			}
 
 			$output .= "\n";
+		}
+
+		if ($i != $rows) {
+			$this->output('critical', 'export(): something is wrong, run "php sss.php -m" before export');
 		}
 
 		if (($fp = @fopen($file, 'wb')) === false) {
@@ -142,11 +150,8 @@ final class nicklinker extends base
 		$query = @mysqli_query($this->mysqli, 'select `uid`, `csnick` from `user_details`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
-		/**
-		 * Stop if there are no nicks in the database since there wouldn't be anything to link..
-		 */
 		if (empty($rows)) {
-			return;
+			$this->output('critical', 'import(): database is empty');
 		}
 
 		while ($result = mysqli_fetch_object($query)) {

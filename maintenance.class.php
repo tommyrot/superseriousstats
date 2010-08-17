@@ -124,18 +124,18 @@ final class maintenance extends base
 			}
 
 			while ($result_valid_ruids = mysqli_fetch_object($query_valid_ruids)) {
-				$valid_ruids_list[] = $result_valid_ruids->ruid;
+				$valid_ruids[] = $result_valid_ruids->ruid;
 			}
 
 			while ($result_linked_ruids = mysqli_fetch_object($query_linked_ruids)) {
-				$linked_ruids_list[] = $result_linked_ruids->ruid;
+				$linked_ruids[] = $result_linked_ruids->ruid;
 			}
 
 			/**
 			 * Do what we're here to do, unlink when appropriate.
 			 */
-			foreach ($linked_ruids_list as $ruid) {
-				if (in_array($ruid, $valid_ruids_list)) {
+			foreach ($linked_ruids as $ruid) {
+				if (in_array($ruid, $valid_ruids)) {
 					continue;
 				}
 
