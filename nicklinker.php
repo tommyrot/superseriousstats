@@ -85,6 +85,9 @@ final class nicklinker extends base
 		@mysqli_close($this->mysqli);
 	}
 
+	/**
+	 * Export nicks sorted on lines typed. Unlinked nicks are in alphabetical order.
+	 */
 	private function export($file)
 	{
 		$this->output('notice', 'export(): exporting nicks');
@@ -96,17 +99,16 @@ final class nicklinker extends base
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
-			$nick = strtolower($result->csnick);
-			$status[$result->uid] = (int) $result->status;
-			$users[$result->ruid][] = $nick;
+			$statuses[$result->uid] = (int) $result->status;
+			$users[$result->ruid][] = strtolower($result->csnick);
 		}
 
 		$output = '';
 		$i = 0;
 
 		foreach ($users as $ruid => $aliases) {
-			if ($status[$ruid] == 1 || $status[$ruid] == 3) {
-				$output .= $status[$ruid];
+			if ($statuses[$ruid] == 1 || $statuses[$ruid] == 3) {
+				$output .= $statuses[$ruid];
 
 				foreach ($aliases as $nick) {
 					$output .= ','.$nick;
@@ -115,6 +117,9 @@ final class nicklinker extends base
 
 				$output .= "\n";
 			} else {
+				/**
+				 * There's only one nick linked to a user with status 0; itself. Other options fail at the end of this method.
+				 */
 				$unlinked[] = $aliases[0];
 			}
 		}
@@ -144,6 +149,9 @@ final class nicklinker extends base
 		$this->output('notice', 'export(): '.number_format($i).' nicks exported');
 	}
 
+	/**
+	 * Import nicks from file. First nick on each line is the initial registered nick to which aliases are linked.
+	 */
 	private function import($file)
 	{
 		$this->output('notice', 'import(): importing nicks');
@@ -155,13 +163,13 @@ final class nicklinker extends base
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
-			$nick2uid[strtolower($result->csnick)] = $result->uid;
+			$uids[strtolower($result->csnick)] = $result->uid;
 		}
 
 		/**
 		 * Set all nicks to their default status before updating any records from the input file.
 		 */
-		@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		//@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
 		if (($rp = realpath($file)) === false) {
 			$this->output('critical', 'import(): no such file: \''.$file.'\'');
@@ -173,31 +181,81 @@ final class nicklinker extends base
 
 		while (!feof($fp)) {
 			$line = fgets($fp);
+			$line = preg_replace('/\s/', '', $line);
 			$lineparts = explode(',', strtolower($line));
-			$status = trim($lineparts[0]);
 
-			/**
-			 * Only lines starting with the number 1 (normal user) or 3 (bot) will be used when updating the user records.
-			 * The first nick on each line will initially be used as the "main" nick, and gets the status 1 or 3, as specified in the imported nicks file.
-			 * Additional nicks on the same line will be linked to this "main" nick and get the status 2, indicating it being an alias.
-			 * Run "php sss.php -m" afterwards to start database maintenance. This will ensure all userstats are properly accumulated according to your latest changes.
-			 */
-			if ($status != '1' && $status != '3') {
-				continue;
-			}
-
-			$nick_main = trim($lineparts[1]);
-
-			if (!empty($nick_main) && array_key_exists($nick_main, $nick2uid)) {
-				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = '.$status.' where `uid` = '.$nick2uid[$nick_main]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			if (($lineparts[0] == '1' || $lineparts[0] == '3') && !empty($lineparts[1])) {
+				$status = (int) $lineparts[0];
+				$nick = $lineparts[1];
+				$uid = $uids[$nick];
+				$statuses[$uid] = $status;
+				$users[$uid][] = $nick;
+				$linked2uid[$nick] = $uid;
 
 				for ($i = 2, $j = count($lineparts); $i < $j; $i++) {
-					$nick = trim($lineparts[$i]);
-
-					if (!empty($nick) && array_key_exists($nick, $nick2uid)) {
-						@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$nick2uid[$nick_main].', `status` = 2 where `uid` = '.$nick2uid[$nick]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+					if (!empty($lineparts[$i])) {
+						$nick = $lineparts[$i];
+						$users[$uid][] = $nick;
+						$linked2uid[$nick] = $uid;
 					}
 				}
+			} elseif ($lineparts[0] == '*') {
+				for ($i = 1, $j = count($lineparts); $i < $j; $i++) {
+					if (!empty($lineparts[$i])) {
+						$nick = $lineparts[$i];
+						$unlinked[] = $nick;
+					}
+				}
+			}
+		}
+
+		if ($this->autolinknicks && !empty($unlinked)) {
+			foreach ($unlinked as $nick) {
+				/**
+				 * We attempt to link nicks with special chars in them to nicks that don't. Not the other way around.
+				 */
+				$tmpnick = preg_replace('/[^a-z0-9]+/', '', $nick);
+
+				/**
+				 * Nicks of length 1 are bogus, we skip those.
+				 */
+				if ($tmpnick != $nick && strlen($tmpnick) > 1) {
+					/**
+					 * See if the trimmed nick exists.
+					 */
+					if (!empty($uids[$tmpnick])) {
+						/**
+						 * Trimmed nick exists, is it linked or unlinked?
+						 */
+						if (!empty($linked2uid[$tmpnick])) {
+							/**
+							 * It's linked, use the uid to link the untrimmed nick to.
+							 */
+							$uid = $linked2uid[$tmpnick];
+							$users[$uid][] = $nick;
+						} else {
+							/**
+							 * It's unlinked, create user for uid of trimmed nick and link both trimmed and untrimmed nicks to it.
+							 */
+							$uid = $uids[$tmpnick];
+							$statuses[$uid] = 1;
+							$users[$uid][] = $tmpnick;
+							$linked2uid[$tmpnick] = $uid;
+							$users[$uid][] = $nick;
+							$linked2uid[$nick] = $uid;
+						}
+
+						$this->output('debug', 'import(): linked \''.$nick.'\' to \''.$tmpnick.'\'');
+					}
+				}
+			}
+		}
+
+		foreach ($users as $uid => $aliases) {
+			@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = '.$statuses[$uid].' where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
+			for ($i = 1, $j = count($aliases); $i < $j; $i++) {
+				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$uid.', `status` = 2 where `uid` = '.$uids[$aliases[$i]]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			}
 		}
 
