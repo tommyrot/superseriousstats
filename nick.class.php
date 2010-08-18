@@ -24,7 +24,6 @@ final class nick extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $hosts_list = array();
 	private $long_ex_actions_list = array();
 	private $long_ex_exclamations_list = array();
 	private $long_ex_questions_list = array();
@@ -158,15 +157,6 @@ final class nick extends base
 	public function __construct($csnick)
 	{
 		$this->csnick = $csnick;
-	}
-
-	public function add_host($cshost)
-	{
-		$host = strtolower($cshost);
-
-		if (!in_array($host, $this->hosts_list)) {
-			$this->hosts_list[] = $host;
-		}
 	}
 
 	/**
@@ -346,28 +336,6 @@ final class nick extends base
 
 			if (!is_null($createdquery)) {
 				@mysqli_query($this->mysqli, 'update `user_smileys` set'.$createdquery.' where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			}
-		}
-
-		/**
-		 * Write data to database table "user_hosts".
-		 */
-		if (!empty($this->hosts_list)) {
-			foreach ($this->hosts_list as $host) {
-				$query = @mysqli_query($this->mysqli, 'select `hid` from `user_hosts` where `host` = \''.mysqli_real_escape_string($this->mysqli, $host).'\' group by `host`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				$rows = mysqli_num_rows($query);
-
-				if (empty($rows)) {
-					@mysqli_query($this->mysqli, 'insert into `user_hosts` set `hid` = 0, `uid` = '.$this->uid.', `host` = \''.mysqli_real_escape_string($this->mysqli, $host).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				} else {
-					$result = mysqli_fetch_object($query);
-					$query = @mysqli_query($this->mysqli, 'select * from `user_hosts` where `hid` = '.$result->hid.' and `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-					$rows = mysqli_num_rows($query);
-
-					if (empty($rows)) {
-						@mysqli_query($this->mysqli, 'insert into `user_hosts` set `hid` = '.$result->hid.', `uid` = '.$this->uid.', `host` = \''.mysqli_real_escape_string($this->mysqli, $host).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-					}
-				}
 			}
 		}
 

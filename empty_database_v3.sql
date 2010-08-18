@@ -1106,23 +1106,6 @@ CREATE TABLE `user_events` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `user_hosts`
---
-
-DROP TABLE IF EXISTS `user_hosts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user_hosts` (
-  `hid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `uid` int(10) unsigned NOT NULL DEFAULT '0',
-  `host` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`hid`,`uid`),
-  KEY `uid` (`uid`),
-  KEY `host` (`host`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `user_lines`
 --
 

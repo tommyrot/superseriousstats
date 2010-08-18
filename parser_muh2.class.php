@@ -56,14 +56,14 @@ final class parser_muh2 extends parser
 		/**
 		 * "Join" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Joins: (?<nick>\S+) \(~?(?<host>\S+)\)$/', $line, $matches)) {
-			$this->set_join($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Joins: (?<nick>\S+) \(~?\S+\)$/', $line, $matches)) {
+			$this->set_join($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Quit" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Quits: (?<nick>\S+) \(~?(?<host>\S+)\) \(.*\)$/', $line, $matches)) {
-			$this->set_quit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Quits: (?<nick>\S+) \(~?\S+\) \(.*\)$/', $line, $matches)) {
+			$this->set_quit($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Mode" lines.
@@ -78,7 +78,7 @@ final class parser_muh2 extends parser
 				if ($mode == '-' || $mode == '+') {
 					$modesign = $mode;
 				} else {
-					$this->set_mode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modenum], $modesign.$mode, null);
+					$this->set_mode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modenum], $modesign.$mode);
 					$modenum++;
 				}
 			}
@@ -102,15 +102,15 @@ final class parser_muh2 extends parser
 		/**
 		 * "Part" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Parts: (?<nick>\S+) \(~?(?<host>\S+)\)$/', $line, $matches)) {
-			$this->set_part($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Parts: (?<nick>\S+) \(~?\S+\)$/', $line, $matches)) {
+			$this->set_part($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Topic" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* (?<nick>\S+) changes topic to \'(?<line>.+)\'$/', $line, $matches)) {
 			if ($matches['line'] != ' ') {
-				$this->set_topic($this->date.' '.$matches['time'], $matches['nick'], null, $matches['line']);
+				$this->set_topic($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 			}
 
 		/**

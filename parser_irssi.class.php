@@ -60,14 +60,14 @@ final class parser_irssi extends parser
 		/**
 		 * "Join" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[~?(?<host>\S+)\] has joined [#&!+]\S+$/', $line, $matches)) {
-			$this->set_join($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[~?\S+\] has joined [#&!+]\S+$/', $line, $matches)) {
+			$this->set_join($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Quit" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[~?(?<host>\S+)\] has quit \[.*\]$/', $line, $matches)) {
-			$this->set_quit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[~?\S+\] has quit \[.*\]$/', $line, $matches)) {
+			$this->set_quit($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Mode" lines.
@@ -82,7 +82,7 @@ final class parser_irssi extends parser
 				if ($mode == '-' || $mode == '+') {
 					$modesign = $mode;
 				} else {
-					$this->set_mode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modenum], $modesign.$mode, null);
+					$this->set_mode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modenum], $modesign.$mode);
 					$modenum++;
 				}
 			}
@@ -106,14 +106,14 @@ final class parser_irssi extends parser
 		/**
 		 * "Part" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[~?(?<host>\S+)\] has left [#&!+]\S+ \[.*\]$/', $line, $matches)) {
-			$this->set_part($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[~?\S+\] has left [#&!+]\S+ \[.*\]$/', $line, $matches)) {
+			$this->set_part($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Topic" lines.
 		 */
 		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) changed the topic of [#&!+]\S+ to: (?<line>.+)$/', $line, $matches)) {
-			$this->set_topic($this->date.' '.$matches['time'], $matches['nick'], null, $matches['line']);
+			$this->set_topic($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 
 		/**
 		 * "Kick" lines.

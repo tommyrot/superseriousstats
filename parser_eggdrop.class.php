@@ -64,19 +64,19 @@ final class parser_eggdrop extends parser
 		/**
 		 * "Join" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<nick>\S+) \(~?(?<host>\S+)\) joined [#&!+]\S+\.$/', $line, $matches)) {
-			$this->set_join($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<nick>\S+) \(~?\S+\) joined [#&!+]\S+\.$/', $line, $matches)) {
+			$this->set_join($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Quit" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<nick>\S+) \(~?(?<host>\S+)\) left irc:( .+)?$/', $line, $matches)) {
-			$this->set_quit($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<nick>\S+) \(~?\S+\) left irc:( .+)?$/', $line, $matches)) {
+			$this->set_quit($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] [#&!+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+?)(!(~?(?<host>\S+))?)?$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] [#&!+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+?)(!(~?\S+)?)?$/', $line, $matches)) {
 			$nicks = explode(' ', $matches['nicks']);
 			$modenum = 0;
 
@@ -86,7 +86,7 @@ final class parser_eggdrop extends parser
 				if ($mode == '-' || $mode == '+') {
 					$modesign = $mode;
 				} else {
-					$this->set_mode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modenum], $modesign.$mode, (!empty($matches['host']) ? $matches['host'] : null));
+					$this->set_mode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modenum], $modesign.$mode);
 					$modenum++;
 				}
 			}
@@ -110,14 +110,14 @@ final class parser_eggdrop extends parser
 		/**
 		 * "Part" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<nick>\S+) \(~?(?<host>\S+)\) left [#&!+]\S+( \(.*\))?\.$/', $line, $matches)) {
-			$this->set_part($this->date.' '.$matches['time'], $matches['nick'], $matches['host']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<nick>\S+) \(~?\S+\) left [#&!+]\S+( \(.*\))?\.$/', $line, $matches)) {
+			$this->set_part($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Topic" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Topic changed on [#&!+]\S+ by (?<nick>\S+?)(!(~?(?<host>\S+))?)?: (?<line>.+)$/', $line, $matches)) {
-			$this->set_topic($this->date.' '.$matches['time'], $matches['nick'], (!empty($matches['host']) ? $matches['host'] : null), $matches['line']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Topic changed on [#&!+]\S+ by (?<nick>\S+?)(!(~?\S+)?)?: (?<line>.+)$/', $line, $matches)) {
+			$this->set_topic($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 
 		/**
 		 * "Kick" lines.

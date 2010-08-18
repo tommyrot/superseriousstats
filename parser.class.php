@@ -209,19 +209,13 @@ abstract class parser extends base
 		}
 	}
 
-	final protected function set_join($datetime, $csnick, $cshost)
+	final protected function set_join($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('warning', 'set_join(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('joins', 1);
-
-			if ($cshost == '0' || strlen($cshost) > 255) {
-				$this->output('warning', 'set_join(): invalid host: \''.$cshost.'\' on line '.$this->linenum);
-			} else {
-				$this->nicks_objs[$nick]->add_host($cshost);
-			}
 		}
 	}
 
@@ -244,7 +238,7 @@ abstract class parser extends base
 		}
 	}
 
-	final protected function set_mode($datetime, $csnick_performing, $csnick_undergoing, $mode, $cshost)
+	final protected function set_mode($datetime, $csnick_performing, $csnick_undergoing, $mode)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			$this->output('warning', 'set_mode(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -271,14 +265,6 @@ abstract class parser extends base
 					$this->nicks_objs[$nick_performing]->add_value('m_devoice', 1);
 					$this->nicks_objs[$nick_undergoing]->add_value('m_devoiced', 1);
 					break;
-			}
-
-			if (!is_null($cshost)) {
-				if ($cshost == '0' || strlen($cshost) > 255) {
-					$this->output('warning', 'set_mode(): invalid host: \''.$cshost.'\' on line '.$this->linenum);
-				} else {
-					$this->nicks_objs[$nick_performing]->add_host($cshost);
-				}
 			}
 		}
 	}
@@ -433,35 +419,23 @@ abstract class parser extends base
 		}
 	}
 
-	final protected function set_part($datetime, $csnick, $cshost)
+	final protected function set_part($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('warning', 'set_part(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('parts', 1);
-
-			if ($cshost == '0' || strlen($cshost) > 255) {
-				$this->output('warning', 'set_part(): invalid host: \''.$cshost.'\' on line '.$this->linenum);
-			} else {
-				$this->nicks_objs[$nick]->add_host($cshost);
-			}
 		}
 	}
 
-	final protected function set_quit($datetime, $csnick, $cshost)
+	final protected function set_quit($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('warning', 'set_quit(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('quits', 1);
-
-			if ($cshost == '0' || strlen($cshost) > 255) {
-				$this->output('warning', 'set_quit(): invalid host: \''.$cshost.'\' on line '.$this->linenum);
-			} else {
-				$this->nicks_objs[$nick]->add_host($cshost);
-			}
 		}
 	}
 
@@ -496,21 +470,13 @@ abstract class parser extends base
 		}
 	}
 
-	final protected function set_topic($datetime, $csnick, $cshost, $line)
+	final protected function set_topic($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('warning', 'set_topic(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('topics', 1);
-
-			if (!is_null($cshost)) {
-				if ($cshost == '0' || strlen($cshost) > 255) {
-					$this->output('warning', 'set_topic(): invalid host: \''.$cshost.'\' on line '.$this->linenum);
-				} else {
-					$this->nicks_objs[$nick]->add_host($cshost);
-				}
-			}
 
 			/**
 			 * Keep track of every single topic set.
