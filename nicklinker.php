@@ -166,11 +166,6 @@ final class nicklinker extends base
 			$uids[strtolower($result->csnick)] = $result->uid;
 		}
 
-		/**
-		 * Set all nicks to their default status before updating any records from the input file.
-		 */
-		//@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
 		if (($rp = realpath($file)) === false) {
 			$this->output('critical', 'import(): no such file: \''.$file.'\'');
 		}
@@ -250,6 +245,11 @@ final class nicklinker extends base
 				}
 			}
 		}
+
+		/**
+		 * Set all nicks to their default status before updating them according to new data.
+		 */
+		@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
 		foreach ($users as $uid => $aliases) {
 			@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = '.$statuses[$uid].' where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
