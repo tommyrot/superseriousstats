@@ -225,19 +225,20 @@ final class nicklinker extends base
 						if (!empty($linked2uid[$tmpnick])) {
 							/**
 							 * It's linked, use the uid to link the untrimmed nick to.
+							 * Untrimmed nick doesn't need a pointer to the nick it's linked to since no other nick will link to it.
 							 */
 							$uid = $linked2uid[$tmpnick];
 							$users[$uid][] = $nick;
 						} else {
 							/**
 							 * It's unlinked, create user for uid of trimmed nick and link both trimmed and untrimmed nicks to it.
+							 * Untrimmed nick doesn't need a pointer to the nick it's linked to since no other nick will link to it.
 							 */
 							$uid = $uids[$tmpnick];
 							$statuses[$uid] = 1;
 							$users[$uid][] = $tmpnick;
 							$linked2uid[$tmpnick] = $uid;
 							$users[$uid][] = $nick;
-							$linked2uid[$nick] = $uid;
 						}
 
 						$this->output('debug', 'import(): linked \''.$nick.'\' to \''.$tmpnick.'\'');
