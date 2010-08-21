@@ -86,73 +86,33 @@ final class history
 
 		$this->firstyearparsed = (int) $result->firstyearparsed;
 		$this->lastyearparsed = (int) $result->lastyearparsed;
-		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by substring(`date`, 1, 4), substring(`date`, 6, 2) having `l_total` != 0 order by `year` asc, `month` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
-		while ($result = mysqli_fetch_object($query)) {
-			if (strpos($result->month, '0') === 0) {
-				$result->month = substr($result->month, 1);
-			}
-
-			$activity[(int) $result->year][(int) $result->month] = (int) $result->l_total;
-
-			if (!isset($activity[(int) $result->year][0])) {
-				$activity[(int) $result->year][0] = 0;
-			}
-
-			$activity[(int) $result->year][0] += (int) $result->l_total;
-		}
-
-		$index = '';
-
-		for ($year = $this->firstyearparsed; $year <= $this->lastyearparsed; $year++) {
-			if (array_key_exists($year, $activity)) {
-				$index .= '<a href="history.php?y='.$year.'&amp;m=0">'.$year.'</a> - ';
-
-				for ($month = 1; $month <= 12; $month++) {
-					if (array_key_exists($month, $activity[$year])) {
-						$index .= '<a href="history.php?y='.$year.'&amp;m='.$month.'">'.date('F', mktime(0, 0, 0, $month, 1, $year)).'</a> - ';
-					} else {
-						$index .= date('F', mktime(0, 0, 0, $month, 1, $year)).' - ';
-					}
-				}
-
-				$index = substr($index, 0, -3).'<br />';
-			}
-		}
-
-		$index = substr($index, 0, -6);
 
 		/**
 		 * HTML Head
 		 */
 		$output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
-			. '<head>'."\n".'<title>'.htmlspecialchars($this->channel).', seriously.</title>'."\n"
+			. '<head>'."\n".'<title>'.htmlspecialchars($this->channel).', historically.</title>'."\n"
 			. '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
 			. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n\n"
-			. '<div class="info">'.htmlspecialchars($this->channel).', seriously.</div>'."\n";
-
-		/**
-		 * History section
-		 */
-		$output .= '<div class="head">History</div>'."\n";
-		$output .= '<div class="index">'.$index.'</div>'."\n";
+			. '<div class="info">'.htmlspecialchars($this->channel).', historically.</div>'."\n";
 
 		/**
 		 * Activity section
 		 */
-		if (array_key_exists($this->year, $activity) && ($this->month == 0 || array_key_exists($this->month, $activity[$this->year]))) {
-			$output .= '<div class="head">Activity</div>'."\n";
+		$output .= '<div class="head">Activity</div>'."\n";
+		$output .= $this->make_index();
 
+		if (array_key_exists($this->year, $this->activity) && ($this->month == 0 || array_key_exists($this->month, $this->activity[$this->year]))) {
 			if ($this->month == 0) {
-				$this->l_total = $activity[$this->year][$this->month];
+				$this->l_total = $this->activity[$this->year][$this->month];
 				$output .= $this->make_table_mostactivetimes('year');
 				$output .= $this->make_table_mostactivepeople('year', $this->rows_map_year);
 			} else {
-				$this->l_total = $activity[$this->year][$this->month];
+				$this->l_total = $this->activity[$this->year][$this->month];
 				$output .= $this->make_table_mostactivetimes('month');
 				$output .= $this->make_table_mostactivepeople('month', $this->rows_map_month);
 			}
@@ -165,6 +125,47 @@ final class history
 		$output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 		@mysqli_close($this->mysqli);
 		return $output;
+	}
+
+	private function make_index() {
+		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by substring(`date`, 1, 4), substring(`date`, 6, 2) having `l_total` != 0 order by `year` asc, `month` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
+		while ($result = mysqli_fetch_object($query)) {
+			if (strpos($result->month, '0') === 0) {
+				$result->month = substr($result->month, 1);
+			}
+
+			$this->activity[(int) $result->year][(int) $result->month] = (int) $result->l_total;
+
+			if (!isset($this->activity[(int) $result->year][0])) {
+				$this->activity[(int) $result->year][0] = 0;
+			}
+
+			$this->activity[(int) $result->year][0] += (int) $result->l_total;
+		}
+
+		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
+		$tr1 = '<tr><th colspan="13">History</th></tr>';
+		$tr2 = '<tr><td class="pos"></td><td class="k">Jan</td><td class="k">Feb</td><td class="k">Mar</td><td class="k">Apr</td><td class="k">May</td><td class="k">Jun</td><td class="k">Jul</td><td class="k">Aug</td><td class="k">Sep</td><td class="k">Oct</td><td class="k">Nov</td><td class="k">Dec</td></tr>';
+		$trx = '';
+
+		for ($year = $this->firstyearparsed; $year <= $this->lastyearparsed; $year++) {
+			if (array_key_exists($year, $this->activity)) {
+				$trx .= '<tr><td class="pos"><a href="history.php?y='.$year.'&amp;m=0">'.$year.'</a></td>';
+
+				for ($month = 1; $month <= 12; $month++) {
+					if (array_key_exists($month, $this->activity[$year])) {
+						$trx .= '<td class="v"><a href="history.php?y='.$year.'&amp;m='.$month.'">'.number_format($this->activity[$year][$month]).'</a></td>';
+					} else {
+						$trx .= '<td class="v"><span class="grey">n/a</span></td>';
+					}
+				}
+
+				$trx .= '</tr>';
+			}
+		}
+
+		return '<table class="index">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
 	/**
@@ -343,15 +344,8 @@ final class history
 	}
 }
 
-if (isset($_GET['y']) && preg_match('/^[12]\d{3}$/', $_GET['y']) && isset($_GET['m']) && preg_match('/^([0-9]|1[0-2])$/', $_GET['m'])) {
+if (isset($_GET['y']) && preg_match('/^(0|[12]\d{3})$/', $_GET['y']) && isset($_GET['m']) && preg_match('/^([0-9]|1[0-2])$/', $_GET['m'])) {
 	$history = new history((int) $_GET['y'], (int) $_GET['m']);
-	echo $history->make_html();
-} else {
-	/**
-	 * Use UTC until user specified timezone is loaded.
-	 */
-	date_default_timezone_set('UTC');
-	$history = new history(date('Y', strtotime('today')), date('n', strtotime('today')));
 	echo $history->make_html();
 }
 

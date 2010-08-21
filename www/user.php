@@ -143,7 +143,7 @@ final class user
 				's_17' => ':)',
 				's_18' => ':(',
 				's_19' => '\\o/');
-			$this->mood = ' '.$smileys[$high_key][0];
+			$this->mood = ' '.$smileys[$high_key];
 		}
 
 		/**

@@ -61,14 +61,15 @@ body {
  * Global table styling
  */
 .graph,
+.index,
+.large,
 .mad,
-.yearly,
 .map,
-.nqsap,
-.tod,
-.small,
 .medium,
-.large {
+.nqsap,
+.small,
+.tod,
+.yearly {
 	background-color:#EEE;
 	border-collapse:separate;
 	border-color:#666;
@@ -81,6 +82,41 @@ body {
 	font-size:10px;
 	margin:15px 22px 7px 0;
 	table-layout:fixed;
+}
+/**
+ * Specific table styling: activity graphs, most active days, yearly activity
+ */
+.index {
+	text-align:right;
+}
+.index col.pos {
+	width:36px;
+}
+.index col.c {
+	width:65px;
+}
+.index th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
+	text-align:left;
+}
+.index td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+.index td.k,
+.index td.pos {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.index td.k,
+.index td.v {
+	padding-right:2px;
+}
+.index td.pos {
+	text-align:center;
 }
 /**
  * Specific table styling: activity graphs, most active days, yearly activity
@@ -132,9 +168,9 @@ body {
 	font-weight:bold;
 	padding:1px 0 1px 0;
 }
-.graph tr.sub td.bold,
-.mad tr.sub td.bold,
-.yearly tr.sub td.bold {
+.graph td.bold,
+.mad td.bold,
+.yearly td.bold {
 	color:#666;
 }
 /**
@@ -168,11 +204,6 @@ body {
 	padding-bottom:3px;
 	vertical-align:bottom;
 }
-.map th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 3px 1px 3px;
-}
 .map td {
 	padding:1px 0 1px 0;
 	vertical-align:top;
@@ -198,11 +229,18 @@ body {
 .map td.k3,
 .map td.v3,
 .map td.k5,
-.map td.v5 {
+.map td.v5,
+.map td.k6,
+.map td.v6 {
 	padding-left:2px;
 }
 .map td.pos {
 	text-align:center;
+}
+.map th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
 }
 /**
  * Specific table styling: not quite so active people
@@ -219,12 +257,6 @@ body {
 }
 .nqsap col.pos {
 	width:24px;
-}
-.nqsap th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 3px 1px 3px;
-	text-align:left;
 }
 .nqsap td {
 	padding:1px 0 1px 0;
@@ -249,6 +281,12 @@ body {
 .nqsap td.pos {
 	text-align:center;
 }
+.nqsap th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
+	text-align:left;
+}
 /**
  * Specific table styling: time of day
  */
@@ -266,12 +304,6 @@ body {
 	height:6px;
 	padding:2px 0 3px 0;
 }
-.tod th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 0 1px 3px;
-	text-align:left;
-}
 .tod td {
 	padding:1px 0 1px 0;
 	vertical-align:top;
@@ -288,6 +320,12 @@ body {
 }
 .tod td.pos {
 	text-align:center;
+}
+.tod th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 0 1px 3px;
+	text-align:left;
 }
 /**
  * Specific table styling: small, medium, large
@@ -371,7 +409,10 @@ body {
 .medium td.k2,
 .medium td.v2,
 .large td.k2,
-.large td.v2 {
+.large td.v2,
+.large td.k3,
+.large td.v3,
+.large td.v3a {
 	padding-left:2px;
 }
 .small td.pos,
@@ -380,11 +421,11 @@ body {
 	text-align:center;
 }
 /**
- * Ellipsis, ahead of final CSS spec
+ * Ellipsis, ahead of final CSS3 spec
  */
 .map td.v6,
 .large td.v3 {
-	-o-text-overflow: ellipsis;
+	-o-text-overflow:ellipsis;
 	overflow:hidden;
 	text-overflow:ellipsis;
 	white-space:nowrap;
