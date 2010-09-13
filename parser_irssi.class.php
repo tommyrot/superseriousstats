@@ -54,7 +54,7 @@ final class parser_irssi extends parser
 		/**
 		 * "Normal" lines.
 		 */
-		if (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) <[\x20~&@%+!*](?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+		if (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) <[\x20~&@%+!*]?(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->set_normal($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 
 		/**
