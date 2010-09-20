@@ -209,10 +209,17 @@ final class sss extends base
 				$firstline = 1;
 			}
 
-			$parser->parse_log($logfile, $firstline);
+			/**
+			 * If the logfile is gzipped we use the gzparser.
+			 */
+			if (substr($logfile, -3) == '.gz') {
+				$parser->gzparse_log($logfile, $firstline);
+			} else {
+				$parser->parse_log($logfile, $firstline);
+			}
 
 			/**
-			 * If the stored number of parsed lines is equal to the amount of lines in the logfile we can skip writing to db and performing maintenance.
+			 * Only write to db and flag for maintenance if there are new lines parsed since last run.
 			 */
 			if ($parser->get_value('linenum') > $firstline) {
 				$parser->write_data($this->mysqli);

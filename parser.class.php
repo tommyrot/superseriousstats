@@ -187,8 +187,57 @@ abstract class parser extends base
 			$this->prevline = $line;
 		}
 
+		/**
+		 * Make sure $linenum doesn't point to a line with data otherwise it will get parsed again on next run.
+		 */
+		if (!empty($line)) {
+			$this->linenum++;
+		}
+
 		fclose($fp);
 		$this->output('notice', 'parse_log(): parsing completed');
+	}
+
+	final public function gzparse_log($logfile, $firstline)
+	{
+		if (($zp = @gzopen($logfile, 'rb')) === false) {
+			$this->output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
+		}
+
+		$this->output('notice', 'gzparse_log(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
+
+		while (!gzeof($zp)) {
+			$line = gzgets($zp);
+			$this->linenum++;
+
+			if ($this->linenum < $firstline) {
+				continue;
+			}
+
+			/**
+			 * Normalize the line:
+			 * 1. Remove ISO-8859-1 control codes: characters x00 to x1F (except x09) and x7F to x9F. Treat x03 differently since it is used for (mIRC) color codes.
+			 * 2. Remove multiple adjacent spaces (x20) and all tabs (x09).
+			 * 3. Remove whitespace characters at the beginning and end of a line.
+			 */
+			$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
+
+			/**
+			 * Pass on the normalized line to the logfile format specific parser class extending this class.
+			 */
+			$this->parse_line($line);
+			$this->prevline = $line;
+		}
+
+		/**
+		 * Make sure $linenum doesn't point to a line with data otherwise it will get parsed again on next run.
+		 */
+		if (!empty($line)) {
+			$this->linenum++;
+		}
+
+		gzclose($zp);
+		$this->output('notice', 'gzparse_log(): parsing completed');
 	}
 
 	final protected function set_action($datetime, $csnick, $line)
