@@ -302,7 +302,7 @@ final class sss extends base
 			}
 		}
 
-		if (date_default_timezone_set($this->timezone) == false) {
+		if (!date_default_timezone_set($this->timezone)) {
 			$this->output('critical', 'read_config(): invalid timezone: \''.$this->timezone.'\'');
 		}
 	}
