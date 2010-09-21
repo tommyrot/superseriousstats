@@ -31,7 +31,7 @@ final class html extends base
 	private $bar_evening = 'r.png';
 	private $bar_morning = 'g.png';
 	private $bar_night = 'b.png';
-	private $channel = '#yourchan';
+	private $channel = '';
 	private $history = false;
 	private $minlines = 500;
 	private $minrows = 3;
