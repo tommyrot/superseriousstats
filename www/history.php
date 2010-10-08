@@ -121,7 +121,7 @@ final class history
 		/**
 		 * HTML Foot
 		 */
-		$output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.</div>'."\n\n";
+		$output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.</div>'."\n\n";
 		$output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 		@mysqli_close($this->mysqli);
 		return $output;

@@ -661,7 +661,7 @@ final class html extends base
 		/**
 		 * HTML Foot
 		 */
-		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('M j, Y \a\\t g:i A').'.'.($this->addhtml_foot != '' ? '<br />'.@file_get_contents($this->addhtml_foot) : '').'</div>'."\n\n";
+		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot != '' ? '<br />'.@file_get_contents($this->addhtml_foot) : '').'</div>'."\n\n";
 		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 		$this->output('notice', 'make_html(): finished creating statspage');
 		return $this->output;
