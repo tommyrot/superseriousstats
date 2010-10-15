@@ -168,9 +168,9 @@ body {
 	font-weight:bold;
 	padding:1px 0 1px 0;
 }
-.graph td.bold,
-.mad td.bold,
-.yearly td.bold {
+.graph tr.sub td.bold,
+.mad tr.sub td.bold,
+.yearly tr.sub td.bold {
 	color:#666;
 }
 /**
