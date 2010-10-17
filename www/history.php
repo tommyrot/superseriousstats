@@ -22,28 +22,32 @@
 final class history
 {
 	/**
-	 * Make sure to **EDIT** the following settings to correspond with
-	 * your setup. Consult the wiki for more details.
+	 * USER EDITABLE SETTINGS: the important stuff; database, timezone, etc.
 	 */
-	private $bar_afternoon = 'y.png';
-	private $bar_evening = 'r.png';
-	private $bar_morning = 'g.png';
-	private $bar_night = 'b.png';
 	private $channel = '#yourchan';
 	private $db_host = '127.0.0.1';
 	private $db_port = 3306;
 	private $db_user = 'user';
 	private $db_pass = 'pass';
 	private $db_name = 'sss';
-	private $debug = false; //only set to true when troubleshooting
+	private $timezone = 'Europe/Amsterdam';
+
+	/**
+	 * USER EDITABLE SETTINGS: less important stuff; style and presentation.
+	 */
+	private $bar_afternoon = 'y.png';
+	private $bar_evening = 'r.png';
+	private $bar_morning = 'g.png';
+	private $bar_night = 'b.png';
 	private $rows_map_month = 30;
 	private $rows_map_year = 30;
 	private $stylesheet = 'sss.css';
-	private $timezone = 'Europe/Amsterdam';
 	private $userstats = false;
+
 	/**
-	 * :wq & enjoy!
+	 * Only set to true when troubleshooting.
 	 */
+	private $debug = false;
 
 	/**
 	 * Variables that shouldn't be tampered with.
