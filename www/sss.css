@@ -1,0 +1,432 @@
+/**
+ * Global styling
+ */
+a {
+	color:#333;
+}
+a:hover {
+	text-decoration:none;
+}
+body {
+	background-color:#F9F9F9;
+	margin:0 auto 0 auto;
+	width:840px;
+}
+.box {
+	clear:both;
+	float:left;
+	width:840px;
+}
+.grey {
+	color:#999;
+}
+.head {
+	background-color:#EEE;
+	color:#666;
+	float:left;
+	font-family:verdana,sans-serif;
+	font-size:12px;
+	font-weight:bold;
+	margin:15px 22px 7px 0;
+	text-align:center;
+	width:818px
+}
+.index {
+	color:#666;
+	float:left;
+	font-family:verdana,sans-serif;
+	font-size:10px;
+	margin:15px 22px 7px 0;
+	text-align:center;
+	width:818px;
+}
+.info {
+	color:#666;
+	float:left;
+	font-family:verdana,sans-serif;
+	font-size:12px;
+	font-weight:bold;
+	margin:15px 22px 7px 0;
+	width:818px;
+}
+.left {
+	float:left;
+}
+.right {
+	color:#999;
+	float:right;
+	font-weight:normal;
+}
+/**
+ * Global table styling
+ */
+.graph,
+.index,
+.large,
+.mad,
+.map,
+.medium,
+.nqsap,
+.small,
+.tod,
+.yearly {
+	background-color:#EEE;
+	border-collapse:separate;
+	border-color:#666;
+	border-spacing:0;
+	border-style:solid;
+	border-width:3px 1px 1px 1px;
+	color:#333;
+	float:left;
+	font-family:verdana,sans-serif;
+	font-size:10px;
+	margin:15px 22px 7px 0;
+	table-layout:fixed;
+}
+/**
+ * Specific table styling: activity graphs, most active days, yearly activity
+ */
+.index {
+	text-align:right;
+}
+.index col.pos {
+	width:36px;
+}
+.index col.c {
+	width:65px;
+}
+.index th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
+	text-align:left;
+}
+.index td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+.index td.k,
+.index td.pos {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.index td.k,
+.index td.v {
+	padding-right:2px;
+}
+.index td.pos {
+	text-align:center;
+}
+/**
+ * Specific table styling: activity graphs, most active days, yearly activity
+ */
+.graph,
+.mad,
+.yearly {
+	text-align:center;
+}
+.graph img,
+.mad img,
+.yearly img {
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+	width:16px;
+}
+.graph {
+	width:818px;
+}
+.mad {
+	width:240px;
+}
+.yearly {
+	/**
+	 * Variable width specified in HTML
+	 */
+}
+.graph th,
+.mad th,
+.yearly th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 0 0 3px;
+	text-align:left;
+}
+.graph tr.bars td,
+.mad tr.bars td,
+.yearly tr.bars td {
+	height:125px;
+	padding:0;
+	vertical-align:bottom;
+}
+.graph tr.sub td,
+.mad tr.sub td,
+.yearly tr.sub td {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+	padding:1px 0 1px 0;
+}
+.graph tr.sub td.bold,
+.mad tr.sub td.bold,
+.yearly tr.sub td.bold {
+	color:#666;
+}
+/**
+ * Specific table styling: most active people
+ */
+.map {
+	text-align:left;
+	width:818px;
+}
+.map col.c1,
+.map col.c2 {
+	width:80px;
+}
+.map col.c3 {
+	width:140px;
+}
+.map col.c4 {
+	width:54px;
+}
+.map col.c5 {
+	width:100px;
+}
+.map col.c6 {
+	width:326px;
+}
+.map col.pos {
+	width:36px;
+}
+.map img {
+	height:6px;
+	padding-bottom:3px;
+	vertical-align:bottom;
+}
+.map td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+.map td.k1,
+.map td.k2,
+.map td.k3,
+.map td.k4,
+.map td.k5,
+.map td.k6,
+.map td.pos {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.map td.k1,
+.map td.v1,
+.map td.k2,
+.map td.v2 {
+	text-align:right;
+	padding-right:2px;
+}
+.map td.k3,
+.map td.v3,
+.map td.k5,
+.map td.v5,
+.map td.k6,
+.map td.v6 {
+	padding-left:2px;
+}
+.map td.pos {
+	text-align:center;
+}
+.map th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
+}
+/**
+ * Specific table styling: not quite so active people
+ */
+.nqsap {
+	text-align:left;
+	width:818px;
+}
+.nqsap col.c1 {
+	width:55px;
+}
+.nqsap col.c2 {
+	width:125px;
+}
+.nqsap col.pos {
+	width:24px;
+}
+.nqsap td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+.nqsap td.k1,
+.nqsap td.k2,
+.nqsap td.pos {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.nqsap td.k1,
+.nqsap td.v1 {
+	padding-right:2px;
+	text-align:right;
+}
+.nqsap td.k2,
+.nqsap td.v2 {
+	padding-left:2px;
+}
+.nqsap td.pos {
+	text-align:center;
+}
+.nqsap th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
+	text-align:left;
+}
+/**
+ * Specific table styling: time of day
+ */
+.tod {
+	text-align:right;
+	width:818px;
+}
+.tod col.c {
+	width:197px;
+}
+.tod col.pos {
+	width:28px;
+}
+.tod img {
+	height:6px;
+	padding:2px 0 3px 0;
+}
+.tod td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+.tod td.k,
+.tod td.pos {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.tod td.k,
+.tod td.v {
+	padding-right:2px;
+}
+.tod td.pos {
+	text-align:center;
+}
+.tod th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 0 1px 3px;
+	text-align:left;
+}
+/**
+ * Specific table styling: small, medium, large
+ */
+.small,
+.medium,
+.large {
+	text-align:left;
+}
+.small {
+	width:258px;
+}
+.medium {
+	width:538px;
+}
+.large {
+	width:818px;
+}
+.small col.c1,
+.medium col.c1,
+.medium col.c3,
+.large col.c1 {
+	width:80px;
+}
+.small col.c2,
+.large col.c2 {
+	width:140px;
+}
+.medium col.c2 {
+	width:340px;
+}
+.large col.c3 {
+	width:560px;
+}
+.small col.pos,
+.medium col.pos,
+.large col.pos {
+	width:36px;
+}
+.small th,
+.medium th,
+.large th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
+}
+.small td,
+.medium td,
+.large td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+.small td.k1,
+.small td.k2,
+.small td.pos,
+.medium td.k1,
+.medium td.k2,
+.medium td.k3,
+.medium td.pos,
+.large td.k1,
+.large td.k2,
+.large td.k3,
+.large td.pos {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.small td.k1,
+.small td.v1,
+.medium td.k1,
+.medium td.v1,
+.medium td.k3,
+.medium td.v3,
+.large td.k1,
+.large td.v1 {
+	padding-right:2px;
+	text-align:right;
+}
+.small td.k2,
+.small td.v2,
+.medium td.k2,
+.medium td.v2,
+.large td.k2,
+.large td.v2,
+.large td.k3,
+.large td.v3,
+.large td.v3a {
+	padding-left:2px;
+}
+.small td.pos,
+.medium td.pos,
+.large td.pos {
+	text-align:center;
+}
+/**
+ * Ellipsis, ahead of final CSS3 spec
+ */
+.map td.v6,
+.large td.v3 {
+	-o-text-overflow:ellipsis;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+}
