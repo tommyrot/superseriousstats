@@ -38,7 +38,7 @@ final class history
 	private $debug = false; //only set to true when troubleshooting
 	private $rows_map_month = 30;
 	private $rows_map_year = 30;
-	private $stylesheet = 'default.css';
+	private $stylesheet = 'sss.css';
 	private $timezone = 'Europe/Amsterdam';
 	private $userstats = false;
 	/**

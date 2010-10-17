@@ -41,7 +41,7 @@ final class html extends base
 	private $rows_mostrecenturls = 50;
 	private $rows_tod = 10;
 	private $sectionbits = 127;
-	private $stylesheet = 'default.css';
+	private $stylesheet = 'sss.css';
 	private $userstats = false;
 
 	/**

@@ -36,7 +36,7 @@ final class user
 	private $db_pass = 'pass';
 	private $db_name = 'sss';
 	private $debug = false; //only set to true when troubleshooting
-	private $stylesheet = 'default.css';
+	private $stylesheet = 'sss.css';
 	private $timezone = 'Europe/Amsterdam';
 	/**
 	 * :wq & enjoy!
