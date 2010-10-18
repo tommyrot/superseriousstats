@@ -39,6 +39,7 @@ final class user
 	private $bar_evening = 'r.png';
 	private $bar_morning = 'g.png';
 	private $bar_night = 'b.png';
+	private $mainpage = './';
 	private $stylesheet = 'sss.css';
 
 	/**
@@ -187,7 +188,7 @@ final class user
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n\n"
 			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? $this->mood : '.').'<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
-			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' lines on '.htmlspecialchars($this->channel).', an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.</div>'."\n";
+			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' lines on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.</div>'."\n";
 
 		/**
 		 * Activity section

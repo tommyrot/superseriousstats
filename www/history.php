@@ -39,6 +39,7 @@ final class history
 	private $bar_evening = 'r.png';
 	private $bar_morning = 'g.png';
 	private $bar_night = 'b.png';
+	private $mainpage = './';
 	private $rows_map_month = 30;
 	private $rows_map_year = 30;
 	private $stylesheet = 'sss.css';
@@ -102,7 +103,7 @@ final class history
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n\n"
-			. '<div class="info">'.htmlspecialchars($this->channel).', historically.</div>'."\n";
+			. '<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.</div>'."\n";
 
 		/**
 		 * Activity section
