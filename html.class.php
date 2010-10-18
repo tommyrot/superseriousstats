@@ -606,7 +606,7 @@ final class html extends base
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'URL');
 			$t->set_value('minrows', $this->rows_mostrecenturls);
-			$t->set_value('query_main', 'select `lastused` as `v1`, `csnick` as `v2`, `csurl` as `v3` from `user_urls` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc limit 100');
+			$t->set_value('query_main', 'select `lastused` as `v1`, `csnick` as `v2`, `csurl` as `v3` from `user_urls` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc limit '.$this->rows_mostrecenturls);
 			$t->set_value('rows', $this->rows_mostrecenturls);
 			$t->set_value('type', 'urls');
 			$output .= $t->make_table($this->mysqli);
