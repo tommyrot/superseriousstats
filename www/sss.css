@@ -2,10 +2,12 @@
  * Global styling
  */
 a {
+	border-bottom:1px solid #C74243;
 	color:#333;
+	text-decoration:none;
 }
 a:hover {
-	text-decoration:none;
+	border-bottom:none;
 }
 body {
 	background-color:#F9F9F9;
