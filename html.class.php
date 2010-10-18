@@ -38,7 +38,7 @@ final class html extends base
 	private $rows_map_alltime = 30;
 	private $rows_map_month = 10;
 	private $rows_map_year = 10;
-	private $rows_mostrecenturls = 50;
+	private $rows_mostrecenturls = 25;
 	private $rows_tod = 10;
 	private $sectionbits = 127;
 	private $stylesheet = 'sss.css';
