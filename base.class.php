@@ -132,25 +132,25 @@ abstract class base
 		switch ($type) {
 			case 'critical':
 				if ($this->outputbits & 1) {
-					echo $datetime.' [critical] '.$msg."\n";
+					echo $datetime.' [C] '.$msg."\n";
 				}
 
 				exit;
 			case 'warning':
 				if ($this->outputbits & 2) {
-					echo $datetime.' [warning] '.$msg."\n";
+					echo $datetime.' [!] '.$msg."\n";
 				}
 
 				break;
 			case 'notice':
 				if ($this->outputbits & 4) {
-					echo $datetime.' [notice] '.$msg."\n";
+					echo $datetime.' [ ] '.$msg."\n";
 				}
 
 				break;
 			case 'debug':
 				if ($this->outputbits & 8) {
-					echo $datetime.' [debug] '.$msg."\n";
+					echo $datetime.' [D] '.$msg."\n";
 				}
 
 				break;
