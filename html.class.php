@@ -543,7 +543,7 @@ final class html extends base
 					's_01' => array('=]', 'Big Cheerful Smile'),
 					's_02' => array('=)', 'Cheerful Smile'),
 					's_03' => array(';x', 'Lovely Kiss'),
-					's_04' => array(';p', 'Retard'),
+					's_04' => array(';p', 'Weirdo'),
 					's_05' => array(';]', 'Big Winky'),
 					's_06' => array(';-)', 'Classic Winky'),
 					's_07' => array(';)', 'Winky'),
