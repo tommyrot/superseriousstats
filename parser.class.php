@@ -231,7 +231,8 @@ abstract class parser extends base
 		}
 
 		/**
-		 * Make sure $linenum doesn't point to a line with data otherwise it will get parsed again on next run.
+		 * If the last line parsed contains data we increase $linenum by one so the line won't get parsed a second time on next run.
+		 * However, if the last line is empty we leave the pointer at $linenum since logging might continue on this line (depending on how lines are terminated).
 		 */
 		if (!empty($line)) {
 			$this->linenum++;
