@@ -179,7 +179,7 @@ final class user
 		$output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
 			. '<head>'."\n".'<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
-			. '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />'."\n"
+			. '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'."\n"
 			. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '<style type="text/css">'."\n"
