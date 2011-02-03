@@ -34,6 +34,9 @@ abstract class parser extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
+	private $hex_latin1supplement = '[\x80-\xFF]';
+	private $hex_validutf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
+	private $newline = '';
 	private $nicks_objs = array();
 	private $settings_list = array(
 		'minstreak' => 'int',
@@ -156,6 +159,82 @@ abstract class parser extends base
 		$this->words_objs[$word]->add_value('total', 1);
 	}
 
+	/**
+	 * Parser function for gzipped logs.
+	 */
+	final public function gzparse_log($logfile, $firstline)
+	{
+		if (($zp = @gzopen($logfile, 'rb')) === false) {
+			$this->output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
+		}
+
+		$this->output('notice', 'gzparse_log(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
+
+		while (!gzeof($zp)) {
+			$line = gzgets($zp);
+			$this->linenum++;
+
+			if ($this->linenum < $firstline) {
+				continue;
+			}
+
+			$line = $this->normalize_line($line);
+
+			/**
+			 * Pass on the normalized line to the logfile format specific parser class extending this class.
+			 */
+			$this->parse_line($line);
+			$this->prevline = $line;
+		}
+
+		/**
+		 * If the last line parsed contains data we increase $linenum by one so the line won't get parsed a second time on next run.
+		 * However, if the last line is empty we leave the pointer at $linenum since logging might continue on this line (depending on how lines are terminated).
+		 */
+		if (!empty($line)) {
+			$this->linenum++;
+		}
+
+		gzclose($zp);
+		$this->output('notice', 'gzparse_log(): parsing completed');
+	}
+
+	/**
+	 * This function checks if a line is valid UTF-8 and converts all non valid bytes into valid multibyte UTF-8.
+	 */
+	final private function normalize_line($line)
+	{
+		if (!preg_match('/^'.$this->hex_validutf8.'+$/', $line)) {
+			$this->newline = '';
+
+			while ($line != '') {
+				/**
+				 * Match the first valid multibyte character or otherwise a single byte;
+				 * Pass it on to rebuild_line() and replace the character with an empty string (making $line shorter);
+				 * Continue until the line is zero bytes in length.
+				 */
+				$line = preg_replace('/^'.$this->hex_validutf8.'|./es', "$this->rebuild_line('$0')", $line);
+			}
+
+			/*
+			 * $line will become our rebuild line named $newline.
+			 */
+			$line = $this->newline;
+		}
+
+		/**
+		 * 1. Remove control codes from Basic Latin (7-bit ASCII) and Latin-1 Supplement character sets. 0x03 is used for (mIRC) color codes and may be followed by additional characters; remove those as well.
+		 * 2. Replace all possible formations of adjacent spaces and tabs, including the no-break space, with a single space.
+		 * 3. Remove whitespace characters at the beginning and end of a line.
+		 */
+		$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
+
+		return $line;
+	}
+
+	/**
+	 * Parser function for normal logs.
+	 */
 	final public function parse_log($logfile, $firstline)
 	{
 		if (($fp = @fopen($logfile, 'rb')) === false) {
@@ -172,13 +251,7 @@ abstract class parser extends base
 				continue;
 			}
 
-			/**
-			 * Normalize the line:
-			 * 1. Remove ISO-8859-1 control codes: characters x00 to x1F (except x09) and x7F to x9F. Treat x03 differently since it is used for (mIRC) color codes.
-			 * 2. Remove multiple adjacent spaces (x20) and all tabs (x09).
-			 * 3. Remove whitespace characters at the beginning and end of a line.
-			 */
-			$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
+			$line = $this->normalize_line($line);
 
 			/**
 			 * Pass on the normalized line to the logfile format specific parser class extending this class.
@@ -199,47 +272,28 @@ abstract class parser extends base
 		$this->output('notice', 'parse_log(): parsing completed');
 	}
 
-	final public function gzparse_log($logfile, $firstline)
-	{
-		if (($zp = @gzopen($logfile, 'rb')) === false) {
-			$this->output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
-		}
-
-		$this->output('notice', 'gzparse_log(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
-
-		while (!gzeof($zp)) {
-			$line = gzgets($zp);
-			$this->linenum++;
-
-			if ($this->linenum < $firstline) {
-				continue;
-			}
-
-			/**
-			 * Normalize the line:
-			 * 1. Remove ISO-8859-1 control codes: characters x00 to x1F (except x09) and x7F to x9F. Treat x03 differently since it is used for (mIRC) color codes.
-			 * 2. Remove multiple adjacent spaces (x20) and all tabs (x09).
-			 * 3. Remove whitespace characters at the beginning and end of a line.
-			 */
-			$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09[\x09\x20]*|\x20[\x09\x20]+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
-
-			/**
-			 * Pass on the normalized line to the logfile format specific parser class extending this class.
-			 */
-			$this->parse_line($line);
-			$this->prevline = $line;
+	/**
+	 * Function to build a new line consisting of valid UTF-8 from the characters passed along.
+	 */
+	final private function rebuild_line($char) {
+		/**
+		 * 1. Valid UTF-8 is passed along unmodified.
+		 * 2. Single byte characters from the Latin-1 Supplement are converted to multibyte unicode.
+		 * 3. Everything else is converted to the unicode questionmark sign (commonly used to depict unknown characters).
+		 */
+		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
+			$this->newline .= $char;
+		} elseif (preg_match('/^'.$this->hex_latin1supplement.'$/', $char)) {
+			$char = preg_replace ('/^'.$this->hex_latin1supplement.'$/e', "pack('C*', (ord('$0') >> 6) | 0xC0, (ord('$0') & 0x3F) | 0x80)", $char);
+			$this->newline .= $char;
+		} else {
+			$this->newline .= "\xEF\xBF\xBD";
 		}
 
 		/**
-		 * If the last line parsed contains data we increase $linenum by one so the line won't get parsed a second time on next run.
-		 * However, if the last line is empty we leave the pointer at $linenum since logging might continue on this line (depending on how lines are terminated).
+		 * Returns nothing; see normalize_line() for it to make sense.
 		 */
-		if (!empty($line)) {
-			$this->linenum++;
-		}
-
-		gzclose($zp);
-		$this->output('notice', 'gzparse_log(): parsing completed');
+		return '';
 	}
 
 	final protected function set_action($datetime, $csnick, $line)
