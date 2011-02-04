@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2010, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2011, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -115,10 +115,9 @@ final class urltools
 	public function normalize_url($csurl)
 	{
 		/**
-		 * 1. Convert scheme and authority to lower case.
-		 * 2. Strip trailing slashes from path or authority.
+		 * Convert scheme and authority to lower case.
 		 */
-		$csurl = preg_replace(array('/^'.$this->scheme.$this->authority.'/ei', '/^'.$this->scheme.$this->authority.$this->path.'/ei'), array("strtolower('$0')", "rtrim('$0', '/')"), $csurl);
+		$csurl = preg_replace('/^'.$this->scheme.$this->authority.'/ei', 'strtolower(\'$0\')', $csurl);
 		return $csurl;
 	}
 
