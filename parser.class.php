@@ -444,50 +444,6 @@ abstract class parser extends base
 
 			$this->{'l_'.$hour}++;
 			$this->l_total++;
-			$this->nicks_objs[$nick]->add_value('l_'.$hour, 1);
-			$this->nicks_objs[$nick]->add_value('l_total', 1);
-
-			if (strlen($line) <= 255) {
-				if (strlen($line) >= $this->quote_preflen) {
-					$this->nicks_objs[$nick]->add_quote('quote', 'long', $line);
-				} else {
-					$this->nicks_objs[$nick]->add_quote('quote', 'short', $line);
-				}
-			}
-
-			if (strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
-				$this->nicks_objs[$nick]->add_value('uppercased', 1);
-
-				if (strlen($line) <= 255) {
-					if (strlen($line) >= $this->quote_preflen) {
-						$this->nicks_objs[$nick]->add_quote('ex_uppercased', 'long', $line);
-					} else {
-						$this->nicks_objs[$nick]->add_quote('ex_uppercased', 'short', $line);
-					}
-				}
-			}
-
-			if (preg_match('/!$/', $line)) {
-				$this->nicks_objs[$nick]->add_value('exclamations', 1);
-
-				if (strlen($line) <= 255) {
-					if (strlen($line) >= $this->quote_preflen) {
-						$this->nicks_objs[$nick]->add_quote('ex_exclamations', 'long', $line);
-					} else {
-						$this->nicks_objs[$nick]->add_quote('ex_exclamations', 'short', $line);
-					}
-				}
-			} elseif (preg_match('/\?$/', $line)) {
-				$this->nicks_objs[$nick]->add_value('questions', 1);
-
-				if (strlen($line) <= 255) {
-					if (strlen($line) >= $this->quote_preflen) {
-						$this->nicks_objs[$nick]->add_quote('ex_questions', 'long', $line);
-					} else {
-						$this->nicks_objs[$nick]->add_quote('ex_questions', 'short', $line);
-					}
-				}
-			}
 
 			/**
 			 * The "words" counter below has no relation with the words which are stored in the database.
@@ -495,6 +451,7 @@ abstract class parser extends base
 			 */
 			$words = explode(' ', $line);
 			$this->nicks_objs[$nick]->add_value('words', count($words));
+			$urlinline = false;
 
 			foreach ($words as $csword) {
 				if (preg_match('/^(=[])]|;([]()xp]|-\))|:([]\/()\\\>xpd]|-\))|\\\o\/)$/i', $csword)) {
@@ -512,6 +469,11 @@ abstract class parser extends base
 						$this->nicks_objs[$nick]->add_url($csurl, $datetime);
 						$this->nicks_objs[$nick]->add_value('urls', 1);
 					}
+
+					/**
+					 * Regardless of it being a valid URL set $urlinline to true. We use this variable to exclude quotes that have an URL in them.
+					 */
+					$urlinline = true;
 				} elseif ($this->wordtracking && preg_match('/^[a-z]{1,255}$/i', $csword)) {
 					/**
 					 * To keep it simple we only track words composed of the characters A through Z.
@@ -520,6 +482,53 @@ abstract class parser extends base
 					$this->add_word($csword);
 				}
 			}
+
+			$this->nicks_objs[$nick]->add_value('l_'.$hour, 1);
+			$this->nicks_objs[$nick]->add_value('l_total', 1);
+
+			if (!$urlinline && strlen($line) <= 255) {
+				if (strlen($line) >= $this->quote_preflen) {
+					$this->nicks_objs[$nick]->add_quote('quote', 'long', $line);
+				} else {
+					$this->nicks_objs[$nick]->add_quote('quote', 'short', $line);
+				}
+			}
+
+			if (strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
+				$this->nicks_objs[$nick]->add_value('uppercased', 1);
+
+				if (!$urlinline && strlen($line) <= 255) {
+					if (strlen($line) >= $this->quote_preflen) {
+						$this->nicks_objs[$nick]->add_quote('ex_uppercased', 'long', $line);
+					} else {
+						$this->nicks_objs[$nick]->add_quote('ex_uppercased', 'short', $line);
+					}
+				}
+			}
+
+			if (preg_match('/!$/', $line)) {
+				$this->nicks_objs[$nick]->add_value('exclamations', 1);
+
+				if (!$urlinline && strlen($line) <= 255) {
+					if (strlen($line) >= $this->quote_preflen) {
+						$this->nicks_objs[$nick]->add_quote('ex_exclamations', 'long', $line);
+					} else {
+						$this->nicks_objs[$nick]->add_quote('ex_exclamations', 'short', $line);
+					}
+				}
+			} elseif (preg_match('/\?$/', $line)) {
+				$this->nicks_objs[$nick]->add_value('questions', 1);
+
+				if (!$urlinline && strlen($line) <= 255) {
+					if (strlen($line) >= $this->quote_preflen) {
+						$this->nicks_objs[$nick]->add_quote('ex_questions', 'long', $line);
+					} else {
+						$this->nicks_objs[$nick]->add_quote('ex_questions', 'short', $line);
+					}
+				}
+			}
+
+			
 		}
 	}
 
