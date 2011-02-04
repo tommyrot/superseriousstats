@@ -1112,8 +1112,8 @@ final class html extends base
  */
 final class table extends base
 {
+	private $head = '';
 	protected $decimals = 0;
-	protected $head = '';
 	protected $key1 = '';
 	protected $key2 = '';
 	protected $key3 = '';
