@@ -527,8 +527,6 @@ abstract class parser extends base
 					}
 				}
 			}
-
-			
 		}
 	}
 
