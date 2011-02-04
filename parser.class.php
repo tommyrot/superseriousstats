@@ -213,7 +213,7 @@ abstract class parser extends base
 				 * Pass it on to rebuild_line() and replace the character with an empty string (making $line shorter);
 				 * Continue until the line is zero bytes in length.
 				 */
-				$line = preg_replace('/^'.$this->hex_validutf8.'|./es', "$this->rebuild_line('$0')", $line);
+				$line = preg_replace('/^'.$this->hex_validutf8.'|./es', '$this->rebuild_line(\'$0\')', $line);
 			}
 
 			/*
@@ -284,7 +284,7 @@ abstract class parser extends base
 		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
 			$this->newline .= $char;
 		} elseif (preg_match('/^'.$this->hex_latin1supplement.'$/', $char)) {
-			$char = preg_replace ('/^'.$this->hex_latin1supplement.'$/e', "pack('C*', (ord('$0') >> 6) | 0xC0, (ord('$0') & 0x3F) | 0x80)", $char);
+			$char = preg_replace ('/^'.$this->hex_latin1supplement.'$/e', 'pack(\'C*\', (ord(\'$0\') >> 6) | 0xC0, (ord(\'$0\') & 0x3F) | 0x80)', $char);
 			$this->newline .= $char;
 		} else {
 			$this->newline .= "\xEF\xBF\xBD";
