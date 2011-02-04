@@ -200,7 +200,7 @@ abstract class parser extends base
 	}
 
 	/**
-	 * This function checks if a line is valid UTF-8 and converts all non valid bytes into valid multibyte UTF-8.
+	 * Checks if a line is valid UTF-8 and convert all non valid bytes into valid multibyte UTF-8.
 	 */
 	final private function normalize_line($line)
 	{
@@ -211,13 +211,13 @@ abstract class parser extends base
 				/**
 				 * Match the first valid multibyte character or otherwise a single byte;
 				 * Pass it on to rebuild_line() and replace the character with an empty string (making $line shorter);
-				 * Continue until the line is zero bytes in length.
+				 * Continue until $line is zero bytes in length.
 				 */
 				$line = preg_replace('/^'.$this->hex_validutf8.'|./es', '$this->rebuild_line(\'$0\')', $line);
 			}
 
 			/*
-			 * $line will become our rebuild line named $newline.
+			 * Set $line to the rebuild $newline.
 			 */
 			$line = $this->newline;
 		}
@@ -228,7 +228,6 @@ abstract class parser extends base
 		 * 3. Remove whitespace characters at the beginning and end of a line.
 		 */
 		$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
-
 		return $line;
 	}
 
@@ -273,7 +272,7 @@ abstract class parser extends base
 	}
 
 	/**
-	 * Function to build a new line consisting of valid UTF-8 from the characters passed along.
+	 * Build a new line consisting of valid UTF-8 from the characters passed along in $char.
 	 */
 	final private function rebuild_line($char) {
 		/**
