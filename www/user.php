@@ -24,13 +24,13 @@ final class user
 	/**
 	 * USER EDITABLE SETTINGS: the important stuff; database, timezone, etc.
 	 */
-	private $channel = '#yourchan';
+	private $channel = '';
 	private $db_host = '127.0.0.1';
 	private $db_port = 3306;
-	private $db_user = 'user';
-	private $db_pass = 'pass';
+	private $db_user = '';
+	private $db_pass = '';
 	private $db_name = 'sss';
-	private $timezone = 'Europe/Amsterdam';
+	private $timezone = 'UTC';
 
 	/**
 	 * USER EDITABLE SETTINGS: less important stuff; style and presentation.
