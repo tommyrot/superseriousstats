@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009-2010, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2011, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,12 +26,12 @@ final class nicklinker extends base
 	 * These should all appear in $settings_list[] along with their type.
 	 */
 	private $autolinknicks = true;
-	private $db_host = '';
-	private $db_name = '';
+	private $db_host = '127.0.0.1';
+	private $db_name = 'sss';
 	private $db_pass = '';
-	private $db_port = 0;
+	private $db_port = 3306;
 	private $db_user = '';
-	private $timezone = '';
+	private $timezone = 'UTC';
 
 	/**
 	 * Variables that shouldn't be tampered with.
@@ -47,7 +47,7 @@ final class nicklinker extends base
 		'db_user' => 'string',
 		'outputbits' => 'int',
 		'timezone' => 'string');
-	private $settings_list_required = array('db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'timezone');
+	private $settings_list_required = array('db_pass', 'db_user');
 
 	public function __construct()
 	{
@@ -339,7 +339,7 @@ final class nicklinker extends base
 }
 
 if (substr(phpversion(), 0, 3) != '5.3') {
-	exit('php version 5.3 required, currently running with version '.phpversion()."\n");
+	echo 'php version 5.3 is recommended, you are running with version '.phpversion()."\n";
 }
 
 if (!extension_loaded('mysqli')) {
