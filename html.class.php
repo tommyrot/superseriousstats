@@ -854,19 +854,19 @@ final class html extends base
 	{
 		if ($type == 'alltime') {
 			$head = 'Most Active People, Alltime';
-			$history = '<span class="right"><a href="history.php?y='.date('Y', strtotime($this->date_first)).'&amp;m=0">History</a></span>';
+			$historylink = '<span class="right"><a href="history.php?y='.date('Y', strtotime($this->date_first)).'&amp;m=0">History</a></span>';
 			$total = $this->l_total;
 			$query = @mysqli_query($this->mysqli, 'select `q_lines`.`ruid`, `csnick`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `quote` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 order by `l_total` desc, `q_lines`.`ruid` asc limit '.$rows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'year') {
 			$head = 'Most Active People, '.$this->year;
-			$history = '<span class="right"><a href="history.php?y='.$this->year.'&amp;m=0">History</a></span>';
+			$historylink = '<span class="right"><a href="history.php?y='.$this->year.'&amp;m=0">History</a></span>';
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_year` where `date` = '.$this->year.' group by `date`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$result = mysqli_fetch_object($query);
 			$total = (int) $result->l_total;
 			$query = @mysqli_query($this->mysqli, 'select `q_lines`.`ruid`, `csnick`, sum(`q_activity_by_year`.`l_total`) as `l_total`, sum(`q_activity_by_year`.`l_night`) as `l_night`, sum(`q_activity_by_year`.`l_morning`) as `l_morning`, sum(`q_activity_by_year`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_year`.`l_evening`) as `l_evening`, `quote` from `q_lines` join `q_activity_by_year` on `q_lines`.`ruid` = `q_activity_by_year`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = '.$this->year.' group by `q_lines`.`ruid` order by `q_activity_by_year`.`l_total` desc, `q_lines`.`ruid` asc limit '.$rows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
 			$head = 'Most Active People, '.$this->monthname.' '.$this->year;
-			$history = '<span class="right"><a href="history.php?y='.$this->year.'&amp;m='.$this->month.'">History</a></span>';
+			$historylink = '<span class="right"><a href="history.php?y='.$this->year.'&amp;m='.$this->month.'">History</a></span>';
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_month` where `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' group by `date`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$result = mysqli_fetch_object($query);
 			$total = (int) $result->l_total;
@@ -878,7 +878,7 @@ final class html extends base
 		}
 
 		$tr0 = '<col class="c1" /><col class="c2" /><col class="pos" /><col class="c3" /><col class="c4" /><col class="c5" /><col class="c6" />';
-		$tr1 = '<tr><th colspan="7"><span class="left">'.$head.'</span>'.($this->history ? $history : '').'</th></tr>';
+		$tr1 = '<tr><th colspan="7"><span class="left">'.$head.'</span>'.($this->history ? $historylink : '').'</th></tr>';
 		$tr2 = '<tr><td class="k1">Percentage</td><td class="k2">Lines</td><td class="pos"></td><td class="k3">User</td><td class="k4">When?</td><td class="k5">Last Seen</td><td class="k6">Quote</td></tr>';
 		$trx = '';
 		$i = 0;
