@@ -19,32 +19,16 @@ Releases
 
 After significant changes have been made there follows a release. Releases are tested and the best option for obtaining a working version. Download the latest version [here](http://code.google.com/p/superseriousstats/downloads/list).
 
-Demo
-----
-
-You can view a [live demo](http://sss.dutnie.nl) made for the superseriousstats support channel. It is a low volume channel which updates once a day.
-
-Documentation
-=============
+Documentation and Issues
+------------------------
 
 All documentation can be found on the [Wiki](http://code.google.com/p/superseriousstats/w/list).
 
-Contributing
-============
-
-We are glad to help you get the program running. We are also happy to hear of any success stories.
-
-Issues
-------
-
 Bug reports and feature requests can be filed [here](http://code.google.com/p/superseriousstats/issues/list). Keep it real.
-
-Logfile formats
----------------
 
 If you want superseriousstats to also support the logfile format you use, you can create your own parser file. Alternatively you can convince me to make one for you where you take on the task of testing the results. It helps if you can provide an overview of the (default) logging syntax used by the client.
 
 Support
 -------
 
-You are welcome to join us in #sss-support on irc.quakenet.org.
+You are welcome to join us in #sss-support on irc.quakenet.org. We are glad to help you get the program running. We are also happy to hear of any success stories.
