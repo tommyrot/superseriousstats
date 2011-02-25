@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009-2010, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2011, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,16 +25,14 @@ final class sss extends base
 	 * Default settings for this script, can be overridden in the config file.
 	 * These should all appear in $settings_list[] along with their type.
 	 */
-	private $db_host = '';
-	private $db_name = '';
+	private $db_host = '127.0.0.1';
+	private $db_name = 'sss';
 	private $db_pass = '';
-	private $db_port = 0;
+	private $db_port = 3306;
 	private $db_user = '';
-	private $logfile_dateformat = '';
-	private $logfile_format = '';
-	private $logfile_prefix = '';
-	private $logfile_suffix = '';
-	private $timezone = '';
+	private $logfile_dateformat = '*.Ymd';
+	private $parser = '';
+	private $timezone = 'UTC';
 
 	/**
 	 * Variables that shouldn't be tampered with.
@@ -48,12 +46,11 @@ final class sss extends base
 		'db_port' => 'int',
 		'db_user' => 'string',
 		'logfile_dateformat' => 'string',
-		'logfile_format' => 'string',
-		'logfile_prefix' => 'string',
-		'logfile_suffix' => 'string',
+		'parser' => 'string',
 		'outputbits' => 'int',
 		'timezone' => 'string');
-	private $settings_list_required = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'logfile_dateformat', 'logfile_format', 'logfile_prefix', 'logfile_suffix', 'timezone');
+	private $settings_list_required = array('channel', 'db_pass', 'db_user', 'parser');
+	private $zlib = false;
 
 	public function __construct()
 	{
@@ -61,6 +58,14 @@ final class sss extends base
 		 * Use UTC until user specified timezone is loaded.
 		 */
 		date_default_timezone_set('UTC');
+
+		/**
+		 * Check for zlib extension.
+		 */
+		if (extension_loaded('zlib')) {
+			$this->zlib = true;
+			$this->output('notice', '__construct(): zlib extension loaded, enabled support for gzipped logs');
+		}
 
 		/**
 		 * Read options from the command line.
@@ -120,8 +125,6 @@ final class sss extends base
 
 	private function parse_log($filedir)
 	{
-		$filedir = preg_replace('/YESTERDAY/', date($this->logfile_dateformat, strtotime('yesterday')), $filedir);
-
 		if (($rp = realpath($filedir)) === false) {
 			$this->output('critical', 'parse_log(): no such file or directory: \''.$filedir.'\'');
 		}
@@ -132,19 +135,31 @@ final class sss extends base
 			}
 
 			while (($file = readdir($dh)) !== false) {
-				$logfiles[] = realpath($rp.'/'.$file);
+				$files[] = realpath($rp.'/'.$file);
 			}
 
 			closedir($dh);
 		} else {
-			$logfiles[] = $rp;
+			$files[] = $rp;
 		}
 
-		sort($logfiles);
+		foreach ($files as $file) {
+			/**
+			 * If the filename doesn't match the pattern provided with $logfile_dateformat this step will fail.
+			 */
+			if (($datetime = date_create_from_format($this->logfile_dateformat, basename($file))) !== false) {
+				$logfiles[date_format($datetime, 'Y-m-d')] = $file;
+			}
+		}
+
+		if (empty($logfiles)) {
+			$this->output('critical', 'parse_log(): no logfiles found matching \'logfile_dateformat\' setting');
+		}
 
 		/**
-		 * Retrieve the date of the last log parsed from the database.
+		 * Sort the files on the date found in the filename.
 		 */
+		ksort($logfiles);
 		$query = @mysqli_query($this->mysqli, 'select `date` from `parse_history` order by `date` desc limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
@@ -156,28 +171,16 @@ final class sss extends base
 		}
 
 		/**
-		 * Variable to track if we modified our database and therefore need maintenance.
+		 * $needmaintenance becomes true when there are actual lines parsed. Maintenance routines are run after all logs are parsed.
 		 */
 		$needmaintenance = false;
 
-		foreach ($logfiles as $logfile) {
-			if ((!empty($this->logfile_prefix) && substr_compare(basename($logfile), $this->logfile_prefix, 0, strlen($this->logfile_prefix)) !== 0) || (!empty($this->logfile_suffix) && substr_compare(basename($logfile), $this->logfile_suffix, -strlen($this->logfile_suffix)) !== 0)) {
-				continue;
-			}
-
-			$date = str_replace(array($this->logfile_prefix, $this->logfile_suffix), '', basename($logfile));
-			$date = date('Y-m-d', strtotime($date));
-
-			/**
-			 * Logs must be parsed in chronological order. If current log is older than the last log parsed we skip it.
-			 * We do process the log with the same date as the last log parsed as it may contain new lines that haven't been processed yet.
-			 */
+		foreach ($logfiles as $date => $file) {
 			if (!is_null($date_lastlogparsed) && strtotime($date) < strtotime($date_lastlogparsed)) {
 				continue;
 			}
 
-			$parser_class = 'parser_'.$this->logfile_format;
-			$parser = new $parser_class($this->settings);
+			$parser = new $this->parser($this->settings);
 			$parser->set_value('date', $date);
 
 			/**
@@ -193,33 +196,33 @@ final class sss extends base
 			}
 
 			/**
-			 * Get the parse history for the current logfile.
+			 * Get the parse history.
 			 */
 			$query = @mysqli_query($this->mysqli, 'select `lines_parsed` from `parse_history` where `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query);
 
 			if (!empty($rows)) {
 				$result = mysqli_fetch_object($query);
-				/**
-				 * Have the parser start at the last line we parsed on previous run. The final value of $linenum is that of the line which contains EOF.
-				 * This line contains no chat data and should be parsed again on the next run when it possibly does contain data.
-				 */
 				$firstline = (int) $result->lines_parsed;
 			} else {
 				$firstline = 1;
 			}
 
 			/**
-			 * If the logfile is gzipped we use the gzparser.
+			 * Check if we are dealing with a gzipped log.
 			 */
-			if (substr($logfile, -3) == '.gz') {
-				$parser->gzparse_log($logfile, $firstline);
+			if (preg_match('/\.gz$/', $file)) {
+				if (!extension_loaded('zlib')) {
+					$this->output('critical', 'parse_log(): zlib extension isn\'t loaded: can\'t parse gzipped logs'."\n");
+				}
+
+				$parser->gzparse_log($file, $firstline);
 			} else {
-				$parser->parse_log($logfile, $firstline);
+				$parser->parse_log($file, $firstline);
 			}
 
 			/**
-			 * Only write to db and flag for maintenance if there are new lines parsed since last run.
+			 * Update parse history and set $needmaintenance to true when there are actual lines parsed.
 			 */
 			if ($parser->get_value('linenum') > $firstline) {
 				$parser->write_data($this->mysqli);
@@ -228,6 +231,9 @@ final class sss extends base
 			}
 		}
 
+		/**
+		 * Finally run maintenance routines.
+		 */
 		if ($needmaintenance) {
 			$this->do_maintenance();
 		}
@@ -316,7 +322,7 @@ final class sss extends base
 }
 
 if (substr(phpversion(), 0, 3) != '5.3') {
-	exit('php version 5.3 required, currently running with version '.phpversion()."\n");
+	echo 'php version 5.3 is recommended, you are running with version '.phpversion()."\n";
 }
 
 if (!extension_loaded('mysqli')) {
