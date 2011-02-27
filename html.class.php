@@ -139,7 +139,7 @@ final class html extends base
 		$query = @mysqli_query($this->mysqli, 'select min(`date`) as `date_first`, max(`date`) as `date_last`, count(*) as `days`, avg(`l_total`) as `l_avg`, sum(`l_total`) as `l_total` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 
-		if ((int) $result->days == 0) {
+		if ((int) $result->l_total == 0) {
 			$this->output('critical', 'make_html(): database is empty');
 		}
 
