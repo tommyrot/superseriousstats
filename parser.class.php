@@ -283,7 +283,7 @@ abstract class parser extends base
 		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
 			$this->newline .= $char;
 		} elseif (preg_match('/^'.$this->hex_latin1supplement.'$/', $char)) {
-			$char = preg_replace ('/^'.$this->hex_latin1supplement.'$/e', 'pack(\'C*\', (ord(\'$0\') >> 6) | 0xC0, (ord(\'$0\') & 0x3F) | 0x80)', $char);
+			$char = preg_replace('/^'.$this->hex_latin1supplement.'$/e', 'pack(\'C*\', (ord(\'$0\') >> 6) | 0xC0, (ord(\'$0\') & 0x3F) | 0x80)', $char);
 			$this->newline .= $char;
 		} else {
 			$this->newline .= "\xEF\xBF\xBD";
