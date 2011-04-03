@@ -99,9 +99,10 @@ final class user
 		$this->ruid = (int) $result->ruid;
 		$this->csnick = $result->csnick;
 		$query = @mysqli_query($this->mysqli, 'select min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `q_lines`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\' group by `q_lines`.`ruid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
 		$result = mysqli_fetch_object($query);
 
-		if ((int) $result->l_total == 0) {
+		if (empty($rows) || (int) $result->l_total == 0) {
 			exit('This user has no lines.'."\n");
 		}
 

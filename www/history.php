@@ -83,9 +83,10 @@ final class history
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `firstyearparsed`, max(year(`date`)) as `lastyearparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
 		$result = mysqli_fetch_object($query);
 
-		if ((int) $result->days == 0) {
+		if (empty($rows) || (int) $result->days == 0) {
 			exit('This channel may only have a future.'."\n");
 		}
 
