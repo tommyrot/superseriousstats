@@ -31,4 +31,4 @@ If you want superseriousstats to also support the logfile format you use, you ca
 Support
 -------
 
-You are welcome to join us in #superseriousstats on chat.freenode.net. We are glad to help you get the program running. We are also happy to hear of any success stories.
+You are welcome to join us in #superseriousstats on chat.freenode.net. We will be more than happy to help you get the program running.
