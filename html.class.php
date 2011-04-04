@@ -195,15 +195,15 @@ final class html extends base
 			      . '  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n"
 			      . '</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
-			      . '<div class="box">'."\n\n"
-			      . '<div class="info">'.htmlspecialchars($this->channel).', seriously.<br /><br />'.number_format($this->days).' day'.($this->days > 1 ? 's logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)) : ' logged on '.date('M j, Y', strtotime($this->date_first))).'.<br />'
-			      . '<br />Logs contain '.number_format($this->l_total).' lines, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.'.($this->addhtml_head != '' ? '<br /><br />'.@file_get_contents($this->addhtml_head) : '').'</div>'."\n";
+			      . '<div class="box">'."\n"
+			      . "\n".'<div class="info">'.htmlspecialchars($this->channel).', seriously.<br /><br />'.number_format($this->days).' day'.($this->days > 1 ? 's logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)) : ' logged on '.date('M j, Y', strtotime($this->date_first))).'.<br />'
+			      . '<br />Logs contain '.number_format($this->l_total).' lines, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.'.($this->addhtml_head != '' ? '<br /><br />'.trim(@file_get_contents($this->addhtml_head)) : '').'</div>'."\n";
 
 		/**
 		 * Activity section
 		 */
 		if ($this->sectionbits & 1) {
-			$this->output .= '<div class="head">Activity</div>'."\n";
+			$this->output .= "\n".'<div class="head">Activity</div>'."\n";
 			$this->output .= $this->make_table_mostactivetimes();
 			$this->output .= $this->make_table_activity('daily');
 			$this->output .= $this->make_table_activity('monthly');
@@ -384,7 +384,7 @@ final class html extends base
 			$output .= $t->make_table($this->mysqli);
 
 			if (!empty($output)) {
-				$this->output .= '<div class="head">General Chat</div>'."\n".$output;
+				$this->output .= "\n".'<div class="head">General Chat</div>'."\n".$output;
 			}
 		}
 
@@ -418,7 +418,7 @@ final class html extends base
 			}
 
 			if (!empty($output)) {
-				$this->output .= '<div class="head">Modes</div>'."\n".$output;
+				$this->output .= "\n".'<div class="head">Modes</div>'."\n".$output;
 			}
 		}
 
@@ -506,7 +506,7 @@ final class html extends base
 			$output .= $t->make_table($this->mysqli);
 
 			if (!empty($output)) {
-				$this->output .= '<div class="head">Events</div>'."\n".$output;
+				$this->output .= "\n".'<div class="head">Events</div>'."\n".$output;
 			}
 		}
 
@@ -573,7 +573,7 @@ final class html extends base
 			}
 
 			if (!empty($output)) {
-				$this->output .= '<div class="head">Smileys</div>'."\n".$output;
+				$this->output .= "\n".'<div class="head">Smileys</div>'."\n".$output;
 			}
 		}
 
@@ -628,7 +628,7 @@ final class html extends base
 			$output .= $t->make_table($this->mysqli);
 
 			if (!empty($output)) {
-				$this->output .= '<div class="head">URLs</div>'."\n".$output;
+				$this->output .= "\n".'<div class="head">URLs</div>'."\n".$output;
 			}
 		}
 
@@ -654,15 +654,15 @@ final class html extends base
 			}
 
 			if (!empty($output)) {
-				$this->output .= '<div class="head">Words</div>'."\n".$output;
+				$this->output .= "\n".'<div class="head">Words</div>'."\n".$output;
 			}
 		}
 
 		/**
 		 * HTML Foot
 		 */
-		$this->output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot != '' ? '<br />'.@file_get_contents($this->addhtml_foot) : '').'</div>'."\n\n";
-		$this->output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		$this->output .= "\n".'<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot != '' ? '<br />'.trim(@file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
+		$this->output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 		$this->output('notice', 'make_html(): finished creating statspage');
 		return $this->output;
 	}
