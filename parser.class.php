@@ -217,17 +217,18 @@ abstract class parser extends base
 			}
 
 			/*
-			 * Set $line to the rebuild $newline.
+			 * Set $line to the rebuilt $newline.
 			 */
 			$line = $this->newline;
 		}
 
 		/**
-		 * 1. Remove control codes from Basic Latin (7-bit ASCII) and Latin-1 Supplement character sets. 0x03 is used for (mIRC) color codes and may be followed by additional characters; remove those as well.
-		 * 2. Replace all possible formations of adjacent spaces and tabs, including the no-break space, with a single space.
+		 * 1. Remove control codes from the Basic Latin (7-bit ASCII) and Latin-1 Supplement character sets (the latter after conversion to multibyte).
+		 *    0x03 is used for (mIRC) color codes and may be followed by additional characters; remove those as well.
+		 * 2. Replace all possible formations of adjacent spaces and tabs, including the no-break space (multibyte), with a single space.
 		 * 3. Remove whitespace characters at the beginning and end of a line.
 		 */
-		$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F-\x9F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
+		$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
 		return $line;
 	}
 
