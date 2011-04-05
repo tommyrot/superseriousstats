@@ -187,14 +187,14 @@ final class user
 			. '  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n"
 			. '</style>'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
-			. '<div class="box">'."\n\n"
-			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? $this->mood : '.').'<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
+			. '<div class="box">'."\n"
+			. "\n".'<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? $this->mood : '.').'<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
 			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' lines on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.</div>'."\n";
 
 		/**
 		 * Activity section
 		 */
-		$output .= '<div class="head">Activity</div>'."\n";
+		$output .= "\n".'<div class="head">Activity</div>'."\n";
 		$output .= $this->make_table_mostactivetimes();
 		$output .= $this->make_table_activity('daily');
 		$output .= $this->make_table_activity('monthly');
@@ -204,8 +204,8 @@ final class user
 		/**
 		 * HTML Foot
 		 */
-		$output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.</div>'."\n\n";
-		$output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		$output .= "\n".'<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.</div>'."\n";
+		$output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 		@mysqli_close($this->mysqli);
 		return $output;
 	}

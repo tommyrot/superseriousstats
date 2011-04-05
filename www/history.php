@@ -103,13 +103,13 @@ final class history
 			. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
-			. '<div class="box">'."\n\n"
-			. '<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.</div>'."\n";
+			. '<div class="box">'."\n"
+			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.</div>'."\n";
 
 		/**
 		 * Activity section
 		 */
-		$output .= '<div class="head">Activity</div>'."\n";
+		$output .= "\n".'<div class="head">Activity</div>'."\n";
 		$output .= $this->make_index();
 
 		if (array_key_exists($this->year, $this->activity) && ($this->month == 0 || array_key_exists($this->month, $this->activity[$this->year]))) {
@@ -127,8 +127,8 @@ final class history
 		/**
 		 * HTML Foot
 		 */
-		$output .= '<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.</div>'."\n\n";
-		$output .= '</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		$output .= "\n".'<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.</div>'."\n";
+		$output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 		@mysqli_close($this->mysqli);
 		return $output;
 	}
