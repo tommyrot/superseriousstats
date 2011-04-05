@@ -1202,10 +1202,25 @@ final class table extends base
 				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2"><a href="'.$row[2].'">'.$row[2].'</a></td><td class="v3">'.$row[3].'</td></tr>';
 			}
 		} elseif ($this->type == 'topics') {
+			/**
+			 * Check if there are URLs in the topic and make hyperlinks out of them.
+			 */
+			$urltools = new urltools();
 			$prevdate = '';
 
 			foreach ($content as $row) {
-				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3a">'.$row[3].'</td></tr>';
+				$words = explode(' ', $row[3]);
+				$topic = '';
+
+				foreach ($words as $word) {
+					if (!$urltools->validate_url($word)) {
+						$topic .= $word.' ';
+					} else {
+						$topic .= '<a href="'.$word.'">'.$word.'</a> ';
+					}
+				}
+
+				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3a">'.rtrim($topic).'</td></tr>';
 				$prevdate = $row[1];
 			}
 		} elseif ($this->type == 'urls') {
