@@ -82,6 +82,7 @@ final class history
 	public function make_html()
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
+		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `firstyearparsed`, max(year(`date`)) as `lastyearparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 		$result = mysqli_fetch_object($query);
