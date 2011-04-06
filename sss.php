@@ -253,7 +253,7 @@ final class sss extends base
 		     . '		     4  Modes'."\n"
 		     . '		     8  Events'."\n"
 		     . '		    16  Smileys'."\n"
-		     . '		    32  urls'."\n"
+		     . '		    32  URLs'."\n"
 		     . '		    64  Words'."\n"
 		     . '		If this option is omitted all sections will be included.'."\n"
 		     . '	-c	Read settings from <config>.'."\n"
