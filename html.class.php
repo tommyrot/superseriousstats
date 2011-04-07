@@ -1156,7 +1156,12 @@ final class table extends base
 				$content[] = array($i, number_format((float) $result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2));
 			} elseif ($this->type == 'large' || $this->type == 'medium') {
 				$content[] = array($i, number_format((float) $result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
-			} elseif ($this->type == 'topics' || $this->type == 'urls') {
+			} elseif ($this->type == 'topics') {
+				/**
+				 * Don't use htmlspecialchars() on $v2 yet because we still want to parse for valid URLs later on.
+				 */
+				$content[] = array($i, date('j M \'y', strtotime($result->v1)), $result->v2, htmlspecialchars($result->v3));
+			} elseif ($this->type == 'urls') {
 				$content[] = array($i, date('j M \'y', strtotime($result->v1)), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			} elseif ($this->type == 'domains') {
 				$content[] = array($i, number_format((int) $result->v1), htmlspecialchars($result->v2), date('j M \'y', strtotime($result->v3)));
@@ -1202,9 +1207,6 @@ final class table extends base
 				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2"><a href="'.$row[2].'">'.$row[2].'</a></td><td class="v3">'.$row[3].'</td></tr>';
 			}
 		} elseif ($this->type == 'topics') {
-			/**
-			 * Check if there are URLs in the topic and make hyperlinks out of them.
-			 */
 			$urltools = new urltools();
 			$prevdate = '';
 
@@ -1212,15 +1214,22 @@ final class table extends base
 				$words = explode(' ', $row[3]);
 				$topic = '';
 
+				/**
+				 * Check if there are URLs in the topic and make hyperlinks out of them.
+				 */
 				foreach ($words as $word) {
 					if (!$urltools->validate_url($word)) {
 						$topic .= $word.' ';
 					} else {
-						$topic .= '<a href="'.$word.'">'.$word.'</a> ';
+						$url = $urltools->normalize_url($word);
+						$topic .= '<a href="'.$url.'">'.$url.'</a> ';
 					}
 				}
 
-				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3a">'.rtrim($topic).'</td></tr>';
+				/**
+				 * Don't forget to use htmlspecialchars() on $topic here.
+				 */
+				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3a">'.htmlspecialchars(rtrim($topic)).'</td></tr>';
 				$prevdate = $row[1];
 			}
 		} elseif ($this->type == 'urls') {
