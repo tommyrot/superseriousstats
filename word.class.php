@@ -31,7 +31,7 @@ final class word extends base
 	public function __construct($word)
 	{
 		$this->word = $word;
-		
+
 		/**
 		 * Calculate the length of the word without additional multibyte string functions.
 		 */

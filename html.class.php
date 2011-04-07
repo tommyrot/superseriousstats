@@ -1148,7 +1148,7 @@ final class table extends base
 		while ($result = mysqli_fetch_object($query)) {
 			$i++;
 
-			if  ($i > $this->rows) {
+			if ($i > $this->rows) {
 				break;
 			}
 
@@ -1234,7 +1234,7 @@ final class table extends base
 
 		if ($this->type == 'small') {
 			return '<table class="small">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
-		} elseif ($this->type == 'medium'  || $this->type == 'domains') {
+		} elseif ($this->type == 'medium' || $this->type == 'domains') {
 			return '<table class="medium">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 		} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'urls') {
 			return '<table class="large">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
