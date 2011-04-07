@@ -140,7 +140,7 @@ final class parser_eggdrop extends parser
 
 			$this->repeatlock = true;
 			$this->linenum--;
-			$this->output('notice', 'parse_line(): repeating line '.$this->linenum.': '.$matches['num'].' time'.(($matches['num'] != '1') ? 's' : ''));
+			$this->output('debug', 'parse_line(): repeating line '.$this->linenum.': '.$matches['num'].' time'.(($matches['num'] != '1') ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; $i++) {
 				$this->parse_line($this->prevline);
