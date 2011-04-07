@@ -459,7 +459,7 @@ abstract class parser extends base
 					$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 					if (!$this->urltools->validate_url($csword)) {
-						$this->output('notice', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
+						$this->output('warning', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
 					} elseif (strlen($csword) > 510) {
 						$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': too long');
 					} else {
@@ -562,7 +562,7 @@ abstract class parser extends base
 				 * Clean possible network prefix (psyBNC) from undergoing nick.
 				 */
 				if (substr_count($csnick_undergoing, '~') + substr_count($csnick_undergoing, '\'') == 1) {
-					$this->output('notice', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+					$this->output('debug', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 					$tmp = preg_split('/[~\']/', $csnick_undergoing, 2);
 					$csnick_undergoing = $tmp[1];
 				}
@@ -592,7 +592,7 @@ abstract class parser extends base
 			 * Keep track of every single topic set.
 			 */
 			if (strlen($line) > 510) {
-				$this->output('warning', 'set_topic(): invalid topic: \''.$cstopic.'\' on line '.$this->linenum);
+				$this->output('debug', 'set_topic(): skipping topic on line '.$this->linenum.': too long');
 			} else {
 				$this->nicks_objs[$nick]->add_topic($line, $datetime);
 			}
