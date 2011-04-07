@@ -458,21 +458,19 @@ abstract class parser extends base
 				if (preg_match('/^(=[])]|;([]()xp]|-\))|:([]\/()\\\>xpd]|-\))|\\\o\/)$/i', $csword)) {
 					$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
-					/**
-					 * Put "http://" scheme in front of all URLs beginning with just "www.".
-					 */
-					$csurl = preg_replace('/^www\./i', 'http://$0', $csword);
-
-					if (strlen($csurl) > 510 || !$this->urltools->validate_url($csurl)) {
+					if (!$this->urltools->validate_url($csword)) {
 						$this->output('notice', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
+					} elseif (strlen($csword) > 510) {
+						$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': too long');
 					} else {
-						$csurl = $this->urltools->normalize_url($csurl);
+						$csurl = $this->urltools->normalize_url(csword);
 						$this->nicks_objs[$nick]->add_url($csurl, $datetime);
 						$this->nicks_objs[$nick]->add_value('urls', 1);
 					}
 
 					/**
-					 * Regardless of it being a valid URL set $urlinline to true. We use this variable to exclude quotes that have an URL in them.
+					 * Regardless of it being a valid URL or not we set $urlinline to true. This variable enables us to exclude quotes that have
+					 * a URL (or something that looks like it) in them. This is to safeguard a tidy presentation on the statspage.
 					 */
 					$urlinline = true;
 				} elseif ($this->wordtracking && preg_match('/^([a-z]|\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])){1,255}$/i', $csword)) {
