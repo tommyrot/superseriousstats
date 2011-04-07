@@ -1008,7 +1008,7 @@ final class html extends base
 	 */
 	private function make_table_notquitesoactivepeople($offset, $rowcount)
 	{
-		$query = mysqli_query($this->mysqli, 'select `q_lines`.`ruid`, `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc limit '.$offset.', '.$rowcount) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `q_lines`.`ruid`, `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc limit '.$offset.', '.$rowcount) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows) || $rows < $rowcount) {
