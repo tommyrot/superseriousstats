@@ -463,7 +463,7 @@ abstract class parser extends base
 					} elseif (strlen($csword) > 510) {
 						$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': too long');
 					} else {
-						$csurl = $this->urltools->normalize_url(csword);
+						$csurl = $this->urltools->normalize_url($csword);
 						$this->nicks_objs[$nick]->add_url($csurl, $datetime);
 						$this->nicks_objs[$nick]->add_value('urls', 1);
 					}
