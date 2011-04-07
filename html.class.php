@@ -582,7 +582,7 @@ final class html extends base
 		 */
 		if ($this->sectionbits & 32) {
 			$output = '';
-
+/**
 			$t = new table('Most Referenced Domains');
 			$t->set_value('key1', 'References');
 			$t->set_value('key2', 'Domain');
@@ -600,7 +600,7 @@ final class html extends base
 			$t->set_value('query_main', 'select count(*) as `v1`, concat(\'.\', substring_index(substring_index(`csurl`, \'/\', 3), \'.\', -1)) as `v2` from `user_urls` group by `v2` having `v2` regexp \'^\.[a-z]+$\' order by `v1` desc, `v2` asc limit 10');
 			$t->set_value('rows', 10);
 			$output .= $t->make_table($this->mysqli);
-
+*/
 			$t = new table('Most Recent URLs');
 			$t->set_value('key1', 'Date');
 			$t->set_value('key2', 'User');
