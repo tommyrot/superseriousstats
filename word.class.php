@@ -24,12 +24,18 @@ final class word extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
+	private $length = 0;
 	private $word = '';
 	protected $total = 0;
 
 	public function __construct($word)
 	{
 		$this->word = $word;
+		
+		/**
+		 * Calculate the length of the word without additional multibyte string functions.
+		 */
+		$this->length = strlen(preg_replace('/\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])/', '.', $word));
 	}
 
 	public function write_data($mysqli)
@@ -37,7 +43,7 @@ final class word extends base
 		/**
 		 * Write data to database table "words".
 		 */
-		@mysqli_query($mysqli, 'insert into `words` set `word` = \''.mysqli_real_escape_string($mysqli, $this->word).'\', `total` = '.$this->total.' on duplicate key update `total` = `total` + '.$this->total) or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
+		@mysqli_query($mysqli, 'insert into `words` set `word` = \''.mysqli_real_escape_string($mysqli, $this->word).'\', `length` = '.$this->length.', `total` = '.$this->total.' on duplicate key update `total` = `total` + '.$this->total) or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
 	}
 }
 

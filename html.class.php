@@ -641,14 +641,14 @@ final class html extends base
 			/**
 			 * Display word tables ordered by totals.
 			 */
-			$query = @mysqli_query($this->mysqli, 'select length(`word`) as `length`, count(*) as `total` from `words` group by `length` order by `total` desc, `length` desc limit 9') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'select `length`, count(*) as `total` from `words` group by `length` order by `total` desc, `length` desc limit 9') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
 			while ($result = mysqli_fetch_object($query)) {
 				$t = new table('Words of '.$result->length.' Characters');
 				$t->set_value('key1', 'Times Used');
 				$t->set_value('key2', 'Word');
 				$t->set_value('minrows', $this->minrows);
-				$t->set_value('query_main', 'select `total` as `v1`, `word` as `v2` from `words` where length(`word`) = '.$result->length.' order by `v1` desc, `v2` asc limit 5');
+				$t->set_value('query_main', 'select `total` as `v1`, `word` as `v2` from `words` where `length` = '.$result->length.' order by `v1` desc, `v2` asc limit 5');
 				$t->set_value('total', (int) $result->total);
 				$output .= $t->make_table($this->mysqli);
 			}

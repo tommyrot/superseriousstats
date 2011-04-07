@@ -475,9 +475,9 @@ abstract class parser extends base
 					 * Regardless of it being a valid URL set $urlinline to true. We use this variable to exclude quotes that have an URL in them.
 					 */
 					$urlinline = true;
-				} elseif ($this->wordtracking && preg_match('/^[a-z]{1,255}$/i', $csword)) {
+				} elseif ($this->wordtracking && preg_match('/^([a-z]|\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])){1,255}$/i', $csword)) {
 					/**
-					 * To keep it simple we only track words composed of the characters A through Z.
+					 * To keep it simple we only track words composed of the characters A through Z and letters defined in the Latin-1 Supplement.
 					 * Words consisting of 30+ characters are most likely not real words but then again we're not a dictionary.
 					 */
 					$this->add_word($csword);

@@ -1896,9 +1896,11 @@ DROP TABLE IF EXISTS `words`;
 CREATE TABLE `words` (
   `wid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `word` varchar(255) NOT NULL DEFAULT '',
+  `length` int(10) unsigned NOT NULL DEFAULT '0',
   `total` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`wid`),
   UNIQUE KEY `word` (`word`),
+  KEY `length` (`length`),
   KEY `total` (`total`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
