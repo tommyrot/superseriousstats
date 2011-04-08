@@ -105,13 +105,13 @@ final class urltools
 					/**
 					 * Always pass along an empty string for nonexistent elements.
 					 */
-					$array[$element] = '';
+					$urldata[$element] = '';
 				} else {
-					$array[$element] = $matches[$element];
+					$urldata[$element] = $matches[$element];
 				}
 			}
 
-			return $array;
+			return $urldata;
 		} else {
 			return false;
 		}
