@@ -31,6 +31,12 @@ abstract class base
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $prevoutput = array();
+	protected $urltools;
+
+	public function __construct()
+	{
+		$this->urltools = new urltools();
+	}
 
 	final public function add_value($var, $value)
 	{

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2010, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2011, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,6 +29,8 @@ final class maintenance extends base
 
 	public function __construct($settings)
 	{
+		parent::__construct();
+
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $settings)) {
 				continue;

@@ -54,6 +54,8 @@ final class sss extends base
 
 	public function __construct()
 	{
+		parent::__construct();
+
 		/**
 		 * Use UTC until user specified timezone is loaded.
 		 */

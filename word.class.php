@@ -30,6 +30,7 @@ final class word extends base
 
 	public function __construct($word)
 	{
+		parent::__construct();
 		$this->word = $word;
 
 		/**

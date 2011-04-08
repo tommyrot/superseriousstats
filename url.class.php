@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2010, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2011, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,13 +26,17 @@ final class url extends base
 	 */
 	protected $csurl = '';
 	protected $firstused = '';
+	protected $fqdn = '';
 	protected $lastused = '';
 	protected $mysqli;
+	protected $tld = '';
 	protected $total = 0;
 
 	public function __construct($csurl)
 	{
+		parent::__construct();
 		$this->csurl = $csurl;
+
 	}
 
 	/**
