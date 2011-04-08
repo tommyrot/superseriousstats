@@ -47,76 +47,71 @@
 final class urltools
 {
 	private $authority = '';
-	private $domain = '[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?(\.[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?)*';
+	private $domain = '(?<domain>[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?(\.[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?)*)';
 	private $fqdn = '';
 	private $fragment = '';
 	private $gen_delims = '[]:\/?#[@]';
-	private $ipv4address = '(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3}';
+	private $ipv4address = '(?<ipv4address>(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})';
 	private $path = '';
 	private $pchar = '';
 	private $pct_encoded = '%[0-9a-f]{2}';
-	private $port = '(6553[0-5]|(655[0-2]|(65[0-4]|(6[0-4]|[1-5][0-9]|[1-9])[0-9]|[1-9])[0-9]|[1-9])?[0-9])';
+	private $port = '(?<port>(6553[0-5]|(655[0-2]|(65[0-4]|(6[0-4]|[1-5][0-9]|[1-9])[0-9]|[1-9])[0-9]|[1-9])?[0-9]))';
 	private $query = '';
 	private $reserved = '';
-	private $scheme = '(https?:\/\/)?';
+	private $scheme = '(?<scheme>https?:\/\/)';
 	private $sub_delims = '[!$&\'()*+,;=]';
-	private $tld = '\.(ac|ad|ae|aero|af|ag|ai|al|am|an|ao|aq|ar|arpa|as|asia|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|biz|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cat|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|com|coop|cr|cu|cv|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|info|int|io|iq|ir|is|it|je|jm|jo|jobs|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mo|mobi|mp|mq|mr|ms|mt|mu|museum|mv|mw|mx|my|mz|na|name|nc|ne|net|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|pro|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|travel|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw)\.?';
+	private $tld = '(?<tld>\.(ac|ad|ae|aero|af|ag|ai|al|am|an|ao|aq|ar|arpa|as|asia|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|biz|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cat|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|com|coop|cr|cu|cv|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|info|int|io|iq|ir|is|it|je|jm|jo|jobs|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mo|mobi|mp|mq|mr|ms|mt|mu|museum|mv|mw|mx|my|mz|na|name|nc|ne|net|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|pro|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|travel|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw)\.?)';
 	private $unreserved = '[a-z0-9_.~-]';
 
 	public function __construct()
 	{
 		$this->reserved = '('.$this->gen_delims.'|'.$this->sub_delims.')';
 		$this->pchar = '('.$this->unreserved.'|'.$this->pct_encoded.'|'.$this->sub_delims.'|[:@])';
-		$this->fqdn = $this->domain.$this->tld;
-		$this->authority = '('.$this->ipv4address.'|'.$this->fqdn.')(:'.$this->port.')?';
-		$this->fragment = '(#('.$this->pchar.'|[\/?])*)?';
-		$this->path = '(\/\/?('.$this->pchar.'+\/?)*)?';
-		$this->query = '(\?('.$this->pchar.'|[\/?])*)?';
+		$this->fqdn = '(?<fqdn>'.$this->domain.$this->tld.')';
+		$this->authority = '(?<authority>('.$this->ipv4address.'|'.$this->fqdn.')(:'.$this->port.')?)';
+		$this->fragment = '(?<fragment>(#('.$this->pchar.'|[\/?])*)?)';
+		$this->path = '(?<path>(\/\/?('.$this->pchar.'+\/?)*)?)';
+		$this->query = '(?<query>(\?('.$this->pchar.'|[\/?])*)?)';
 	}
 
 	/**
-	 * Return the FQDN.
+	 * Normalize and validate a URL and return an array with its elements.
 	 */
-	public function get_fqdn($csurl) {
-		if (preg_match('/^'.$this->scheme.'(?<fqdn>'.$this->fqdn.')'.$this->path.$this->query.$this->fragment.'$/i', $csurl, $matches)) {
-			return $matches['fqdn'];
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Return the TLD.
-	 */
-	public function get_tld($csurl) {
-		if (preg_match('/^'.$this->scheme.$this->domain.'(?<tld>'.$this->tld.')'.$this->path.$this->query.$this->fragment.'$/i', $csurl, $matches)) {
-			return $matches['tld'];
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Normalize a URL.
-	 */
-	public function normalize_url($csurl)
-	{
+	public function get_elements($csurl) {
 		/**
-		 * 1. Convert scheme and authority to lower case.
-		 * 2. Put "http://" scheme in front of a URL beginning with just "www.".
+		 * Convert scheme and authority to lower case.
 		 */
+		$csurl = preg_replace('/^'.$this->scheme.$this->authority.'/ei', 'strtolower(\'$0\')', $csurl);
 
-		$csurl = preg_replace(array('/^'.$this->scheme.$this->authority.'/ei', '/^www\./'), array('strtolower(\'$0\')', 'http://$0'), $csurl);
-		return $csurl;
-	}
+		/**
+		 * Validate and further process the URL.
+		 */
+		if (preg_match('/^(?<url>'.$this->scheme.'?'.$this->authority.$this->path.$this->query.$this->fragment.')$/i', $csurl, $matches)) {
+			/**
+			 * If the URL has no scheme we assume the "http://" one; update the elements we just found.
+			 */
+			if (empty($matches['scheme'])) {
+				$matches['url'] = 'http://'.$matches['url'];
+				$matches['scheme'] = 'http://';
+			}
 
-	/**
-	 * Validate a URL.
-	 */
-	public function validate_url($csurl)
-	{
-		if (preg_match('/^'.$this->scheme.$this->authority.$this->path.$this->query.$this->fragment.'$/i', $csurl)) {
-			return true;
+			/**
+			 * Create and return an array with all the elements of this URL.
+			 */
+			$elements = array('url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'port', 'path', 'query', 'fragment');
+
+			foreach ($elements as $element) {
+				if (empty($matches[$element])) {
+					/**
+					 * Always pass along an empty string for nonexistent elements.
+					 */
+					$array[$element] = '';
+				} else {
+					$array[$element] = $matches[$element];
+				}
+			}
+
+			return $array;
 		} else {
 			return false;
 		}
