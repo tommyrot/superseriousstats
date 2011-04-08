@@ -456,15 +456,21 @@ abstract class parser extends base
 			foreach ($words as $csword) {
 				if (preg_match('/^(=[])]|;([]()xp]|-\))|:([]\/()\\\>xpd]|-\))|\\\o\/)$/i', $csword)) {
 					$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
+
+				/**
+				 * Only catch URLs which were intended to be clicked on; most clients can handle URLs that begin with "www." or "http://" and such.
+				 * If we would apply a more liberal approach we are likely to run into filenames (e.g. .py .com), libraries (e.g. .so) and other unrelated data.
+				 */
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
-					if (!$this->urltools->validate_url($csword)) {
-						$this->output('warning', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
-					} elseif (strlen($csword) > 510) {
-						$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': too long');
+					if (($urldata = $this->urltools->get_elements($csword)) !== false) {
+						if (strlen($urldata['url']) > 1024) {
+							$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': exceeds column length (1024)');
+						} else {
+							$this->nicks_objs[$nick]->add_url($urldata, $datetime);
+							$this->nicks_objs[$nick]->add_value('urls', 1);
+						}
 					} else {
-						$csurl = $this->urltools->normalize_url($csword);
-						$this->nicks_objs[$nick]->add_url($csurl, $datetime);
-						$this->nicks_objs[$nick]->add_value('urls', 1);
+						$this->output('debug', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
 					}
 
 					/**
@@ -492,7 +498,7 @@ abstract class parser extends base
 				}
 			}
 
-			if (strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
+			if (!$urlinline && strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
 				$this->nicks_objs[$nick]->add_value('uppercased', 1);
 
 				if (!$urlinline && strlen($line) <= 255) {
@@ -504,7 +510,7 @@ abstract class parser extends base
 				}
 			}
 
-			if (preg_match('/!$/', $line)) {
+			if (!$urlinline && preg_match('/!$/', $line)) {
 				$this->nicks_objs[$nick]->add_value('exclamations', 1);
 
 				if (!$urlinline && strlen($line) <= 255) {
@@ -514,7 +520,7 @@ abstract class parser extends base
 						$this->nicks_objs[$nick]->add_quote('ex_exclamations', 'short', $line);
 					}
 				}
-			} elseif (preg_match('/\?$/', $line)) {
+			} elseif (!$urlinline && preg_match('/\?$/', $line)) {
 				$this->nicks_objs[$nick]->add_value('questions', 1);
 
 				if (!$urlinline && strlen($line) <= 255) {
