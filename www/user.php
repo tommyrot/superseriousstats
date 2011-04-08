@@ -74,10 +74,14 @@ final class user
 	}
 
 	/**
-	 * Exit with ($debug = true) or without ($debug = false) an error message.
+	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments.
+	 * Its functionality is slightly different in that it exits on any type of message passed to it.
 	 */
 	private function output($type, $msg)
 	{
+		/**
+		 * If $debug is set to true we exit with the given message, otherwise exit silently.
+		 */
 		if ($this->debug) {
 			exit($msg."\n");
 		} else {
@@ -172,7 +176,7 @@ final class user
 		}
 
 		/**
-		 * HTML Head
+		 * HTML Head.
 		 */
 		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `q_activity_by_day` where `ruid` = '.$this->ruid.' order by `l_max` desc, `date_max` asc limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
@@ -193,7 +197,7 @@ final class user
 			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' lines on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.</div>'."\n";
 
 		/**
-		 * Activity section
+		 * Activity section.
 		 */
 		$output .= "\n".'<div class="head">Activity</div>'."\n";
 		$output .= $this->make_table_mostactivetimes();
@@ -203,7 +207,7 @@ final class user
 		$output .= $this->make_table_activity('yearly');
 
 		/**
-		 * HTML Foot
+		 * HTML Foot.
 		 */
 		$output .= "\n".'<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.</div>'."\n";
 		$output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";

@@ -181,7 +181,7 @@ final class html extends base
 		}
 
 		/**
-		 * HTML Head
+		 * HTML Head.
 		 */
 		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `channel` order by `l_total` desc, `date` asc limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
@@ -202,7 +202,7 @@ final class html extends base
 			      . '<br />Logs contain '.number_format($this->l_total).' lines, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.'.($this->addhtml_head != '' ? '<br /><br />'.trim(@file_get_contents($this->addhtml_head)) : '').'</div>'."\n";
 
 		/**
-		 * Activity section
+		 * Activity section.
 		 */
 		if ($this->sectionbits & 1) {
 			$this->output .= "\n".'<div class="head">Activity</div>'."\n";
@@ -219,7 +219,7 @@ final class html extends base
 		}
 
 		/**
-		 * General Chat section
+		 * General Chat section.
 		 */
 		if ($this->sectionbits & 2) {
 			$output = '';
@@ -391,7 +391,7 @@ final class html extends base
 		}
 
 		/**
-		 * Modes section
+		 * Modes section.
 		 */
 		if ($this->sectionbits & 4) {
 			$output = '';
@@ -425,7 +425,7 @@ final class html extends base
 		}
 
 		/**
-		 * Events section
+		 * Events section.
 		 */
 		if ($this->sectionbits & 8) {
 			$output = '';
@@ -513,7 +513,7 @@ final class html extends base
 		}
 
 		/**
-		 * Smileys section
+		 * Smileys section.
 		 */
 		if ($this->sectionbits & 16) {
 			$output = '';
@@ -580,7 +580,7 @@ final class html extends base
 		}
 
 		/**
-		 * URLs section
+		 * URLs section.
 		 */
 		if ($this->sectionbits & 32) {
 			$output = '';
@@ -635,7 +635,7 @@ final class html extends base
 		}
 
 		/**
-		 * Words section
+		 * Words section.
 		 */
 		if ($this->sectionbits & 64) {
 			$output = '';
@@ -661,7 +661,7 @@ final class html extends base
 		}
 
 		/**
-		 * HTML Foot
+		 * HTML Foot.
 		 */
 		$this->output .= "\n".'<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot != '' ? '<br />'.trim(@file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
 		$this->output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";
@@ -1006,7 +1006,7 @@ final class html extends base
 	}
 
 	/**
-	 * $rowcount must be a multiple of 4 so we get a clean table without empty spaces that will mess up the layout.
+	 * $rowcount must be a multiple of 4 so we get a clean table without empty spaces that would otherwise mess up the layout.
 	 */
 	private function make_table_notquitesoactivepeople($offset, $rowcount)
 	{
@@ -1220,16 +1220,15 @@ final class table extends base
 				 * Check if there are URLs in the topic and make hyperlinks out of them.
 				 */
 				foreach ($words as $word) {
-					if (!$this->urltools->validate_url($word)) {
-						$topic .= $word.' ';
+					if (preg_match('/^(www\.|https?:\/\/)/i', $word) && ($urldata = $this->urltools->get_elements($word)) !== false) {
+						$topic .= '<a href="'.$urldata['url'].'">'.$urldata['url'].'</a> ';
 					} else {
-						$url = $this->urltools->normalize_url($word);
-						$topic .= '<a href="'.$url.'">'.$url.'</a> ';
+						$topic .= $word.' ';
 					}
 				}
 
 				/**
-				 * Don't forget to use htmlspecialchars() on $topic here.
+				 * Don't forget to use htmlspecialchars() on $topic here since we skipped doing it before.
 				 */
 				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3a">'.htmlspecialchars(rtrim($topic)).'</td></tr>';
 				$prevdate = $row[1];

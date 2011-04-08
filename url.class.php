@@ -17,7 +17,7 @@
  */
 
 /**
- * Class for handling url data.
+ * Class for handling URL data.
  */
 final class url extends base
 {
@@ -39,17 +39,17 @@ final class url extends base
 
 	}
 
-	/**
-	 * Also keep track of firstused.
-	 */
 	public function set_lastused($datetime)
 	{
-		if ($this->firstused == '' || strtotime($datetime) < strtotime($this->firstused)) {
-			$this->firstused = $datetime;
-		}
-
 		if ($this->lastused == '' || strtotime($datetime) > strtotime($this->lastused)) {
 			$this->lastused = $datetime;
+		}
+
+		/**
+		 * Also keep track of firstused :)
+		 */
+		if ($this->firstused == '' || strtotime($datetime) < strtotime($this->firstused)) {
+			$this->firstused = $datetime;
 		}
 	}
 

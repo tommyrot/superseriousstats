@@ -68,10 +68,14 @@ final class history
 	}
 
 	/**
-	 * Exit with ($debug = true) or without ($debug = false) an error message.
+	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments.
+	 * Its functionality is slightly different in that it exits on any type of message passed to it.
 	 */
 	private function output($type, $msg)
 	{
+		/**
+		 * If $debug is set to true we exit with the given message, otherwise exit silently.
+		 */
 		if ($this->debug) {
 			exit($msg."\n");
 		} else {
@@ -95,7 +99,7 @@ final class history
 		$this->lastyearparsed = (int) $result->lastyearparsed;
 
 		/**
-		 * HTML Head
+		 * HTML Head.
 		 */
 		$output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
@@ -108,7 +112,7 @@ final class history
 			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.</div>'."\n";
 
 		/**
-		 * Activity section
+		 * Activity section.
 		 */
 		$output .= "\n".'<div class="head">Activity</div>'."\n";
 		$output .= $this->make_index();
@@ -126,7 +130,7 @@ final class history
 		}
 
 		/**
-		 * HTML Foot
+		 * HTML Foot.
 		 */
 		$output .= "\n".'<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.</div>'."\n";
 		$output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";

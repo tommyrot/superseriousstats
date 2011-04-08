@@ -454,6 +454,9 @@ abstract class parser extends base
 			$urlinline = false;
 
 			foreach ($words as $csword) {
+				/**
+				 * Behold the amazing smileys regexp.
+				 */
 				if (preg_match('/^(=[])]|;([]()xp]|-\))|:([]\/()\\\>xpd]|-\))|\\\o\/)$/i', $csword)) {
 					$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 
@@ -478,11 +481,12 @@ abstract class parser extends base
 					 * a URL (or something that looks like it) in them. This is to safeguard a tidy presentation on the statspage.
 					 */
 					$urlinline = true;
+
+				/**
+				 * To keep it simple we only track words composed of the characters A through Z and letters defined in the Latin-1 Supplement.
+				 * Words consisting of 30+ characters are most likely not real words but then again we're not a dictionary.
+				 */
 				} elseif ($this->wordtracking && preg_match('/^([a-z]|\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])){1,255}$/i', $csword)) {
-					/**
-					 * To keep it simple we only track words composed of the characters A through Z and letters defined in the Latin-1 Supplement.
-					 * Words consisting of 30+ characters are most likely not real words but then again we're not a dictionary.
-					 */
 					$this->add_word($csword);
 				}
 			}
@@ -596,8 +600,8 @@ abstract class parser extends base
 			/**
 			 * Keep track of every single topic set.
 			 */
-			if (strlen($line) > 510) {
-				$this->output('debug', 'set_topic(): skipping topic on line '.$this->linenum.': too long');
+			if (strlen($line) > 1024) {
+				$this->output('debug', 'set_topic(): skipping topic on line '.$this->linenum.': exceeds column length (1024)');
 			} else {
 				$this->nicks_objs[$nick]->add_topic($line, $datetime);
 			}
