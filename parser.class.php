@@ -623,7 +623,7 @@ abstract class parser extends base
 	 */
 	final private function validate_nick($csnick)
 	{
-		if ($csnick != '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{'.$this->nick_minlen.','.($this->nick_maxlen > 255 ? 255 : $this->nick_maxlen).'}$/i', $csnick)) {
+		if ($csnick != '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{'.($this->nick_minlen > $this->nick_maxlen ? 1 : $this->nick_minlen).','.($this->nick_maxlen > 255 ? 255 : $this->nick_maxlen).'}$/i', $csnick)) {
 			return true;
 		} else {
 			return false;
