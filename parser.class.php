@@ -147,12 +147,13 @@ abstract class parser extends base
 		return $nick;
 	}
 
-	final private function add_word($csword)
+	final private function add_word($csword, $length)
 	{
 		$word = strtolower($csword);
 
 		if (!array_key_exists($word, $this->words_objs)) {
 			$this->words_objs[$word] = new word($word);
+			$this->words_objs[$word]->set_value('length', $length);
 		}
 
 		$this->words_objs[$word]->add_value('total', 1);
@@ -446,7 +447,7 @@ abstract class parser extends base
 			$this->l_total++;
 
 			/**
-			 * The "words" counter below has no relation with the words which are stored in the database.
+			 * The "words" count below has no relation with the words which are stored in the database.
 			 * It simply counts all character groups separated by whitespace.
 			 */
 			$words = explode(' ', $line);
@@ -484,10 +485,19 @@ abstract class parser extends base
 
 				/**
 				 * To keep it simple we only track words composed of the characters A through Z and letters defined in the Latin-1 Supplement.
-				 * Words consisting of 30+ characters are most likely not real words but then again we're not a dictionary.
 				 */
-				} elseif ($this->wordtracking && preg_match('/^([a-z]|\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])){1,255}$/i', $csword)) {
-					$this->add_word($csword);
+				} elseif ($this->wordtracking && preg_match('/^[a-z]|\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])$/i', $csword)) {
+					/**
+					 * Calculate the real length of the word without additional multibyte string functions.
+					 */
+					$length = strlen(preg_replace('/\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])/', '.', $csword));
+
+					/**
+					 * Words consisting of 30+ characters are most likely not real words so we skip those.
+					 */
+					if ($length <= 30) {
+						$this->add_word($csword, $length);
+					}
 				}
 			}
 

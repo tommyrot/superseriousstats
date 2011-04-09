@@ -24,19 +24,14 @@ final class word extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $length = 0;
 	private $word = '';
+	protected $length = 0;
 	protected $total = 0;
 
 	public function __construct($word)
 	{
 		parent::__construct();
 		$this->word = $word;
-
-		/**
-		 * Calculate the length of the word without additional multibyte string functions.
-		 */
-		$this->length = strlen(preg_replace('/\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])/', '.', $word));
 	}
 
 	public function write_data($mysqli)
