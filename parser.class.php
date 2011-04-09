@@ -462,7 +462,7 @@ abstract class parser extends base
 
 				/**
 				 * Only catch URLs which were intended to be clicked on; most clients can handle URLs that begin with "www." or "http://" and such.
-				 * If we would apply a more liberal approach we are likely to run into filenames (e.g. .py .com), libraries (e.g. .so) and other unrelated data.
+				 * If we would apply a more liberal approach we are likely to run into filenames (e.g. .py .com), libraries (e.g. .so) and other words that validate as a URL.
 				 */
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 					if (($urldata = $this->urltools->get_elements($csword)) !== false) {

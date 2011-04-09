@@ -175,17 +175,17 @@ final class nick extends base
 			'setdate' => $datetime);
 	}
 
-	public function add_url($csurl, $datetime)
+	public function add_url($urldata, $datetime)
 	{
-		$url = strtolower($csurl);
+		$url = strtolower($urldata['url']);
 
 		if (!array_key_exists($url, $this->urls_objs)) {
-			$this->urls_objs[$url] = new url($csurl);
+			$this->urls_objs[$url] = new url($urldata);
 		} else {
 			/**
-			 * The last used case sensitivity will be stored for any URL.
+			 * The last used case will be stored for a URL.
 			 */
-			$this->urls_objs[$url]->set_value('csurl', $csurl);
+			$this->urls_objs[$url]->set_value('url', $urldata['url']);
 		}
 
 		$this->urls_objs[$url]->add_value('total', 1);

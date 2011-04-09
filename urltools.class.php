@@ -77,16 +77,16 @@ final class urltools
 	/**
 	 * Normalize and validate a URL and return an array with its elements.
 	 */
-	public function get_elements($csurl) {
+	public function get_elements($url) {
 		/**
 		 * Convert scheme and authority to lower case.
 		 */
-		$csurl = preg_replace('/^'.$this->scheme.$this->authority.'/ei', 'strtolower(\'$0\')', $csurl);
+		$url = preg_replace('/^'.$this->scheme.$this->authority.'/ei', 'strtolower(\'$0\')', $url);
 
 		/**
 		 * Validate and further process the URL.
 		 */
-		if (preg_match('/^(?<url>'.$this->scheme.'?'.$this->authority.$this->path.$this->query.$this->fragment.')$/i', $csurl, $matches)) {
+		if (preg_match('/^(?<url>'.$this->scheme.'?'.$this->authority.$this->path.$this->query.$this->fragment.')$/i', $url, $matches)) {
 			/**
 			 * If the URL has no scheme we assume the "http://" one; update the elements we just found.
 			 */
@@ -98,7 +98,7 @@ final class urltools
 			/**
 			 * Create and return an array with all the elements of this URL.
 			 */
-			$elements = array('url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'port', 'path', 'query', 'fragment');
+			$elements = array('url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment');
 
 			foreach ($elements as $element) {
 				if (empty($matches[$element])) {
@@ -109,6 +109,15 @@ final class urltools
 				} else {
 					$urldata[$element] = $matches[$element];
 				}
+			}
+
+			/**
+			 * Make sure the only numeric element isn't passed along as a string.
+			 */
+			if (empty($matches['port'])) {
+				$urldata['port'] = 0;
+			} else {
+				$urldata['port'] = (int) $matches['port'];
 			}
 
 			return $urldata;
