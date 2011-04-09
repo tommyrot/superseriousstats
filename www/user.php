@@ -103,7 +103,7 @@ final class user
 		$result = mysqli_fetch_object($query);
 		$this->ruid = (int) $result->ruid;
 		$this->csnick = $result->csnick;
-		$query = @mysqli_query($this->mysqli, 'select min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `q_lines`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\' group by `q_lines`.`ruid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg`, `actions` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `q_lines`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\' group by `q_lines`.`ruid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 		$result = mysqli_fetch_object($query);
 
@@ -111,6 +111,7 @@ final class user
 			exit('This user has no lines.'."\n");
 		}
 
+		$this->actions = (int) $result->actions;
 		$this->firstseen = $result->firstseen;
 		$this->lastseen = $result->lastseen;
 		$this->l_avg = (float) $result->l_avg;
@@ -194,7 +195,7 @@ final class user
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
 			. "\n".'<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? $this->mood : '.').'<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
-			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' lines on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, an average of '.number_format($this->l_avg).' lines per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' lines typed.</div>'."\n";
+			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day, and performed '.number_format($this->actions).' action'.($this->actions != 1 ? 's' : '').'.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' line'.($this->l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * Activity section.
