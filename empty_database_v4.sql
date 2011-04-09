@@ -1288,6 +1288,7 @@ CREATE TABLE `user_urls` (
   `lastused` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`lid`,`uid`),
   KEY `uid` (`uid`),
+  KEY `url` (`url`(333)),
   KEY `total` (`total`),
   KEY `firstused` (`firstused`),
   KEY `lastused` (`lastused`)
