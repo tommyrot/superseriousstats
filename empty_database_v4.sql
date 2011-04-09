@@ -1252,11 +1252,11 @@ DROP TABLE IF EXISTS `user_topics`;
 CREATE TABLE `user_topics` (
   `tid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uid` int(10) unsigned NOT NULL DEFAULT '0',
-  `cstopic` varchar(510) NOT NULL DEFAULT '',
+  `topic` varchar(1024) NOT NULL DEFAULT '',
   `setdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`tid`,`uid`,`setdate`),
   KEY `uid` (`uid`),
-  KEY `cstopic` (`cstopic`(333)),
+  KEY `topic` (`topic`(333)),
   KEY `setdate` (`setdate`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

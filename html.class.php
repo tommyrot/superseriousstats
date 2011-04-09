@@ -503,7 +503,7 @@ final class html extends base
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Topic');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select `setdate` as `v1`, `csnick` as `v2`, `cstopic` as `v3` from `user_topics` join `user_status` on `user_topics`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select `setdate` as `v1`, `csnick` as `v2`, `topic` as `v3` from `user_topics` join `user_status` on `user_topics`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('type', 'topics');
 			$output .= $t->make_table($this->mysqli);
 

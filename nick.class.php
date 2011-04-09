@@ -168,10 +168,10 @@ final class nick extends base
 		$this->{$length.'_'.$type.'_list'}[] = $line;
 	}
 
-	public function add_topic($cstopic, $datetime)
+	public function add_topic($topic, $datetime)
 	{
 		$this->topics_list[] = array(
-			'cstopic' => $cstopic,
+			'topic' => $topic,
 			'setdate' => $datetime);
 	}
 
@@ -345,18 +345,18 @@ final class nick extends base
 		 */
 		if (!empty($this->topics_list)) {
 			foreach ($this->topics_list as $topic) {
-				$query = @mysqli_query($this->mysqli, 'select `tid` from `user_topics` where `cstopic` = \''.mysqli_real_escape_string($this->mysqli, $topic['cstopic']).'\' group by `cstopic`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				$query = @mysqli_query($this->mysqli, 'select `tid` from `user_topics` where `topic` = \''.mysqli_real_escape_string($this->mysqli, $topic['topic']).'\' group by `topic`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				$rows = mysqli_num_rows($query);
 
 				if (empty($rows)) {
-					@mysqli_query($this->mysqli, 'insert into `user_topics` set `tid` = 0, `uid` = '.$this->uid.', `cstopic` = \''.mysqli_real_escape_string($this->mysqli, $topic['cstopic']).'\', `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+					@mysqli_query($this->mysqli, 'insert into `user_topics` set `tid` = 0, `uid` = '.$this->uid.', `topic` = \''.mysqli_real_escape_string($this->mysqli, $topic['topic']).'\', `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				} else {
 					$result = mysqli_fetch_object($query);
 					$query = @mysqli_query($this->mysqli, 'select * from `user_topics` where `tid` = '.$result->tid.' and `uid` = '.$this->uid.' and `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 					$rows = mysqli_num_rows($query);
 
 					if (empty($rows)) {
-						@mysqli_query($this->mysqli, 'insert into `user_topics` set `tid` = '.$result->tid.', `uid` = '.$this->uid.', `cstopic` = \''.mysqli_real_escape_string($this->mysqli, $topic['cstopic']).'\', `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+						@mysqli_query($this->mysqli, 'insert into `user_topics` set `tid` = '.$result->tid.', `uid` = '.$this->uid.', `topic` = \''.mysqli_real_escape_string($this->mysqli, $topic['topic']).'\', `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 					}
 				}
 			}
