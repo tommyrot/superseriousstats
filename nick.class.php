@@ -161,7 +161,7 @@ final class nick extends base
 	}
 
 	/**
-	 * Keep a list of long and a list of short quotes of $type.
+	 * Keep a list of long quotes and a list of short quotes of $type.
 	 */
 	public function add_quote($type, $length, $line)
 	{
@@ -184,6 +184,7 @@ final class nick extends base
 		} else {
 			/**
 			 * The last used case will be stored for a URL.
+			 * E.g. "www.example.com/file.txt" could be corrected in a followup by "www.example.com/File.txt".
 			 */
 			$this->urls_objs[$url]->set_value('url', $urldata['url']);
 		}

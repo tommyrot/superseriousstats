@@ -121,7 +121,7 @@ final class nicklinker extends base
 				$output .= "\n";
 			} else {
 				/**
-				 * There's only one nick linked to a user with status 0; itself. Other options fail at the end of this method.
+				 * There is only one nick linked to a user with status 0; itself. Other options fail at the end of this method.
 				 */
 				$unlinked[] = $aliases[0];
 			}

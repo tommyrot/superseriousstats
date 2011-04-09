@@ -187,7 +187,8 @@ final class sss extends base
 			$parser->set_value('date', $date);
 
 			/**
-			 * Get the streak history.
+			 * Get the streak history. This will assume logs are parsed in chronological order with no gaps.
+			 * If this is not the case the correctness of the streak stats might be affected.
 			 */
 			$query = @mysqli_query($this->mysqli, 'select * from `streak_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query);

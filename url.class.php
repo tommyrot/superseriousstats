@@ -99,7 +99,7 @@ final class url extends base
 			} else {
 				$result = mysqli_fetch_object($query);
 				/**
-				 * Don't update the elements that don't change for URLs that are already in the database (these are fixed and/or always stored lowercase).
+				 * Don't update the elements that don't change for URLs that are already in the database (these are fixed and/or always stored in lowercase).
 				 */
 				$createdquery = $this->create_update_query($result, array('lid', 'uid', 'scheme', 'authority', 'ipv4address', 'fqdn', 'tld', 'port'));
 

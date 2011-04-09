@@ -452,7 +452,7 @@ abstract class parser extends base
 			 */
 			$words = explode(' ', $line);
 			$this->nicks_objs[$nick]->add_value('words', count($words));
-			$urlinline = false;
+			$skipquote = false;
 
 			foreach ($words as $csword) {
 				/**
@@ -466,6 +466,12 @@ abstract class parser extends base
 				 * If we would apply a more liberal approach we are likely to run into filenames (e.g. .py .com), libraries (e.g. .so) and other words that validate as a URL.
 				 */
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
+					/**
+					 * Regardless of it being a valid URL or not we set $skipquote to true. This variable enables us to exclude quotes that have
+					 * a URL (or something that looks like it) in them. This is to safeguard a tidy presentation on the statspage.
+					 */
+					$skipquote = true;
+
 					if (($urldata = $this->urltools->get_elements($csword)) !== false) {
 						if (strlen($urldata['url']) > 1024) {
 							$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': exceeds column length (1024)');
@@ -476,12 +482,6 @@ abstract class parser extends base
 					} else {
 						$this->output('debug', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
 					}
-
-					/**
-					 * Regardless of it being a valid URL or not we set $urlinline to true. This variable enables us to exclude quotes that have
-					 * a URL (or something that looks like it) in them. This is to safeguard a tidy presentation on the statspage.
-					 */
-					$urlinline = true;
 
 				/**
 				 * To keep it simple we only track words composed of the characters A through Z and letters defined in the Latin-1 Supplement.
@@ -504,7 +504,7 @@ abstract class parser extends base
 			$this->nicks_objs[$nick]->add_value('l_'.$hour, 1);
 			$this->nicks_objs[$nick]->add_value('l_total', 1);
 
-			if (!$urlinline && strlen($line) <= 255) {
+			if (!$skipquote && strlen($line) <= 255) {
 				if (strlen($line) >= $this->quote_preflen) {
 					$this->nicks_objs[$nick]->add_quote('quote', 'long', $line);
 				} else {
@@ -512,10 +512,10 @@ abstract class parser extends base
 				}
 			}
 
-			if (!$urlinline && strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
+			if (!$skipquote && strlen($line) >= 2 && strtoupper($line) == $line && strlen(preg_replace('/[A-Z]/', '', $line)) * 2 < strlen($line)) {
 				$this->nicks_objs[$nick]->add_value('uppercased', 1);
 
-				if (!$urlinline && strlen($line) <= 255) {
+				if (!$skipquote && strlen($line) <= 255) {
 					if (strlen($line) >= $this->quote_preflen) {
 						$this->nicks_objs[$nick]->add_quote('ex_uppercased', 'long', $line);
 					} else {
@@ -524,20 +524,20 @@ abstract class parser extends base
 				}
 			}
 
-			if (!$urlinline && preg_match('/!$/', $line)) {
+			if (!$skipquote && preg_match('/!$/', $line)) {
 				$this->nicks_objs[$nick]->add_value('exclamations', 1);
 
-				if (!$urlinline && strlen($line) <= 255) {
+				if (!$skipquote && strlen($line) <= 255) {
 					if (strlen($line) >= $this->quote_preflen) {
 						$this->nicks_objs[$nick]->add_quote('ex_exclamations', 'long', $line);
 					} else {
 						$this->nicks_objs[$nick]->add_quote('ex_exclamations', 'short', $line);
 					}
 				}
-			} elseif (!$urlinline && preg_match('/\?$/', $line)) {
+			} elseif (!$skipquote && preg_match('/\?$/', $line)) {
 				$this->nicks_objs[$nick]->add_value('questions', 1);
 
-				if (!$urlinline && strlen($line) <= 255) {
+				if (!$skipquote && strlen($line) <= 255) {
 					if (strlen($line) >= $this->quote_preflen) {
 						$this->nicks_objs[$nick]->add_quote('ex_questions', 'long', $line);
 					} else {
