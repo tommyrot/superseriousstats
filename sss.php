@@ -1,5 +1,5 @@
 <?php
-
+error_reporting(-1);
 /**
  * Copyright (c) 2009-2011, Jos de Ruijter <jos@dutnie.nl>
  *
@@ -163,7 +163,7 @@ final class sss extends base
 		 * Sort the files on the date found in the filename.
 		 */
 		ksort($logfiles);
-		$query = @mysqli_query($this->mysqli, 'select `date` from `parse_history` order by `date` desc limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
@@ -229,9 +229,13 @@ final class sss extends base
 			 * Update parse history and set $needmaintenance to true when there are actual lines parsed.
 			 */
 			if ($parser->get_value('linenum') > $firstline) {
+				$this->output('notice', 'parse_log(): writing data to database');
 				$parser->write_data($this->mysqli);
 				@mysqli_query($this->mysqli, 'insert into `parse_history` set `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\', `lines_parsed` = '.$parser->get_value('linenum').' on duplicate key update `lines_parsed` = '.$parser->get_value('linenum')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				$this->output('notice', 'parse_log(): writing data completed');
 				$needmaintenance = true;
+			} else {
+				$this->output('notice', 'parse_log(): no new data to write to database');
 			}
 		}
 

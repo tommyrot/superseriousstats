@@ -219,6 +219,72 @@ final class nick extends base
 		$this->mysqli = $mysqli;
 
 		/**
+		 * Write data to database tables "user_details" and "user_status".
+		 */
+		$query = @mysqli_query($this->mysqli, 'select * from `user_details` where `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->csnick).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (empty($rows)) {
+			$insertquery = $this->create_insert_query(array('csnick', 'firstseen', 'lastseen'));
+			@mysqli_query($this->mysqli, 'insert into `user_details` set `uid` = 0,'.$insertquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$this->uid = mysqli_insert_id($this->mysqli);
+			@mysqli_query($this->mysqli, 'insert into `user_status` set `uid` = '.$this->uid.', `ruid` = '.$this->uid.', `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		} else {
+			$result = mysqli_fetch_object($query);
+			$this->uid = $result->uid;
+
+			/**
+			 * Explicitly not update $csnick if "seen" data hasn't changed. Prevents lowercase $prevnick from becoming new $csnick.
+			 */
+			$updatequery = $this->create_update_query($result, array('uid', 'csnick'));
+
+			if (!is_null($updatequery)) {
+				@mysqli_query($this->mysqli, 'update `user_details` set `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->csnick).'\','.$updatequery.' where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			}
+		}
+
+		/**
+		 * Write data to database table "user_activity".
+		 */
+		if ($this->l_total != 0) {
+			$query = @mysqli_query($this->mysqli, 'select * from `user_activity` where `uid` = '.$this->uid.' and `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query);
+
+			if (empty($rows)) {
+				$insertquery = $this->create_insert_query(array('l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
+				@mysqli_query($this->mysqli, 'insert into `user_activity` set `uid` = '.$this->uid.', `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\','.$insertquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			} else {
+				$result = mysqli_fetch_object($query);
+				$updatequery = $this->create_update_query($result, array('uid', 'date'));
+
+				if (!is_null($updatequery)) {
+					@mysqli_query($this->mysqli, 'update `user_activity` set'.$updatequery.' where `uid` = '.$this->uid.' and `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				}
+			}
+		}
+
+		/**
+		 * Write data to database table "user_events".
+		 */
+		$insertquery = $this->create_insert_query(array('m_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deop', 'm_deopped', 'm_devoice', 'm_devoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked'));
+
+		if (!is_null($insertquery)) {
+			$query = @mysqli_query($this->mysqli, 'select * from `user_events` where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query);
+
+			if (empty($rows)) {
+				@mysqli_query($this->mysqli, 'insert into `user_events` set `uid` = '.$this->uid.','.$insertquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			} else {
+				$result = mysqli_fetch_object($query);
+				$updatequery = $this->create_update_query($result, array('uid'));
+
+				if (!is_null($updatequery)) {
+					@mysqli_query($this->mysqli, 'update `user_events` set'.$updatequery.' where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				}
+			}
+		}
+
+		/**
 		 * Pick a random line from either the list of long quotes or, when there are no long quotes, from the list of short quotes.
 		 * Long quotes are preferred since these look better on the statspage and give away more about the subject.
 		 */
@@ -233,132 +299,63 @@ final class nick extends base
 		}
 
 		/**
-		 * Write data to database tables "user_details" and "user_status".
-		 */
-		$query = @mysqli_query($this->mysqli, 'select * from `user_details` where `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->csnick).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (empty($rows)) {
-			$createdquery = $this->create_insert_query(array('csnick', 'firstseen', 'lastseen'));
-			@mysqli_query($this->mysqli, 'insert into `user_details` set `uid` = 0,'.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$this->uid = mysqli_insert_id($this->mysqli);
-			@mysqli_query($this->mysqli, 'insert into `user_status` set `uid` = '.$this->uid.', `ruid` = '.$this->uid.', `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		} else {
-			$result = mysqli_fetch_object($query);
-			$this->uid = $result->uid;
-
-			/**
-			 * Explicitly not update $csnick if "seen" data hasn't changed. Prevents lowercase $prevnick from becoming new $csnick.
-			 */
-			$createdquery = $this->create_update_query($result, array('uid', 'csnick'));
-
-			if (!is_null($createdquery)) {
-				@mysqli_query($this->mysqli, 'update `user_details` set `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->csnick).'\','.$createdquery.' where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			}
-		}
-
-		/**
-		 * Write data to database table "user_activity".
-		 */
-		$query = @mysqli_query($this->mysqli, 'select * from `user_activity` where `uid` = '.$this->uid.' and `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (empty($rows)) {
-			$createdquery = $this->create_insert_query(array('l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
-
-			if (!is_null($createdquery)) {
-				@mysqli_query($this->mysqli, 'insert into `user_activity` set `uid` = '.$this->uid.', `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			}
-		} else {
-			$result = mysqli_fetch_object($query);
-			$createdquery = $this->create_update_query($result, array('uid', 'date'));
-
-			if (!is_null($createdquery)) {
-				@mysqli_query($this->mysqli, 'update `user_activity` set'.$createdquery.' where `uid` = '.$this->uid.' and `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			}
-		}
-
-		/**
-		 * Write data to database table "user_events".
-		 */
-		$query = @mysqli_query($this->mysqli, 'select * from `user_events` where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (empty($rows)) {
-			$createdquery = $this->create_insert_query(array('m_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deop', 'm_deopped', 'm_devoice', 'm_devoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked'));
-
-			if (!is_null($createdquery)) {
-				@mysqli_query($this->mysqli, 'insert into `user_events` set `uid` = '.$this->uid.','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			}
-		} else {
-			$result = mysqli_fetch_object($query);
-			$createdquery = $this->create_update_query($result, array('uid'));
-
-			if (!is_null($createdquery)) {
-				@mysqli_query($this->mysqli, 'update `user_events` set'.$createdquery.' where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			}
-		}
-
-		/**
 		 * Write data to database table "user_lines".
 		 */
-		$query = @mysqli_query($this->mysqli, 'select * from `user_lines` where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
+		$insertquery = $this->create_insert_query(array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'urls', 'words', 'characters', 'monologues', 'topmonologue', 'activedays', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased', 'lasttalked'));
 
-		if (empty($rows)) {
-			$createdquery = $this->create_insert_query(array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'urls', 'words', 'characters', 'monologues', 'topmonologue', 'activedays', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased', 'lasttalked'));
+		if (!is_null($insertquery)) {
+			$query = @mysqli_query($this->mysqli, 'select * from `user_lines` where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query);
 
-			if (!is_null($createdquery)) {
-				@mysqli_query($this->mysqli, 'insert into `user_lines` set `uid` = '.$this->uid.','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			}
-		} else {
-			$result = mysqli_fetch_object($query);
-			$createdquery = $this->create_update_query($result, array('uid'));
+			if (empty($rows)) {
+				@mysqli_query($this->mysqli, 'insert into `user_lines` set `uid` = '.$this->uid.','.$insertquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			} else {
+				$result = mysqli_fetch_object($query);
+				$updatequery = $this->create_update_query($result, array('uid'));
 
-			if (!is_null($createdquery)) {
-				@mysqli_query($this->mysqli, 'update `user_lines` set'.$createdquery.' where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				if (!is_null($updatequery)) {
+					@mysqli_query($this->mysqli, 'update `user_lines` set'.$updatequery.' where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				}
 			}
 		}
 
 		/**
 		 * Write data to database table "user_smileys".
 		 */
-		$query = @mysqli_query($this->mysqli, 'select * from `user_smileys` where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
+		$insertquery = $this->create_insert_query(array('s_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19'));
 
-		if (empty($rows)) {
-			$createdquery = $this->create_insert_query(array('s_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19'));
+		if (!is_null($insertquery)) {
+			$query = @mysqli_query($this->mysqli, 'select * from `user_smileys` where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query);
 
-			if (!is_null($createdquery)) {
-				@mysqli_query($this->mysqli, 'insert into `user_smileys` set `uid` = '.$this->uid.','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			}
-		} else {
-			$result = mysqli_fetch_object($query);
-			$createdquery = $this->create_update_query($result, array('uid'));
+			if (empty($rows)) {
+				@mysqli_query($this->mysqli, 'insert into `user_smileys` set `uid` = '.$this->uid.','.$insertquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			} else {
+				$result = mysqli_fetch_object($query);
+				$updatequery = $this->create_update_query($result, array('uid'));
 
-			if (!is_null($createdquery)) {
-				@mysqli_query($this->mysqli, 'update `user_smileys` set'.$createdquery.' where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				if (!is_null($updatequery)) {
+					@mysqli_query($this->mysqli, 'update `user_smileys` set'.$updatequery.' where `uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				}
 			}
 		}
 
 		/**
 		 * Write data to database table "user_topics".
 		 */
-		if (!empty($this->topics_list)) {
-			foreach ($this->topics_list as $topic) {
-				$query = @mysqli_query($this->mysqli, 'select `tid` from `user_topics` where `topic` = \''.mysqli_real_escape_string($this->mysqli, $topic['topic']).'\' group by `topic`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		foreach ($this->topics_list as $topic) {
+			$query = @mysqli_query($this->mysqli, 'select `tid` from `user_topics` where `topic` = \''.mysqli_real_escape_string($this->mysqli, $topic['topic']).'\' group by `topic`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query);
+
+			if (empty($rows)) {
+				@mysqli_query($this->mysqli, 'insert into `user_topics` set `tid` = 0, `uid` = '.$this->uid.', `topic` = \''.mysqli_real_escape_string($this->mysqli, $topic['topic']).'\', `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			} else {
+				$result = mysqli_fetch_object($query);
+				$query = @mysqli_query($this->mysqli, 'select * from `user_topics` where `tid` = '.$result->tid.' and `uid` = '.$this->uid.' and `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				$rows = mysqli_num_rows($query);
 
 				if (empty($rows)) {
-					@mysqli_query($this->mysqli, 'insert into `user_topics` set `tid` = 0, `uid` = '.$this->uid.', `topic` = \''.mysqli_real_escape_string($this->mysqli, $topic['topic']).'\', `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				} else {
-					$result = mysqli_fetch_object($query);
-					$query = @mysqli_query($this->mysqli, 'select * from `user_topics` where `tid` = '.$result->tid.' and `uid` = '.$this->uid.' and `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-					$rows = mysqli_num_rows($query);
-
-					if (empty($rows)) {
-						@mysqli_query($this->mysqli, 'insert into `user_topics` set `tid` = '.$result->tid.', `uid` = '.$this->uid.', `topic` = \''.mysqli_real_escape_string($this->mysqli, $topic['topic']).'\', `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-					}
+					@mysqli_query($this->mysqli, 'insert into `user_topics` set `tid` = '.$result->tid.', `uid` = '.$this->uid.', `topic` = \''.mysqli_real_escape_string($this->mysqli, $topic['topic']).'\', `setdate` = \''.mysqli_real_escape_string($this->mysqli, $topic['setdate']).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				}
 			}
 		}

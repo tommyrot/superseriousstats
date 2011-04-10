@@ -86,25 +86,25 @@ final class url extends base
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
-			$createdquery = $this->create_insert_query(array('url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'port', 'path', 'query', 'fragment', 'extension', 'total', 'firstused', 'lastused'));
-			@mysqli_query($this->mysqli, 'insert into `user_urls` set `lid` = 0, `uid` = '.$uid.','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$insertquery = $this->create_insert_query(array('url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'port', 'path', 'query', 'fragment', 'extension', 'total', 'firstused', 'lastused'));
+			@mysqli_query($this->mysqli, 'insert into `user_urls` set `lid` = 0, `uid` = '.$uid.','.$insertquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} else {
 			$result = mysqli_fetch_object($query);
 			$query = @mysqli_query($this->mysqli, 'select * from `user_urls` where `lid` = '.$result->lid.' and `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query);
 
 			if (empty($rows)) {
-				$createdquery = $this->create_insert_query(array('url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'port', 'path', 'query', 'fragment', 'extension', 'total', 'firstused', 'lastused'));
-				@mysqli_query($this->mysqli, 'insert into `user_urls` set `lid` = '.$result->lid.', `uid` = '.$uid.','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				$insertquery = $this->create_insert_query(array('url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'port', 'path', 'query', 'fragment', 'extension', 'total', 'firstused', 'lastused'));
+				@mysqli_query($this->mysqli, 'insert into `user_urls` set `lid` = '.$result->lid.', `uid` = '.$uid.','.$insertquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			} else {
 				$result = mysqli_fetch_object($query);
 				/**
 				 * Don't update the elements that don't change for URLs that are already in the database (these are fixed and/or always stored in lowercase).
 				 */
-				$createdquery = $this->create_update_query($result, array('lid', 'uid', 'scheme', 'authority', 'ipv4address', 'fqdn', 'tld', 'port'));
+				$updatequery = $this->create_update_query($result, array('lid', 'uid', 'scheme', 'authority', 'ipv4address', 'fqdn', 'tld', 'port'));
 
-				if (!is_null($createdquery)) {
-					@mysqli_query($mysqli, 'update `user_urls` set'.$createdquery.' where `lid` = '.$result->lid.' and `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				if (!is_null($updatequery)) {
+					@mysqli_query($mysqli, 'update `user_urls` set'.$updatequery.' where `lid` = '.$result->lid.' and `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				}
 			}
 		}

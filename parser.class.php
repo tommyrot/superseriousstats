@@ -397,9 +397,15 @@ abstract class parser extends base
 			$this->nicks_objs[$nick]->set_value('activedays', 1);
 			$this->nicks_objs[$nick]->add_value('characters', strlen($line));
 
+			/**
+			 * Keeping track of monologues.
+			 */
 			if ($nick == $this->prevnick) {
 				$this->streak++;
 			} else {
+				/**
+				 * Ohno! Someone else type a line and the previous streak is interrupted. Check if the streak qualifies as a monologue and store it.
+				 */
 				if ($this->streak >= $this->minstreak) {
 					/**
 					 * If the current line count is 0 then $prevnick is not known to us yet (only seen in previous parse run).
@@ -486,7 +492,7 @@ abstract class parser extends base
 				/**
 				 * To keep it simple we only track words composed of the characters A through Z and letters defined in the Latin-1 Supplement.
 				 */
-				} elseif ($this->wordtracking && preg_match('/^[a-z]|\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])$/i', $csword)) {
+				} elseif ($this->wordtracking && preg_match('/^([a-z]|\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF]))+$/i', $csword)) {
 					/**
 					 * Calculate the real length of the word without additional multibyte string functions.
 					 */
@@ -635,55 +641,45 @@ abstract class parser extends base
 		$this->mysqli = $mysqli;
 
 		/**
-		 * If there are no nicks there is no data.
+		 * Write channel totals to the database.
 		 */
-		if (empty($this->nicks_objs)) {
-			$this->output('notice', 'write_data(): no data to write to database');
-		} else {
-			$this->output('notice', 'write_data(): writing data to database');
-
-			/**
-			 * Write channel totals to the database.
-			 */
+		if ($this->l_total != 0) {
 			$query = @mysqli_query($this->mysqli, 'select * from `channel` where `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query);
 
 			if (empty($rows)) {
-				$createdquery = $this->create_insert_query(array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
-
-				if (!is_null($createdquery)) {
-					@mysqli_query($this->mysqli, 'insert into `channel` set `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				}
+				$insertquery = $this->create_insert_query(array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
+				@mysqli_query($this->mysqli, 'insert into `channel` set `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\','.$insertquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			} else {
 				$result = mysqli_fetch_object($query);
-				$createdquery = $this->create_update_query($result, array('date'));
+				$updatequery = $this->create_update_query($result, array('date'));
 
-				if (!is_null($createdquery)) {
-					@mysqli_query($this->mysqli, 'update `channel` set'.$createdquery.' where `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				if (!is_null($updatequery)) {
+					@mysqli_query($this->mysqli, 'update `channel` set'.$updatequery.' where `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				}
 			}
+		}
 
-			/**
-			 * Write user data to the database.
-			 */
-			foreach ($this->nicks_objs as $nick) {
-				$nick->write_data($this->mysqli);
-			}
+		/**
+		 * Write user data to the database.
+		 */
+		foreach ($this->nicks_objs as $nick) {
+			$nick->write_data($this->mysqli);
+		}
 
-			/**
-			 * Write streak data (history) to the database.
-			 */
+		/**
+		 * Write word data to the database.
+		 */
+		foreach ($this->words_objs as $word) {
+			$word->write_data($this->mysqli);
+		}
+
+		/**
+		 * Write streak data (history) to the database.
+		 */
+		if ($this->l_total != 0) {
 			@mysqli_query($this->mysqli, 'truncate table `streak_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			@mysqli_query($this->mysqli, 'insert into `streak_history` set `prevnick` = \''.mysqli_real_escape_string($this->mysqli, $this->prevnick).'\', `streak` = '.$this->streak) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
-			/**
-			 * Write word data to the database.
-			 */
-			foreach ($this->words_objs as $word) {
-				$word->write_data($this->mysqli);
-			}
-
-			$this->output('notice', 'write_data(): writing completed');
 		}
 	}
 }
