@@ -301,7 +301,7 @@ final class html extends base
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('percentage', true);
-			$t->set_value('query_main', 'select (count(distinct `date`) / '.$this->dayofmonth.') * 100 as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and date_format(`date`, \'%Y-%m\') = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select (count(distinct `date`) / (select count(*) from parse_history where date_format(`date`, \'%Y-%m\') = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\')) * 100 as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and date_format(`date`, \'%Y-%m\') = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Exclamations');
