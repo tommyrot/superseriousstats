@@ -299,35 +299,29 @@ final class html extends base
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Exclamations');
-			$t->set_value('decimals', 2);
-			$t->set_value('key1', 'Percentage');
+			$t->set_value('key1', '!!!');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('percentage', true);
-			$t->set_value('query_main', 'select (`exclamations` / `l_total`) * 100 as `v1`, `csnick` as `v2`, `ex_exclamations` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `exclamations` != 0 and `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select `exclamations` as `v1`, `csnick` as `v2`, `ex_exclamations` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `exclamations` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Questions');
-			$t->set_value('decimals', 2);
-			$t->set_value('key1', 'Percentage');
+			$t->set_value('key1', '???');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('percentage', true);
-			$t->set_value('query_main', 'select (`questions` / `l_total`) * 100 as `v1`, `csnick` as `v2`, `ex_questions` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `questions` != 0 and `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select `questions` as `v1`, `csnick` as `v2`, `ex_questions` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `questions` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most UPPERCASED Lines');
-			$t->set_value('decimals', 2);
-			$t->set_value('key1', 'Percentage');
+			$t->set_value('key1', 'OMGWTF');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('percentage', true);
-			$t->set_value('query_main', 'select (`uppercased` / `l_total`) * 100 as `v1`, `csnick` as `v2`, `ex_uppercased` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `uppercased` != 0 and `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select `uppercased` as `v1`, `csnick` as `v2`, `ex_uppercased` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `uppercased` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
@@ -377,13 +371,11 @@ final class html extends base
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Actions');
-			$t->set_value('decimals', 2);
-			$t->set_value('key1', 'Percentage');
+			$t->set_value('key1', '/me');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('percentage', true);
-			$t->set_value('query_main', 'select (`actions` / `l_total`) * 100 as `v1`, `csnick` as `v2`, `ex_actions` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `actions` != 0 and `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select `actions` as `v1`, `csnick` as `v2`, `ex_actions` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `actions` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
