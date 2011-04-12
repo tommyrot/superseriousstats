@@ -1,5 +1,5 @@
 <?php
-error_reporting(-1);
+
 /**
  * Copyright (c) 2009-2011, Jos de Ruijter <jos@dutnie.nl>
  *
@@ -115,6 +115,7 @@ final class sss extends base
 
 	private function make_html($file)
 	{
+		$this->output('notice', 'make_html(): creating statspage');
 		$html = new html($this->settings);
 		$output = $html->make_html($this->mysqli);
 
@@ -124,6 +125,7 @@ final class sss extends base
 
 		fwrite($fp, $output);
 		fclose($fp);
+		$this->output('notice', 'make_html(): finished creating statspage');
 	}
 
 	private function parse_log($filedir)

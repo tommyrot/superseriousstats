@@ -53,7 +53,6 @@ final class html extends base
 	private $date_max = '';
 	private $days = 0;
 	private $dayofmonth = 0;
-	private $dayofyear = 0;
 	private $l_avg = 0;
 	private $l_max = 0;
 	private $l_total = 0;
@@ -137,21 +136,18 @@ final class html extends base
 	public function make_html($mysqli)
 	{
 		$this->mysqli = $mysqli;
-		$this->output('notice', 'make_html(): creating statspage');
 		$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
 			$result = mysqli_fetch_object($query);
-			$this->l_total = (int) $result->l_total;
-		} else {
-			$this->l_total = 0;
 		}
 
-		if ($this->l_total == 0) {
+		if (empty($result->l_total)) {
 			$this->output('critical', 'make_html(): database is empty');
 		}
 
+		$this->l_total = (int) $result->l_total;
 		$query = @mysqli_query($this->mysqli, 'select min(`date`) as `date_first`, max(`date`) as `date_last` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->date_first = $result->date_first;
@@ -171,11 +167,9 @@ final class html extends base
 
 		/**
 		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
-		 * For whatever reason PHP starts counting days from 0.. so we add 1 to $dayofyear to fix this absurdity.
 		 */
 		$this->date_lastlogparsed = $result->date_lastlogparsed;
 		$this->dayofmonth = date('j', strtotime($this->date_lastlogparsed));
-		$this->dayofyear = date('z', strtotime($this->date_lastlogparsed)) + 1;
 		$this->month = date('n', strtotime($this->date_lastlogparsed));
 		$this->monthname = date('F', strtotime($this->date_lastlogparsed));
 		$this->year = date('Y', strtotime($this->date_lastlogparsed));
@@ -673,7 +667,6 @@ final class html extends base
 		 */
 		$this->output .= "\n".'<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot != '' ? '<br />'.trim(@file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
 		$this->output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";
-		$this->output('notice', 'make_html(): finished creating statspage');
 		return $this->output;
 	}
 

@@ -53,12 +53,12 @@ final class history
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $firstyearparsed = 0;
 	private $l_total = 0;
-	private $lastyearparsed = 0;
 	private $month = 0;
 	private $mysqli;
 	private $year = 0;
+	private $year_firstlogparsed = 0;
+	private $year_lastlogparsed = 0;
 
 	public function __construct($year, $month)
 	{
@@ -87,16 +87,19 @@ final class history
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
 		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `firstyearparsed`, max(year(`date`)) as `lastyearparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `year_firstlogparsed`, max(year(`date`)) as `year_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
-		$result = mysqli_fetch_object($query);
 
-		if (empty($rows) || (int) $result->days == 0) {
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
+		}
+
+		if (empty($result->days)) {
 			exit('This channel may only have a future.'."\n");
 		}
 
-		$this->firstyearparsed = (int) $result->firstyearparsed;
-		$this->lastyearparsed = (int) $result->lastyearparsed;
+		$this->year_firstlogparsed = (int) $result->year_firstlogparsed;
+		$this->year_lastlogparsed = (int) $result->year_lastlogparsed;
 
 		/**
 		 * HTML Head.
@@ -160,7 +163,7 @@ final class history
 		$tr2 = '<tr><td class="pos"></td><td class="k">Jan</td><td class="k">Feb</td><td class="k">Mar</td><td class="k">Apr</td><td class="k">May</td><td class="k">Jun</td><td class="k">Jul</td><td class="k">Aug</td><td class="k">Sep</td><td class="k">Oct</td><td class="k">Nov</td><td class="k">Dec</td></tr>';
 		$trx = '';
 
-		for ($year = $this->firstyearparsed; $year <= $this->lastyearparsed; $year++) {
+		for ($year = $this->year_firstlogparsed; $year <= $this->year_lastlogparsed; $year++) {
 			if (array_key_exists($year, $this->activity)) {
 				$trx .= '<tr><td class="pos"><a href="history.php?y='.$year.'&amp;m=0">'.$year.'</a></td>';
 

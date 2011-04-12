@@ -93,29 +93,24 @@ final class user
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
 		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$query = @mysqli_query($this->mysqli, 'select `ruid`, `csnick` from `user_status` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` where `user_status`.`uid` = '.$this->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `user_status`.`ruid`, `csnick`, min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg`, `actions` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` join `q_lines` on `user_status`.`ruid` = `q_lines`.`ruid` where `user_status`.`ruid` = (select `ruid` from `user_status` where `uid` = '.$this->uid.') and `firstseen` != \'0000-00-00 00:00:00\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
-		if (empty($rows)) {
-			exit('This user doesn\'t exist.'."\n");
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
 		}
 
-		$result = mysqli_fetch_object($query);
+		if (empty($result->l_total)) {
+			exit('Nothing to display for this user.'."\n");
+		}
+
 		$this->ruid = (int) $result->ruid;
 		$this->csnick = $result->csnick;
-		$query = @mysqli_query($this->mysqli, 'select min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg`, `actions` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `q_lines`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\' group by `q_lines`.`ruid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-		$result = mysqli_fetch_object($query);
-
-		if (empty($rows) || (int) $result->l_total == 0) {
-			exit('This user has no lines.'."\n");
-		}
-
-		$this->actions = (int) $result->actions;
 		$this->firstseen = $result->firstseen;
 		$this->lastseen = $result->lastseen;
-		$this->l_avg = (float) $result->l_avg;
 		$this->l_total = (int) $result->l_total;
+		$this->l_avg = (float) $result->l_avg;
+		$this->actions = (int) $result->actions;
 
 		/**
 		 * Fetch the users mood.
@@ -161,9 +156,9 @@ final class user
 		/**
 		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
-		$this->date_lastlogparsed = $result->date;
+		$this->date_lastlogparsed = $result->date_lastlogparsed;
 		$this->dayofmonth = (int) date('j', strtotime($this->date_lastlogparsed));
 		$this->month = (int) date('n', strtotime($this->date_lastlogparsed));
 		$this->year = (int) date('Y', strtotime($this->date_lastlogparsed));
