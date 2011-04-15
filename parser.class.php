@@ -28,7 +28,6 @@ abstract class parser extends base
 	private $minstreak = 5;
 	private $nick_maxlen = 255;
 	private $nick_minlen = 1;
-	private $quote_preflen = 25;
 	private $wordtracking = true;
 
 	/**
@@ -43,7 +42,6 @@ abstract class parser extends base
 		'nick_maxlen' => 'int',
 		'nick_minlen' => 'int',
 		'outputbits' => 'int',
-		'quote_preflen' => 'int',
 		'wordtracking' => 'bool');
 	private $smileys = array(
 		'=]' => 's_01',
@@ -305,7 +303,7 @@ abstract class parser extends base
 			$this->nicks_objs[$nick]->add_value('actions', 1);
 
 			if (strlen($line) <= 255) {
-				if (strlen($line) >= $this->quote_preflen) {
+				if (strlen($line) >= 25) {
 					$this->nicks_objs[$nick]->add_quote('ex_actions', 'long', $line);
 				} else {
 					$this->nicks_objs[$nick]->add_quote('ex_actions', 'short', $line);
@@ -511,7 +509,7 @@ abstract class parser extends base
 			$this->nicks_objs[$nick]->add_value('l_total', 1);
 
 			if (!$skipquote && strlen($line) <= 255) {
-				if (strlen($line) >= $this->quote_preflen) {
+				if (strlen($line) >= 25) {
 					$this->nicks_objs[$nick]->add_quote('quote', 'long', $line);
 				} else {
 					$this->nicks_objs[$nick]->add_quote('quote', 'short', $line);
@@ -522,7 +520,7 @@ abstract class parser extends base
 				$this->nicks_objs[$nick]->add_value('uppercased', 1);
 
 				if (!$skipquote && strlen($line) <= 255) {
-					if (strlen($line) >= $this->quote_preflen) {
+					if (strlen($line) >= 25) {
 						$this->nicks_objs[$nick]->add_quote('ex_uppercased', 'long', $line);
 					} else {
 						$this->nicks_objs[$nick]->add_quote('ex_uppercased', 'short', $line);
@@ -534,7 +532,7 @@ abstract class parser extends base
 				$this->nicks_objs[$nick]->add_value('exclamations', 1);
 
 				if (!$skipquote && strlen($line) <= 255) {
-					if (strlen($line) >= $this->quote_preflen) {
+					if (strlen($line) >= 25) {
 						$this->nicks_objs[$nick]->add_quote('ex_exclamations', 'long', $line);
 					} else {
 						$this->nicks_objs[$nick]->add_quote('ex_exclamations', 'short', $line);
@@ -544,7 +542,7 @@ abstract class parser extends base
 				$this->nicks_objs[$nick]->add_value('questions', 1);
 
 				if (!$skipquote && strlen($line) <= 255) {
-					if (strlen($line) >= $this->quote_preflen) {
+					if (strlen($line) >= 25) {
 						$this->nicks_objs[$nick]->add_quote('ex_questions', 'long', $line);
 					} else {
 						$this->nicks_objs[$nick]->add_quote('ex_questions', 'short', $line);
