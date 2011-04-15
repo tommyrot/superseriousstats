@@ -115,7 +115,6 @@ final class sss extends base
 
 	private function make_html($file)
 	{
-		$this->output('notice', 'make_html(): creating statspage');
 		$html = new html($this->settings);
 		$output = $html->make_html($this->mysqli);
 
@@ -125,7 +124,6 @@ final class sss extends base
 
 		fwrite($fp, $output);
 		fclose($fp);
-		$this->output('notice', 'make_html(): finished creating statspage');
 	}
 
 	private function parse_log($filedir)
@@ -231,13 +229,11 @@ final class sss extends base
 			 * Update parse history and set $needmaintenance to true when there are actual lines parsed.
 			 */
 			if ($parser->get_value('linenum') > $firstline) {
-				$this->output('notice', 'parse_log(): writing data to database');
 				$parser->write_data($this->mysqli);
 				@mysqli_query($this->mysqli, 'insert into `parse_history` set `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\', `lines_parsed` = '.$parser->get_value('linenum').' on duplicate key update `lines_parsed` = '.$parser->get_value('linenum')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				$this->output('notice', 'parse_log(): writing data completed');
 				$needmaintenance = true;
 			} else {
-				$this->output('notice', 'parse_log(): no new data to write to database');
+				$this->output('notice', 'parse_log(): no new data');
 			}
 		}
 

@@ -136,6 +136,7 @@ final class html extends base
 	public function make_html($mysqli)
 	{
 		$this->mysqli = $mysqli;
+		$this->output('notice', 'make_html(): creating statspage');
 		$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
@@ -250,28 +251,28 @@ final class html extends base
 			$t->set_value('query_main', 'select (`characters` / `l_total`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Individual Top Days, Alltime');
+			$t = new table('Individual Top Days &ndash; Alltime');
 			$t->set_value('key1', 'Lines');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select max(`l_total`) as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Individual Top Days, '.$this->year);
+			$t = new table('Individual Top Days &ndash; '.$this->year);
 			$t->set_value('key1', 'Lines');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select max(`l_total`) as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and year(`date`) = \''.$this->year.'\' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Individual Top Days, '.$this->monthname.' '.$this->year);
+			$t = new table('Individual Top Days &ndash; '.$this->monthname.' '.$this->year);
 			$t->set_value('key1', 'Lines');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select max(`l_total`) as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and date_format(`date`, \'%Y-%m\') = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Active Chatters, Alltime');
+			$t = new table('Most Active Chatters &ndash; Alltime');
 			$t->set_value('decimals', 2);
 			$t->set_value('key1', 'Activity');
 			$t->set_value('key2', 'User');
@@ -280,7 +281,7 @@ final class html extends base
 			$t->set_value('query_main', 'select (`activedays` / '.$this->days.') * 100 as `v1`, `csnick` as `v2` from `user_status` join `q_lines` on `user_status`.`uid` = `q_lines`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `status` != 3 order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Active Chatters, '.$this->year);
+			$t = new table('Most Active Chatters &ndash; '.$this->year);
 			$t->set_value('decimals', 2);
 			$t->set_value('key1', 'Activity');
 			$t->set_value('key2', 'User');
@@ -289,7 +290,7 @@ final class html extends base
 			$t->set_value('query_main', 'select (count(distinct `date`) / (select count(*) from parse_history where year(`date`) = '.$this->year.')) * 100 as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and year(`date`) = '.$this->year.' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Active Chatters, '.$this->monthname.' '.$this->year);
+			$t = new table('Most Active Chatters &ndash; '.$this->monthname.' '.$this->year);
 			$t->set_value('decimals', 2);
 			$t->set_value('key1', 'Activity');
 			$t->set_value('key2', 'User');
@@ -298,35 +299,38 @@ final class html extends base
 			$t->set_value('query_main', 'select (count(distinct `date`) / (select count(*) from parse_history where date_format(`date`, \'%Y-%m\') = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\')) * 100 as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and date_format(`date`, \'%Y-%m\') = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Exclamations');
-			$t->set_value('key1', '!!!');
+			$t = new table('Exclamations');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `exclamations` as `v1`, `csnick` as `v2`, `ex_exclamations` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `exclamations` != 0 order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_total', 'select sum(`exclamations`) as `total` from `q_lines`');
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Questions');
-			$t->set_value('key1', '???');
+			$t = new table('Questions');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `questions` as `v1`, `csnick` as `v2`, `ex_questions` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `questions` != 0 order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_total', 'select sum(`questions`) as `total` from `q_lines`');
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most UPPERCASED Lines');
-			$t->set_value('key1', 'OMGWTF');
+			$t = new table('UPPERCASED Lines');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `uppercased` as `v1`, `csnick` as `v2`, `ex_uppercased` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `uppercased` != 0 order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_total', 'select sum(`uppercased`) as `total` from `q_lines`');
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Monologues');
-			$t->set_value('key1', 'Monologues');
+			$t = new table('Monologues');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `monologues` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `monologues` != 0 order by `v1` desc, `v2` asc limit 5');
@@ -341,41 +345,42 @@ final class html extends base
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Mentioned Nicks');
-			$t->set_value('key1', 'Mentioned');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'Nick');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `total` as `v1`, `csnick` as `v2` from `user_details` join `words` on `user_details`.`csnick` = `words`.`word` join `user_lines` on `user_details`.`uid` = `user_lines`.`uid` where `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Slaps, Given');
-			$t->set_value('key1', 'Slaps');
+			$t = new table('Slaps Given');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `slaps` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `slaps` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select sum(`slaps`) as `total` from `q_lines`');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Slaps, Received');
-			$t->set_value('key1', 'Slaps');
+			$t = new table('Slaps Received');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `slapped` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `slapped` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select sum(`slapped`) as `total` from `q_lines`');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Chatty Bots');
+			$t = new table('Most Lively Bots');
 			$t->set_value('key1', 'Lines');
 			$t->set_value('key2', 'Bot');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `l_total` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` = 3 and `l_total` != 0 order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Actions');
-			$t->set_value('key1', '/me');
+			$t = new table('Actions Performed');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `actions` as `v1`, `csnick` as `v2`, `ex_actions` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `actions` != 0 order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_total', 'select sum(`actions`) as `total` from `q_lines`');
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
@@ -394,14 +399,14 @@ final class html extends base
 			 * Display mode tables in fixed order.
 			 */
 			$modes = array(
-				'm_op' => array('Ops', 'Most Ops \'+o\', Given'),
-				'm_opped' => array('Ops', 'Most Ops \'+o\', Received'),
-				'm_deop' => array('deOps', 'Most deOps \'-o\', Given'),
-				'm_deopped' => array('deOps', 'Most deOps \'-o\', Received'),
-				'm_voice' => array('Voices', 'Most Voices \'+v\', Given'),
-				'm_voiced' => array('Voices', 'Most Voices \'+v\', Received'),
-				'm_devoice' => array('deVoices', 'Most deVoices \'-v\', Given'),
-				'm_devoiced' => array('deVoices', 'Most deVoices \'-v\', Received'));
+				'm_op' => array('Total', 'Ops \'+o\' Given'),
+				'm_opped' => array('Total', 'Ops \'+o\' Received'),
+				'm_deop' => array('Total', 'deOps \'-o\' Given'),
+				'm_deopped' => array('Total', 'deOps \'-o\' Received'),
+				'm_voice' => array('Total', 'Voices \'+v\' Given'),
+				'm_voiced' => array('Total', 'Voices \'+v\' Received'),
+				'm_devoice' => array('Total', 'deVoices \'-v\' Given'),
+				'm_devoiced' => array('Total', 'deVoices \'-v\' Received'));
 
 			foreach ($modes as $key => $value) {
 				$t = new table($value[1]);
@@ -424,8 +429,8 @@ final class html extends base
 		if ($this->sectionbits & 8) {
 			$output = '';
 
-			$t = new table('Most Kicks');
-			$t->set_value('key1', 'Kicks');
+			$t = new table('Kicks Given');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
@@ -434,8 +439,8 @@ final class html extends base
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Kicked');
-			$t->set_value('key1', 'Kicked');
+			$t = new table('Kicks Received');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Example');
 			$t->set_value('minrows', $this->minrows);
@@ -444,55 +449,55 @@ final class html extends base
 			$t->set_value('type', 'large');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Joins');
-			$t->set_value('key1', 'Joins');
+			$t = new table('Channel Joins');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `joins` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `joins` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select sum(`joins`) as `total` from `q_events`');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Parts');
-			$t->set_value('key1', 'Parts');
+			$t = new table('Channel Parts');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `parts` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `parts` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select sum(`parts`) as `total` from `q_events`');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Quits');
-			$t->set_value('key1', 'Quits');
+			$t = new table('IRC Quits');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `quits` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `quits` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select sum(`quits`) as `total` from `q_events`');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Nick Changes');
-			$t->set_value('key1', 'Nick Changes');
+			$t = new table('Nick Changes');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `nickchanges` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `nickchanges` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select sum(`nickchanges`) as `total` from `q_events`');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Aliases');
-			$t->set_value('key1', 'Aliases');
+			$t = new table('Aliases');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select count(*) as `v1`, `csnick` as `v2` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `status` != 3 group by `ruid` order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select count(*) as `total` from `user_status`');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Topics');
-			$t->set_value('key1', 'Topics');
+			$t = new table('Topics Set');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `topics` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `topics` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select sum(`topics`) as `total` from `q_events`');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Recent Topics');
+			$t = new table('Recent Topics');
 			$t->set_value('key1', 'Date');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Topic');
@@ -580,7 +585,7 @@ final class html extends base
 			$output = '';
 
 			$t = new table('Most Referenced Domains');
-			$t->set_value('key1', 'References');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'Domain');
 			$t->set_value('key3', 'First Used');
 			$t->set_value('minrows', 10);
@@ -590,14 +595,14 @@ final class html extends base
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Referenced TLDs');
-			$t->set_value('key1', 'References');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'TLD');
 			$t->set_value('minrows', 10);
 			$t->set_value('query_main', 'select sum(`total`) as `v1`, `tld` as `v2` from `user_urls` where `tld` != \'\' group by `v2` order by `v1` desc, `v2` asc limit 10;');
 			$t->set_value('rows', 10);
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Recent URLs');
+			$t = new table('Recent URLs');
 			$t->set_value('key1', 'Date');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'URL');
@@ -607,16 +612,16 @@ final class html extends base
 			$t->set_value('type', 'urls');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most URLs, by Users');
-			$t->set_value('key1', 'URLs');
+			$t = new table('URLs by Users');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `urls` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `urls` != 0 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select sum(`urls`) as `total` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most URLs, by Bots');
-			$t->set_value('key1', 'URLs');
+			$t = new table('URLs by Bots');
+			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'Bot');
 			$t->set_value('minrows', $this->minrows);
 			$t->set_value('query_main', 'select `urls` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` = 3 and `urls` != 0 order by `v1` desc, `v2` asc limit 5');
@@ -659,6 +664,7 @@ final class html extends base
 		 */
 		$this->output .= "\n".'<div class="info">Statistics created with <a href="http://code.google.com/p/superseriousstats/">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot != '' ? '<br />'.trim(@file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
 		$this->output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		$this->output('notice', 'make_html(): finished creating statspage');
 		return $this->output;
 	}
 
@@ -672,7 +678,7 @@ final class html extends base
 				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - $i, $this->year));
 			}
 
-			$head = 'Daily Activity';
+			$head = 'Activity by Day';
 			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `channel` where `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'monthly') {
 			$class = 'graph';
@@ -682,7 +688,7 @@ final class html extends base
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
 			}
 
-			$head = 'Monthly Activity';
+			$head = 'Activity by Month';
 			$query = @mysqli_query($this->mysqli, 'select date_format(`date`, \'%Y-%m\') as `date`, sum(`l_total`) as `l_total`, sum(`l_night`) as `l_night`, sum(`l_morning`) as `l_morning`, sum(`l_afternoon`) as `l_afternoon`, sum(`l_evening`) as `l_evening` from `channel` where date_format(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' group by year(`date`), month(`date`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'yearly') {
 			$class = 'yearly';
@@ -692,7 +698,7 @@ final class html extends base
 				$dates[] = $this->year - $i;
 			}
 
-			$head = 'Yearly Activity';
+			$head = 'Activity by Year';
 			$query = @mysqli_query($this->mysqli, 'select year(`date`) as `date`, sum(`l_total`) as `l_total`, sum(`l_night`) as `l_night`, sum(`l_morning`) as `l_morning`, sum(`l_afternoon`) as `l_afternoon`, sum(`l_evening`) as `l_evening` from `channel` group by year(`date`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 
@@ -802,7 +808,7 @@ final class html extends base
 			}
 		}
 
-		$tr1 = '<tr><th colspan="7">Most Active Days</th></tr>';
+		$tr1 = '<tr><th colspan="7">Activity Distribution by Day</th></tr>';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
@@ -848,19 +854,19 @@ final class html extends base
 	private function make_table_mostactivepeople($type, $rows)
 	{
 		if ($type == 'alltime') {
-			$head = 'Most Active People, Alltime';
+			$head = 'Most Talkative People &ndash; Alltime';
 			$historylink = '<span class="right"><a href="history.php?y='.date('Y', strtotime($this->date_first)).'&amp;m=0">History</a></span>';
 			$total = $this->l_total;
 			$query = @mysqli_query($this->mysqli, 'select `q_lines`.`ruid`, `csnick`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 order by `l_total` desc, `q_lines`.`ruid` asc limit '.$rows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'year') {
-			$head = 'Most Active People, '.$this->year;
+			$head = 'Most Talkative People &ndash; '.$this->year;
 			$historylink = '<span class="right"><a href="history.php?y='.$this->year.'&amp;m=0">History</a></span>';
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_year` where `date` = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$result = mysqli_fetch_object($query);
 			$total = (int) $result->l_total;
 			$query = @mysqli_query($this->mysqli, 'select `q_lines`.`ruid`, `csnick`, sum(`q_activity_by_year`.`l_total`) as `l_total`, sum(`q_activity_by_year`.`l_night`) as `l_night`, sum(`q_activity_by_year`.`l_morning`) as `l_morning`, sum(`q_activity_by_year`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_year`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_year` on `q_lines`.`ruid` = `q_activity_by_year`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = '.$this->year.' group by `q_lines`.`ruid` order by `q_activity_by_year`.`l_total` desc, `q_lines`.`ruid` asc limit '.$rows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
-			$head = 'Most Active People, '.$this->monthname.' '.$this->year;
+			$head = 'Most Talkative People &ndash; '.$this->monthname.' '.$this->year;
 			$historylink = '<span class="right"><a href="history.php?y='.$this->year.'&amp;m='.$this->month.'">History</a></span>';
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_month` where `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$result = mysqli_fetch_object($query);
@@ -945,7 +951,7 @@ final class html extends base
 			}
 		}
 
-		$tr1 = '<tr><th colspan="24">Most Active Times</th></tr>';
+		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour</th></tr>';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
@@ -1030,7 +1036,7 @@ final class html extends base
 		$result = mysqli_fetch_object($query);
 		$total = (int) $result->total - $offset - $rowcount;
 		$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" />';
-		$tr1 = '<tr><th colspan="12"><span class="left">Not Quite so Active People, Alltime</span>'.($total == 0 ? '' : '<span class="right">'.number_format($total).' people had even less to say..</span>').'</th></tr>';
+		$tr1 = '<tr><th colspan="12"><span class="left">Less Talkative People &ndash; Alltime</span>'.($total == 0 ? '' : '<span class="right">'.number_format($total).' People had even less to say..</span>').'</th></tr>';
 		$tr2 = '<tr><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td></tr>';
 		$trx = '';
 
@@ -1068,8 +1074,8 @@ final class html extends base
 		}
 
 		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
-		$tr1 = '<tr><th colspan="5">Activity, by Time of Day</th></tr>';
-		$tr2 = '<tr><td class="pos"></td><td class="k">Nightcrawlers<br />0h - 5h</td><td class="k">Early Birds<br />6h - 11h</td><td class="k">Afternoon Shift<br />12h - 17h</td><td class="k">Evening Chatters<br />18h - 23h</td></tr>';
+		$tr1 = '<tr><th colspan="5">Activity by Time of Day</th></tr>';
+		$tr2 = '<tr><td class="pos"></td><td class="k">Night<br />0h - 5h</td><td class="k">Morning<br />6h - 11h</td><td class="k">Afternoon<br />12h - 17h</td><td class="k">Evening<br />18h - 23h</td></tr>';
 		$tr3 = '';
 
 		for ($i = 1; $i <= $rows; $i++) {
@@ -1178,13 +1184,13 @@ final class table extends base
 
 		if ($this->type == 'small') {
 			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" />';
-			$tr1 = '<tr><th colspan="3"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
-			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td></tr>';
+			$tr1 = '<tr><th colspan="3"><span class="left">'.$this->head.'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' Total</span>').'</th></tr>';
+			$tr2 = '<tr><td class="k1">'.$this->key1.'</td><td class="pos"></td><td class="k2">'.$this->key2.'</td></tr>';
 			$trx = '';
 		} elseif ($this->type == 'large' || $this->type == 'domains' || $this->type == 'medium' || $this->type == 'topics' || $this->type == 'urls') {
 			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c3" />';
-			$tr1 = '<tr><th colspan="4"><span class="left">'.htmlspecialchars($this->head).'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' total</span>').'</th></tr>';
-			$tr2 = '<tr><td class="k1">'.htmlspecialchars($this->key1).'</td><td class="pos"></td><td class="k2">'.htmlspecialchars($this->key2).'</td><td class="k3">'.htmlspecialchars($this->key3).'</td></tr>';
+			$tr1 = '<tr><th colspan="4"><span class="left">'.$this->head.'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' Total</span>').'</th></tr>';
+			$tr2 = '<tr><td class="k1">'.$this->key1.'</td><td class="pos"></td><td class="k2">'.$this->key2.'</td><td class="k3">'.$this->key3.'</td></tr>';
 			$trx = '';
 		}
 
@@ -1208,20 +1214,17 @@ final class table extends base
 				$topic = '';
 
 				/**
-				 * Check if there are URLs in the topic and make hyperlinks out of them.
+				 * Check if there are URLs in the topic and make hyperlinks out of them. Use htmlspecialchars() here since we skipped doing it before.
 				 */
 				foreach ($words as $word) {
 					if (preg_match('/^(www\.|https?:\/\/)/i', $word) && ($urldata = $this->urltools->get_elements($word)) !== false) {
-						$topic .= '<a href="'.$urldata['url'].'">'.$urldata['url'].'</a> ';
+						$topic .= '<a href="'.htmlspecialchars($urldata['url']).'">'.htmlspecialchars($urldata['url']).'</a> ';
 					} else {
-						$topic .= $word.' ';
+						$topic .= htmlspecialchars($word).' ';
 					}
 				}
 
-				/**
-				 * Don't forget to use htmlspecialchars() on $topic here since we skipped doing it before.
-				 */
-				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3a">'.htmlspecialchars(rtrim($topic)).'</td></tr>';
+				$trx .= '<tr><td class="v1">'.($row[1] != $prevdate ? $row[1] : '').'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td><td class="v3a">'.rtrim($topic).'</td></tr>';
 				$prevdate = $row[1];
 			}
 		} elseif ($this->type == 'urls') {

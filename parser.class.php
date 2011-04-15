@@ -639,6 +639,7 @@ abstract class parser extends base
 	final public function write_data($mysqli)
 	{
 		$this->mysqli = $mysqli;
+		$this->output('notice', 'write_data(): writing data to database');
 
 		/**
 		 * Write channel totals to the database.
@@ -681,6 +682,8 @@ abstract class parser extends base
 			@mysqli_query($this->mysqli, 'truncate table `streak_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			@mysqli_query($this->mysqli, 'insert into `streak_history` set `prevnick` = \''.mysqli_real_escape_string($this->mysqli, $this->prevnick).'\', `streak` = '.$this->streak) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
+
+		$this->output('notice', 'write_data(): writing completed');
 	}
 }
 

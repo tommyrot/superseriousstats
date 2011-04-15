@@ -1,14 +1,6 @@
 /**
  * Global styling
  */
-a {
-	border-bottom:1px solid #C74243;
-	color:#333;
-	text-decoration:none;
-}
-a:hover {
-	border-bottom:none;
-}
 body {
 	background-color:#F9F9F9;
 	margin:0 auto 0 auto;
@@ -55,8 +47,8 @@ body {
 	float:left;
 }
 .right {
-	color:#999;
 	float:right;
+	font-style:italic;
 	font-weight:normal;
 }
 /**
