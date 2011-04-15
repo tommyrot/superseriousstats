@@ -53,7 +53,8 @@ CREATE TABLE `channel` (
   `l_afternoon` int(10) unsigned NOT NULL DEFAULT '0',
   `l_evening` int(10) unsigned NOT NULL DEFAULT '0',
   `l_total` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`date`)
+  PRIMARY KEY (`date`),
+  KEY `l_total` (`l_total`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1235,7 +1236,7 @@ DROP TABLE IF EXISTS `user_status`;
 CREATE TABLE `user_status` (
   `uid` int(10) unsigned NOT NULL DEFAULT '0',
   `ruid` int(10) unsigned NOT NULL DEFAULT '0',
-  `status` int(10) unsigned NOT NULL DEFAULT '0',
+  `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`uid`),
   KEY `ruid` (`ruid`),
   KEY `status` (`status`)
@@ -1289,6 +1290,10 @@ CREATE TABLE `user_urls` (
   PRIMARY KEY (`lid`,`uid`),
   KEY `uid` (`uid`),
   KEY `url` (`url`(333)),
+  KEY `authority` (`authority`(333)),
+  KEY `fqdn` (`fqdn`(333)),
+  KEY `tld` (`tld`(333)),
+  KEY `extension` (`extension`),
   KEY `total` (`total`),
   KEY `firstused` (`firstused`),
   KEY `lastused` (`lastused`)
@@ -2457,4 +2462,4 @@ CREATE TABLE `words` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-04-05 19:40:03
+-- Dump completed on 2011-04-15 14:29:08
