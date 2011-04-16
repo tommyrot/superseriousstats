@@ -17,7 +17,7 @@
  */
 
 /**
- * Class for controlling all features of the program.
+ * Class for controlling all main features of the program.
  */
 final class sss extends base
 {
@@ -181,7 +181,12 @@ final class sss extends base
 		}
 
 		/**
-		 * $needmaintenance becomes true when there are actual lines parsed. Maintenance routines are run after all logs are parsed.
+		 * $logsparsed increases after each log parsed.
+		 */
+		$logsparsed = 0;
+
+		/**
+		 * $needmaintenance becomes true when there are actual lines parsed. Maintenance routines are only run once after all logs are parsed.
 		 */
 		$needmaintenance = false;
 
@@ -232,6 +237,8 @@ final class sss extends base
 				$parser->parse_log($file, $firstline);
 			}
 
+			$logsparsed++;
+
 			/**
 			 * Update parse history and set $needmaintenance to true when there are actual lines parsed.
 			 */
@@ -240,8 +247,15 @@ final class sss extends base
 				@mysqli_query($this->mysqli, 'insert into `parse_history` set `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\', `lines_parsed` = '.$parser->get_value('linenum').' on duplicate key update `lines_parsed` = '.$parser->get_value('linenum')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				$needmaintenance = true;
 			} else {
-				$this->output('notice', 'parse_log(): no new data');
+				$this->output('notice', 'parse_log(): no new data to write to database');
 			}
+		}
+
+		/**
+		 * If there are no logs parsed, output the reason.
+		 */
+		if ($logsparsed == 0) {
+			$this->output('notice', 'parse_log(): skipped all logs predating latest parse progress');
 		}
 
 		/**
@@ -267,12 +281,12 @@ final class sss extends base
 		     . '		    16  Smileys'."\n"
 		     . '		    32  URLs'."\n"
 		     . '		    64  Words'."\n"
-		     . '		If this option is omitted all sections will be included.'."\n"
-		     . '	-c	Read settings from <config>.'."\n"
-		     . '		If unspecified sss.conf will be used.'."\n"
+		     . '		If this option is omitted the value in sss.conf is used.'."\n"
+		     . '	-c	Read settings from <config>. If unspecified sss.conf is used.'."\n"
 		     . '	-i	Input <logfile>, or all logfiles in <logdir>. Database'."\n"
-		     . '		maintenance will always be run after parsing the last logfile.'."\n"
-		     . '	-m	Perform maintenance routines on the database.'."\n"
+		     . '		maintenance will be run after parsing the last logfile.'."\n"
+		     . '	-m	Perform maintenance routines on the database. Typically only'."\n"
+		     . '		needed after running the nicklinker.php script.'."\n"
 		     . '	-o	Generate statistics and output to <statspage>.'."\n";
 		exit($man);
 	}
