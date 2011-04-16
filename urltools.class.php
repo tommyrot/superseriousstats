@@ -22,6 +22,7 @@
  *
  * Scheme:
  * - http:// and https:// only.
+ * - URLs without a scheme get http:// prefixed.
  *
  * Authority:
  * - Following preferred syntax, RFC 1034 section 3.5 and RFC 1123 section 2.1.
