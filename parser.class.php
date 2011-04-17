@@ -145,13 +145,11 @@ abstract class parser extends base
 		return $nick;
 	}
 
-	final private function add_word($csword, $length)
+	final private function add_word($word, $word_length)
 	{
-		$word = strtolower($csword);
-
 		if (!array_key_exists($word, $this->words_objs)) {
 			$this->words_objs[$word] = new word($word);
-			$this->words_objs[$word]->set_value('length', $length);
+			$this->words_objs[$word]->set_value('length', $word_length);
 		}
 
 		$this->words_objs[$word]->add_value('total', 1);
