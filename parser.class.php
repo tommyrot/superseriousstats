@@ -303,7 +303,7 @@ abstract class parser extends base
 			$this->nicks_objs[$nick]->add_value('actions', 1);
 
 			if (strlen($line) <= 255) {
-				if (strlen($line) >= 25) {
+				if (mb_strlen($line) >= 25) {
 					$this->nicks_objs[$nick]->add_quote('ex_actions', 'long', $line);
 				} else {
 					$this->nicks_objs[$nick]->add_quote('ex_actions', 'short', $line);
@@ -393,7 +393,7 @@ abstract class parser extends base
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->set_lasttalked($datetime);
 			$this->nicks_objs[$nick]->set_value('activedays', 1);
-			$this->nicks_objs[$nick]->add_value('characters', strlen($line));
+			$this->nicks_objs[$nick]->add_value('characters', mb_strlen($line));
 
 			/**
 			 * Keeping track of monologues.
@@ -488,19 +488,33 @@ abstract class parser extends base
 					}
 
 				/**
-				 * To keep it simple we only track words composed of the characters A through Z and letters defined in the Latin-1 Supplement.
+				 * We keep track of all character groups composed of the letters A through Z, the Hyphen and any multibyte characters.
+				 * The regexp checks for any characters we don't want in our words - from the 7-bit ASCII range. Keep in mind that normalize_line() already took all the dirt out.
+				 * Note that this method of finding words is not 100% accurate - possibly not even 50% - but it serves our purpose.
 				 */
-				} elseif ($this->wordtracking && preg_match('/^([a-z]|\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF]))+$/i', $csword)) {
-					/**
-					 * Calculate the real length of the word without additional multibyte string functions.
-					 */
-					$length = strlen(preg_replace('/\xC3([\x80-\x96]|[\x98-\xB6]|[\xB8-\xBF])/', '.', $csword));
+				} elseif ($this->wordtracking && !preg_match('/[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]/', $csword)) {
+					$word_length = mb_strlen($csword);
 
 					/**
 					 * Words consisting of 30+ characters are most likely not real words so we skip those.
 					 */
-					if ($length <= 30) {
-						$this->add_word($csword, $length);
+					if ($word_length <= 30) {
+						/**
+						 * The multibyte strtolower is significantly slower than its single-byte counterpart so we throw in a little if-else statement to check if its use is needed.
+						 */
+						if (preg_match('/^[\x00-\x7F]+$/', $csword)) {
+							/**
+							 * Single-byte characters only.
+							 */
+							$word = strtolower($csword);
+						} else {
+							/**
+							 * Multibyte characters present so we use the appropriate function.
+							 */
+							$word = mb_strtolower($csword);
+						}
+
+						$this->add_word($word, $word_length);
 					}
 				}
 			}
