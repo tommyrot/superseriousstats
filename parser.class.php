@@ -301,7 +301,7 @@ abstract class parser extends base
 			$this->nicks_objs[$nick]->add_value('actions', 1);
 
 			if (strlen($line) <= 255) {
-				$this->nicks_objs[$nick]->add_quote('ex_actions', $line, mb_strlen($line));
+				$this->nicks_objs[$nick]->add_quote('ex_actions', $line, mb_strlen($line, 'UTF-8'));
 			}
 		}
 	}
@@ -385,7 +385,7 @@ abstract class parser extends base
 			$this->output('warning', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$line_length_bytes = strlen($line);
-			$line_length_chars = mb_strlen($line);
+			$line_length_chars = mb_strlen($line, 'UTF-8');
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->set_lasttalked($datetime);
 			$this->nicks_objs[$nick]->set_value('activedays', 1);
@@ -483,12 +483,12 @@ abstract class parser extends base
 					}
 
 				/**
-				 * We keep track of all character groups composed of the letters A through Z, the Hyphen and any multibyte characters.
-				 * The regexp checks for any characters we don't want in our words - from the 7-bit ASCII range. Keep in mind that normalize_line() already took all the dirt out.
+				 * We keep track of all character groups composed of the letters found in the Basic Latin and Latin-1 Supplement character sets, the Hyphen, and any multibyte characters beyond those two sets (found in UTF-8) regardless of their meaning.
+				 * The regexp checks for any characters we don't want in our words - from the aforementioned Latin sets. Keep in mind that normalize_line() already took all the dirt out.
 				 * Note that this method of finding words is not 100% accurate - possibly not even 50% - but it serves our purpose.
 				 */
-				} elseif ($this->wordtracking && !preg_match('/[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]/', $csword)) {
-					$word_length = mb_strlen($csword);
+				} elseif ($this->wordtracking && !preg_match('/[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7/', $csword)) {
+					$word_length = mb_strlen($csword, 'UTF-8');
 
 					/**
 					 * Words consisting of 30+ characters are most likely not real words so we skip those.
@@ -506,7 +506,7 @@ abstract class parser extends base
 							/**
 							 * Multibyte characters present so we use the appropriate function.
 							 */
-							$word = mb_strtolower($csword);
+							$word = mb_strtolower($csword, 'UTF-8');
 						}
 
 						$this->add_word($word, $word_length);
@@ -522,9 +522,9 @@ abstract class parser extends base
 			}
 
 			/**
-			 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than 50% non letter characters from the 7-bit ASCII range in them.
+			 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than 50% non letter characters from the Basic Latin and Latin-1 Supplement character sets in them.
 			 */
-			if ($line_length_chars >= 2 && mb_strtoupper($line) == $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]/', '', $line)) * 2 > $line_length_chars) {
+			if ($line_length_chars >= 2 && mb_strtoupper($line, 'UTF-8') == $line && mb_strlen(preg_replace('/[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7/', '', $line), 'UTF-8') * 2 > $line_length_chars) {
 				$this->nicks_objs[$nick]->add_value('uppercased', 1);
 
 				if (!$skipquote && $line_length_bytes <= 255) {
