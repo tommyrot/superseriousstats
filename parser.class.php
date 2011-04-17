@@ -289,7 +289,7 @@ abstract class parser extends base
 		}
 
 		/**
-		 * Returns nothing; see normalize_line() for it to make sense.
+		 * Returns an empty string; see normalize_line() for it to make sense.
 		 */
 		return '';
 	}
