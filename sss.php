@@ -356,6 +356,10 @@ if (!extension_loaded('mysqli')) {
 	exit('mysqli extension isn\'t loaded'."\n");
 }
 
+if (!extension_loaded('mbstring')) {
+	exit('mbstring extension isn\'t loaded'."\n");
+}
+
 /**
  * Class autoloader. Important piece of code right here.
  */
