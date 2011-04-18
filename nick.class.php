@@ -294,8 +294,10 @@ final class nick extends base
 		$types = array('ex_actions', 'ex_exclamations', 'ex_questions', 'ex_uppercased', 'quote');
 
 		foreach ($types as $type) {
-			rsort($this->{$type.'_stack'});
-			$this->$type = $this->{$type.'_stack'}[mt_rand(0, ceil(count($this->{$type.'_stack'}) / 2))]['line'];
+			if (!empty($this->{$type.'_stack'})) {
+				rsort($this->{$type.'_stack'});
+				$this->$type = $this->{$type.'_stack'}[mt_rand(0, ceil(count($this->{$type.'_stack'}) / 2) - 1)]['line'];
+			}
 		}
 
 		/**
