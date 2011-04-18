@@ -24,16 +24,11 @@ final class nick extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $long_ex_actions_list = array();
-	private $long_ex_exclamations_list = array();
-	private $long_ex_questions_list = array();
-	private $long_ex_uppercased_list = array();
-	private $long_quote_list = array();
-	private $short_ex_actions_list = array();
-	private $short_ex_exclamations_list = array();
-	private $short_ex_questions_list = array();
-	private $short_ex_uppercased_list = array();
-	private $short_quote_list = array();
+	private $ex_actions_stack = array();
+	private $ex_exclamations_stack = array();
+	private $ex_questions_stack = array();
+	private $ex_uppercased_stack = array();
+	private $quote_stack = array();
 	private $topics_list = array();
 	private $uid = 0;
 	private $urls_objs = array();
@@ -161,11 +156,19 @@ final class nick extends base
 	}
 
 	/**
-	 * Keep a list of long quotes and a list of short quotes of $type.
+	 * Keep a stack of recent quotes with their lengths. Later we randomly pick one of the longer quotes from it and store it in the database.
+	 * To preserve memory we won't keep more than 100 quotes of each type in memory.
 	 */
-	public function add_quote($type, $length, $line)
+	public function add_quote($type, $line, $length)
 	{
-		$this->{$length.'_'.$type.'_list'}[] = $line;
+		$this->{$type.'_stack'}[] = array('length' => $length, 'line' => $line);
+
+		if (count($this->{$type.'_stack'}) > 100) {
+			/**
+			 * Shift the first (oldest) entry off the stack.
+			 */
+			array_shift($this->{$type.'_stack'});
+		}
 	}
 
 	public function add_topic($topic, $datetime)
@@ -285,17 +288,14 @@ final class nick extends base
 		}
 
 		/**
-		 * Pick a random line from either the list of long quotes or, when there are no long quotes, from the list of short quotes.
+		 * Pick a random line from each of the quote stacks.
 		 * Long quotes are preferred since these look better on the statspage and give away more about the subject.
 		 */
 		$types = array('ex_actions', 'ex_exclamations', 'ex_questions', 'ex_uppercased', 'quote');
 
 		foreach ($types as $type) {
-			if (!empty($this->{'long_'.$type.'_list'})) {
-				$this->$type = $this->{'long_'.$type.'_list'}[mt_rand(0, count($this->{'long_'.$type.'_list'}) - 1)];
-			} elseif (!empty($this->{'short_'.$type.'_list'})) {
-				$this->$type = $this->{'short_'.$type.'_list'}[mt_rand(0, count($this->{'short_'.$type.'_list'}) - 1)];
-			}
+			rsort($this->{$type.'_stack'});
+			$this->$type = $this->{$type.'_stack'}[mt_rand(0, ceil(count($this->{$type.'_stack'}) / 2))]['line'];
 		}
 
 		/**
