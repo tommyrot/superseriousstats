@@ -1911,7 +1911,7 @@ DROP TABLE IF EXISTS `words`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `words` (
   `wid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `word` varchar(255) NOT NULL DEFAULT '',
+  `word` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '',
   `length` int(10) unsigned NOT NULL DEFAULT '0',
   `total` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`wid`),
@@ -2462,4 +2462,4 @@ CREATE TABLE `words` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-04-15 14:29:08
+-- Dump completed on 2011-04-19 11:49:37
