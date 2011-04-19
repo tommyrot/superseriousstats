@@ -209,7 +209,7 @@ abstract class parser extends base
 				 * Pass it on to rebuild_line() and replace the character with an empty string (making $line shorter);
 				 * Continue until $line is zero bytes in length.
 				 */
-				$line = preg_replace('/^'.$this->hex_validutf8.'|./es', '$this->rebuild_line(\'$0\')', $line);
+				$line = preg_replace('/^('.$this->hex_validutf8.'|.)/es', '$this->rebuild_line(\'$0\')', $line);
 			}
 
 			/*
@@ -483,11 +483,11 @@ abstract class parser extends base
 					}
 
 				/**
-				 * We keep track of all character groups composed of the letters found in the Basic Latin and Latin-1 Supplement character sets, the Hyphen, and any multibyte characters beyond those two sets (found in UTF-8) regardless of their meaning.
+				 * We keep track of all character groups composed of the letters found in the Basic Latin and Latin-1 Supplement character sets, the Hyphen (used properly), and any multibyte characters beyond those two sets (found in UTF-8) regardless of their meaning.
 				 * The regexp checks for any characters we don't want in our words - from the aforementioned Latin sets. Keep in mind that normalize_line() already took all the dirt out.
 				 * Note that this method of finding words is not 100% accurate - possibly not even 50% - but it serves our purpose.
 				 */
-				} elseif ($this->wordtracking && !preg_match('/[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7/', $csword)) {
+				} elseif ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
 					$word_length = mb_strlen($csword, 'UTF-8');
 
 					/**
