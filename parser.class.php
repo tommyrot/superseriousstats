@@ -580,10 +580,9 @@ abstract class parser extends base
 				/**
 				 * Clean possible network prefix (psyBNC) from undergoing nick.
 				 */
-				if (substr_count($csnick_undergoing, '~') + substr_count($csnick_undergoing, '\'') == 1) {
+				if (preg_match('/^.*?[~\'](?<nick>.+)$/', $csnick_undergoing, $matches)) {
 					$this->output('debug', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-					$tmp = preg_split('/[~\']/', $csnick_undergoing, 2);
-					$csnick_undergoing = $tmp[1];
+					$csnick_undergoing = $matches['nick'];
 				}
 
 				if (!$this->validate_nick($csnick_undergoing)) {
