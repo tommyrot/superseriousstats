@@ -346,13 +346,6 @@ final class html extends base
 			$t->set_value('query_main', 'select `topmonologue` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `topmonologue` != 0 order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->mt($this->mysqli);
 
-			$t = new table('Most Mentioned Nicks');
-			$t->set_value('key1', 'Total');
-			$t->set_value('key2', 'Nick');
-			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select `total` as `v1`, `csnick` as `v2` from `user_details` join `words` on `user_details`.`csnick` = `words`.`word` join `user_lines` on `user_details`.`uid` = `user_lines`.`uid` where `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
-			$output .= $t->mt($this->mysqli);
-
 			$t = new table('Slaps Given');
 			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
