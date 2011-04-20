@@ -156,8 +156,7 @@ final class nick extends base
 	}
 
 	/**
-	 * Keep a stack of recent quotes with their lengths. Later we randomly pick one of the longer quotes from it and store it in the database.
-	 * To preserve memory we won't keep more than 100 quotes of each type in memory.
+	 * Keep a stack of the 100 most recent quotes of each type along with their lengths.
 	 */
 	public function add_quote($type, $line, $length)
 	{
