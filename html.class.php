@@ -480,7 +480,7 @@ final class html extends base
 			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select count(*) as `v1`, `csnick` as `v2` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `status` != 3 group by `ruid` order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select count(*) as `v1`, `csnick` as `v2` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `status` != 3 group by `ruid` having `v1` > 1 order by `v1` desc, `v2` asc limit 5');
 			$t->set_value('query_total', 'select count(*) as `total` from `user_status`');
 			$output .= $t->mt($this->mysqli);
 
