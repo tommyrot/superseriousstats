@@ -30,7 +30,7 @@ final class sss extends base
 	private $db_pass = '';
 	private $db_port = 3306;
 	private $db_user = '';
-	private $logfile_dateformat = '*.Ymd';
+	private $logfile_dateformat = '';
 	private $parser = '';
 	private $timezone = 'UTC';
 
@@ -49,7 +49,7 @@ final class sss extends base
 		'parser' => 'string',
 		'outputbits' => 'int',
 		'timezone' => 'string');
-	private $settings_list_required = array('channel', 'db_pass', 'db_user', 'parser');
+	private $settings_list_required = array('channel', 'db_pass', 'db_user', 'logfile_dateformat', 'parser');
 	private $zlib = false;
 
 	public function __construct()
