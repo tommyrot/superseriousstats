@@ -219,7 +219,7 @@ final class sss extends base
 
 			if (!empty($rows)) {
 				$result = mysqli_fetch_object($query);
-				$firstline = (int) $result->lines_parsed;
+				$firstline = (int) $result->lines_parsed + 1;
 			} else {
 				$firstline = 1;
 			}
@@ -242,9 +242,9 @@ final class sss extends base
 			/**
 			 * Update parse history and set $needmaintenance to true when there are actual lines parsed.
 			 */
-			if ($parser->get_value('linenum') > $firstline) {
+			if ($parser->get_value('linenum_lastnonempty') >= $firstline) {
 				$parser->write_data($this->mysqli);
-				@mysqli_query($this->mysqli, 'insert into `parse_history` set `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\', `lines_parsed` = '.$parser->get_value('linenum').' on duplicate key update `lines_parsed` = '.$parser->get_value('linenum')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				@mysqli_query($this->mysqli, 'insert into `parse_history` set `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\', `lines_parsed` = '.$parser->get_value('linenum_lastnonempty').' on duplicate key update `lines_parsed` = '.$parser->get_value('linenum_lastnonempty')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				$needmaintenance = true;
 			} else {
 				$this->output('notice', 'parse_log(): no new data to write to database');

@@ -95,6 +95,7 @@ abstract class parser extends base
 	protected $l_evening = 0;
 	protected $l_total = 0;
 	protected $linenum = 0;
+	protected $linenum_lastnonempty = 0;
 	protected $mysqli;
 	protected $prevline = '';
 	protected $prevnick = '';
@@ -177,18 +178,14 @@ abstract class parser extends base
 			$line = $this->normalize_line($line);
 
 			/**
-			 * Pass on the normalized line to the logfile format specific parser class extending this class.
+			 * Pass on the normalized line to the logfile format specific parser class extending this class. Empty lines are ignored.
+			 * Remember the line number of the last non empty line so we can store the correct parse history instead of guessing.
 			 */
-			$this->parse_line($line);
-			$this->prevline = $line;
-		}
-
-		/**
-		 * If the last line parsed contains data we increase $linenum by one so the line won't get parsed a second time on next run.
-		 * However, if the last line is empty we leave the pointer at $linenum since logging might continue on this line (depending on how lines are terminated).
-		 */
-		if (!empty($line)) {
-			$this->linenum++;
+			if (!empty($line)) {
+				$this->parse_line($line);
+				$this->prevline = $line;
+				$this->linenum_lastnonempty = $this->linenum;
+			}
 		}
 
 		gzclose($zp);
@@ -250,18 +247,14 @@ abstract class parser extends base
 			$line = $this->normalize_line($line);
 
 			/**
-			 * Pass on the normalized line to the logfile format specific parser class extending this class.
+			 * Pass on the normalized line to the logfile format specific parser class extending this class. Empty lines are ignored.
+			 * Remember the line number of the last non empty line so we can store the correct parse history instead of guessing.
 			 */
-			$this->parse_line($line);
-			$this->prevline = $line;
-		}
-
-		/**
-		 * If the last line parsed contains data we increase $linenum by one so the line won't get parsed a second time on next run.
-		 * However, if the last line is empty we leave the pointer at $linenum since logging might continue on this line (depending on how lines are terminated).
-		 */
-		if (!empty($line)) {
-			$this->linenum++;
+			if (!empty($line)) {
+				$this->parse_line($line);
+				$this->prevline = $line;
+				$this->linenum_lastnonempty = $this->linenum;
+			}
 		}
 
 		fclose($fp);
