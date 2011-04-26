@@ -1153,9 +1153,9 @@ final class table extends base
 				$content[] = array($i, number_format((float) $result->v1, $this->decimals).($this->percentage ? '%' : ''), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			} elseif ($this->type == 'topics') {
 				/**
-				 * Don't use htmlspecialchars() on $v2 yet because we still want to parse for valid URLs later on.
+				 * Don't use htmlspecialchars() on $v3 yet because we still want to parse for valid URLs later on.
 				 */
-				$content[] = array($i, date('j M \'y', strtotime($result->v1)), $result->v2, htmlspecialchars($result->v3));
+				$content[] = array($i, date('j M \'y', strtotime($result->v1)), htmlspecialchars($result->v2), $result->v3);
 			} elseif ($this->type == 'urls') {
 				$content[] = array($i, date('j M \'y', strtotime($result->v1)), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			} elseif ($this->type == 'domains') {
