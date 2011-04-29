@@ -60,7 +60,7 @@ final class url extends base
 		 * Attempt to get a file extension from $path. This is by no means 100% accurate but it helps us search for content faster.
 		 */
 		if (preg_match('/\.(?<extension>[a-z0-9]{1,7})$/i', $this->path, $matches)) {
-			$this->extension = $matches['extension'];
+			$this->extension = strtolower($matches['extension']);
 		}
 	}
 
