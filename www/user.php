@@ -22,30 +22,22 @@
 final class user
 {
 	/**
-	 * USER EDITABLE SETTINGS: the important stuff; database, timezone, etc.
-	 */
-	private $channel = '';
-	private $db_host = '127.0.0.1';
-	private $db_port = 3306;
-	private $db_user = '';
-	private $db_pass = '';
-	private $db_name = 'sss';
-	private $timezone = 'UTC';
-
-	/**
-	 * USER EDITABLE SETTINGS: less important stuff; style and presentation.
+	 * Default settings for this script, can be overridden in the vars.php file.
 	 */
 	private $bar_afternoon = 'y.png';
 	private $bar_evening = 'r.png';
 	private $bar_morning = 'g.png';
 	private $bar_night = 'b.png';
+	private $channel = '';
+	private $db_host = '127.0.0.1';
+	private $db_pass = '';
+	private $db_port = 3306;
+	private $db_name = 'sss';
+	private $db_user = '';
+	private $debug = false;
 	private $mainpage = './';
 	private $stylesheet = 'sss.css';
-
-	/**
-	 * Only set to true when troubleshooting.
-	 */
-	private $debug = false;
+	private $timezone = 'UTC';
 
 	/**
 	 * Variables that shouldn't be tampered with.
@@ -67,9 +59,28 @@ final class user
 	private $year = 0;
 	private $years = 0;
 
-	public function __construct($uid)
+	public function __construct($cid, $uid)
 	{
 		$this->uid = $uid;
+
+		/**
+		 * Open the vars.php file and load settings from it. First the global settings then the channel specific ones.
+		 */
+		if ((@include 'vars.php') === false) {
+			exit('Missing configuration.');
+		}
+
+		foreach ($settings['global'] as $key => $value) {
+			$this->$key = $value;
+		}
+
+		/**
+		 * $cid is the channel ID used in vars.php and is passed along in the URL so that channel specific settings can be identified and loaded.
+		 */
+		foreach ($settings[$cid] as $key => $value) {
+			$this->$key = $value;
+		}
+
 		date_default_timezone_set($this->timezone);
 	}
 
@@ -466,8 +477,8 @@ final class user
 	}
 }
 
-if (isset($_GET['uid']) && preg_match('/^[1-9]\d{0,8}$/', $_GET['uid'])) {
-	$user = new user((int) $_GET['uid']);
+if (isset($_GET['cid']) && isset($_GET['uid']) && strlen($_GET['cid']) >= 1 && preg_match('/^[1-9]\d{0,8}$/', $_GET['uid'])) {
+	$user = new user($_GET['cid'], (int) $_GET['uid']);
 	echo $user->make_html();
 }
 
