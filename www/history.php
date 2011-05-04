@@ -45,6 +45,7 @@ final class history
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
+	private $cid = '';
 	private $l_total = 0;
 	private $month = 0;
 	private $mysqli;
@@ -54,6 +55,7 @@ final class history
 
 	public function __construct($cid, $year, $month)
 	{
+		$this->cid = $cid;
 		$this->year = $year;
 		$this->month = $month;
 
@@ -71,7 +73,7 @@ final class history
 		/**
 		 * $cid is the channel ID used in vars.php and is passed along in the URL so that channel specific settings can be identified and loaded.
 		 */
-		foreach ($settings[$cid] as $key => $value) {
+		foreach ($settings[$this->cid] as $key => $value) {
 			$this->$key = $value;
 		}
 
@@ -176,11 +178,11 @@ final class history
 
 		for ($year = $this->year_firstlogparsed; $year <= $this->year_lastlogparsed; $year++) {
 			if (array_key_exists($year, $this->activity)) {
-				$trx .= '<tr><td class="pos"><a href="history.php?y='.$year.'&amp;m=0">'.$year.'</a></td>';
+				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&y='.$year.'&amp;m=0">'.$year.'</a></td>';
 
 				for ($month = 1; $month <= 12; $month++) {
 					if (array_key_exists($month, $this->activity[$year])) {
-						$trx .= '<td class="v"><a href="history.php?y='.$year.'&amp;m='.$month.'">'.number_format($this->activity[$year][$month]).'</a></td>';
+						$trx .= '<td class="v"><a href="history.php?cid='.urlencode($this->cid).'&y='.$year.'&amp;m='.$month.'">'.number_format($this->activity[$year][$month]).'</a></td>';
 					} else {
 						$trx .= '<td class="v"><span class="grey">n/a</span></td>';
 					}
