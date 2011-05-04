@@ -22,33 +22,25 @@
 final class history
 {
 	/**
-	 * USER EDITABLE SETTINGS: the important stuff; database, timezone, etc.
-	 */
-	private $channel = '';
-	private $db_host = '127.0.0.1';
-	private $db_port = 3306;
-	private $db_user = '';
-	private $db_pass = '';
-	private $db_name = 'sss';
-	private $timezone = 'UTC';
-
-	/**
-	 * USER EDITABLE SETTINGS: less important stuff; style and presentation.
+	 * Default settings for this script, can be overridden in the vars.php file.
 	 */
 	private $bar_afternoon = 'y.png';
 	private $bar_evening = 'r.png';
 	private $bar_morning = 'g.png';
 	private $bar_night = 'b.png';
-	private $mainpage = './';
-	private $rows_map_month = 30;
-	private $rows_map_year = 30;
-	private $stylesheet = 'sss.css';
-	private $userstats = false;
-
-	/**
-	 * Only set to true when troubleshooting.
-	 */
+	private $channel = '';
+	private $db_host = '127.0.0.1';
+	private $db_pass = '';
+	private $db_port = 3306;
+	private $db_name = 'sss';
+	private $db_user = '';
 	private $debug = false;
+	private $mainpage = './';
+	private $rows_people_month = 30;
+	private $rows_people_year = 30;
+	private $stylesheet = 'sss.css';
+	private $timezone = 'UTC';
+	private $userstats = false;
 
 	/**
 	 * Variables that shouldn't be tampered with.
@@ -60,10 +52,29 @@ final class history
 	private $year_firstlogparsed = 0;
 	private $year_lastlogparsed = 0;
 
-	public function __construct($year, $month)
+	public function __construct($cid, $year, $month)
 	{
 		$this->year = $year;
 		$this->month = $month;
+
+		/**
+		 * Open the vars.php file and load settings from it. First the global settings then the channel specific ones.
+		 */
+		if ((@include 'vars.php') === false) {
+			exit('Missing configuration.');
+		}
+
+		foreach ($settings['global'] as $key => $value) {
+			$this->$key = $value;
+		}
+
+		/**
+		 * $cid is the channel ID used in vars.php and is passed along in the URL so that channel specific settings can be identified and loaded.
+		 */
+		foreach ($settings[$cid] as $key => $value) {
+			$this->$key = $value;
+		}
+
 		date_default_timezone_set($this->timezone);
 	}
 
@@ -124,11 +135,11 @@ final class history
 			if ($this->month == 0) {
 				$this->l_total = $this->activity[$this->year][$this->month];
 				$output .= $this->make_table_mostactivetimes('year');
-				$output .= $this->make_table_mostactivepeople('year', $this->rows_map_year);
+				$output .= $this->make_table_mostactivepeople('year', $this->rows_people_year);
 			} else {
 				$this->l_total = $this->activity[$this->year][$this->month];
 				$output .= $this->make_table_mostactivetimes('month');
-				$output .= $this->make_table_mostactivepeople('month', $this->rows_map_month);
+				$output .= $this->make_table_mostactivepeople('month', $this->rows_people_month);
 			}
 		}
 
@@ -356,8 +367,8 @@ final class history
 	}
 }
 
-if (isset($_GET['y']) && preg_match('/^(0|[12]\d{3})$/', $_GET['y']) && isset($_GET['m']) && preg_match('/^([0-9]|1[0-2])$/', $_GET['m'])) {
-	$history = new history((int) $_GET['y'], (int) $_GET['m']);
+if (isset($_GET['cid']) && isset($_GET['y']) && isset($_GET['m']) && preg_match('/^(0|[12]\d{3})$/', $_GET['y']) && preg_match('/^([0-9]|1[0-2])$/', $_GET['m'])) {
+	$history = new history($_GET['cid'], (int) $_GET['y'], (int) $_GET['m']);
 	echo $history->make_html();
 }
 
