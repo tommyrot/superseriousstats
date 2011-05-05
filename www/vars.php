@@ -3,7 +3,7 @@
 /**
  * Global settings are the default for ALL channels.
  */
-$settings['global'] = array(
+$settings['__global'] = array(
 'bar_afternoon' => 'y.png',
 'bar_evening' => 'r.png',
 'bar_morning' => 'g.png',

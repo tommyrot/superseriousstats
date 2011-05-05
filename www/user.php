@@ -72,17 +72,17 @@ final class user
 			exit('Missing configuration.');
 		}
 
-		foreach ($settings['global'] as $key => $value) {
+		if (empty($settings['__global']) || empty($settings[$this->cid])) {
+			exit('Not configured.');
+		}
+
+		foreach ($settings['__global'] as $key => $value) {
 			$this->$key = $value;
 		}
 
 		/**
 		 * $cid is the channel ID used in vars.php and is passed along in the URL so that channel specific settings can be identified and loaded.
 		 */
-		if (empty($settings[$this->cid])) {
-			exit('Not configured.');
-		}
-
 		foreach ($settings[$this->cid] as $key => $value) {
 			$this->$key = $value;
 		}
