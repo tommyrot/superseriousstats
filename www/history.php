@@ -100,6 +100,17 @@ final class history
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
 		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
+		}
+
+		if (empty($result->l_total)) {
+			exit('database is empty');
+		}
+
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `year_firstlogparsed`, max(year(`date`)) as `year_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
