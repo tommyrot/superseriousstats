@@ -116,16 +116,7 @@ final class history
 		}
 
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `year_firstlogparsed`, max(year(`date`)) as `year_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
-		}
-
-		if (empty($result->days)) {
-			exit('This channel may only have a future.'."\n");
-		}
-
+		$result = mysqli_fetch_object($query);
 		$this->year_firstlogparsed = (int) $result->year_firstlogparsed;
 		$this->year_lastlogparsed = (int) $result->year_lastlogparsed;
 
