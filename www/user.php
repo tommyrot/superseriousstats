@@ -42,6 +42,7 @@ final class user
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
+	private $cid = '';
 	private $csnick = '';
 	private $date_lastlogparsed = '';
 	private $date_max = '';
@@ -61,6 +62,7 @@ final class user
 
 	public function __construct($cid, $uid)
 	{
+		$this->cid = $cid;
 		$this->uid = $uid;
 
 		/**
@@ -77,7 +79,11 @@ final class user
 		/**
 		 * $cid is the channel ID used in vars.php and is passed along in the URL so that channel specific settings can be identified and loaded.
 		 */
-		foreach ($settings[$cid] as $key => $value) {
+		if (empty($settings[$this->cid])) {
+			exit('Not configured.');
+		}
+
+		foreach ($settings[$this->cid] as $key => $value) {
 			$this->$key = $value;
 		}
 
