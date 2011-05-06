@@ -45,6 +45,7 @@ final class history
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
+	private $activity = array();
 	private $cid = '';
 	private $l_total = 0;
 	private $month = 0;
@@ -172,9 +173,9 @@ final class history
 
 			if (!isset($this->activity[(int) $result->year][0])) {
 				$this->activity[(int) $result->year][0] = 0;
+			} else {
+				$this->activity[(int) $result->year][0] += (int) $result->l_total;
 			}
-
-			$this->activity[(int) $result->year][0] += (int) $result->l_total;
 		}
 
 		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
@@ -184,11 +185,11 @@ final class history
 
 		for ($year = $this->year_firstlogparsed; $year <= $this->year_lastlogparsed; $year++) {
 			if (array_key_exists($year, $this->activity)) {
-				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&y='.$year.'&amp;m=0">'.$year.'</a></td>';
+				$trx .= '<tr><td class="pos"><a href="history.php?c='.urlencode($this->cid).'&y='.$year.'&amp;m=0">'.$year.'</a></td>';
 
 				for ($month = 1; $month <= 12; $month++) {
 					if (array_key_exists($month, $this->activity[$year])) {
-						$trx .= '<td class="v"><a href="history.php?cid='.urlencode($this->cid).'&y='.$year.'&amp;m='.$month.'">'.number_format($this->activity[$year][$month]).'</a></td>';
+						$trx .= '<td class="v"><a href="history.php?c='.urlencode($this->cid).'&y='.$year.'&amp;m='.$month.'">'.number_format($this->activity[$year][$month]).'</a></td>';
 					} else {
 						$trx .= '<td class="v"><span class="grey">n/a</span></td>';
 					}
@@ -375,8 +376,8 @@ final class history
 	}
 }
 
-if (isset($_GET['cid']) && isset($_GET['y']) && isset($_GET['m']) && preg_match('/^(0|[12]\d{3})$/', $_GET['y']) && preg_match('/^([0-9]|1[0-2])$/', $_GET['m'])) {
-	$history = new history($_GET['cid'], (int) $_GET['y'], (int) $_GET['m']);
+if (isset($_GET['c']) && isset($_GET['y']) && isset($_GET['m']) && preg_match('/^(0|[12]\d{3})$/', $_GET['y']) && preg_match('/^([0-9]|1[0-2])$/', $_GET['m'])) {
+	$history = new history($_GET['c'], (int) $_GET['y'], (int) $_GET['m']);
 	echo $history->make_html();
 }
 
