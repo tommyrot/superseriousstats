@@ -37,6 +37,7 @@ final class history
 	private $debug = false;
 	private $mainpage = './';
 	private $rows_people_month = 30;
+	private $rows_people_timeofday = 10;
 	private $rows_people_year = 30;
 	private $stylesheet = 'sss.css';
 	private $timezone = 'UTC';
@@ -151,6 +152,8 @@ final class history
 				$output .= $this->make_table_mostactivepeople('month', $this->rows_people_month);
 			}
 		}
+
+		$output .= $this->make_table_people_timeofday($this->rows_people_timeofday);
 
 		/**
 		 * HTML Foot.
@@ -373,6 +376,63 @@ final class history
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
 		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
+	private function make_table_people_timeofday($rows)
+	{
+		$high_value = 0;
+		$times = array('night', 'morning', 'afternoon', 'evening');
+
+		foreach ($times as $time) {
+			if ($this->month == 0) {
+				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_year` join `user_details` on `q_activity_by_year`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `date` = '.$this->year.' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$rows);
+			} else {
+				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_month` join `user_details` on `q_activity_by_month`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `date` = \''.$this->year.'-'.($this->month < 10 ? '0'.$this->month : $this->month).'\' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$rows);
+			}
+
+			$i = 0;
+
+			while ($result = mysqli_fetch_object($query)) {
+				$i++;
+				${$time}[$i]['user'] = $result->csnick;
+				${$time}[$i]['lines'] = (int) $result->{'l_'.$time};
+
+				if (${$time}[$i]['lines'] > $high_value) {
+					$high_value = ${$time}[$i]['lines'];
+				}
+			}
+		}
+
+		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
+		$tr1 = '<tr><th colspan="5">Most Talkative People by Time of Day</th></tr>';
+		$tr2 = '<tr><td class="pos"></td><td class="k">Night<br />0h - 5h</td><td class="k">Morning<br />6h - 11h</td><td class="k">Afternoon<br />12h - 17h</td><td class="k">Evening<br />18h - 23h</td></tr>';
+		$tr3 = '';
+
+		for ($i = 1; $i <= $rows; $i++) {
+			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
+				break;
+			} else {
+				$tr3 .= '<tr><td class="pos">'.$i.'</td>';
+
+				foreach ($times as $time) {
+					if (!isset(${$time}[$i]['lines'])) {
+						$tr3 .= '<td class="v"></td>';
+					} else {
+						$width = round((${$time}[$i]['lines'] / $high_value) * 190);
+
+						if ($width != 0) {
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br /><img src="'.$this->{'bar_'.$time}.'" width="'.$width.'" alt="" /></td>';
+						} else {
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br />&nbsp;</td>';
+						}
+					}
+				}
+
+				$tr3 .= '</tr>';
+			}
+		}
+
+		return '<table class="tod">'.$tr0.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 }
 

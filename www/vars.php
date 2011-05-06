@@ -16,6 +16,7 @@ $settings['__global'] = array(
 'db_user' => '',
 'mainpage' => './',
 'rows_people_month' => 30,
+'rows_people_timeofday' => 10,
 'rows_people_year' => 30,
 'stylesheet' => 'sss.css',
 'timezone' => 'UTC',
