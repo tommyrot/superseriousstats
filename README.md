@@ -10,23 +10,21 @@ superseriousstats is released under the [ISC license](http://opensource.org/lice
 Source
 ------
 
-The source code is available at [GitHub](http://github.com/tommyrot/superseriousstats).
+The source code is available at [GitHub](https://github.com/tommyrot/superseriousstats).
 
     git clone git://github.com/tommyrot/superseriousstats.git
 
 Releases
 --------
 
-After significant changes have been made there follows a release. Releases are tested and the best option for obtaining a working version. Download the latest version [here](http://code.google.com/p/superseriousstats/downloads/list).
+After significant changes have been made there follows a release. Releases are tested and the best option for obtaining a working version. Download the latest version at [Google Code](http://code.google.com/p/superseriousstats/downloads/list).
 
 Documentation and Issues
 ------------------------
 
-All documentation can be found on the [Wiki](http://code.google.com/p/superseriousstats/w/list).
+All documentation can be found on the [Wiki](https://github.com/tommyrot/superseriousstats/wiki).
 
-Bug reports and feature requests can be filed [here](http://code.google.com/p/superseriousstats/issues/list). Keep it real.
-
-If you want superseriousstats to also support the logfile format you use, you can create your own parser file. Alternatively you can convince me to make one for you where you take on the task of testing the results. It helps if you can provide an overview of the (default) logging syntax used by the client.
+Sending in bug reports is much [appreciated](https://github.com/tommyrot/superseriousstats/issues). For questions and feature requests please refer to our IRC channel.
 
 Support
 -------
