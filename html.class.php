@@ -108,6 +108,13 @@ final class html extends base
 				}
 			}
 		}
+
+		/**
+		 * If $cid has no value we use the value of $channel for it.
+		 */
+		if ($this->cid == '') {
+			$this->cid = $this->channel;
+		}
 	}
 
 	/**
