@@ -24,7 +24,7 @@ Documentation and Issues
 
 All documentation can be found on the [Wiki](https://github.com/tommyrot/superseriousstats/wiki).
 
-Sending in bug reports is much [appreciated](https://github.com/tommyrot/superseriousstats/issues). For questions and feature requests please refer to our IRC channel.
+Sending in [bug reports](https://github.com/tommyrot/superseriousstats/issues) is much appreciated.. For questions and feature requests please refer to our IRC channel.
 
 Support
 -------
