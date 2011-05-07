@@ -160,7 +160,9 @@ final class nick extends base
 	 */
 	public function add_quote($type, $line, $length)
 	{
-		$this->{$type.'_stack'}[] = array('length' => $length, 'line' => $line);
+		$this->{$type.'_stack'}[] = array(
+			'length' => $length,
+			'line' => $line);
 
 		if (count($this->{$type.'_stack'}) > 100) {
 			/**
