@@ -17,8 +17,9 @@
  */
 
 /**
- * Various functions related to URL validation and presentation. This class is far from complete and only serves the basic needs of the superseriousstats program.
- * It tries to follow RFC 3986. Take note of the following caveats if you want to use this class in other projects:
+ * Various functions related to URL validation and presentation. This class is far from complete
+ * and only serves the basic needs of the superseriousstats program. It tries to follow RFC 3986.
+ * Take note of the following caveats if you want to use this class in other projects:
  *
  * Scheme:
  * - http:// and https:// only.
