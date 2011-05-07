@@ -114,7 +114,7 @@ final class history
 		}
 
 		if (empty($result->l_total)) {
-			exit('database is empty');
+			exit('No data.');
 		}
 
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `year_firstlogparsed`, max(year(`date`)) as `year_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));

@@ -55,15 +55,15 @@ final class user
 	private $month = 0;
 	private $mood = '';
 	private $mysqli;
+	private $nick = '';
 	private $ruid = 0;
-	private $uid = 0;
 	private $year = 0;
 	private $years = 0;
 
-	public function __construct($cid, $uid)
+	public function __construct($cid, $nick)
 	{
 		$this->cid = $cid;
-		$this->uid = $uid;
+		$this->nick = $nick;
 
 		/**
 		 * Open the vars.php file and load settings from it. First the global settings then the channel specific ones.
@@ -110,18 +110,22 @@ final class user
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
 		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$query = @mysqli_query($this->mysqli, 'select `user_status`.`ruid`, `csnick`, min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg`, `actions` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` join `q_lines` on `user_status`.`ruid` = `q_lines`.`ruid` where `user_status`.`ruid` = (select `ruid` from `user_status` where `uid` = '.$this->uid.') and `firstseen` != \'0000-00-00 00:00:00\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `ruid` from `user_status` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->nick).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
+		if (empty($rows)) {
+			exit('No data.');
 		}
+
+		$result = mysqli_fetch_object($query);
+		$this->ruid = (int) $result->ruid;
+		$query = @mysqli_query($this->mysqli, 'select `csnick`, min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg`, `actions` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` join `q_lines` on `user_status`.`ruid` = `q_lines`.`ruid` where `user_status`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$result = mysqli_fetch_object($query);
 
 		if (empty($result->l_total)) {
-			exit('Nothing to display for this user.'."\n");
+			exit('No data.'."\n");
 		}
 
-		$this->ruid = (int) $result->ruid;
 		$this->csnick = $result->csnick;
 		$this->firstseen = $result->firstseen;
 		$this->lastseen = $result->lastseen;
@@ -167,7 +171,7 @@ final class user
 				's_17' => ':)',
 				's_18' => ':(',
 				's_19' => '\\o/');
-			$this->mood = ' '.$smileys[$high_key];
+			$this->mood = $smileys[$high_key];
 		}
 
 		/**
@@ -206,7 +210,7 @@ final class user
 			. '</style>'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
-			. "\n".'<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? $this->mood : '.').'<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
+			. "\n".'<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? ' '.$this->mood : '.').'<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
 			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day &ndash; and performed '.number_format($this->actions).' action'.($this->actions != 1 ? 's' : '').'.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' line'.($this->l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
@@ -483,8 +487,8 @@ final class user
 	}
 }
 
-if (isset($_GET['cid']) && isset($_GET['uid']) && strlen($_GET['cid']) >= 1 && preg_match('/^[1-9]\d{0,8}$/', $_GET['uid'])) {
-	$user = new user($_GET['cid'], (int) $_GET['uid']);
+if (isset($_GET['c']) && isset($_GET['n']) && preg_match('/^\S+$/', $_GET['c']) && preg_match('/^[][^{}|\\\`_0-9a-z-]{1,255}$/i', $_GET['n'])) {
+	$user = new user($_GET['c'], $_GET['n']);
 	echo $user->make_html();
 }
 
