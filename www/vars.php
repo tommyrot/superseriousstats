@@ -25,6 +25,7 @@ $settings['__global'] = array(
 
 /**
  * Each channel can have their own specific settings overriding global ones.
+ * _'example' is the channel ID here_
  */
 $settings['example'] = array(
 'channel' => '#example',
