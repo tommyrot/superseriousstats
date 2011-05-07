@@ -391,7 +391,7 @@ abstract class parser extends base
 				$this->streak++;
 			} else {
 				/**
-				 * Ohno! Someone else type a line and the previous streak is interrupted. Check if the streak qualifies as a monologue and store it.
+				 * Ohno! Someone else typed a line and the previous streak is interrupted. Check if the streak qualifies as a monologue and store it.
 				 */
 				if ($this->streak >= $this->minstreak) {
 					/**
@@ -571,7 +571,7 @@ abstract class parser extends base
 
 			if (!is_null($csnick_undergoing)) {
 				/**
-				 * Clean possible network prefix (psyBNC) from undergoing nick.
+				 * Clean possible network prefix (psyBNC) from "undergoing" nick.
 				 */
 				if (preg_match('/^.*?[~\'](?<nick>.+)$/', $csnick_undergoing, $matches)) {
 					$this->output('debug', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
@@ -582,7 +582,7 @@ abstract class parser extends base
 					$this->output('warning', 'set_slap(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 				} else {
 					/**
-					 * Don't pass a time when adding the undergoing nick while it may only be referred to instead of being seen for real.
+					 * Don't pass a time when adding the "undergoing" nick while it may only be referred to instead of being seen for real.
 					 */
 					$nick_undergoing = $this->add_nick($csnick_undergoing, null);
 					$this->nicks_objs[$nick_undergoing]->add_value('slapped', 1);
