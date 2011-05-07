@@ -49,7 +49,7 @@ final class sss extends base
 		'parser' => 'string',
 		'outputbits' => 'int',
 		'timezone' => 'string');
-	private $settings_list_required = array('channel', 'db_pass', 'db_user', 'logfile_dateformat', 'parser');
+	private $settings_list_required = array('channel', 'cid', 'db_pass', 'db_user', 'logfile_dateformat', 'parser');
 	private $zlib = false;
 
 	public function __construct()

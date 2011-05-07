@@ -32,6 +32,7 @@ final class html extends base
 	private $bar_morning = 'g.png';
 	private $bar_night = 'b.png';
 	private $channel = '';
+	private $cid = '';
 	private $history = false;
 	private $minlines = 500;
 	private $minrows = 3;
@@ -69,6 +70,7 @@ final class html extends base
 		'bar_morning' => 'string',
 		'bar_night' => 'string',
 		'channel' => 'string',
+		'cid' => 'string',
 		'history' => 'bool',
 		'minlines' => 'int',
 		'minrows' => 'int',
