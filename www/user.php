@@ -487,8 +487,8 @@ final class user
 	}
 }
 
-if (isset($_GET['c']) && isset($_GET['n']) && preg_match('/^\S+$/', $_GET['c']) && preg_match('/^[][^{}|\\\`_0-9a-z-]{1,255}$/i', $_GET['n'])) {
-	$user = new user($_GET['c'], $_GET['n']);
+if (isset($_GET['cid']) && isset($_GET['nick']) && preg_match('/^\S+$/', $_GET['cid']) && preg_match('/^[][^{}|\\\`_0-9a-z-]{1,255}$/i', $_GET['nick'])) {
+	$user = new user($_GET['cid'], $_GET['nick']);
 	echo $user->make_html();
 }
 
