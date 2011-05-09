@@ -188,11 +188,11 @@ final class history
 
 		for ($year = $this->year_firstlogparsed; $year <= $this->year_lastlogparsed; $year++) {
 			if (array_key_exists($year, $this->activity)) {
-				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&year='.$year.'&amp;month=0">'.$year.'</a></td>';
+				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'&amp;month=0">'.$year.'</a></td>';
 
 				for ($month = 1; $month <= 12; $month++) {
 					if (array_key_exists($month, $this->activity[$year])) {
-						$trx .= '<td class="v"><a href="history.php?cid='.urlencode($this->cid).'&year='.$year.'&amp;month='.$month.'">'.number_format($this->activity[$year][$month]).'</a></td>';
+						$trx .= '<td class="v"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'&amp;month='.$month.'">'.number_format($this->activity[$year][$month]).'</a></td>';
 					} else {
 						$trx .= '<td class="v"><span class="grey">n/a</span></td>';
 					}
@@ -296,7 +296,7 @@ final class history
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
+			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
 		}
 
 		return '<table class="map">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
