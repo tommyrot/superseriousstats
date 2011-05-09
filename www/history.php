@@ -188,7 +188,7 @@ final class history
 
 		for ($year = $this->year_firstlogparsed; $year <= $this->year_lastlogparsed; $year++) {
 			if (array_key_exists($year, $this->activity)) {
-				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'&amp;month=0">'.$year.'</a></td>';
+				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'">'.$year.'</a></td>';
 
 				for ($month = 1; $month <= 12; $month++) {
 					if (array_key_exists($month, $this->activity[$year])) {
@@ -436,8 +436,23 @@ final class history
 	}
 }
 
-if (isset($_GET['cid']) && isset($_GET['year']) && isset($_GET['month']) && preg_match('/^(0|[12]\d{3})$/', $_GET['year']) && preg_match('/^([0-9]|1[0-2])$/', $_GET['month'])) {
-	$history = new history($_GET['cid'], (int) $_GET['year'], (int) $_GET['month']);
+if (isset($_GET['cid'])) {
+	$cid = $_GET['cid'];
+
+	if (isset($_GET['year']) && preg_match('/^[12][0-9]{3}$/', $_GET['year'])) {
+		$year = (int) $_GET['year'];
+
+		if (isset($_GET['month']) && preg_match('/^([1-9]|1[0-2])$/', $_GET['month'])) {
+			$month = (int) $_GET['month'];
+		} else {
+			$month = null;
+		}
+	} else {
+		$year = null;
+		$month = null;
+	}
+
+	$history = new history($cid, $year, $month);
 	echo $history->make_html();
 }
 

@@ -930,12 +930,12 @@ final class html extends base
 	{
 		if ($type == 'alltime') {
 			$head = 'Most Talkative People &ndash; Alltime';
-			$historylink = '<span class="right"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.date('Y', strtotime($this->date_first)).'&amp;month=0">History</a></span>';
+			$historylink = '<span class="right"><a href="history.php?cid='.urlencode($this->cid).'">History</a></span>';
 			$total = $this->l_total;
 			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 order by `l_total` desc, `csnick` asc limit '.$rows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'year') {
 			$head = 'Most Talkative People &ndash; '.$this->year;
-			$historylink = '<span class="right"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'&amp;month=0">History</a></span>';
+			$historylink = '<span class="right"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'">History</a></span>';
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_year` where `date` = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$result = mysqli_fetch_object($query);
 			$total = (int) $result->l_total;
