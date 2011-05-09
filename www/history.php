@@ -51,6 +51,8 @@ final class history
 	private $l_total = 0;
 	private $month = 0;
 	private $mysqli;
+	private $scope = '';
+	private $scope_info = '';
 	private $year = 0;
 	private $year_firstlogparsed = 0;
 	private $year_lastlogparsed = 0;
@@ -60,6 +62,16 @@ final class history
 		$this->cid = $cid;
 		$this->year = $year;
 		$this->month = $month;
+
+		if (!is_null($month)) {
+			$this->scope = 'month';
+			$this->scope_info = date('F Y', mktime(0, 0, 0, $this->month, 1, $this->year));
+		} elseif (!is_null($year)) {
+			$this->scope = 'year';
+			$this->scope_info = 'the year '.$this->year;
+		} else {
+			$this->scope = 'alltime';
+		}
 
 		/**
 		 * Open the vars.php file and load settings from it. First the global settings then the channel specific ones.
@@ -133,7 +145,7 @@ final class history
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
-			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.</div>'."\n";
+			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br /><br />'.($this->scope == 'alltime' ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.$this->scope_info).'.</div>'."\n";
 
 		/**
 		 * Activity section.
