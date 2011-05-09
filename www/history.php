@@ -70,7 +70,7 @@ final class history
 			$this->scope = 'year';
 			$this->scope_info = 'the year '.$this->year;
 		} else {
-			$this->scope = 'alltime';
+			$this->scope = 'none';
 		}
 
 		/**
@@ -145,7 +145,7 @@ final class history
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
-			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br /><br />'.($this->scope == 'alltime' ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.$this->scope_info).'.</div>'."\n";
+			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br /><br />'.($this->scope == 'none' ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.$this->scope_info).'.</div>'."\n";
 
 		/**
 		 * Activity section.
