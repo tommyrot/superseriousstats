@@ -436,24 +436,35 @@ final class history
 	}
 }
 
-if (isset($_GET['cid'])) {
-	$cid = $_GET['cid'];
+/**
+ * If the channel ID is not set, empty, or has the value "__global" we exit.
+ */
+if (!isset($_GET['cid']) || !preg_match('/^\S+$/', $_GET['cid']) || preg_match('/^__global$/', $_GET['cid'])) {
+	exit;
+}
 
-	if (isset($_GET['year']) && preg_match('/^[12][0-9]{3}$/', $_GET['year'])) {
-		$year = (int) $_GET['year'];
+$cid = $_GET['cid'];
 
-		if (isset($_GET['month']) && preg_match('/^([1-9]|1[0-2])$/', $_GET['month'])) {
-			$month = (int) $_GET['month'];
-		} else {
-			$month = null;
-		}
+/**
+ * If the year and/or month are not set we pass along a null value.
+ */
+if (isset($_GET['year']) && preg_match('/^[12][0-9]{3}$/', $_GET['year'])) {
+	$year = (int) $_GET['year'];
+
+	if (isset($_GET['month']) && preg_match('/^([1-9]|1[0-2])$/', $_GET['month'])) {
+		$month = (int) $_GET['month'];
 	} else {
-		$year = null;
 		$month = null;
 	}
-
-	$history = new history($cid, $year, $month);
-	echo $history->make_html();
+} else {
+	$year = null;
+	$month = null;
 }
+
+/**
+ * Create the statspage!
+ */
+$history = new history($cid, $year, $month);
+echo $history->make_html();
 
 ?>

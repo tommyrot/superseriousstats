@@ -487,9 +487,28 @@ final class user
 	}
 }
 
-if (isset($_GET['cid']) && isset($_GET['nick']) && preg_match('/^\S+$/', $_GET['cid']) && preg_match('/^[][^{}|\\\`_0-9a-z-]{1,255}$/i', $_GET['nick'])) {
-	$user = new user($_GET['cid'], $_GET['nick']);
-	echo $user->make_html();
+/**
+ * If the channel ID is not set, empty, or has the value "__global" we exit.
+ */
+if (!isset($_GET['cid']) || !preg_match('/^\S+$/', $_GET['cid']) || preg_match('/^__global$/', $_GET['cid'])) {
+	exit;
 }
+
+$cid = $_GET['cid'];
+
+/**
+ * If nick is not set, empty, or has an erroneous value we also exit.
+ */
+if (!isset($_GET['nick']) || !preg_match('/^[][^{}|\\\`_0-9a-z-]{1,255}$/i', $_GET['nick'])) {
+	exit;
+}
+
+$nick = $_GET['nick'];
+
+/**
+ * Create the statspage!
+ */
+$user = new user($cid, $nick);
+echo $user->make_html();
 
 ?>
