@@ -154,7 +154,7 @@ final class history
 		/**
 		 * Only make tables for times in which there was activity.
 		 */
-		if (array_key_exists($this->year, $this->activity) && (is_null($this->month) || array_key_exists($this->month, $this->activity[$this->year]))) {
+		if (!is_null($this->year) && array_key_exists($this->year, $this->activity) && (is_null($this->month) || array_key_exists($this->month, $this->activity[$this->year]))) {
 			if (is_null($this->month)) {
 				$this->l_total = $this->activity[$this->year][0];
 				$output .= $this->make_table_mostactivetimes('year');
