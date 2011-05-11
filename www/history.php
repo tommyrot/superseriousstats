@@ -52,7 +52,6 @@ final class history
 	private $month = 0;
 	private $mysqli;
 	private $scope = '';
-	private $scope_info = '';
 	private $year = 0;
 	private $year_firstlogparsed = 0;
 	private $year_lastlogparsed = 0;
@@ -62,19 +61,6 @@ final class history
 		$this->cid = $cid;
 		$this->year = $year;
 		$this->month = $month;
-
-		/**
-		 * We either get year & month, just the year, or nothing passed along.
-		 */
-		if (!is_null($month)) {
-			$this->scope = 'month';
-			$this->scope_info = date('F Y', mktime(0, 0, 0, $this->month, 1, $this->year));
-		} elseif (!is_null($year)) {
-			$this->scope = 'year';
-			$this->scope_info = 'the year '.$this->year;
-		} else {
-			$this->scope = 'none';
-		}
 
 		/**
 		 * Open the vars.php file and load settings from it. First the global settings then the channel specific ones.
@@ -99,6 +85,15 @@ final class history
 		}
 
 		date_default_timezone_set($this->timezone);
+
+		/**
+		 * Both $year and $month are set, just $year, or neither.
+		 */
+		if (!is_null($month)) {
+			$this->scope = date('F Y', mktime(0, 0, 0, $this->month, 1, $this->year));
+		} elseif (!is_null($year)) {
+			$this->scope = 'the year '.$this->year;
+		}
 	}
 
 	/**
@@ -148,7 +143,7 @@ final class history
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
-			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br /><br />'.($this->scope == 'none' ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.$this->scope_info).'.</div>'."\n";
+			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br /><br />'.($this->scope == '' ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.$this->scope).'.</div>'."\n";
 
 		/**
 		 * Activity section.
@@ -169,7 +164,7 @@ final class history
 				$output .= $this->make_table_mostactivetimes('month');
 				$output .= $this->make_table_mostactivepeople('month', $this->rows_people_month);
 			}
-			
+
 			$output .= $this->make_table_people_timeofday($this->rows_people_timeofday);
 		}
 
