@@ -56,9 +56,7 @@ final class nicklinker extends base
 		/**
 		 * Explicitly set the locale to C so we won't run into unexpected results between platforms.
 		 */
-		if (setlocale(LC_CTYPE, 'C') === false) {
-			$this->output('warning', '__construct(): failed to set the locale');
-		}
+		setlocale(LC_CTYPE, 'C');
 
 		/**
 		 * Use UTC until user specified timezone is loaded.
