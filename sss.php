@@ -50,7 +50,6 @@ final class sss extends base
 		'outputbits' => 'int',
 		'timezone' => 'string');
 	private $settings_list_required = array('channel', 'db_pass', 'db_user', 'logfile_dateformat', 'parser');
-	private $zlib = false;
 
 	public function __construct()
 	{
@@ -59,22 +58,12 @@ final class sss extends base
 		/**
 		 * Explicitly set the locale to C so we won't run into unexpected results between platforms.
 		 */
-		if (setlocale(LC_CTYPE, 'C') === false) {
-			$this->output('warning', '__construct(): failed to set the locale');
-		}
+		setlocale(LC_CTYPE, 'C');
 
 		/**
 		 * Use UTC until user specified timezone is loaded.
 		 */
 		date_default_timezone_set('UTC');
-
-		/**
-		 * Check for zlib extension.
-		 */
-		if (extension_loaded('zlib')) {
-			$this->zlib = true;
-			$this->output('notice', '__construct(): zlib extension loaded, enabled support for gzipped logs');
-		}
 
 		/**
 		 * Read options from the command line.
