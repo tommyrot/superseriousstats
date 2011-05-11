@@ -158,11 +158,11 @@ final class history
 			if (is_null($this->month)) {
 				$this->l_total = $this->activity[$this->year][0];
 				$output .= $this->make_table_mostactivetimes('year');
-				$output .= $this->make_table_mostactivepeople('year', $this->rows_people_year);
+				$output .= $this->make_table_people('year', $this->rows_people_year);
 			} else {
 				$this->l_total = $this->activity[$this->year][$this->month];
 				$output .= $this->make_table_mostactivetimes('month');
-				$output .= $this->make_table_mostactivepeople('month', $this->rows_people_month);
+				$output .= $this->make_table_people('month', $this->rows_people_month);
 			}
 
 			$output .= $this->make_table_people_timeofday($this->rows_people_timeofday);
@@ -242,7 +242,7 @@ final class history
 		return $daysago;
 	}
 
-	private function make_table_mostactivepeople($type, $rows)
+	private function make_table_people($type, $rows)
 	{
 		if ($type == 'year') {
 			$head = 'Most Active People, '.$this->year;
