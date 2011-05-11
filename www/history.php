@@ -63,6 +63,9 @@ final class history
 		$this->year = $year;
 		$this->month = $month;
 
+		/**
+		 * We either get year & month, just the year, or nothing passed along.
+		 */
 		if (!is_null($month)) {
 			$this->scope = 'month';
 			$this->scope_info = date('F Y', mktime(0, 0, 0, $this->month, 1, $this->year));
@@ -153,9 +156,12 @@ final class history
 		$output .= "\n".'<div class="head">Activity</div>'."\n";
 		$output .= $this->make_index();
 
-		if (array_key_exists($this->year, $this->activity) && ($this->month == 0 || array_key_exists($this->month, $this->activity[$this->year]))) {
-			if ($this->month == 0) {
-				$this->l_total = $this->activity[$this->year][$this->month];
+		/**
+		 * Only make tables for times in which there was activity.
+		 */
+		if (array_key_exists($this->year, $this->activity) && (is_null($this->month) || array_key_exists($this->month, $this->activity[$this->year]))) {
+			if (is_null($this->month)) {
+				$this->l_total = $this->activity[$this->year][0];
 				$output .= $this->make_table_mostactivetimes('year');
 				$output .= $this->make_table_mostactivepeople('year', $this->rows_people_year);
 			} else {
@@ -163,9 +169,9 @@ final class history
 				$output .= $this->make_table_mostactivetimes('month');
 				$output .= $this->make_table_mostactivepeople('month', $this->rows_people_month);
 			}
+			
+			$output .= $this->make_table_people_timeofday($this->rows_people_timeofday);
 		}
-
-		$output .= $this->make_table_people_timeofday($this->rows_people_timeofday);
 
 		/**
 		 * HTML Foot.
@@ -188,9 +194,9 @@ final class history
 
 			if (!isset($this->activity[(int) $result->year][0])) {
 				$this->activity[(int) $result->year][0] = 0;
-			} else {
-				$this->activity[(int) $result->year][0] += (int) $result->l_total;
 			}
+
+			$this->activity[(int) $result->year][0] += (int) $result->l_total;
 		}
 
 		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
