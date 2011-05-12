@@ -181,11 +181,11 @@ final class html extends base
 		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
 		 */
 		$this->date_lastlogparsed = $result->date_lastlogparsed;
-		$this->dayofmonth = date('j', strtotime($this->date_lastlogparsed));
-		$this->month = date('n', strtotime($this->date_lastlogparsed));
+		$this->dayofmonth = (int) date('j', strtotime($this->date_lastlogparsed));
+		$this->month = (int) date('n', strtotime($this->date_lastlogparsed));
 		$this->monthname = date('F', strtotime($this->date_lastlogparsed));
-		$this->year = date('Y', strtotime($this->date_lastlogparsed));
-		$this->years = $this->year - date('Y', strtotime($this->date_first)) + 1;
+		$this->year = (int) date('Y', strtotime($this->date_lastlogparsed));
+		$this->years = $this->year - (int) date('Y', strtotime($this->date_first)) + 1;
 
 		/**
 		 * If we have less than 3 years of data we set the amount of years to 3 so we have that many columns in our table. Looks better.
