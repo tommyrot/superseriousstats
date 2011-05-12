@@ -308,6 +308,10 @@ final class history
 		return '<table class="map">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
+	/**
+	 * This function should not be called when there is no activity for the specified scope.
+	 * $l_total already has the appropriate value for the scope so we don't have to reset it here.
+	 */
 	private function make_table_activity_distribution_hour($type)
 	{
 		if ($type == 'year') {
@@ -327,16 +331,12 @@ final class history
 			}
 		}
 
-		$tr1 = '<tr><th colspan="24">Most Active Times</th></tr>';
+		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour</th></tr>';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
 		foreach ($result as $key => $value) {
-			if (substr($key, -2, 1) == '0') {
-				$hour = (int) substr($key, -1);
-			} else {
-				$hour = (int) substr($key, -2);
-			}
+			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
 			if ((int) $value == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
