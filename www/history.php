@@ -106,7 +106,7 @@ final class history
 		 * If $debug is set to true we exit with the given message, otherwise exit silently.
 		 */
 		if ($this->debug) {
-			exit($msg."\n");
+			exit($msg);
 		} else {
 			exit;
 		}

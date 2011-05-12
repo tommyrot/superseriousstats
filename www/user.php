@@ -100,7 +100,7 @@ final class user
 		 * If $debug is set to true we exit with the given message, otherwise exit silently.
 		 */
 		if ($this->debug) {
-			exit($msg."\n");
+			exit($msg);
 		} else {
 			exit;
 		}
@@ -123,7 +123,7 @@ final class user
 		$result = mysqli_fetch_object($query);
 
 		if (empty($result->l_total)) {
-			exit('No data.'."\n");
+			exit('No data.');
 		}
 
 		$this->csnick = $result->csnick;
