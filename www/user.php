@@ -137,7 +137,7 @@ final class user
 		/**
 		 * Fetch the users mood.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `s_01` as `s_01`, `s_02` as `s_02`, `s_03` as `s_03`, `s_04` as `s_04`, `s_05` as `s_05`, `s_06` as `s_06`, `s_07` as `s_07`, `s_08` as `s_08`, `s_09` as `s_09`, `s_10` as `s_10`, `s_11` as `s_11`, `s_12` as `s_12`, `s_13` as `s_13`, `s_14` as `s_14`, `s_15` as `s_15`, `s_16` as `s_16`, `s_17` as `s_17`, `s_18` as `s_18`, `s_19` as `s_19` from `q_smileys` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `s_01`, `s_02`, `s_03`, `s_04`, `s_05`, `s_06`, `s_07`, `s_08`, `s_09`, `s_10`, `s_11`, `s_12`, `s_13`, `s_14`, `s_15`, `s_16`, `s_17`, `s_18`, `s_19` from `q_smileys` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
