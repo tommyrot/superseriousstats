@@ -42,6 +42,7 @@ final class user
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
+	private $actions = 0;
 	private $cid = '';
 	private $csnick = '';
 	private $date_lastlogparsed = '';
