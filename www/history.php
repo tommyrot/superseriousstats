@@ -148,8 +148,8 @@ final class history
 		/**
 		 * Activity section.
 		 */
-		$output .= "\n".'<div class="head">Activity</div>'."\n";
 		$this->get_activity();
+		$output .= "\n".'<div class="head">Activity</div>'."\n";
 		$output .= $this->make_index();
 
 		/**
@@ -245,6 +245,10 @@ final class history
 		return $daysago;
 	}
 
+	/**
+	 * This function should not be called when there is no activity for the specified scope.
+	 * $l_total already has the appropriate value for the scope so we don't have to reset it here.
+	 */
 	private function make_table_people($type, $rows)
 	{
 		if ($type == 'year') {
@@ -378,13 +382,16 @@ final class history
 		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
+	/**
+	 * This function should not be called when there is no activity for the specified scope.
+	 */
 	private function make_table_people_timeofday($rows)
 	{
 		$high_value = 0;
 		$times = array('night', 'morning', 'afternoon', 'evening');
 
 		foreach ($times as $time) {
-			if ($this->month == 0) {
+			if (is_null($this->month)) {
 				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_year` join `user_details` on `q_activity_by_year`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `date` = '.$this->year.' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$rows);
 			} else {
 				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_month` join `user_details` on `q_activity_by_month`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$rows);
