@@ -416,27 +416,27 @@ abstract class parser extends base
 			}
 
 			$day = strtolower(date('D', strtotime($this->date)));
-			$hour = substr($datetime, 11, 2);
+			$hour = (int) substr($datetime, 11, 2);
 
-			if (preg_match('/^0[0-5]$/', $hour)) {
+			if ($hour >= 0 && $hour <= 5) {
 				$this->l_night++;
 				$this->nicks_objs[$nick]->add_value('l_night', 1);
 				$this->nicks_objs[$nick]->add_value('l_'.$day.'_night', 1);
-			} elseif (preg_match('/^(0[6-9]|1[01])$/', $hour)) {
+			} elseif ($hour >= 6 && $hour <= 11) {
 				$this->l_morning++;
 				$this->nicks_objs[$nick]->add_value('l_morning', 1);
 				$this->nicks_objs[$nick]->add_value('l_'.$day.'_morning', 1);
-			} elseif (preg_match('/^1[2-7]$/', $hour)) {
+			} elseif ($hour >= 12 && $hour <= 17) {
 				$this->l_afternoon++;
 				$this->nicks_objs[$nick]->add_value('l_afternoon', 1);
 				$this->nicks_objs[$nick]->add_value('l_'.$day.'_afternoon', 1);
-			} elseif (preg_match('/^(1[89]|2[0-3])$/', $hour)) {
+			} elseif ($hour >= 18 && $hour <= 23) {
 				$this->l_evening++;
 				$this->nicks_objs[$nick]->add_value('l_evening', 1);
 				$this->nicks_objs[$nick]->add_value('l_'.$day.'_evening', 1);
 			}
 
-			$this->{'l_'.$hour}++;
+			$this->{'l_'.($hour < 10 ? '0'.$hour : $hour)}++;
 			$this->l_total++;
 
 			/**
@@ -507,7 +507,7 @@ abstract class parser extends base
 				}
 			}
 
-			$this->nicks_objs[$nick]->add_value('l_'.$hour, 1);
+			$this->nicks_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
 			$this->nicks_objs[$nick]->add_value('l_total', 1);
 
 			if (!$skipquote && $line_length_bytes <= 255) {
