@@ -149,6 +149,7 @@ final class history
 		 * Activity section.
 		 */
 		$output .= "\n".'<div class="head">Activity</div>'."\n";
+		$this->get_activity();
 		$output .= $this->make_index();
 
 		/**
@@ -177,7 +178,7 @@ final class history
 		return $output;
 	}
 
-	private function make_index() {
+	private function get_activity() {
 		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by substring(`date`, 1, 4), substring(`date`, 6, 2) having `l_total` != 0 order by `year` asc, `month` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
 		while ($result = mysqli_fetch_object($query)) {
@@ -193,7 +194,9 @@ final class history
 
 			$this->activity[(int) $result->year][0] += (int) $result->l_total;
 		}
+	}
 
+	private function make_index() {
 		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
 		$tr1 = '<tr><th colspan="13">History</th></tr>';
 		$tr2 = '<tr><td class="pos"></td><td class="k">Jan</td><td class="k">Feb</td><td class="k">Mar</td><td class="k">Apr</td><td class="k">May</td><td class="k">Jun</td><td class="k">Jul</td><td class="k">Aug</td><td class="k">Sep</td><td class="k">Oct</td><td class="k">Nov</td><td class="k">Dec</td></tr>';
