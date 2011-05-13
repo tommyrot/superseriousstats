@@ -219,10 +219,10 @@ final class user
 		 */
 		$output .= "\n".'<div class="head">Activity</div>'."\n";
 		$output .= $this->make_table_activity_distribution_hour();
-		$output .= $this->make_table_activity('daily');
-		$output .= $this->make_table_activity('monthly');
+		$output .= $this->make_table_activity('day');
+		$output .= $this->make_table_activity('month');
 		$output .= $this->make_table_activity_distribution_day();
-		$output .= $this->make_table_activity('yearly');
+		$output .= $this->make_table_activity('year');
 
 		/**
 		 * HTML Foot.
@@ -231,6 +231,122 @@ final class user
 		$output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";
 		@mysqli_close($this->mysqli);
 		return $output;
+	}
+
+	private function make_table_activity($type)
+	{
+		if ($type == 'day') {
+			$class = 'graph';
+			$cols = 24;
+
+			for ($i = 23; $i >= 0; $i--) {
+				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - $i, $this->year));
+			}
+
+			$head = 'Activity by Day';
+			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_day` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		} elseif ($type == 'month') {
+			$class = 'graph';
+			$cols = 24;
+
+			for ($i = 23; $i >= 0; $i--) {
+				$dates[] = date('Y-m', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
+			}
+
+			$head = 'Activity by Month';
+			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_month` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		} elseif ($type == 'year') {
+			$class = 'yearly';
+			$cols = $this->years;
+
+			for ($i = $this->years - 1; $i >= 0; $i--) {
+				$dates[] = $this->year - $i;
+			}
+
+			$head = 'Activity by Year';
+			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_year` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		}
+
+		$rows = mysqli_num_rows($query);
+
+		/**
+		 * All the queries above will either return one or more rows with activity or no rows at all.
+		 */
+		if (empty($rows)) {
+			return;
+		}
+
+		$high_date = '';
+		$high_value = 0;
+
+		while ($result = mysqli_fetch_object($query)) {
+			$l_night[$result->date] = (int) $result->l_night;
+			$l_morning[$result->date] = (int) $result->l_morning;
+			$l_afternoon[$result->date] = (int) $result->l_afternoon;
+			$l_evening[$result->date] = (int) $result->l_evening;
+			$l_total[$result->date] = (int) $result->l_total;
+
+			if ($l_total[$result->date] > $high_value) {
+				$high_date = $result->date;
+				$high_value = $l_total[$result->date];
+			}
+		}
+
+		$tr1 = '<tr><th colspan="'.$cols.'">'.$head.'</th></tr>';
+		$tr2 = '<tr class="bars">';
+		$tr3 = '<tr class="sub">';
+
+		foreach ($dates as $date) {
+			if (!array_key_exists($date, $l_total) || $l_total[$date] == 0) {
+				$tr2 .= '<td><span class="grey">n/a</span></td>';
+			} else {
+				if ($l_total[$date] >= 999500) {
+					$tr2 .= '<td>'.number_format($l_total[$date] / 1000000, 1).'M';
+				} elseif ($l_total[$date] >= 10000) {
+					$tr2 .= '<td>'.round($l_total[$date] / 1000).'K';
+				} else {
+					$tr2 .= '<td>'.$l_total[$date];
+				}
+
+				$times = array('evening', 'afternoon', 'morning', 'night');
+
+				foreach ($times as $time) {
+					if (${'l_'.$time}[$date] != 0) {
+						$height = round((${'l_'.$time}[$date] / $high_value) * 100);
+
+						if ($height != 0) {
+							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
+						}
+					}
+				}
+
+				$tr2 .= '</td>';
+			}
+
+			if ($type == 'day') {
+				if ($high_date == $date) {
+					$tr3 .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+				} else {
+					$tr3 .= '<td>'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+				}
+			} elseif ($type == 'month') {
+				if ($high_date == $date) {
+					$tr3 .= '<td class="bold">'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
+				} else {
+					$tr3 .= '<td>'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
+				}
+			} elseif ($type == 'year') {
+				if ($high_date == $date) {
+					$tr3 .= '<td class="bold">'.date('\'y', strtotime($date.'-01-01')).'</td>';
+				} else {
+					$tr3 .= '<td>'.date('\'y', strtotime($date.'-01-01')).'</td>';
+				}
+			}
+		}
+
+		$tr2 .= '</tr>';
+		$tr3 .= '</tr>';
+		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function make_table_activity_distribution_hour()
@@ -302,119 +418,6 @@ final class user
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
 		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
-	}
-
-	private function make_table_activity($type)
-	{
-		if ($type == 'daily') {
-			$class = 'graph';
-			$cols = 24;
-
-			for ($i = 23; $i >= 0; $i--) {
-				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - $i, $this->year));
-			}
-
-			$head = 'Daily Activity';
-			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_day` where `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\' and `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		} elseif ($type == 'monthly') {
-			$class = 'graph';
-			$cols = 24;
-
-			for ($i = 23; $i >= 0; $i--) {
-				$dates[] = date('Y-m', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
-			}
-
-			$head = 'Monthly Activity';
-			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_month` where `date` > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' and `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		} elseif ($type == 'yearly') {
-			$class = 'yearly';
-			$cols = $this->years;
-
-			for ($i = $this->years - 1; $i >= 0; $i--) {
-				$dates[] = $this->year - $i;
-			}
-
-			$head = 'Yearly Activity';
-			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_year` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		}
-
-		$rows = mysqli_num_rows($query);
-
-		if (empty($rows)) {
-			return;
-		}
-
-		$high_date = '';
-		$high_value = 0;
-
-		while ($result = mysqli_fetch_object($query)) {
-			$l_night[$result->date] = (int) $result->l_night;
-			$l_morning[$result->date] = (int) $result->l_morning;
-			$l_afternoon[$result->date] = (int) $result->l_afternoon;
-			$l_evening[$result->date] = (int) $result->l_evening;
-			$l_total[$result->date] = (int) $result->l_total;
-
-			if ($l_total[$result->date] > $high_value) {
-				$high_date = $result->date;
-				$high_value = $l_total[$result->date];
-			}
-		}
-
-		$tr1 = '<tr><th colspan="'.$cols.'">'.$head.'</th></tr>';
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
-
-		foreach ($dates as $date) {
-			if (!array_key_exists($date, $l_total) || $l_total[$date] == 0) {
-				$tr2 .= '<td><span class="grey">n/a</span></td>';
-			} else {
-				if ($l_total[$date] >= 999500) {
-					$tr2 .= '<td>'.number_format($l_total[$date] / 1000000, 1).'M';
-				} elseif ($l_total[$date] >= 10000) {
-					$tr2 .= '<td>'.round($l_total[$date] / 1000).'K';
-				} else {
-					$tr2 .= '<td>'.$l_total[$date];
-				}
-
-				$times = array('evening', 'afternoon', 'morning', 'night');
-
-				foreach ($times as $time) {
-					if (${'l_'.$time}[$date] != 0) {
-						$height = round((${'l_'.$time}[$date] / $high_value) * 100);
-
-						if ($height != 0) {
-							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
-						}
-					}
-				}
-
-				$tr2 .= '</td>';
-			}
-
-			if ($type == 'daily') {
-				if ($high_date == $date) {
-					$tr3 .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
-				} else {
-					$tr3 .= '<td>'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
-				}
-			} elseif ($type == 'monthly') {
-				if ($high_date == $date) {
-					$tr3 .= '<td class="bold">'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
-				} else {
-					$tr3 .= '<td>'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
-				}
-			} elseif ($type == 'yearly') {
-				if ($high_date == $date) {
-					$tr3 .= '<td class="bold">'.date('\'y', strtotime($date.'-01-01')).'</td>';
-				} else {
-					$tr3 .= '<td>'.date('\'y', strtotime($date.'-01-01')).'</td>';
-				}
-			}
-		}
-
-		$tr2 .= '</tr>';
-		$tr3 .= '</tr>';
-		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function make_table_activity_distribution_day()

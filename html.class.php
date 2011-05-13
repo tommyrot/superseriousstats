@@ -37,7 +37,7 @@ final class html extends base
 	private $minlines = 500;
 	private $minrows = 3;
 	private $rows_people_alltime = 30;
-	private $rows_people_alltime2 = 40;
+	private $rows_people2 = 40;
 	private $rows_people_month = 10;
 	private $rows_people_timeofday = 10;
 	private $rows_people_year = 10;
@@ -75,8 +75,8 @@ final class html extends base
 		'minlines' => 'int',
 		'minrows' => 'int',
 		'outputbits' => 'int',
+		'rows_people2' => 'int',
 		'rows_people_alltime' => 'int',
-		'rows_people_alltime2' => 'int',
 		'rows_people_month' => 'int',
 		'rows_people_timeofday' => 'int',
 		'rows_people_year' => 'int',
@@ -220,16 +220,16 @@ final class html extends base
 		 */
 		if ($this->sectionbits & 1) {
 			$this->output .= "\n".'<div class="head">Activity</div>'."\n";
-			$this->output .= $this->mt_activity_distribution_hour();
-			$this->output .= $this->mt_activity('day');
-			$this->output .= $this->mt_activity('month');
-			$this->output .= $this->mt_activity_distribution_day();
-			$this->output .= $this->mt_activity('year');
-			$this->output .= $this->mt_people('alltime', $this->rows_people_alltime);
-			$this->output .= $this->mt_people_alltime2($this->rows_people_alltime, $this->rows_people_alltime2);
-			$this->output .= $this->mt_people('year', $this->rows_people_year);
-			$this->output .= $this->mt_people('month', $this->rows_people_month);
-			$this->output .= $this->mt_people_timeofday($this->rows_people_timeofday);
+			$this->output .= $this->make_table_activity_distribution_hour();
+			$this->output .= $this->make_table_activity('day');
+			$this->output .= $this->make_table_activity('month');
+			$this->output .= $this->make_table_activity_distribution_day();
+			$this->output .= $this->make_table_activity('year');
+			$this->output .= $this->make_table_people('alltime', $this->rows_people_alltime);
+			$this->output .= $this->make_table_people2($this->rows_people_alltime, $this->rows_people2);
+			$this->output .= $this->make_table_people('year', $this->rows_people_year);
+			$this->output .= $this->make_table_people('month', $this->rows_people_month);
+			$this->output .= $this->make_table_people_timeofday($this->rows_people_timeofday);
 		}
 
 		/**
@@ -672,7 +672,7 @@ final class html extends base
 		return $this->output;
 	}
 
-	private function mt_activity($type)
+	private function make_table_activity($type)
 	{
 		if ($type == 'day') {
 			$class = 'graph';
@@ -708,6 +708,9 @@ final class html extends base
 
 		$rows = mysqli_num_rows($query);
 
+		/**
+		 * All the queries above will either return one or more rows with activity or no rows at all.
+		 */
 		if (empty($rows)) {
 			return;
 		}
@@ -785,7 +788,7 @@ final class html extends base
 		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function mt_activity_distribution_day()
+	private function make_table_activity_distribution_day()
 	{
 		$query = @mysqli_query($this->mysqli, 'select sum(`l_mon_night`) as `l_mon_night`, sum(`l_mon_morning`) as `l_mon_morning`, sum(`l_mon_afternoon`) as `l_mon_afternoon`, sum(`l_mon_evening`) as `l_mon_evening`, sum(`l_tue_night`) as `l_tue_night`, sum(`l_tue_morning`) as `l_tue_morning`, sum(`l_tue_afternoon`) as `l_tue_afternoon`, sum(`l_tue_evening`) as `l_tue_evening`, sum(`l_wed_night`) as `l_wed_night`, sum(`l_wed_morning`) as `l_wed_morning`, sum(`l_wed_afternoon`) as `l_wed_afternoon`, sum(`l_wed_evening`) as `l_wed_evening`, sum(`l_thu_night`) as `l_thu_night`, sum(`l_thu_morning`) as `l_thu_morning`, sum(`l_thu_afternoon`) as `l_thu_afternoon`, sum(`l_thu_evening`) as `l_thu_evening`, sum(`l_fri_night`) as `l_fri_night`, sum(`l_fri_morning`) as `l_fri_morning`, sum(`l_fri_afternoon`) as `l_fri_afternoon`, sum(`l_fri_evening`) as `l_fri_evening`, sum(`l_sat_night`) as `l_sat_night`, sum(`l_sat_morning`) as `l_sat_morning`, sum(`l_sat_afternoon`) as `l_sat_afternoon`, sum(`l_sat_evening`) as `l_sat_evening`, sum(`l_sun_night`) as `l_sun_night`, sum(`l_sun_morning`) as `l_sun_morning`, sum(`l_sun_afternoon`) as `l_sun_afternoon`, sum(`l_sun_evening`) as `l_sun_evening` from `q_lines`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
@@ -855,7 +858,7 @@ final class html extends base
 		return '<table class="mad">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function mt_activity_distribution_hour()
+	private function make_table_activity_distribution_hour()
 	{
 		$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
@@ -926,7 +929,7 @@ final class html extends base
 		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function mt_people($type, $rows)
+	private function make_table_people($type, $rows)
 	{
 		if ($type == 'alltime') {
 			$head = 'Most Talkative People &ndash; Alltime';
@@ -1009,7 +1012,7 @@ final class html extends base
 	/**
 	 * $rowcount must be a multiple of 4 so we get a clean table without empty spaces that would otherwise mess up the layout.
 	 */
-	private function mt_people_alltime2($offset, $rowcount)
+	private function make_table_people2($offset, $rowcount)
 	{
 		$query = @mysqli_query($this->mysqli, 'select `q_lines`.`ruid`, `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc limit '.$offset.', '.$rowcount) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
@@ -1057,7 +1060,7 @@ final class html extends base
 		return '<table class="nqsap">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	private function mt_people_timeofday($rows)
+	private function make_table_people_timeofday($rows)
 	{
 		$high_value = 0;
 		$times = array('night', 'morning', 'afternoon', 'evening');
