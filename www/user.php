@@ -218,10 +218,10 @@ final class user
 		 * Activity section.
 		 */
 		$output .= "\n".'<div class="head">Activity</div>'."\n";
-		$output .= $this->make_table_mostactivetimes();
+		$output .= $this->make_table_activity_distribution_hour();
 		$output .= $this->make_table_activity('daily');
 		$output .= $this->make_table_activity('monthly');
-		$output .= $this->make_table_mostactivedays();
+		$output .= $this->make_table_activity_distribution_day();
 		$output .= $this->make_table_activity('yearly');
 
 		/**
@@ -233,7 +233,7 @@ final class user
 		return $output;
 	}
 
-	private function make_table_mostactivetimes()
+	private function make_table_activity_distribution_hour()
 	{
 		$query = @mysqli_query($this->mysqli, 'select `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
@@ -417,7 +417,7 @@ final class user
 		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function make_table_mostactivedays()
+	private function make_table_activity_distribution_day()
 	{
 		$query = @mysqli_query($this->mysqli, 'select `l_mon_night`, `l_mon_morning`, `l_mon_afternoon`, `l_mon_evening`, `l_tue_night`, `l_tue_morning`, `l_tue_afternoon`, `l_tue_evening`, `l_wed_night`, `l_wed_morning`, `l_wed_afternoon`, `l_wed_evening`, `l_thu_night`, `l_thu_morning`, `l_thu_afternoon`, `l_thu_evening`, `l_fri_night`, `l_fri_morning`, `l_fri_afternoon`, `l_fri_evening`, `l_sat_night`, `l_sat_morning`, `l_sat_afternoon`, `l_sat_evening`, `l_sun_night`, `l_sun_morning`, `l_sun_afternoon`, `l_sun_evening` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
