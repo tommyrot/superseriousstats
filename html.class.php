@@ -1051,7 +1051,7 @@ final class html extends base
 			$trx .= '<tr>';
 
 			for ($j = 1; $j <= 4; $j++) {
-				$trx .= '<td class="v1">'.number_format(${'column'.$j}[$i][2]).'</td><td class="pos">'.($offset + ($j > 1 ? ($j - 1) * $rows_per_column : 0) + $i).'</td><td class="v2">'.($this->userstats ? '<a href="user.php?uid='.${'column'.$j}[$i][0].'">'.htmlspecialchars(${'column'.$j}[$i][1]).'</a>' : htmlspecialchars(${'column'.$j}[$i][1])).'</td>';
+				$trx .= '<td class="v1">'.number_format(${'column'.$j}[$i][2]).'</td><td class="pos">'.($offset + ($j > 1 ? ($j - 1) * $rows_per_column : 0) + $i).'</td><td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode(${'column'.$j}[$i][1]).'">'.htmlspecialchars(${'column'.$j}[$i][1]).'</a>' : htmlspecialchars(${'column'.$j}[$i][1])).'</td>';
 			}
 
 			$trx .= '</tr>';
