@@ -97,18 +97,44 @@ final class history
 	}
 
 	/**
-	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments.
-	 * Its functionality is slightly different in that it exits on any type of message passed to it.
+	 * Calculate how many years, months or days ago a given $datetime is.
 	 */
-	private function output($type, $msg)
+	private function datetime2daysago($datetime)
 	{
-		/**
-		 * If $debug is set to true we exit with the given message, otherwise exit silently.
-		 */
-		if ($this->debug) {
-			exit($msg);
-		} else {
-			exit;
+		$daysago = round((strtotime('today') - strtotime(substr($datetime, 0, 10))) / 86400);
+
+		if (($daysago / 365) >= 1) {
+			$daysago = str_replace('.0', '', number_format($daysago / 365, 1));
+			$daysago .= ' Year'.($daysago > 1 ? 's' : '').' Ago';
+		} elseif (($daysago / 30.42) >= 1) {
+			$daysago = str_replace('.0', '', number_format($daysago / 30.42, 1));
+			$daysago .= ' Month'.($daysago > 1 ? 's' : '').' Ago';
+		} elseif ($daysago > 1) {
+			$daysago .= ' Days Ago';
+		} elseif ($daysago == 1) {
+			$daysago = 'Yesterday';
+		} elseif ($daysago == 0) {
+			$daysago = 'Today';
+		}
+
+		return $daysago;
+	}
+
+	private function get_activity() {
+		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by substring(`date`, 1, 4), substring(`date`, 6, 2) having `l_total` != 0 order by `year` asc, `month` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
+		while ($result = mysqli_fetch_object($query)) {
+			if (strpos($result->month, '0') === 0) {
+				$result->month = substr($result->month, 1);
+			}
+
+			$this->activity[(int) $result->year][(int) $result->month] = (int) $result->l_total;
+
+			if (!isset($this->activity[(int) $result->year][0])) {
+				$this->activity[(int) $result->year][0] = 0;
+			}
+
+			$this->activity[(int) $result->year][0] += (int) $result->l_total;
 		}
 	}
 
@@ -178,6 +204,33 @@ final class history
 		return $output;
 	}
 
+	private function make_index() {
+		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
+		$tr1 = '<tr><th colspan="13">History</th></tr>';
+		$tr2 = '<tr><td class="pos"></td><td class="k">Jan</td><td class="k">Feb</td><td class="k">Mar</td><td class="k">Apr</td><td class="k">May</td><td class="k">Jun</td><td class="k">Jul</td><td class="k">Aug</td><td class="k">Sep</td><td class="k">Oct</td><td class="k">Nov</td><td class="k">Dec</td></tr>';
+		$trx = '';
+
+		for ($year = $this->year_firstlogparsed; $year <= $this->year_lastlogparsed; $year++) {
+			if (array_key_exists($year, $this->activity)) {
+				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'">'.$year.'</a></td>';
+
+				for ($month = 1; $month <= 12; $month++) {
+					if (array_key_exists($month, $this->activity[$year])) {
+						$trx .= '<td class="v"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'&amp;month='.$month.'">'.number_format($this->activity[$year][$month]).'</a></td>';
+					} else {
+						$trx .= '<td class="v"><span class="grey">n/a</span></td>';
+					}
+				}
+
+				$trx .= '</tr>';
+			} else {
+				$trx .= '<tr><td class="pos">'.$year.'</td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td></tr>';
+			}
+		}
+
+		return '<table class="index">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+	}
+
 	private function make_table_activity_distribution_hour($type)
 	{
 		if ($type == 'year') {
@@ -242,75 +295,6 @@ final class history
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
 		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
-	}
-
-	private function get_activity() {
-		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by substring(`date`, 1, 4), substring(`date`, 6, 2) having `l_total` != 0 order by `year` asc, `month` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
-		while ($result = mysqli_fetch_object($query)) {
-			if (strpos($result->month, '0') === 0) {
-				$result->month = substr($result->month, 1);
-			}
-
-			$this->activity[(int) $result->year][(int) $result->month] = (int) $result->l_total;
-
-			if (!isset($this->activity[(int) $result->year][0])) {
-				$this->activity[(int) $result->year][0] = 0;
-			}
-
-			$this->activity[(int) $result->year][0] += (int) $result->l_total;
-		}
-	}
-
-	private function make_index() {
-		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
-		$tr1 = '<tr><th colspan="13">History</th></tr>';
-		$tr2 = '<tr><td class="pos"></td><td class="k">Jan</td><td class="k">Feb</td><td class="k">Mar</td><td class="k">Apr</td><td class="k">May</td><td class="k">Jun</td><td class="k">Jul</td><td class="k">Aug</td><td class="k">Sep</td><td class="k">Oct</td><td class="k">Nov</td><td class="k">Dec</td></tr>';
-		$trx = '';
-
-		for ($year = $this->year_firstlogparsed; $year <= $this->year_lastlogparsed; $year++) {
-			if (array_key_exists($year, $this->activity)) {
-				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'">'.$year.'</a></td>';
-
-				for ($month = 1; $month <= 12; $month++) {
-					if (array_key_exists($month, $this->activity[$year])) {
-						$trx .= '<td class="v"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'&amp;month='.$month.'">'.number_format($this->activity[$year][$month]).'</a></td>';
-					} else {
-						$trx .= '<td class="v"><span class="grey">n/a</span></td>';
-					}
-				}
-
-				$trx .= '</tr>';
-			} else {
-				$trx .= '<tr><td class="pos">'.$year.'</td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td></tr>';
-			}
-		}
-
-		return '<table class="index">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
-	}
-
-	/**
-	 * Calculate how many years, months or days ago a given $datetime is.
-	 */
-	private function datetime2daysago($datetime)
-	{
-		$daysago = round((strtotime('today') - strtotime(substr($datetime, 0, 10))) / 86400);
-
-		if (($daysago / 365) >= 1) {
-			$daysago = str_replace('.0', '', number_format($daysago / 365, 1));
-			$daysago .= ' Year'.($daysago > 1 ? 's' : '').' Ago';
-		} elseif (($daysago / 30.42) >= 1) {
-			$daysago = str_replace('.0', '', number_format($daysago / 30.42, 1));
-			$daysago .= ' Month'.($daysago > 1 ? 's' : '').' Ago';
-		} elseif ($daysago > 1) {
-			$daysago .= ' Days Ago';
-		} elseif ($daysago == 1) {
-			$daysago = 'Yesterday';
-		} elseif ($daysago == 0) {
-			$daysago = 'Today';
-		}
-
-		return $daysago;
 	}
 
 	/**
@@ -438,6 +422,22 @@ final class history
 		}
 
 		return '<table class="tod">'.$tr0.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
+	/**
+	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments.
+	 * Its functionality is slightly different in that it exits on any type of message passed to it.
+	 */
+	private function output($type, $msg)
+	{
+		/**
+		 * If $debug is set to true we exit with the given message, otherwise exit silently.
+		 */
+		if ($this->debug) {
+			exit($msg);
+		} else {
+			exit;
+		}
 	}
 }
 

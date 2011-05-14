@@ -91,22 +91,6 @@ final class user
 		date_default_timezone_set($this->timezone);
 	}
 
-	/**
-	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments.
-	 * Its functionality is slightly different in that it exits on any type of message passed to it.
-	 */
-	private function output($type, $msg)
-	{
-		/**
-		 * If $debug is set to true we exit with the given message, otherwise exit silently.
-		 */
-		if ($this->debug) {
-			exit($msg);
-		} else {
-			exit;
-		}
-	}
-
 	public function make_html()
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
@@ -478,6 +462,22 @@ final class user
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
 		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
+	/**
+	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments.
+	 * Its functionality is slightly different in that it exits on any type of message passed to it.
+	 */
+	private function output($type, $msg)
+	{
+		/**
+		 * If $debug is set to true we exit with the given message, otherwise exit silently.
+		 */
+		if ($this->debug) {
+			exit($msg);
+		} else {
+			exit;
+		}
 	}
 }
 
