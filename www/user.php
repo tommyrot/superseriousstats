@@ -422,12 +422,6 @@ final class user
 	private function make_table_activity_distribution_hour()
 	{
 		$query = @mysqli_query($this->mysqli, 'select `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (empty($rows)) {
-			return;
-		}
-
 		$result = mysqli_fetch_object($query);
 		$high_key = '';
 		$high_value = 0;
@@ -439,16 +433,12 @@ final class user
 			}
 		}
 
-		$tr1 = '<tr><th colspan="24">Most Active Times</th></tr>';
+		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour</th></tr>';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
 		foreach ($result as $key => $value) {
-			if (substr($key, -2, 1) == '0') {
-				$hour = (int) substr($key, -1);
-			} else {
-				$hour = (int) substr($key, -2);
-			}
+			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
 			if ((int) $value == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';

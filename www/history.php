@@ -178,6 +178,72 @@ final class history
 		return $output;
 	}
 
+	private function make_table_activity_distribution_hour($type)
+	{
+		if ($type == 'year') {
+			$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel` where year(`date`) = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		} elseif ($type == 'month') {
+			$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel` where date_format(`date`, \'%Y-%m\') = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		}
+
+		$result = mysqli_fetch_object($query);
+		$high_key = '';
+		$high_value = 0;
+
+		foreach ($result as $key => $value) {
+			if ((int) $value > $high_value) {
+				$high_key = $key;
+				$high_value = (int) $value;
+			}
+		}
+
+		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour</th></tr>';
+		$tr2 = '<tr class="bars">';
+		$tr3 = '<tr class="sub">';
+
+		foreach ($result as $key => $value) {
+			$hour = (int) preg_replace('/^l_0?/', '', $key);
+
+			if ((int) $value == 0) {
+				$tr2 .= '<td><span class="grey">n/a</span></td>';
+			} else {
+				$perc = ((int) $value / $this->l_total) * 100;
+
+				if ($perc >= 9.95) {
+					$tr2 .= '<td>'.round($perc).'%';
+				} else {
+					$tr2 .= '<td>'.number_format($perc, 1).'%';
+				}
+
+				$height = round(((int) $value / $high_value) * 100);
+
+				if ($height != 0) {
+					if ($hour >= 0 && $hour <= 5) {
+						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+					} elseif ($hour >= 6 && $hour <= 11) {
+						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+					} elseif ($hour >= 12 && $hour <= 17) {
+						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+					} elseif ($hour >= 18 && $hour <= 23) {
+						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+					}
+				}
+
+				$tr2 .= '</td>';
+			}
+
+			if ($high_key == $key) {
+				$tr3 .= '<td class="bold">'.$hour.'h</td>';
+			} else {
+				$tr3 .= '<td>'.$hour.'h</td>';
+			}
+		}
+
+		$tr2 .= '</tr>';
+		$tr3 .= '</tr>';
+		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
 	private function get_activity() {
 		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by substring(`date`, 1, 4), substring(`date`, 6, 2) having `l_total` != 0 order by `year` asc, `month` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
@@ -310,76 +376,6 @@ final class history
 		}
 
 		return '<table class="map">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
-	}
-
-	/**
-	 * This function should not be called when there is no activity for the specified scope.
-	 * $l_total already has the appropriate value for the scope so we don't have to reset it here.
-	 */
-	private function make_table_activity_distribution_hour($type)
-	{
-		if ($type == 'year') {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel` where year(`date`) = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		} elseif ($type == 'month') {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel` where date_format(`date`, \'%Y-%m\') = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		}
-
-		$result = mysqli_fetch_object($query);
-		$high_key = '';
-		$high_value = 0;
-
-		foreach ($result as $key => $value) {
-			if ((int) $value > $high_value) {
-				$high_key = $key;
-				$high_value = (int) $value;
-			}
-		}
-
-		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour</th></tr>';
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
-
-		foreach ($result as $key => $value) {
-			$hour = (int) preg_replace('/^l_0?/', '', $key);
-
-			if ((int) $value == 0) {
-				$tr2 .= '<td><span class="grey">n/a</span></td>';
-			} else {
-				$perc = ((int) $value / $this->l_total) * 100;
-
-				if ($perc >= 9.95) {
-					$tr2 .= '<td>'.round($perc).'%';
-				} else {
-					$tr2 .= '<td>'.number_format($perc, 1).'%';
-				}
-
-				$height = round(((int) $value / $high_value) * 100);
-
-				if ($height != 0) {
-					if ($hour >= 0 && $hour <= 5) {
-						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
-					} elseif ($hour >= 6 && $hour <= 11) {
-						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
-					} elseif ($hour >= 12 && $hour <= 17) {
-						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
-					} elseif ($hour >= 18 && $hour <= 23) {
-						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
-					}
-				}
-
-				$tr2 .= '</td>';
-			}
-
-			if ($high_key == $key) {
-				$tr3 .= '<td class="bold">'.$hour.'h</td>';
-			} else {
-				$tr3 .= '<td>'.$hour.'h</td>';
-			}
-		}
-
-		$tr2 .= '</tr>';
-		$tr3 .= '</tr>';
-		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	/**

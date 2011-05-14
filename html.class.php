@@ -858,12 +858,6 @@ final class html extends base
 	private function make_table_activity_distribution_hour()
 	{
 		$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (empty($rows)) {
-			return;
-		}
-
 		$result = mysqli_fetch_object($query);
 		$high_key = '';
 		$high_value = 0;
@@ -880,11 +874,7 @@ final class html extends base
 		$tr3 = '<tr class="sub">';
 
 		foreach ($result as $key => $value) {
-			if (substr($key, -2, 1) == '0') {
-				$hour = (int) substr($key, -1);
-			} else {
-				$hour = (int) substr($key, -2);
-			}
+			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
 			if ((int) $value == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
