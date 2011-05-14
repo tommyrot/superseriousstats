@@ -155,6 +155,9 @@ final class html extends base
 			$result = mysqli_fetch_object($query);
 		}
 
+		/**
+		 * Exit if the channel has no logged activity. Most functions don't expect to be run on an empty database so keep this check in place.
+		 */
 		if (empty($result->l_total)) {
 			$this->output('critical', 'make_html(): database is empty');
 		}
@@ -709,7 +712,7 @@ final class html extends base
 		$rows = mysqli_num_rows($query);
 
 		/**
-		 * All the queries above will either return one or more rows with activity or no rows at all.
+		 * The queries above will either return one or more rows with activity, or no rows at all.
 		 */
 		if (empty($rows)) {
 			return;
@@ -791,12 +794,6 @@ final class html extends base
 	private function make_table_activity_distribution_day()
 	{
 		$query = @mysqli_query($this->mysqli, 'select sum(`l_mon_night`) as `l_mon_night`, sum(`l_mon_morning`) as `l_mon_morning`, sum(`l_mon_afternoon`) as `l_mon_afternoon`, sum(`l_mon_evening`) as `l_mon_evening`, sum(`l_tue_night`) as `l_tue_night`, sum(`l_tue_morning`) as `l_tue_morning`, sum(`l_tue_afternoon`) as `l_tue_afternoon`, sum(`l_tue_evening`) as `l_tue_evening`, sum(`l_wed_night`) as `l_wed_night`, sum(`l_wed_morning`) as `l_wed_morning`, sum(`l_wed_afternoon`) as `l_wed_afternoon`, sum(`l_wed_evening`) as `l_wed_evening`, sum(`l_thu_night`) as `l_thu_night`, sum(`l_thu_morning`) as `l_thu_morning`, sum(`l_thu_afternoon`) as `l_thu_afternoon`, sum(`l_thu_evening`) as `l_thu_evening`, sum(`l_fri_night`) as `l_fri_night`, sum(`l_fri_morning`) as `l_fri_morning`, sum(`l_fri_afternoon`) as `l_fri_afternoon`, sum(`l_fri_evening`) as `l_fri_evening`, sum(`l_sat_night`) as `l_sat_night`, sum(`l_sat_morning`) as `l_sat_morning`, sum(`l_sat_afternoon`) as `l_sat_afternoon`, sum(`l_sat_evening`) as `l_sat_evening`, sum(`l_sun_night`) as `l_sun_night`, sum(`l_sun_morning`) as `l_sun_morning`, sum(`l_sun_afternoon`) as `l_sun_afternoon`, sum(`l_sun_evening`) as `l_sun_evening` from `q_lines`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (empty($rows)) {
-			return;
-		}
-
 		$result = mysqli_fetch_object($query);
 		$high_day = '';
 		$high_value = 0;

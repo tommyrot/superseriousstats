@@ -114,6 +114,9 @@ final class user
 		$query = @mysqli_query($this->mysqli, 'select `ruid` from `user_status` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->nick).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
+		/**
+		 * The user does not exist in the database.
+		 */
 		if (empty($rows)) {
 			exit('No data.');
 		}
@@ -123,6 +126,9 @@ final class user
 		$query = @mysqli_query($this->mysqli, 'select (select `csnick` from `user_details` where `uid` = '.$this->ruid.') as `csnick`, min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg`, `actions` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` join `q_lines` on `user_status`.`ruid` = `q_lines`.`ruid` where `user_status`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 
+		/**
+		 * Exit if the user has no logged activity. Most functions don't expect to be run on an empty database so keep this check in place.
+		 */
 		if (empty($result->l_total)) {
 			exit('No data.');
 		}
@@ -270,7 +276,7 @@ final class user
 		$rows = mysqli_num_rows($query);
 
 		/**
-		 * All the queries above will either return one or more rows with activity or no rows at all.
+		 * The queries above will either return one or more rows with activity, or no rows at all.
 		 */
 		if (empty($rows)) {
 			return;
@@ -349,6 +355,70 @@ final class user
 		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
+	private function make_table_activity_distribution_day()
+	{
+		$query = @mysqli_query($this->mysqli, 'select `l_mon_night`, `l_mon_morning`, `l_mon_afternoon`, `l_mon_evening`, `l_tue_night`, `l_tue_morning`, `l_tue_afternoon`, `l_tue_evening`, `l_wed_night`, `l_wed_morning`, `l_wed_afternoon`, `l_wed_evening`, `l_thu_night`, `l_thu_morning`, `l_thu_afternoon`, `l_thu_evening`, `l_fri_night`, `l_fri_morning`, `l_fri_afternoon`, `l_fri_evening`, `l_sat_night`, `l_sat_morning`, `l_sat_afternoon`, `l_sat_evening`, `l_sun_night`, `l_sun_morning`, `l_sun_afternoon`, `l_sun_evening` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$result = mysqli_fetch_object($query);
+		$high_day = '';
+		$high_value = 0;
+		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
+
+		foreach ($days as $day) {
+			$l_night[$day] = (int) $result->{'l_'.$day.'_night'};
+			$l_morning[$day] = (int) $result->{'l_'.$day.'_morning'};
+			$l_afternoon[$day] = (int) $result->{'l_'.$day.'_afternoon'};
+			$l_evening[$day] = (int) $result->{'l_'.$day.'_evening'};
+			$l_total[$day] = $l_night[$day] + $l_morning[$day] + $l_afternoon[$day] + $l_evening[$day];
+
+			if ($l_total[$day] > $high_value) {
+				$high_day = $day;
+				$high_value = $l_total[$day];
+			}
+		}
+
+		$tr1 = '<tr><th colspan="7">Activity Distribution by Day</th></tr>';
+		$tr2 = '<tr class="bars">';
+		$tr3 = '<tr class="sub">';
+
+		foreach ($days as $day) {
+			if ($l_total[$day] == 0) {
+				$tr2 .= '<td><span class="grey">n/a</span></td>';
+			} else {
+				$perc = ($l_total[$day] / $this->l_total) * 100;
+
+				if ($perc >= 9.95) {
+					$tr2 .= '<td>'.round($perc).'%';
+				} else {
+					$tr2 .= '<td>'.number_format($perc, 1).'%';
+				}
+
+				$times = array('evening', 'afternoon', 'morning', 'night');
+
+				foreach ($times as $time) {
+					if (${'l_'.$time}[$day] != 0) {
+						$height = round((${'l_'.$time}[$day] / $high_value) * 100);
+
+						if ($height != 0) {
+							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="'.number_format($l_total[$day]).'" />';
+						}
+					}
+				}
+
+				$tr2 .= '</td>';
+			}
+
+			if ($high_day == $day) {
+				$tr3 .= '<td class="bold">'.ucfirst($day).'</td>';
+			} else {
+				$tr3 .= '<td>'.ucfirst($day).'</td>';
+			}
+		}
+
+		$tr2 .= '</tr>';
+		$tr3 .= '</tr>';
+		return '<table class="mad">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
 	private function make_table_activity_distribution_hour()
 	{
 		$query = @mysqli_query($this->mysqli, 'select `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
@@ -418,76 +488,6 @@ final class user
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
 		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
-	}
-
-	private function make_table_activity_distribution_day()
-	{
-		$query = @mysqli_query($this->mysqli, 'select `l_mon_night`, `l_mon_morning`, `l_mon_afternoon`, `l_mon_evening`, `l_tue_night`, `l_tue_morning`, `l_tue_afternoon`, `l_tue_evening`, `l_wed_night`, `l_wed_morning`, `l_wed_afternoon`, `l_wed_evening`, `l_thu_night`, `l_thu_morning`, `l_thu_afternoon`, `l_thu_evening`, `l_fri_night`, `l_fri_morning`, `l_fri_afternoon`, `l_fri_evening`, `l_sat_night`, `l_sat_morning`, `l_sat_afternoon`, `l_sat_evening`, `l_sun_night`, `l_sun_morning`, `l_sun_afternoon`, `l_sun_evening` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (empty($rows)) {
-			return;
-		}
-
-		$result = mysqli_fetch_object($query);
-		$high_day = '';
-		$high_value = 0;
-		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
-
-		foreach ($days as $day) {
-			$l_night[$day] = (int) $result->{'l_'.$day.'_night'};
-			$l_morning[$day] = (int) $result->{'l_'.$day.'_morning'};
-			$l_afternoon[$day] = (int) $result->{'l_'.$day.'_afternoon'};
-			$l_evening[$day] = (int) $result->{'l_'.$day.'_evening'};
-			$l_total[$day] = $l_night[$day] + $l_morning[$day] + $l_afternoon[$day] + $l_evening[$day];
-
-			if ($l_total[$day] > $high_value) {
-				$high_day = $day;
-				$high_value = $l_total[$day];
-			}
-		}
-
-		$tr1 = '<tr><th colspan="7">Most Active Days</th></tr>';
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
-
-		foreach ($days as $day) {
-			if ($l_total[$day] == 0) {
-				$tr2 .= '<td><span class="grey">n/a</span></td>';
-			} else {
-				$perc = ($l_total[$day] / $this->l_total) * 100;
-
-				if ($perc >= 9.95) {
-					$tr2 .= '<td>'.round($perc).'%';
-				} else {
-					$tr2 .= '<td>'.number_format($perc, 1).'%';
-				}
-
-				$times = array('evening', 'afternoon', 'morning', 'night');
-
-				foreach ($times as $time) {
-					if (${'l_'.$time}[$day] != 0) {
-						$height = round((${'l_'.$time}[$day] / $high_value) * 100);
-
-						if ($height != 0) {
-							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="'.number_format($l_total[$day]).'" />';
-						}
-					}
-				}
-
-				$tr2 .= '</td>';
-			}
-
-			if ($high_day == $day) {
-				$tr3 .= '<td class="bold">'.ucfirst($day).'</td>';
-			} else {
-				$tr3 .= '<td>'.ucfirst($day).'</td>';
-			}
-		}
-
-		$tr2 .= '</tr>';
-		$tr3 .= '</tr>';
-		return '<table class="mad">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 }
 
