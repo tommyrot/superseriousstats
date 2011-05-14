@@ -281,6 +281,8 @@ final class history
 				}
 
 				$trx .= '</tr>';
+			} else {
+				$trx .= '<tr><td class="pos">'.$year.'</td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td><td class="v"><span class="grey">n/a</span></td></tr>';
 			}
 		}
 
