@@ -923,15 +923,10 @@ final class html extends base
 		 */
 		if ($type == 'alltime') {
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
-			$total = $this->l_total;
 		} elseif ($type == 'year') {
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_year` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
-			$total = (int) $result->l_total;
 		} elseif ($type == 'month') {
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_month` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$total = (int) $result->l_total;
 		}
 
 		$rows = mysqli_num_rows($query);
