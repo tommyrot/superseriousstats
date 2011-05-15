@@ -50,8 +50,8 @@ final class history
 	private $cid = '';
 	private $l_total = 0;
 	private $month = 0;
+	private $monthname = '';
 	private $mysqli;
-	private $scope = '';
 	private $year = 0;
 	private $year_firstlogparsed = 0;
 	private $year_lastlogparsed = 0;
@@ -85,15 +85,6 @@ final class history
 		}
 
 		date_default_timezone_set($this->timezone);
-
-		/**
-		 * Both $year and $month are set, just $year, or neither.
-		 */
-		if (!is_null($month)) {
-			$this->scope = date('F Y', mktime(0, 0, 0, $this->month, 1, $this->year));
-		} elseif (!is_null($year)) {
-			$this->scope = 'the year '.$this->year;
-		}
 	}
 
 	/**
@@ -153,10 +144,17 @@ final class history
 			exit('No data.');
 		}
 
+		/**
+		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
+		 */
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `year_firstlogparsed`, max(year(`date`)) as `year_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->year_firstlogparsed = (int) $result->year_firstlogparsed;
 		$this->year_lastlogparsed = (int) $result->year_lastlogparsed;
+
+		if (!is_null($this->month)) {
+			$this->monthname = date('F', mktime(0, 0, 0, $this->month, 1, $this->year));
+		}
 
 		/**
 		 * HTML Head.
@@ -169,7 +167,7 @@ final class history
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
-			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br /><br />'.($this->scope == '' ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.$this->scope).'.</div>'."\n";
+			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br /><br />'.(is_null($this->year) ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.(!is_null($this->month) ? $this->monthname.' '.$this->year : 'the year '.$this->year).'.').'</div>'."\n";
 
 		/**
 		 * Activity section.
@@ -334,7 +332,7 @@ final class history
 			$head = 'Most Talkative People &ndash; '.$this->year;
 			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_year`.`l_total`) as `l_total`, sum(`q_activity_by_year`.`l_night`) as `l_night`, sum(`q_activity_by_year`.`l_morning`) as `l_morning`, sum(`q_activity_by_year`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_year`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_year` on `q_lines`.`ruid` = `q_activity_by_year`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = '.$this->year.' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
-			$head = 'Most Talkative People &ndash; '.$this->scope;
+			$head = 'Most Talkative People &ndash; '.$this->monthname.' '.$this->year;
 			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_month`.`l_total`) as `l_total`, sum(`q_activity_by_month`.`l_night`) as `l_night`, sum(`q_activity_by_month`.`l_morning`) as `l_morning`, sum(`q_activity_by_month`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_month`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_month` on `q_lines`.`ruid` = `q_activity_by_month`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 
