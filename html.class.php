@@ -919,7 +919,7 @@ final class html extends base
 	private function make_table_people($type, $maxrows)
 	{
 		/**
-		 * For each scope check if there is user activity (bots excluded). If there is none we can skip making the table.
+		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
 		 */
 		if ($type == 'alltime') {
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
@@ -1057,13 +1057,27 @@ final class html extends base
 		return '<table class="nqsap">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	private function make_table_people_timeofday($rows)
+	private function make_table_people_timeofday($maxrows)
 	{
+		/**
+		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
+		 */
+		$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
+		}
+
+		if (empty($result->l_total)) {
+			return;
+		}
+
 		$high_value = 0;
 		$times = array('night', 'morning', 'afternoon', 'evening');
 
 		foreach ($times as $time) {
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$rows);
+			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$maxrows);
 			$i = 0;
 
 			while ($result = mysqli_fetch_object($query)) {
@@ -1082,7 +1096,7 @@ final class html extends base
 		$tr2 = '<tr><td class="pos"></td><td class="k">Night<br />0h - 5h</td><td class="k">Morning<br />6h - 11h</td><td class="k">Afternoon<br />12h - 17h</td><td class="k">Evening<br />18h - 23h</td></tr>';
 		$tr3 = '';
 
-		for ($i = 1; $i <= $rows; $i++) {
+		for ($i = 1; $i <= $maxrows; $i++) {
 			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
 				break;
 			} else {

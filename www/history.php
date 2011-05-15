@@ -300,7 +300,7 @@ final class history
 	private function make_table_people($type, $maxrows)
 	{
 		/**
-		 * For each scope check if there is user activity (bots excluded). If there is none we can skip making the table.
+		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
 		 */
 		if ($type == 'year') {
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_year` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
@@ -379,19 +379,35 @@ final class history
 		return '<table class="map">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	/**
-	 * This function should not be called when there is no activity for the specified scope.
-	 */
-	private function make_table_people_timeofday($rows)
+	private function make_table_people_timeofday($maxrows)
 	{
+		/**
+		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
+		 */
+		if (is_null($this->month)) {
+			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_year` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		} elseif ($type == 'month') {
+			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_month` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		}
+
+		$rows = mysqli_num_rows($query);
+
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
+		}
+
+		if (empty($result->l_total)) {
+			return;
+		}
+
 		$high_value = 0;
 		$times = array('night', 'morning', 'afternoon', 'evening');
 
 		foreach ($times as $time) {
 			if (is_null($this->month)) {
-				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_year` join `user_details` on `q_activity_by_year`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `date` = '.$this->year.' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$rows);
+				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_year` join `user_details` on `q_activity_by_year`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `date` = '.$this->year.' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$maxrows);
 			} else {
-				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_month` join `user_details` on `q_activity_by_month`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$rows);
+				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_month` join `user_details` on `q_activity_by_month`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$maxrows);
 			}
 
 			$i = 0;
@@ -412,7 +428,7 @@ final class history
 		$tr2 = '<tr><td class="pos"></td><td class="k">Night<br />0h - 5h</td><td class="k">Morning<br />6h - 11h</td><td class="k">Afternoon<br />12h - 17h</td><td class="k">Evening<br />18h - 23h</td></tr>';
 		$tr3 = '';
 
-		for ($i = 1; $i <= $rows; $i++) {
+		for ($i = 1; $i <= $maxrows; $i++) {
 			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
 				break;
 			} else {
