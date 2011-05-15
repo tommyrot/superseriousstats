@@ -34,14 +34,14 @@ final class html extends base
 	private $channel = '';
 	private $cid = '';
 	private $history = false;
+	private $maxrows_people_alltime = 30;
+	private $maxrows_people2 = 40;
+	private $maxrows_people_month = 10;
+	private $maxrows_people_timeofday = 10;
+	private $maxrows_people_year = 10;
+	private $maxrows_recenturls = 25;
 	private $minlines = 500;
 	private $minrows = 3;
-	private $rows_people_alltime = 30;
-	private $rows_people2 = 40;
-	private $rows_people_month = 10;
-	private $rows_people_timeofday = 10;
-	private $rows_people_year = 10;
-	private $rows_recenturls = 25;
 	private $sectionbits = 127;
 	private $stylesheet = 'sss.css';
 	private $userstats = false;
@@ -72,15 +72,15 @@ final class html extends base
 		'channel' => 'string',
 		'cid' => 'string',
 		'history' => 'bool',
+		'maxrows_people2' => 'int',
+		'maxrows_people_alltime' => 'int',
+		'maxrows_people_month' => 'int',
+		'maxrows_people_timeofday' => 'int',
+		'maxrows_people_year' => 'int',
+		'maxrows_recenturls' => 'int',
 		'minlines' => 'int',
 		'minrows' => 'int',
 		'outputbits' => 'int',
-		'rows_people2' => 'int',
-		'rows_people_alltime' => 'int',
-		'rows_people_month' => 'int',
-		'rows_people_timeofday' => 'int',
-		'rows_people_year' => 'int',
-		'rows_recenturls' => 'int',
 		'sectionbits' => 'int',
 		'stylesheet' => 'string',
 		'userstats' => 'bool');
@@ -228,11 +228,11 @@ final class html extends base
 			$this->output .= $this->make_table_activity('month');
 			$this->output .= $this->make_table_activity_distribution_day();
 			$this->output .= $this->make_table_activity('year');
-			$this->output .= $this->make_table_people('alltime', $this->rows_people_alltime);
-			$this->output .= $this->make_table_people2($this->rows_people_alltime, $this->rows_people2);
-			$this->output .= $this->make_table_people('year', $this->rows_people_year);
-			$this->output .= $this->make_table_people('month', $this->rows_people_month);
-			$this->output .= $this->make_table_people_timeofday($this->rows_people_timeofday);
+			$this->output .= $this->make_table_people('alltime', $this->maxrows_people_alltime);
+			$this->output .= $this->make_table_people2($this->maxrows_people_alltime, $this->maxrows_people2);
+			$this->output .= $this->make_table_people('year', $this->maxrows_people_year);
+			$this->output .= $this->make_table_people('month', $this->maxrows_people_month);
+			$this->output .= $this->make_table_people_timeofday($this->maxrows_people_timeofday);
 		}
 
 		/**
@@ -613,9 +613,9 @@ final class html extends base
 			$t->set_value('key1', 'Date');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'URL');
-			$t->set_value('minrows', $this->rows_recenturls);
-			$t->set_value('query_main', 'select `lastused` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc limit '.$this->rows_recenturls);
-			$t->set_value('rows', $this->rows_recenturls);
+			$t->set_value('maxrows', $this->maxrows_recenturls);
+			$t->set_value('minrows', $this->maxrows_recenturls);
+			$t->set_value('query_main', 'select `lastused` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc limit '.$this->maxrows_recenturls);
 			$t->set_value('type', 'urls');
 			$output .= $t->make_table($this->mysqli);
 
@@ -1134,11 +1134,11 @@ final class table extends base
 	protected $key1 = '';
 	protected $key2 = '';
 	protected $key3 = '';
+	protected $maxrows = 5;
 	protected $minrows = 3;
 	protected $percentage = false;
 	protected $query_main = '';
 	protected $query_total = '';
-	protected $rows = 5;
 	protected $type = 'small';
 	protected $total = 0;
 
@@ -1166,7 +1166,7 @@ final class table extends base
 		while ($result = mysqli_fetch_object($query)) {
 			$i++;
 
-			if ($i > $this->rows) {
+			if ($i > $this->maxrows) {
 				break;
 			}
 
@@ -1186,7 +1186,7 @@ final class table extends base
 			}
 		}
 
-		for ($i = count($content) + 1; $i <= $this->rows; $i++) {
+		for ($i = count($content) + 1; $i <= $this->maxrows; $i++) {
 			if ($this->type == 'small') {
 				$content[] = array('&nbsp;', '', '');
 			} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'urls' || $this->type == 'medium' || $this->type == 'domains') {

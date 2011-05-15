@@ -36,9 +36,9 @@ final class history
 	private $db_user = '';
 	private $debug = false;
 	private $mainpage = './';
-	private $rows_people_month = 30;
-	private $rows_people_timeofday = 10;
-	private $rows_people_year = 30;
+	private $maxrows_people_month = 30;
+	private $maxrows_people_timeofday = 10;
+	private $maxrows_people_year = 30;
 	private $stylesheet = 'sss.css';
 	private $timezone = 'UTC';
 	private $userstats = false;
@@ -179,20 +179,27 @@ final class history
 		$output .= $this->make_index();
 
 		/**
-		 * Only make tables for times in which there was activity.
+		 * Only call make_table_* functions for times in which there was activity. This activity includes bots since we got it from the results used in make_index().
 		 */
 		if (!is_null($this->year) && array_key_exists($this->year, $this->activity) && (is_null($this->month) || array_key_exists($this->month, $this->activity[$this->year]))) {
+			/**
+			 * Set $l_total to the total number of lines in the specific scope. Following activity_* functions require this value.
+			 */
 			if (is_null($this->month)) {
 				$this->l_total = $this->activity[$this->year][0];
-				$output .= $this->make_table_activity_distribution_hour('year');
-				$output .= $this->make_table_people('year', $this->rows_people_year);
 			} else {
 				$this->l_total = $this->activity[$this->year][$this->month];
-				$output .= $this->make_table_activity_distribution_hour('month');
-				$output .= $this->make_table_people('month', $this->rows_people_month);
 			}
 
-			$output .= $this->make_table_people_timeofday($this->rows_people_timeofday);
+			$output .= $this->make_table_activity_distribution_hour();
+
+			if (is_null($this->month)) {
+				$output .= $this->make_table_people('year', $this->maxrows_people_year);
+			} else {
+				$output .= $this->make_table_people('month', $this->maxrows_people_month);
+			}
+
+			$output .= $this->make_table_people_timeofday($this->maxrows_people_timeofday);
 		}
 
 		/**
@@ -231,11 +238,11 @@ final class history
 		return '<table class="index">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	private function make_table_activity_distribution_hour($type)
+	private function make_table_activity_distribution_hour()
 	{
-		if ($type == 'year') {
+		if (is_null($this->month)) {
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel` where year(`date`) = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		} elseif ($type == 'month') {
+		} else {
 			$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel` where date_format(`date`, \'%Y-%m\') = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 
