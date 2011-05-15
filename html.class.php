@@ -1016,7 +1016,7 @@ final class html extends base
 	 */
 	private function make_table_people2($offset, $rowcount)
 	{
-		$query = @mysqli_query($this->mysqli, 'select `q_lines`.`ruid`, `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc limit '.$offset.', '.$rowcount) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$offset.', '.$rowcount) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows) || $rows < $rowcount) {
@@ -1037,7 +1037,7 @@ final class html extends base
 				}
 			}
 
-			${'column'.$current_column}[$current_row] = array($result->ruid, $result->csnick, (int) $result->l_total);
+			${'column'.$current_column}[$current_row] = array($result->csnick, (int) $result->l_total);
 			$current_row++;
 		}
 
@@ -1053,7 +1053,7 @@ final class html extends base
 			$trx .= '<tr>';
 
 			for ($j = 1; $j <= 4; $j++) {
-				$trx .= '<td class="v1">'.number_format(${'column'.$j}[$i][2]).'</td><td class="pos">'.($offset + ($j > 1 ? ($j - 1) * $rows_per_column : 0) + $i).'</td><td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode(${'column'.$j}[$i][1]).'">'.htmlspecialchars(${'column'.$j}[$i][1]).'</a>' : htmlspecialchars(${'column'.$j}[$i][1])).'</td>';
+				$trx .= '<td class="v1">'.number_format(${'column'.$j}[$i][1]).'</td><td class="pos">'.($offset + ($j > 1 ? ($j - 1) * $rows_per_column : 0) + $i).'</td><td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode(${'column'.$j}[$i][0]).'">'.htmlspecialchars(${'column'.$j}[$i][0]).'</a>' : htmlspecialchars(${'column'.$j}[$i][0])).'</td>';
 			}
 
 			$trx .= '</tr>';
