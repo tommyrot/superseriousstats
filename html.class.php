@@ -595,18 +595,18 @@ final class html extends base
 			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'Domain');
 			$t->set_value('key3', 'First Used');
+			$t->set_value('maxrows', 10);
 			$t->set_value('minrows', 10);
 			$t->set_value('query_main', 'select sum(`total`) as `v1`, concat(\'http://\', `authority`) as `v2`, min(`firstused`) as `v3` from `user_urls` group by `v2` order by `v1` desc, `v3` asc limit 10');
-			$t->set_value('rows', 10);
 			$t->set_value('type', 'domains');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Referenced TLDs');
 			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'TLD');
+			$t->set_value('maxrows', 10);
 			$t->set_value('minrows', 10);
 			$t->set_value('query_main', 'select sum(`total`) as `v1`, `tld` as `v2` from `user_urls` where `tld` != \'\' group by `v2` order by `v1` desc, `v2` asc limit 10;');
-			$t->set_value('rows', 10);
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Recent URLs');
