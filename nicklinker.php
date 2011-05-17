@@ -306,7 +306,7 @@ final class nicklinker extends base
 			$line = fgets($fp);
 			$line = trim($line);
 
-			if (preg_match('/^(\w+)\s*=\s*"(.*)"$/', $line, $matches)) {
+			if (preg_match('/^(\w+)\s*=\s*"(.*?)"(\s*#.*)?$/', $line, $matches)) {
 				$this->settings[$matches[1]] = $matches[2];
 			}
 		}
