@@ -40,7 +40,6 @@ final class html extends base
 	private $maxrows_people_timeofday = 10;
 	private $maxrows_people_year = 10;
 	private $maxrows_recenturls = 25;
-	private $minlines = 500;
 	private $minrows = 3;
 	private $sectionbits = 127;
 	private $stylesheet = 'sss.css';
@@ -78,7 +77,6 @@ final class html extends base
 		'maxrows_people_timeofday' => 'int',
 		'maxrows_people_year' => 'int',
 		'maxrows_recenturls' => 'int',
-		'minlines' => 'int',
 		'minrows' => 'int',
 		'outputbits' => 'int',
 		'sectionbits' => 'int',
@@ -173,14 +171,6 @@ final class html extends base
 		$this->l_avg = $this->l_total / $this->days;
 
 		/**
-		 * This variable is used to shape most statistics. 1/1000th of the total lines typed in the channel.
-		 * 500 is the default minimum so tables will still look interesting on low volume channels.
-		 */
-		if (round($this->l_total / 1000) >= 500) {
-			$this->minlines = round($this->l_total / 1000);
-		}
-
-		/**
 		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
 		 */
 		$this->date_lastlogparsed = $result->date_lastlogparsed;
@@ -246,7 +236,7 @@ final class html extends base
 			$t->set_value('key1', 'Lines/Day');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select (`l_total` / `activedays`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select (`l_total` / `activedays`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `activedays` >= 7 and `lasttalked` >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Fluent Chatters');
@@ -254,7 +244,7 @@ final class html extends base
 			$t->set_value('key1', 'Words/Line');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select (`words` / `l_total`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select (`words` / `l_total`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `activedays` >= 7 and `lasttalked` >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Tedious Chatters');
@@ -262,7 +252,7 @@ final class html extends base
 			$t->set_value('key1', 'Chars/Line');
 			$t->set_value('key2', 'User');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select (`characters` / `l_total`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_total` >= '.$this->minlines.' order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select (`characters` / `l_total`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `activedays` >= 7 and `lasttalked` >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Individual Top Days &ndash; Alltime');
