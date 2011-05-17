@@ -25,7 +25,6 @@ abstract class parser extends base
 	 * Default settings for this script, can be overridden in the config file.
 	 * These should all appear in $settings_list[] along with their type.
 	 */
-	private $minstreak = 5;
 	private $nick_maxlen = 255;
 	private $nick_minlen = 1;
 	private $wordtracking = true;
@@ -38,7 +37,6 @@ abstract class parser extends base
 	private $newline = '';
 	private $nicks_objs = array();
 	private $settings_list = array(
-		'minstreak' => 'int',
 		'nick_maxlen' => 'int',
 		'nick_minlen' => 'int',
 		'outputbits' => 'int',
@@ -424,7 +422,7 @@ abstract class parser extends base
 				/**
 				 * Ohno! Someone else typed a line and the previous streak is interrupted. Check if the streak qualifies as a monologue and store it.
 				 */
-				if ($this->streak >= $this->minstreak) {
+				if ($this->streak >= 5) {
 					/**
 					 * If the current line count is 0 then $prevnick is not known to us yet (only seen in previous parse run).
 					 * It's safe to assume that $prevnick is a valid nick since it was set by set_normal().
