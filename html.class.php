@@ -630,7 +630,7 @@ final class html extends base
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'URL');
 			$t->set_value('maxrows', $this->maxrows_recenturls);
-			$t->set_value('minrows', $this->maxrows_recenturls);
+			$t->set_value('minrows', 5);
 			$t->set_value('query_main', 'select `lastused` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc limit '.$this->maxrows_recenturls);
 			$t->set_value('type', 'urls');
 			$output .= $t->make_table($this->mysqli);
@@ -1205,8 +1205,10 @@ final class table extends base
 		for ($i = count($content) + 1; $i <= $this->maxrows; $i++) {
 			if ($this->type == 'small') {
 				$content[] = array('&nbsp;', '', '');
-			} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'urls' || $this->type == 'medium' || $this->type == 'domains') {
+			} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'medium' || $this->type == 'domains') {
 				$content[] = array('&nbsp;', '', '', '');
+			} elseif ($this->type == 'urls') {
+				break;
 			}
 		}
 
