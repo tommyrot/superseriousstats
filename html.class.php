@@ -358,6 +358,14 @@ final class html extends base
 			$t->set_value('query_main', 'select `topmonologue` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `topmonologue` != 0 order by `v1` desc, `v2` asc limit 5');
 			$output .= $t->make_table($this->mysqli);
 
+			$t = new table('Moodiest People');
+			$t->set_value('key1', 'Smileys');
+			$t->set_value('key2', 'User');
+			$t->set_value('minrows', $this->minrows);
+			$t->set_value('query_main', 'select (`s_01` + `s_02` + `s_03` + `s_04` + `s_05` + `s_06` + `s_07` + `s_08` + `s_09` + `s_10` + `s_11` + `s_12` + `s_13` + `s_14` + `s_15` + `s_16` + `s_17` + `s_18` + `s_19` + `s_20` + `s_21` + `s_22` + `s_23` + `s_24` + `s_25` + `s_26` + `s_27` + `s_28` + `s_29` + `s_30` + `s_31` + `s_32` + `s_33` + `s_34` + `s_35` + `s_36` + `s_37` + `s_38` + `s_39` + `s_40` + `s_41` + `s_42` + `s_43` + `s_44` + `s_45` + `s_46` + `s_47` + `s_48` + `s_49` + `s_50`) as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_total', 'select (sum(`s_01`) + sum(`s_02`) + sum(`s_03`) + sum(`s_04`) + sum(`s_05`) + sum(`s_06`) + sum(`s_07`) + sum(`s_08`) + sum(`s_09`) + sum(`s_10`) + sum(`s_11`) + sum(`s_12`) + sum(`s_13`) + sum(`s_14`) + sum(`s_15`) + sum(`s_16`) + sum(`s_17`) + sum(`s_18`) + sum(`s_19`) + sum(`s_20`) + sum(`s_21`) + sum(`s_22`) + sum(`s_23`) + sum(`s_24`) + sum(`s_25`) + sum(`s_26`) + sum(`s_27`) + sum(`s_28`) + sum(`s_29`) + sum(`s_30`) + sum(`s_31`) + sum(`s_32`) + sum(`s_33`) + sum(`s_34`) + sum(`s_35`) + sum(`s_36`) + sum(`s_37`) + sum(`s_38`) + sum(`s_39`) + sum(`s_40`) + sum(`s_41`) + sum(`s_42`) + sum(`s_43`) + sum(`s_44`) + sum(`s_45`) + sum(`s_46`) + sum(`s_47`) + sum(`s_48`) + sum(`s_49`) + sum(`s_50`)) as `total` from `q_smileys`');
+			$output .= $t->make_table($this->mysqli);
+
 			$t = new table('Slaps Given');
 			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'User');
@@ -524,60 +532,78 @@ final class html extends base
 		if ($this->sectionbits & 16) {
 			$output = '';
 
-			$t = new table('Moodiest People');
-			$t->set_value('key1', 'Smileys');
-			$t->set_value('key2', 'User');
-			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select (`s_01` + `s_02` + `s_03` + `s_04` + `s_05` + `s_06` + `s_07` + `s_08` + `s_09` + `s_10` + `s_11` + `s_12` + `s_13` + `s_14` + `s_15` + `s_16` + `s_17` + `s_18` + `s_19`) as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 order by `v1` desc, `v2` asc limit 5');
-			$t->set_value('query_total', 'select (sum(`s_01`) + sum(`s_02`) + sum(`s_03`) + sum(`s_04`) + sum(`s_05`) + sum(`s_06`) + sum(`s_07`) + sum(`s_08`) + sum(`s_09`) + sum(`s_10`) + sum(`s_11`) + sum(`s_12`) + sum(`s_13`) + sum(`s_14`) + sum(`s_15`) + sum(`s_16`) + sum(`s_17`) + sum(`s_18`) + sum(`s_19`)) as `total` from `q_smileys`');
-			$output .= $t->make_table($this->mysqli);
-
 			/**
-			 * Display smiley tables ordered by totals.
+			 * Display the top 9 smiley tables ordered by totals.
 			 */
-			$query = @mysqli_query($this->mysqli, 'select sum(`s_01`) as `s_01`, sum(`s_02`) as `s_02`, sum(`s_03`) as `s_03`, sum(`s_04`) as `s_04`, sum(`s_05`) as `s_05`, sum(`s_06`) as `s_06`, sum(`s_07`) as `s_07`, sum(`s_08`) as `s_08`, sum(`s_09`) as `s_09`, sum(`s_10`) as `s_10`, sum(`s_11`) as `s_11`, sum(`s_12`) as `s_12`, sum(`s_13`) as `s_13`, sum(`s_14`) as `s_14`, sum(`s_15`) as `s_15`, sum(`s_16`) as `s_16`, sum(`s_17`) as `s_17`, sum(`s_18`) as `s_18`, sum(`s_19`) as `s_19` from `q_smileys`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'select sum(`s_01`) as `s_01`, sum(`s_02`) as `s_02`, sum(`s_03`) as `s_03`, sum(`s_04`) as `s_04`, sum(`s_05`) as `s_05`, sum(`s_06`) as `s_06`, sum(`s_07`) as `s_07`, sum(`s_08`) as `s_08`, sum(`s_09`) as `s_09`, sum(`s_10`) as `s_10`, sum(`s_11`) as `s_11`, sum(`s_12`) as `s_12`, sum(`s_13`) as `s_13`, sum(`s_14`) as `s_14`, sum(`s_15`) as `s_15`, sum(`s_16`) as `s_16`, sum(`s_17`) as `s_17`, sum(`s_18`) as `s_18`, sum(`s_19`) as `s_19`, sum(`s_20`) as `s_20`, sum(`s_21`) as `s_21`, sum(`s_22`) as `s_22`, sum(`s_23`) as `s_23`, sum(`s_24`) as `s_24`, sum(`s_25`) as `s_25`, sum(`s_26`) as `s_26`, sum(`s_27`) as `s_27`, sum(`s_28`) as `s_28`, sum(`s_29`) as `s_29`, sum(`s_30`) as `s_30`, sum(`s_31`) as `s_31`, sum(`s_32`) as `s_32`, sum(`s_33`) as `s_33`, sum(`s_34`) as `s_34`, sum(`s_35`) as `s_35`, sum(`s_36`) as `s_36`, sum(`s_37`) as `s_37`, sum(`s_38`) as `s_38`, sum(`s_39`) as `s_39`, sum(`s_40`) as `s_40`, sum(`s_41`) as `s_41`, sum(`s_42`) as `s_42`, sum(`s_43`) as `s_43`, sum(`s_44`) as `s_44`, sum(`s_45`) as `s_45`, sum(`s_46`) as `s_46`, sum(`s_47`) as `s_47`, sum(`s_48`) as `s_48`, sum(`s_49`) as `s_49`, sum(`s_50`) as `s_50` from `q_smileys`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$result = mysqli_fetch_object($query);
 
 			foreach ($result as $key => $value) {
-				if ((int) $value < $this->minlines) {
-					continue;
-				}
-
-				$topsmileys[$key] = (int) $value;
+				$smileys_totals[$key] = (int) $value;
 			}
 
-			if (!empty($topsmileys)) {
-				$smileys = array(
-					's_01' => array('=]', 'Big Cheerful Smile'),
-					's_02' => array('=)', 'Cheerful Smile'),
-					's_03' => array(';x', 'Lovely Kiss'),
-					's_04' => array(';p', 'Weirdo'),
-					's_05' => array(';]', 'Big Winky'),
-					's_06' => array(';-)', 'Classic Winky'),
-					's_07' => array(';)', 'Winky'),
-					's_08' => array(';(', 'Cry'),
-					's_09' => array(':x', 'Kiss'),
-					's_10' => array(':P', 'Tongue'),
-					's_11' => array(':D', 'Laugh'),
-					's_12' => array(':>', 'Funny'),
-					's_13' => array(':]', 'Big Smile'),
-					's_14' => array(':\\', 'Skeptical I'),
-					's_15' => array(':/', 'Skeptical II'),
-					's_16' => array(':-)', 'Classic Happy'),
-					's_17' => array(':)', 'Happy'),
-					's_18' => array(':(', 'Sad'),
-					's_19' => array('\\o/', 'Cheer'));
-				arsort($topsmileys);
+			arsort($smileys_totals);
+			array_splice($smileys_totals, 9);
+			$smileys = array(
+				's_01' => array(':)', 'Happy'),
+				's_02' => array(';)', 'Wink'),
+				's_03' => array(':(', 'Sad'),
+				's_04' => array(':P', 'Tongue Sticking Out'),
+				's_05' => array(':D', 'Laugh'),
+				's_06' => array(';(', 'Cry'),
+				's_07' => array(':/', 'Skeptical'),
+				's_08' => array('\\o/', 'Cheer'),
+				's_09' => array(':))', 'Super Happy'),
+				's_10' => array('<3', 'Love'),
+				's_11' => array(':o', 'Surprised'),
+				's_12' => array('=)', 'Cheerful Smile'),
+				's_13' => array(':-)', 'Classic Happy'),
+				's_14' => array(':x', 'Kiss'),
+				's_15' => array(':\\', 'Skeptical'),
+				's_16' => array('D:', 'Shocked'),
+				's_17' => array(':|', 'Straight Face'),
+				's_18' => array(';-)', 'Classic Wink'),
+				's_19' => array(';P', 'Silly'),
+				's_20' => array('=]', 'Big Cheerful Smile'),
+				's_21' => array(':3', 'Kitty'),
+				's_22' => array('8)', 'Cool Smile'),
+				's_23' => array(':<', 'Sad'),
+				's_24' => array(':>', 'Happy Smile'),
+				's_25' => array('=P', 'Funny Face'),
+				's_26' => array(';x', 'Lovely Kiss'),
+				's_27' => array(':-D', 'Classic Laugh'),
+				's_28' => array(';))', 'Extreme Wink'),
+				's_29' => array(':]', 'Big Smile'),
+				's_30' => array(';D', 'Winking Laugh'),
+				's_31' => array('-_-', 'Not Amused'),
+				's_32' => array(':S', 'Confused'),
+				's_33' => array('=/', 'Skeptical'),
+				's_34' => array('=\\', 'Skeptical'),
+				's_35' => array(':((', 'Super Sad'),
+				's_36' => array('=D', 'Cheerful Laugh'),
+				's_37' => array(':-/', 'Classic Skeptical'),
+				's_38' => array(':-P', 'Classic Tongue Sticking Out'),
+				's_39' => array(';_;', 'Crying'),
+				's_40' => array(';/', '...'),
+				's_41' => array(';]', 'Big Wink'),
+				's_42' => array(':-(', 'Classic Sad'),
+				's_43' => array(':\'(', 'Tear'),
+				's_44' => array('=(', 'Sad'),
+				's_45' => array('-.-', 'Not Amused'),
+				's_46' => array(';((', 'Crying'),
+				's_47' => array('=X', 'Kiss'),
+				's_48' => array(':[', 'Sad'),
+				's_49' => array('>:(', 'Angry'),
+				's_50' => array(';o', 'Joking'));
 
-				foreach ($topsmileys as $key => $value) {
-					$t = new table($smileys[$key][1]);
-					$t->set_value('key1', $smileys[$key][0]);
-					$t->set_value('key2', 'User');
-					$t->set_value('minrows', $this->minrows);
-					$t->set_value('query_main', 'select `'.$key.'` as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$key.'` != 0 order by `v1` desc, `v2` asc limit 5');
-					$t->set_value('total', $value);
-					$output .= $t->make_table($this->mysqli);
-				}
+			foreach ($smileys_totals as $key => $value) {
+				$t = new table($smileys[$key][1]);
+				$t->set_value('key1', $smileys[$key][0]);
+				$t->set_value('key2', 'User');
+				$t->set_value('minrows', $this->minrows);
+				$t->set_value('query_main', 'select `'.$key.'` as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$key.'` != 0 order by `v1` desc, `v2` asc limit 5');
+				$t->set_value('total', $value);
+				$output .= $t->make_table($this->mysqli);
 			}
 
 			if (!empty($output)) {
@@ -647,7 +673,7 @@ final class html extends base
 			$output = '';
 
 			/**
-			 * Display word tables ordered by totals.
+			 * Display the top 9 word tables ordered by totals.
 			 */
 			$query = @mysqli_query($this->mysqli, 'select `length`, count(*) as `total` from `words` group by `length` order by `total` desc, `length` desc limit 9') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
