@@ -60,16 +60,16 @@ body {
 /**
  * Global table styling
  */
-.graph,
+.act,
+.act-day,
+.act-year,
 .index,
 .large,
-.mad,
-.map,
 .medium,
-.nqsap,
-.small,
-.tod,
-.yearly {
+.ppl,
+.ppl-tod,
+.ppl2,
+.small {
 	background-color:#EEE;
 	border-collapse:separate;
 	border-color:#666;
@@ -84,22 +84,71 @@ body {
 	table-layout:fixed;
 }
 /**
- * Specific table styling: activity graphs, most active days, yearly activity
+ * Specific table styling: activity graphs
+ */
+.act,
+.act-day,
+.act-year {
+	text-align:center;
+}
+.act img,
+.act-day img,
+.act-year img {
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+	width:16px;
+}
+.act {
+	width:818px;
+}
+.act-day {
+	width:240px;
+}
+.act-year {
+	/**
+	 * Variable width specified in HTML
+	 */
+}
+.act th,
+.act-day th,
+.act-year th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 0 0 3px;
+	text-align:left;
+}
+.act tr.bars td,
+.act-day tr.bars td,
+.act-year tr.bars td {
+	height:125px;
+	padding:0;
+	vertical-align:bottom;
+}
+.act tr.sub td,
+.act-day tr.sub td,
+.act-year tr.sub td {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+	padding:1px 0 1px 0;
+}
+.act tr.sub td.bold,
+.act-day tr.sub td.bold,
+.act-year tr.sub td.bold {
+	color:#666;
+}
+/**
+ * Specific table styling: history index
  */
 .index {
 	text-align:right;
 }
-.index col.pos {
-	width:36px;
-}
 .index col.c {
 	width:65px;
 }
-.index th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 3px 1px 3px;
-	text-align:left;
+.index col.pos {
+	width:36px;
 }
 .index td {
 	padding:1px 0 1px 0;
@@ -118,210 +167,161 @@ body {
 .index td.pos {
 	text-align:center;
 }
-/**
- * Specific table styling: activity graphs, most active days, yearly activity
- */
-.graph,
-.mad,
-.yearly {
-	text-align:center;
-}
-.graph img,
-.mad img,
-.yearly img {
-	display:block;
-	margin-left:auto;
-	margin-right:auto;
-	width:16px;
-}
-.graph {
-	width:818px;
-}
-.mad {
-	width:240px;
-}
-.yearly {
-	/**
-	 * Variable width specified in HTML
-	 */
-}
-.graph th,
-.mad th,
-.yearly th {
+.index th {
 	color:#666;
 	font-weight:bold;
-	padding:1px 0 0 3px;
+	padding:1px 3px 1px 3px;
 	text-align:left;
 }
-.graph tr.bars td,
-.mad tr.bars td,
-.yearly tr.bars td {
-	height:125px;
-	padding:0;
-	vertical-align:bottom;
-}
-.graph tr.sub td,
-.mad tr.sub td,
-.yearly tr.sub td {
-	background-color:#E0E0E0;
-	color:#999;
-	font-weight:bold;
-	padding:1px 0 1px 0;
-}
-.graph tr.sub td.bold,
-.mad tr.sub td.bold,
-.yearly tr.sub td.bold {
-	color:#666;
-}
 /**
- * Specific table styling: most active people
+ * Specific table styling: most talkative people
  */
-.map {
+.ppl {
 	text-align:left;
 	width:818px;
 }
-.map col.c1,
-.map col.c2 {
+.ppl col.c1,
+.ppl col.c2 {
 	width:80px;
 }
-.map col.c3 {
+.ppl col.c3 {
 	width:140px;
 }
-.map col.c4 {
+.ppl col.c4 {
 	width:54px;
 }
-.map col.c5 {
+.ppl col.c5 {
 	width:100px;
 }
-.map col.c6 {
+.ppl col.c6 {
 	width:326px;
 }
-.map col.pos {
+.ppl col.pos {
 	width:36px;
 }
-.map img {
+.ppl img {
 	height:6px;
 	padding-bottom:3px;
 	vertical-align:bottom;
 }
-.map td {
+.ppl td {
 	padding:1px 0 1px 0;
 	vertical-align:top;
 }
-.map td.k1,
-.map td.k2,
-.map td.k3,
-.map td.k4,
-.map td.k5,
-.map td.k6,
-.map td.pos {
+.ppl td.k1,
+.ppl td.k2,
+.ppl td.k3,
+.ppl td.k4,
+.ppl td.k5,
+.ppl td.k6,
+.ppl td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.map td.k1,
-.map td.v1,
-.map td.k2,
-.map td.v2 {
+.ppl td.k1,
+.ppl td.v1,
+.ppl td.k2,
+.ppl td.v2 {
 	text-align:right;
 	padding-right:2px;
 }
-.map td.k3,
-.map td.v3,
-.map td.k5,
-.map td.v5,
-.map td.k6,
-.map td.v6 {
+.ppl td.k3,
+.ppl td.v3,
+.ppl td.k5,
+.ppl td.v5,
+.ppl td.k6,
+.ppl td.v6 {
 	padding-left:2px;
 }
-.map td.pos {
+.ppl td.pos {
 	text-align:center;
 }
-.map th {
+.ppl th {
 	color:#666;
 	font-weight:bold;
 	padding:1px 3px 1px 3px;
 }
 /**
- * Specific table styling: not quite so active people
+ * Specific table styling: less talkative people
  */
-.nqsap {
+.ppl2 {
 	text-align:left;
 	width:818px;
 }
-.nqsap col.c1 {
+.ppl2 col.c1 {
 	width:55px;
 }
-.nqsap col.c2 {
+.ppl2 col.c2 {
 	width:125px;
 }
-.nqsap col.pos {
+.ppl2 col.pos {
 	width:24px;
 }
-.nqsap td {
+.ppl2 td {
 	padding:1px 0 1px 0;
 	vertical-align:top;
 }
-.nqsap td.k1,
-.nqsap td.k2,
-.nqsap td.pos {
+.ppl2 td.k1,
+.ppl2 td.k2,
+.ppl2 td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.nqsap td.k1,
-.nqsap td.v1 {
+.ppl2 td.k1,
+.ppl2 td.v1 {
 	padding-right:2px;
 	text-align:right;
 }
-.nqsap td.k2,
-.nqsap td.v2 {
+.ppl2 td.k2,
+.ppl2 td.v2 {
 	padding-left:2px;
 }
-.nqsap td.pos {
+.ppl2 td.pos {
 	text-align:center;
 }
-.nqsap th {
+.ppl2 th {
 	color:#666;
 	font-weight:bold;
 	padding:1px 3px 1px 3px;
 	text-align:left;
 }
 /**
- * Specific table styling: time of day
+ * Specific table styling: people by time of day
  */
-.tod {
+.ppl-tod {
 	text-align:right;
 	width:818px;
 }
-.tod col.c {
+.ppl-tod col.c {
 	width:197px;
 }
-.tod col.pos {
+.ppl-tod col.pos {
 	width:28px;
 }
-.tod img {
+.ppl-tod img {
 	height:6px;
 	padding:2px 0 3px 0;
 }
-.tod td {
+.ppl-tod td {
 	padding:1px 0 1px 0;
 	vertical-align:top;
 }
-.tod td.k,
-.tod td.pos {
+.ppl-tod td.k,
+.ppl-tod td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.tod td.k,
-.tod td.v {
+.ppl-tod td.k,
+.ppl-tod td.v {
 	padding-right:2px;
 }
-.tod td.pos {
+.ppl-tod td.pos {
 	text-align:center;
 }
-.tod th {
+.ppl-tod th {
 	color:#666;
 	font-weight:bold;
 	padding:1px 0 1px 3px;
@@ -423,7 +423,7 @@ body {
 /**
  * Ellipsis, ahead of final CSS3 spec
  */
-.map td.v6,
+.ppl td.v6,
 .large td.v3 {
 	-o-text-overflow:ellipsis;
 	overflow:hidden;

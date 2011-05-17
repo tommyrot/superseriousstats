@@ -201,7 +201,7 @@ final class html extends base
 			      . '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			      . '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			      . '<style type="text/css">'."\n"
-			      . '  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n"
+			      . '  .act-year {width:'.(2 + ($this->years * 34)).'px}'."\n"
 			      . '</style>'."\n"
 			      . '</head>'."\n\n".'<body>'."\n"
 			      . '<div class="box">'."\n"
@@ -694,7 +694,7 @@ final class html extends base
 	private function make_table_activity($type)
 	{
 		if ($type == 'day') {
-			$class = 'graph';
+			$class = 'act';
 			$cols = 24;
 
 			for ($i = 23; $i >= 0; $i--) {
@@ -704,7 +704,7 @@ final class html extends base
 			$head = 'Activity by Day';
 			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `channel` where `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
-			$class = 'graph';
+			$class = 'act';
 			$cols = 24;
 
 			for ($i = 23; $i >= 0; $i--) {
@@ -714,7 +714,7 @@ final class html extends base
 			$head = 'Activity by Month';
 			$query = @mysqli_query($this->mysqli, 'select date_format(`date`, \'%Y-%m\') as `date`, sum(`l_total`) as `l_total`, sum(`l_night`) as `l_night`, sum(`l_morning`) as `l_morning`, sum(`l_afternoon`) as `l_afternoon`, sum(`l_evening`) as `l_evening` from `channel` where date_format(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' group by year(`date`), month(`date`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'year') {
-			$class = 'yearly';
+			$class = 'act-year';
 			$cols = $this->years;
 
 			for ($i = $this->years - 1; $i >= 0; $i--) {
@@ -868,7 +868,7 @@ final class html extends base
 
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
-		return '<table class="mad">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function make_table_activity_distribution_hour()
@@ -929,7 +929,7 @@ final class html extends base
 
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
-		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function make_table_people($type, $maxrows)
@@ -1019,7 +1019,7 @@ final class html extends base
 			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
 		}
 
-		return '<table class="map">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
 	/**
@@ -1070,7 +1070,7 @@ final class html extends base
 			$trx .= '</tr>';
 		}
 
-		return '<table class="nqsap">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="ppl2">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
 	private function make_table_people_timeofday($maxrows)
@@ -1136,7 +1136,7 @@ final class html extends base
 			}
 		}
 
-		return '<table class="tod">'.$tr0.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="ppl-tod">'.$tr0.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 }
 

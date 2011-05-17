@@ -228,7 +228,7 @@ final class user
 			. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '<style type="text/css">'."\n"
-			. '  .yearly {width:'.(2 + ($this->years * 34)).'px}'."\n"
+			. '  .act-year {width:'.(2 + ($this->years * 34)).'px}'."\n"
 			. '</style>'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
@@ -257,7 +257,7 @@ final class user
 	private function make_table_activity($type)
 	{
 		if ($type == 'day') {
-			$class = 'graph';
+			$class = 'act';
 			$cols = 24;
 
 			for ($i = 23; $i >= 0; $i--) {
@@ -267,7 +267,7 @@ final class user
 			$head = 'Activity by Day';
 			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_day` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
-			$class = 'graph';
+			$class = 'act';
 			$cols = 24;
 
 			for ($i = 23; $i >= 0; $i--) {
@@ -277,7 +277,7 @@ final class user
 			$head = 'Activity by Month';
 			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_month` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'year') {
-			$class = 'yearly';
+			$class = 'act-year';
 			$cols = $this->years;
 
 			for ($i = $this->years - 1; $i >= 0; $i--) {
@@ -431,7 +431,7 @@ final class user
 
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
-		return '<table class="mad">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function make_table_activity_distribution_hour()
@@ -492,7 +492,7 @@ final class user
 
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
-		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	/**

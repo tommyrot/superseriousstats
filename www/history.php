@@ -299,7 +299,7 @@ final class history
 
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
-		return '<table class="graph">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function make_table_people($type, $maxrows)
@@ -381,7 +381,7 @@ final class history
 			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
 		}
 
-		return '<table class="map">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
 	private function make_table_people_timeofday($maxrows)
@@ -457,7 +457,7 @@ final class history
 			}
 		}
 
-		return '<table class="tod">'.$tr0.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="ppl-tod">'.$tr0.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	/**
