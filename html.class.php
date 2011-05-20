@@ -35,7 +35,7 @@ final class html extends base
 	private $cid = '';
 	private $history = false;
 	private $maxrows_people_alltime = 30;
-	private $maxrows_people2 = 40;
+	private $maxrows_people2 = 10;
 	private $maxrows_people_month = 10;
 	private $maxrows_people_timeofday = 10;
 	private $maxrows_people_year = 10;
@@ -1022,24 +1022,20 @@ final class html extends base
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	/**
-	 * $rowcount must be a multiple of 4 so we get a clean table without empty spaces that would otherwise mess up the layout.
-	 */
-	private function make_table_people2($offset, $rowcount)
+	private function make_table_people2($offset, $maxrows)
 	{
-		$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$offset.', '.$rowcount) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$offset.', '.($maxrows * 4)) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
-		if (empty($rows) || $rows < $rowcount) {
+		if (empty($rows) || $rows < $maxrows * 4) {
 			return;
 		}
 
-		$rows_per_column = $rowcount / 4;
 		$current_column = 1;
 		$current_row = 1;
 
 		while ($result = mysqli_fetch_object($query)) {
-			if ($current_row > $rows_per_column) {
+			if ($current_row > $maxrows) {
 				$current_column++;
 				$current_row = 1;
 
@@ -1048,23 +1044,23 @@ final class html extends base
 				}
 			}
 
-			${'column'.$current_column}[$current_row] = array($result->csnick, (int) $result->l_total);
+			$columns[$current_column][$current_row] = array($result->csnick, (int) $result->l_total);
 			$current_row++;
 		}
 
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
-		$total = (int) $result->total - $offset - $rowcount;
+		$total = (int) $result->total - $offset - ($maxrows * 4);
 		$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" />';
 		$tr1 = '<tr><th colspan="12"><span class="left">Less Talkative People &ndash; Alltime</span>'.($total == 0 ? '' : '<span class="right">'.number_format($total).' People had even less to say..</span>').'</th></tr>';
 		$tr2 = '<tr><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td></tr>';
 		$trx = '';
 
-		for ($i = 1; $i <= $rows_per_column; $i++) {
+		for ($i = 1; $i <= $maxrows; $i++) {
 			$trx .= '<tr>';
 
 			for ($j = 1; $j <= 4; $j++) {
-				$trx .= '<td class="v1">'.number_format(${'column'.$j}[$i][1]).'</td><td class="pos">'.($offset + ($j > 1 ? ($j - 1) * $rows_per_column : 0) + $i).'</td><td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode(${'column'.$j}[$i][0]).'">'.htmlspecialchars(${'column'.$j}[$i][0]).'</a>' : htmlspecialchars(${'column'.$j}[$i][0])).'</td>';
+				$trx .= '<td class="v1">'.number_format($columns[$j][$i][1]).'</td><td class="pos">'.($offset + ($j > 1 ? ($j - 1) * $maxrows : 0) + $i).'</td><td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i][0]).'">'.htmlspecialchars($columns[$j][$i][0]).'</a>' : htmlspecialchars($columns[$j][$i][0])).'</td>';
 			}
 
 			$trx .= '</tr>';
