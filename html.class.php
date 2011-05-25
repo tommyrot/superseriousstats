@@ -124,10 +124,10 @@ final class html extends base
 
 		if (($daysago / 365) >= 1) {
 			$daysago = str_replace('.0', '', number_format($daysago / 365, 1));
-			$daysago .= ' Year'.($daysago > 1 ? 's' : '').' Ago';
+			$daysago .= ' Year'.((int) $daysago > 1 ? 's' : '').' Ago';
 		} elseif (($daysago / 30.42) >= 1) {
 			$daysago = str_replace('.0', '', number_format($daysago / 30.42, 1));
-			$daysago .= ' Month'.($daysago > 1 ? 's' : '').' Ago';
+			$daysago .= ' Month'.((int) $daysago > 1 ? 's' : '').' Ago';
 		} elseif ($daysago > 1) {
 			$daysago .= ' Days Ago';
 		} elseif ($daysago == 1) {
