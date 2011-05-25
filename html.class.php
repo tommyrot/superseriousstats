@@ -1089,7 +1089,7 @@ final class html extends base
 		$times = array('night', 'morning', 'afternoon', 'evening');
 
 		foreach ($times as $time) {
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$maxrows);
+			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$i = 0;
 
 			while ($result = mysqli_fetch_object($query)) {
