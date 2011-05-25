@@ -962,20 +962,20 @@ final class html extends base
 		 */
 		if ($type == 'alltime') {
 			$head = 'Most Talkative People &ndash; Alltime';
-			$historylink = '<span class="right"><a href="history.php?cid='.urlencode($this->cid).'">History</a></span>';
+			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
 			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'year') {
 			$head = 'Most Talkative People &ndash; '.$this->year;
-			$historylink = '<span class="right"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'">History</a></span>';
+			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'">History</a>';
 			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_year`.`l_total`) as `l_total`, sum(`q_activity_by_year`.`l_night`) as `l_night`, sum(`q_activity_by_year`.`l_morning`) as `l_morning`, sum(`q_activity_by_year`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_year`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_year` on `q_lines`.`ruid` = `q_activity_by_year`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = '.$this->year.' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->monthname.' '.$this->year;
-			$historylink = '<span class="right"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'&amp;month='.$this->month.'">History</a></span>';
+			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'&amp;month='.$this->month.'">History</a>';
 			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_month`.`l_total`) as `l_total`, sum(`q_activity_by_month`.`l_night`) as `l_night`, sum(`q_activity_by_month`.`l_morning`) as `l_morning`, sum(`q_activity_by_month`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_month`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_month` on `q_lines`.`ruid` = `q_activity_by_month`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 
 		$tr0 = '<col class="c1" /><col class="c2" /><col class="pos" /><col class="c3" /><col class="c4" /><col class="c5" /><col class="c6" />';
-		$tr1 = '<tr><th colspan="7"><span class="left">'.$head.'</span>'.($this->history ? $historylink : '').'</th></tr>';
+		$tr1 = '<tr><th colspan="7">'.($this->history ? '<span class="left">'.$head.'</span><span class="right">'.$historylink.'</span>' : $head).'</th></tr>';
 		$tr2 = '<tr><td class="k1">Percentage</td><td class="k2">Lines</td><td class="pos"></td><td class="k3">User</td><td class="k4">When?</td><td class="k5">Last Seen</td><td class="k6">Quote</td></tr>';
 		$trx = '';
 		$i = 0;
@@ -1052,7 +1052,7 @@ final class html extends base
 		$result = mysqli_fetch_object($query);
 		$total = (int) $result->total - $offset - ($maxrows * 4);
 		$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" />';
-		$tr1 = '<tr><th colspan="12"><span class="left">Less Talkative People &ndash; Alltime</span>'.($total == 0 ? '' : '<span class="right">'.number_format($total).' People had even less to say..</span>').'</th></tr>';
+		$tr1 = '<tr><th colspan="12">'.($total > 0 ? '<span class="left">Less Talkative People &ndash; Alltime</span><span class="right">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; Alltime').'</th></tr>';
 		$tr2 = '<tr><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td></tr>';
 		$trx = '';
 
@@ -1216,12 +1216,12 @@ final class table extends base
 
 		if ($this->type == 'small') {
 			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" />';
-			$tr1 = '<tr><th colspan="3"><span class="left">'.$this->head.'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' Total</span>').'</th></tr>';
+			$tr1 = '<tr><th colspan="3">'.($this->total > 0 ? '<span class="left">'.$this->head.'</span><span class="right">'.number_format($this->total).' Total</span>' : $this->head).'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.$this->key1.'</td><td class="pos"></td><td class="k2">'.$this->key2.'</td></tr>';
 			$trx = '';
 		} elseif ($this->type == 'large' || $this->type == 'domains' || $this->type == 'medium' || $this->type == 'topics' || $this->type == 'urls') {
 			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c3" />';
-			$tr1 = '<tr><th colspan="4"><span class="left">'.$this->head.'</span>'.($this->total == 0 ? '' : '<span class="right">'.number_format($this->total).' Total</span>').'</th></tr>';
+			$tr1 = '<tr><th colspan="4">'.($this->total > 0 ? '<span class="left">'.$this->head.'</span><span class="right">'.number_format($this->total).' Total</span>' : $this->head).'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.$this->key1.'</td><td class="pos"></td><td class="k2">'.$this->key2.'</td><td class="k3">'.$this->key3.'</td></tr>';
 			$trx = '';
 		}
