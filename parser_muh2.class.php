@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2010, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2011, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -35,10 +35,10 @@
  * +------------+-------------------------------------------------------+->
  *
  * Notes:
- * - parse_log() normalizes all lines before passing them on to parse_line().
+ * - normalize_line() scrubs all lines before passing them on to parse_line().
  * - Given that nicks can't contain ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
  * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
- * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value.
+ * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index item is both set and has a value.
  */
 final class parser_muh2 extends parser
 {
@@ -56,13 +56,13 @@ final class parser_muh2 extends parser
 		/**
 		 * "Join" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Joins: (?<nick>\S+) \(~?\S+\)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Joins: (?<nick>\S+) \(\S+\)$/', $line, $matches)) {
 			$this->set_join($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Quit" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Quits: (?<nick>\S+) \(~?\S+\) \(.*\)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Quits: (?<nick>\S+) \(\S+\) \(.*\)$/', $line, $matches)) {
 			$this->set_quit($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
@@ -102,7 +102,7 @@ final class parser_muh2 extends parser
 		/**
 		 * "Part" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Parts: (?<nick>\S+) \(~?\S+\)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Parts: (?<nick>\S+) \(\S+\)$/', $line, $matches)) {
 			$this->set_part($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009-2010, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2011, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -36,7 +36,7 @@
  * +------------+-------------------------------------------------------+->
  *
  * Notes:
- * - parse_log() normalizes all lines before passing them on to parse_line().
+ * - normalize_line() scrubs all lines before passing them on to parse_line().
  * - The order of the regular expressions below is irrelevant (current order aims for best performance).
  * - We have to be mindful that nicks can contain "[" and "]".
  * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
@@ -60,13 +60,13 @@ final class parser_irssi extends parser
 		/**
 		 * "Join" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[~?\S+\] has joined [#&!+]\S+$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[\S+\] has joined [#&!+]\S+$/', $line, $matches)) {
 			$this->set_join($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
 		 * "Quit" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[~?\S+\] has quit \[.*\]$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[\S+\] has quit \[.*\]$/', $line, $matches)) {
 			$this->set_quit($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
@@ -106,7 +106,7 @@ final class parser_irssi extends parser
 		/**
 		 * "Part" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[~?\S+\] has left [#&!+]\S+ \[.*\]$/', $line, $matches)) {
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (?<nick>\S+) \[\S+\] has left [#&!+]\S+ \[.*\]$/', $line, $matches)) {
 			$this->set_part($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**

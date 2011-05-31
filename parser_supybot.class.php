@@ -35,7 +35,7 @@
  * +------------+-------------------------------------------------------+->
  *
  * Notes:
- * - parse_log() normalizes all lines before passing them on to parse_line().
+ * - normalize_line() scrubs all lines before passing them on to parse_line().
  * - The order of the regular expressions below is irrelevant (current order aims for best performance).
  * - The most common channel prefixes are "#&!+".
  * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
