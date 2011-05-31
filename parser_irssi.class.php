@@ -39,7 +39,7 @@
  * - normalize_line() scrubs all lines before passing them on to parse_line().
  * - The order of the regular expressions below is irrelevant (current order aims for best performance).
  * - We have to be mindful that nicks can contain "[" and "]".
- * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
+ * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*". If one of the nick prefixes slips through then validate_nick() will fail.
  * - Irssi may log multiple "performing" nicks separated by commas. We use only the first one.
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value.
  */

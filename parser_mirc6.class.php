@@ -39,7 +39,7 @@
  * - The way mIRC logs actions is pretty dumb, we can spoof nearly all other line types with our actions. Even non-chat messages are logged with the same syntax. For this reason we won't parse for actions.
  * - There is a little workaround script available referred to as "mIRC6hack". It's on the wiki.
  * - Given our handling of "action" lines (and lack thereof) the order of the regular expressions below is irrelevant (current order aims for best performance).
- * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
+ * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*". If one of the nick prefixes slips through then validate_nick() will fail.
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value.
  */
 final class parser_mirc6 extends parser

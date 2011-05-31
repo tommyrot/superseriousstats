@@ -38,7 +38,7 @@
  * Notes:
  * - normalize_line() scrubs all lines before passing them on to parse_line().
  * - Given that nicks can't contain "<", ">" or ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
- * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
+ * - The most common channel prefixes are "#&!+".
  * - Some converted mIRC logs do include "!" in "mode" and "topic" lines while there is no host. Legacy feature.
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value.
  */
