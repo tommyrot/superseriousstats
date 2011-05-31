@@ -39,8 +39,7 @@
  * - normalize_line() scrubs all lines before passing them on to parse_line().
  * - Given that nicks can't contain "<", ">" or ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
  * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*".
- * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
- * - Some converted mIRC logs do include "!" in "mode" and "topic" lines while there is no host.
+ * - Some converted mIRC logs do include "!" in "mode" and "topic" lines while there is no host. Legacy feature.
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value.
  */
 final class parser_eggdrop extends parser
@@ -94,18 +93,18 @@ final class parser_eggdrop extends parser
 		/**
 		 * "Action" and "slap" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Action: (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Action: (?<line>(?<nick_performing>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick_undergoing>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
 			if (!empty($matches['slap'])) {
-				$this->set_slap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : null));
+				$this->set_slap($this->date.' '.$matches['time'], $matches['nick_performing'], (!empty($matches['nick_undergoing']) ? $matches['nick_undergoing'] : null));
 			}
 
-			$this->set_action($this->date.' '.$matches['time'], $matches['nick1'], $matches['line']);
+			$this->set_action($this->date.' '.$matches['time'], $matches['nick_performing'], $matches['line']);
 
 		/**
 		 * "Nickchange" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Nick change: (?<nick1>\S+) -> (?<nick2>\S+)$/', $line, $matches)) {
-			$this->set_nickchange($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Nick change: (?<nick_performing>\S+) -> (?<nick_undergoing>\S+)$/', $line, $matches)) {
+			$this->set_nickchange($this->date.' '.$matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 
 		/**
 		 * "Part" lines.
@@ -122,8 +121,8 @@ final class parser_eggdrop extends parser
 		/**
 		 * "Kick" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<line>(?<nick2>\S+) kicked from [#&!+]\S+ by (?<nick1>\S+):( .+)?)$/', $line, $matches)) {
-			$this->set_kick($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2'], $matches['line']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<line>(?<nick_undergoing>\S+) kicked from [#&!+]\S+ by (?<nick_performing>\S+):( .+)?)$/', $line, $matches)) {
+			$this->set_kick($this->date.' '.$matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line']);
 
 		/**
 		 * Eggdrop logs repeated lines (case insensitive matches) in the format: "Last message repeated NUM time(s).".

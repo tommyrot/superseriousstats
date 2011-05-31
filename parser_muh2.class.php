@@ -37,7 +37,6 @@
  * Notes:
  * - normalize_line() scrubs all lines before passing them on to parse_line().
  * - Given that nicks can't contain ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
- * - If there are multiple nicks we want to catch in our regular expression match we name the "performing" nick "nick1" and the "undergoing" nick "nick2".
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index item is both set and has a value.
  */
 final class parser_muh2 extends parser
@@ -86,18 +85,18 @@ final class parser_muh2 extends parser
 		/**
 		 * "Action" and "slap" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \* (?<line>(?<nick1>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick2>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \* (?<line>(?<nick_performing>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick_undergoing>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
 			if (!empty($matches['slap'])) {
-				$this->set_slap($this->date.' '.$matches['time'], $matches['nick1'], (!empty($matches['nick2']) ? $matches['nick2'] : null));
+				$this->set_slap($this->date.' '.$matches['time'], $matches['nick_performing'], (!empty($matches['nick_undergoing']) ? $matches['nick_undergoing'] : null));
 			}
 
-			$this->set_action($this->date.' '.$matches['time'], $matches['nick1'], $matches['line']);
+			$this->set_action($this->date.' '.$matches['time'], $matches['nick_performing'], $matches['line']);
 
 		/**
 		 * "Nickchange" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* (?<nick1>\S+) is now known as (?<nick2>\S+)$/', $line, $matches)) {
-			$this->set_nickchange($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* (?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
+			$this->set_nickchange($this->date.' '.$matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 
 		/**
 		 * "Part" lines.
@@ -116,8 +115,8 @@ final class parser_muh2 extends parser
 		/**
 		 * "Kick" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* (?<line>(?<nick2>\S+) was kicked by (?<nick1>\S+) \(.*\))$/', $line, $matches)) {
-			$this->set_kick($this->date.' '.$matches['time'], $matches['nick1'], $matches['nick2'], $matches['line']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* (?<line>(?<nick_undergoing>\S+) was kicked by (?<nick_performing>\S+) \(.*\))$/', $line, $matches)) {
+			$this->set_kick($this->date.' '.$matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line']);
 
 		/**
 		 * Skip everything else.
