@@ -42,7 +42,6 @@ final class user
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $actions = 0;
 	private $cid = '';
 	private $csnick = '';
 	private $date_lastlogparsed = '';
@@ -107,7 +106,7 @@ final class user
 
 		$result = mysqli_fetch_object($query);
 		$this->ruid = (int) $result->ruid;
-		$query = @mysqli_query($this->mysqli, 'select (select `csnick` from `user_details` where `uid` = '.$this->ruid.') as `csnick`, min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg`, `actions` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` join `q_lines` on `user_status`.`ruid` = `q_lines`.`ruid` where `user_status`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select (select `csnick` from `user_details` where `uid` = '.$this->ruid.') as `csnick`, min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` join `q_lines` on `user_status`.`ruid` = `q_lines`.`ruid` where `user_status`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 
 		/**
@@ -122,7 +121,6 @@ final class user
 		$this->lastseen = $result->lastseen;
 		$this->l_total = (int) $result->l_total;
 		$this->l_avg = (float) $result->l_avg;
-		$this->actions = (int) $result->actions;
 
 		/**
 		 * Fetch the users mood.
@@ -233,7 +231,7 @@ final class user
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
 			. "\n".'<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? ' '.$this->mood : '.').'<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
-			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day &ndash; and performed '.number_format($this->actions).' action'.($this->actions != 1 ? 's' : '').'.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' line'.($this->l_max > 1 ? 's' : '').' typed.</div>'."\n";
+			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' line'.($this->l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * Activity section.
@@ -244,6 +242,12 @@ final class user
 		$output .= $this->make_table_activity('month');
 		$output .= $this->make_table_activity_distribution_day();
 		$output .= $this->make_table_activity('year');
+
+		/**
+		 * Numbers section.
+		 */
+		$output .= "\n".'<div class="head">The Numbers</div>'."\n";
+		$output .= $this->make_table_numbers();
 
 		/**
 		 * HTML Foot.
@@ -493,6 +497,153 @@ final class user
 		$tr2 .= '</tr>';
 		$tr3 .= '</tr>';
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
+	private function make_table_numbers()
+	{
+		/**
+		 * This "table" consists of six floating divs.
+		 */
+		$div1 = '';
+		$div2 = '';
+		$div3 = '';
+		$div4 = '';
+		$div5 = '';
+		$div6 = '';
+
+		/**
+		 * Arrays with the items we want to present from corresponding tables.
+		 */
+		$q_lines = array(
+			'activedays' => 'Active Days',
+			'l_total' => 'Lines',
+			'words' => 'Words',
+			'characters' => 'Characters',
+			'exclamations' => 'Exclamations',
+			'questions' => 'Questions',
+			'uppercased' => 'UPPERCASED Lines',
+			'monologues' => 'Monologues',
+			'topmonologue' => 'Longest Monologue',
+			'actions' => 'Actions Performed',
+			'slaps' => 'Slaps Given',
+			'slapped' => 'Slaps Received',
+			'urls' => 'URLs');
+
+		$q_events = array(
+			'm_op' => 'Ops \'+o\' Given',
+			'm_opped' => 'Ops \'+o\' Received',
+			'm_deop' => 'deOps \'-o\' Given',
+			'm_deopped' => 'deOps \'-o\' Received',
+			'm_voice' => 'Voices \'+v\' Given',
+			'm_voiced' => 'Voices \'+v\' Received',
+			'm_devoice' => 'deVoices \'-v\' Given',
+			'm_devoiced' => 'deVoices \'-v\' Received',
+			'joins' => 'Channel Joins',
+			'parts' => 'Channel Parts',
+			'quits' => 'IRC Quits',
+			'kicks' => 'Kicks Given',
+			'kicked' => 'Kicks Received',
+			'nickchanges' => 'Nick Changes',
+			'topics' => 'Topics Set');
+
+		$q_smileys = array(
+			's_01' => ':)',
+			's_02' => ';)',
+			's_03' => ':(',
+			's_04' => ':P',
+			's_05' => ':D',
+			's_06' => ';(',
+			's_07' => ':/',
+			's_08' => '\\o/',
+			's_09' => ':))',
+			's_10' => '&lt;3',
+			's_11' => ':o',
+			's_12' => '=)',
+			's_13' => ':-)',
+			's_14' => ':x',
+			's_15' => ':\\',
+			's_16' => 'D:',
+			's_17' => ':|',
+			's_18' => ';-)',
+			's_19' => ';P',
+			's_20' => '=]',
+			's_21' => ':3',
+			's_22' => '8)',
+			's_23' => ':&lt;',
+			's_24' => ':&gt;',
+			's_25' => '=P',
+			's_26' => ';x',
+			's_27' => ':-D',
+			's_28' => ';))',
+			's_29' => ':]',
+			's_30' => ';D',
+			's_31' => '-_-',
+			's_32' => ':S',
+			's_33' => '=/',
+			's_34' => '=\\',
+			's_35' => ':((',
+			's_36' => '=D',
+			's_37' => ':-/',
+			's_38' => ':-P',
+			's_39' => ';_;',
+			's_40' => ';/',
+			's_41' => ';]',
+			's_42' => ':-(',
+			's_43' => ':\'(',
+			's_44' => '=(',
+			's_45' => '-.-',
+			's_46' => ';((',
+			's_47' => '=X',
+			's_48' => ':[',
+			's_49' => '&gt;:(',
+			's_50' => ';o');
+
+		/**
+		 * Retrieve all items and fill the divs.
+		 */
+		$smileys = 0;
+		$tables = array('q_lines', 'q_events', 'q_smileys');
+
+		foreach ($tables as $table) {
+			$query = @mysqli_query($this->mysqli, 'select * from `'.$table.'` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query);
+
+			if (!empty($rows)) {
+				$result = mysqli_fetch_object($query);
+
+				foreach (${$table} as $key => $fullkey) {
+					if (!empty($result->$key)) {
+						$stats[$fullkey] = (int) $result->$key;
+
+						if (strpos($key, 's_') === 0) {
+							$smileys += (int) $result->$key;
+						}
+					}
+				}
+			}
+		}
+
+		if ($smileys != 0) {
+			$stats['Smileys'] = $smileys;
+		}
+
+		arsort($stats);
+		$maxrows = ceil(count($stats) / 3);
+		$current_column = 1;
+		$current_row = 1;
+
+		foreach ($stats as $fullkey => $value) {
+			if ($current_row > $maxrows) {
+				$current_column += 2;
+				$current_row = 1;
+			}
+
+			${'div'.$current_column} .= number_format($value).'<br />';
+			${'div'.($current_column + 1)} .= $fullkey.'<br />';
+			$current_row++;
+		}
+
+		return '<div class="odd">'.substr($div1, 0, -6).'</div><div class="even">'.substr($div2, 0, -6).'</div><div class="odd">'.substr($div3, 0, -6).'</div><div class="even">'.substr($div4, 0, -6).'</div><div class="odd">'.substr($div5, 0, -6).'</div><div class="even">'.substr($div6, 0, -6).'</div>'."\n";
 	}
 
 	/**

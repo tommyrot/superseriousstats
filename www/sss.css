@@ -17,6 +17,21 @@ body {
 	float:left;
 	width:840px;
 }
+.even,
+.head,
+.info,
+.odd {
+	font-family:verdana,sans-serif;
+	font-size:12px;
+	font-weight:bold;
+}
+.even {
+	color:#666;
+	float:left;
+	margin:15px 22px 7px 0;
+	vertical-align:top;
+	width:160px;
+}
 .grey {
 	color:#999;
 }
@@ -24,9 +39,6 @@ body {
 	background-color:#EEE;
 	color:#666;
 	float:left;
-	font-family:verdana,sans-serif;
-	font-size:12px;
-	font-weight:bold;
 	margin:15px 22px 7px 0;
 	text-align:center;
 	width:818px
@@ -34,14 +46,19 @@ body {
 .info {
 	color:#666;
 	float:left;
-	font-family:verdana,sans-serif;
-	font-size:12px;
-	font-weight:bold;
 	margin:15px 22px 7px 0;
 	width:818px;
 }
 .left {
 	float:left;
+}
+.odd {
+	color:#999;
+	float:left;
+	margin:15px 8px 7px 0;
+	text-align:right;
+	vertical-align:top;
+	width:90px;
 }
 .right {
 	float:right;
