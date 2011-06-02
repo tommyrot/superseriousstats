@@ -125,21 +125,17 @@ final class user
 		/**
 		 * Fetch the users mood.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `s_01`, `s_02`, `s_03`, `s_04`, `s_05`, `s_06`, `s_07`, `s_08`, `s_09`, `s_10`, `s_11`, `s_12`, `s_13`, `s_14`, `s_15`, `s_16`, `s_17`, `s_18`, `s_19` from `q_smileys` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select * from `q_smileys` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
 			$result = mysqli_fetch_object($query);
-			$high_key = '';
-			$high_value = 0;
 
 			foreach ($result as $key => $value) {
-				if ((int) $value > $high_value) {
-					$high_key = $key;
-					$high_value = (int) $value;
-				}
+				$smileys_totals[$key] = (int) $value;
 			}
 
+			arsort($smileys_totals);
 			$smileys = array(
 				's_01' => ':)',
 				's_02' => ';)',
@@ -191,7 +187,13 @@ final class user
 				's_48' => ':[',
 				's_49' => '>:(',
 				's_50' => ';o');
-			$this->mood = $smileys[$high_key];
+
+			foreach ($smileys_totals as $key => $value) {
+				if ($key != 'ruid') {
+					$this->mood = htmlspecialchars($smileys[$key]);
+					break;
+				}
+			}
 		}
 
 		/**

@@ -588,7 +588,7 @@ final class html extends base
 
 			foreach ($smileys_totals as $key => $value) {
 				$t = new table($smileys[$key][1]);
-				$t->set_value('key1', $smileys[$key][0]);
+				$t->set_value('key1', htmlspecialchars($smileys[$key][0]));
 				$t->set_value('key2', 'User');
 				$t->set_value('minrows', $this->minrows);
 				$t->set_value('query_main', 'select `'.$key.'` as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$key.'` != 0 order by `v1` desc, `v2` asc limit 5');
