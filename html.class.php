@@ -1038,10 +1038,6 @@ final class html extends base
 			if ($current_row > $maxrows) {
 				$current_column++;
 				$current_row = 1;
-
-				if ($current_column > 4) {
-					break;
-				}
 			}
 
 			$columns[$current_column][$current_row] = array($result->csnick, (int) $result->l_total);
