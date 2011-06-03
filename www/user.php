@@ -558,7 +558,7 @@ final class user
 			's_07' => ':/',
 			's_08' => '\\o/',
 			's_09' => ':))',
-			's_10' => '&lt;3',
+			's_10' => '<3',
 			's_11' => ':o',
 			's_12' => '=)',
 			's_13' => ':-)',
@@ -571,8 +571,8 @@ final class user
 			's_20' => '=]',
 			's_21' => ':3',
 			's_22' => '8)',
-			's_23' => ':&lt;',
-			's_24' => ':&gt;',
+			's_23' => ':<',
+			's_24' => ':>',
 			's_25' => '=P',
 			's_26' => ';x',
 			's_27' => ':-D',
@@ -597,7 +597,7 @@ final class user
 			's_46' => ';((',
 			's_47' => '=X',
 			's_48' => ':[',
-			's_49' => '&gt;:(',
+			's_49' => '>:(',
 			's_50' => ';o');
 
 		/**
@@ -615,10 +615,11 @@ final class user
 
 				foreach (${$table} as $key => $fullkey) {
 					if (!empty($result->$key)) {
-						$stats[$fullkey] = (int) $result->$key;
-
-						if (strpos($key, 's_') === 0) {
+						if ($table == 'q_smileys') {
+							$stats[htmlspecialchars($fullkey)] = (int) $result->$key;
 							$smileys += (int) $result->$key;
+						} else {
+							$stats[$fullkey] = (int) $result->$key;
 						}
 					}
 				}
