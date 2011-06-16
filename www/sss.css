@@ -1,5 +1,5 @@
 /**
- * Global styling
+ * General styling
  */
 a {
 	color:#333;
@@ -66,18 +66,9 @@ body {
 	font-weight:normal;
 }
 /**
- * Global table styling
+ * General table styling
  */
-.act,
-.act-day,
-.act-year,
-.index,
-.large,
-.medium,
-.ppl,
-.ppl2,
-.ppl-tod,
-.small {
+table {
 	background-color:#EEE;
 	border-collapse:separate;
 	border-color:#666;
@@ -92,17 +83,19 @@ body {
 	table-layout:fixed;
 	text-align:left;
 }
+td {
+	padding:1px 0 1px 0;
+	vertical-align:top;
+}
+th {
+	color:#666;
+	font-weight:bold;
+	padding:1px 3px 1px 3px;
+	text-align:left;
+}
 /**
  * Specific table styling: activity graphs
  */
-.act img,
-.act-day img,
-.act-year img {
-	display:block;
-	margin-left:auto;
-	margin-right:auto;
-	width:16px;
-}
 .act {
 	width:818px;
 }
@@ -114,22 +107,23 @@ body {
 	 * Variable width specified in HTML
 	 */
 }
+.act img,
+.act-day img,
+.act-year img {
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+	width:16px;
+}
 .act td,
 .act-day td,
 .act-year td {
 	text-align:center;
 }
-.act th,
-.act-day th,
-.act-year th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 0 0 3px;
-}
 .act tr.bars td,
 .act-day tr.bars td,
 .act-year tr.bars td {
-	height:125px;
+	height:124px;
 	padding:0;
 	vertical-align:bottom;
 }
@@ -139,7 +133,6 @@ body {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
-	padding:1px 0 1px 0;
 }
 .act tr.sub td.bold,
 .act-day tr.sub td.bold,
@@ -158,9 +151,6 @@ body {
 .index col.pos {
 	width:36px;
 }
-.index td {
-	padding:1px 0 1px 0;
-}
 .index td.k,
 .index td.pos {
 	background-color:#E0E0E0;
@@ -174,11 +164,6 @@ body {
 }
 .index td.pos {
 	text-align:center;
-}
-.index th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 3px 1px 3px;
 }
 /**
  * Specific table styling: most talkative people
@@ -210,10 +195,6 @@ body {
 	padding-bottom:3px;
 	vertical-align:bottom;
 }
-.ppl td {
-	padding:1px 0 1px 0;
-	vertical-align:top;
-}
 .ppl td.k1,
 .ppl td.k2,
 .ppl td.k3,
@@ -243,11 +224,6 @@ body {
 .ppl td.pos {
 	text-align:center;
 }
-.ppl th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 3px 1px 3px;
-}
 /**
  * Specific table styling: less talkative people
  */
@@ -262,10 +238,6 @@ body {
 }
 .ppl2 col.pos {
 	width:24px;
-}
-.ppl2 td {
-	padding:1px 0 1px 0;
-	vertical-align:top;
 }
 .ppl2 td.k1,
 .ppl2 td.k2,
@@ -286,11 +258,6 @@ body {
 .ppl2 td.pos {
 	text-align:center;
 }
-.ppl2 th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 3px 1px 3px;
-}
 /**
  * Specific table styling: people by time of day
  */
@@ -307,10 +274,6 @@ body {
 	height:6px;
 	padding:2px 0 3px 0;
 }
-.ppl-tod td {
-	padding:1px 0 1px 0;
-	vertical-align:top;
-}
 .ppl-tod td.k,
 .ppl-tod td.pos {
 	background-color:#E0E0E0;
@@ -324,11 +287,6 @@ body {
 }
 .ppl-tod td.pos {
 	text-align:center;
-}
-.ppl-tod th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 0 1px 3px;
 }
 /**
  * Specific table styling: small, medium, large
@@ -362,19 +320,6 @@ body {
 .medium col.pos,
 .large col.pos {
 	width:36px;
-}
-.small th,
-.medium th,
-.large th {
-	color:#666;
-	font-weight:bold;
-	padding:1px 3px 1px 3px;
-}
-.small td,
-.medium td,
-.large td {
-	padding:1px 0 1px 0;
-	vertical-align:top;
 }
 .small td.k1,
 .small td.k2,
