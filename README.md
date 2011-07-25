@@ -17,16 +17,11 @@ The source code is available at [GitHub](https://github.com/tommyrot/superseriou
 Releases
 --------
 
-After significant changes have been made there follows a release. Releases are tested and the best option for obtaining a working version. Download the latest version at [Google Code](http://code.google.com/p/superseriousstats/downloads/list).
+After significant changes have been made there follows a release. Releases are tested and the best option for obtaining a working version. Download the latest version at [GitHub](https://github.com/tommyrot/superseriousstats/downloads).
 
-Documentation and Issues
-------------------------
+Documentation, Issues and Support
+---------------------------------
 
 All documentation can be found on the [Wiki](https://github.com/tommyrot/superseriousstats/wiki).
 
-Sending in [bug reports](https://github.com/tommyrot/superseriousstats/issues) is much appreciated.. For questions and feature requests please refer to our IRC channel.
-
-Support
--------
-
-You are welcome to join us in #superseriousstats on chat.freenode.net. We will be more than happy to help you get the program running.
+Sending in [bug reports](https://github.com/tommyrot/superseriousstats/issues) is much appreciated. For questions and feature requests you are welcome to join us in #superseriousstats on chat.freenode.net. We will be more than happy to help you get the program running.
