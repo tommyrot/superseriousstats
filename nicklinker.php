@@ -229,18 +229,20 @@ final class nicklinker extends base
 
 	private function print_manual()
 	{
-		$man = 'usage:	php nicklinker.php [-c <config>] [-i <file>]'."\n"
-		     . '	php nicklinker.php [-c <config>] [-o <file>]'."\n\n"
+		$man = 'usage:	php nicklinker.php [-c <file>] [-i <file>]'."\n"
+		     . '	php nicklinker.php [-c <file>] [-o <file>]'."\n\n"
 		     . 'options:'."\n"
-		     . '	-c	Read settings from <config>.'."\n"
-		     . '		If unspecified sss.conf will be used.'."\n"
-		     . '	-i	Import all user relations from <file> to the database. It is'."\n"
-		     . '		strongly advised to make an export first to serve as a backup.'."\n"
-		     . '		All stored user relations in the database will be unset before'."\n"
-		     . '		reading the contents of <file>. The script will skip all nicks'."\n"
-		     . '		found in <file> which are not in the database. The syntax of'."\n"
-		     . '		nicks contained in <file> is case insensitive.'."\n"
-		     . '	-o	Export all user relations from the database to <file>.'."\n";
+		     . '	-c <file>'."\n"
+		     . '		Read settings from <file>. By default "./sss.conf" is read.'."\n\n"
+		     . '	-i <file>'."\n"
+		     . '		Import all user relations from <file> into the database. Nicks'."\n"
+		     . '		contained in <file> are treated as case insensitive and any'."\n"
+		     . '		nicks which are not already present in the database will be'."\n"
+		     . '		ignored. *All* stored user relations are unset before reading'."\n"
+		     . '		the contents of given <file> so it advisable to make an export'."\n"
+		     . '		beforehand to serve as a backup.'."\n\n"
+		     . '	-o <file>'."\n"
+		     . '		Export all user relations from the database to <file>.'."\n";
 		exit($man);
 	}
 
