@@ -25,7 +25,6 @@ final class nicklinker extends base
 	 * Default settings for this script, can be overridden in the config file.
 	 * These should all appear in $settings_list[] along with their type.
 	 */
-	private $autolinknicks = true;
 	private $db_host = '127.0.0.1';
 	private $db_name = 'sss';
 	private $db_pass = '';
@@ -39,7 +38,6 @@ final class nicklinker extends base
 	private $mysqli;
 	private $settings = array();
 	private $settings_list = array(
-		'autolinknicks' => 'bool',
 		'db_host' => 'string',
 		'db_name' => 'string',
 		'db_pass' => 'string',
@@ -207,49 +205,6 @@ final class nicklinker extends base
 					if (!empty($lineparts[$i])) {
 						$nick = $lineparts[$i];
 						$unlinked[] = $nick;
-					}
-				}
-			}
-		}
-
-		if ($this->autolinknicks && !empty($unlinked)) {
-			foreach ($unlinked as $nick) {
-				/**
-				 * We attempt to link nicks with special chars in them to nicks that don't. Not the other way around.
-				 */
-				$tmpnick = preg_replace('/[^a-z0-9]+/', '', $nick);
-
-				/**
-				 * Nicks of length 1 are bogus, we skip those.
-				 */
-				if ($tmpnick != $nick && strlen($tmpnick) > 1) {
-					/**
-					 * See if the trimmed nick exists.
-					 */
-					if (!empty($uids[$tmpnick])) {
-						/**
-						 * Trimmed nick exists, is it linked or unlinked?
-						 */
-						if (!empty($linked2uid[$tmpnick])) {
-							/**
-							 * It's linked, use the uid to link the untrimmed nick to.
-							 * Untrimmed nick doesn't need a pointer to the nick it's linked to since no other nick will link to it.
-							 */
-							$uid = $linked2uid[$tmpnick];
-							$users[$uid][] = $nick;
-						} else {
-							/**
-							 * It's unlinked, create user for uid of trimmed nick and link both trimmed and untrimmed nicks to it.
-							 * Untrimmed nick doesn't need a pointer to the nick it's linked to since no other nick will link to it.
-							 */
-							$uid = $uids[$tmpnick];
-							$statuses[$uid] = 1;
-							$users[$uid][] = $tmpnick;
-							$linked2uid[$tmpnick] = $uid;
-							$users[$uid][] = $nick;
-						}
-
-						$this->output('debug', 'import(): linked \''.$nick.'\' to \''.$tmpnick.'\'');
 					}
 				}
 			}
