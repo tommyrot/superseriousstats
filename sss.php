@@ -25,6 +25,7 @@ final class sss extends base
 	 * Default settings for this script, can be overridden in the config file.
 	 * These should all appear in $settings_list[] along with their type.
 	 */
+	private $autolinknicks = true;
 	private $db_host = '127.0.0.1';
 	private $db_name = 'sss';
 	private $db_pass = '';
@@ -40,6 +41,7 @@ final class sss extends base
 	private $mysqli;
 	private $settings = array();
 	private $settings_list = array(
+		'autolinknicks' => 'bool',
 		'db_host' => 'string',
 		'db_name' => 'string',
 		'db_pass' => 'string',
@@ -107,6 +109,94 @@ final class sss extends base
 	{
 		$maintenance = new maintenance($this->settings);
 		$maintenance->do_maintenance($this->mysqli);
+	}
+
+	private function link_nicks()
+	{
+		/**
+		 * This function tries to link unlinked nicks to any other nick that is identical after stripping them both from non-alphanumeric characters and doing a case insensitive comparison.
+		 *
+		 * Example before:
+		 *
+		 * | nick	| uid		| ruid		| status	| description
+		 * +------------+---------------+---------------+---------------+----------------------------------
+		 * | Jack	| 80		| 80		| 1		| registered nick (linked manually)
+		 * | Jack|away	| 120		| 80		| 2		| alias (linked manually)
+		 * | Jack-away	| 550		| 550		| 0		| unlinked nick
+		 * | ^jack^	| 551		| 551		| 0		| unlinked nick
+		 * | Jack|brb	| 552		| 552		| 0		| unlinked nick
+		 * | Jack[brb]	| 553		| 553		| 0		| unlinked nick
+		 *
+		 * Example after:
+		 *
+		 * | nick	| uid		| ruid		| status	| description
+		 * +------------+---------------+---------------+---------------+--------------------------------------------
+		 * | Jack	| 80		| 80		| 1		| registered nick
+		 * | Jack|away	| 120		| 80		| 2		| existing alias
+		 * | Jack-away	| 550		| 80		| 2		| new alias pointing to the ruid of its match
+		 * | ^jack^	| 551		| 80		| 2		| new alias
+		 * | Jack|brb	| 552		| 552		| 1		| new registered nick
+		 * | Jack[brb]	| 553		| 552		| 2		| new alias
+		 *
+		 * This method avoids most false positives and is therefore enabled by default.
+		 */
+		$this->output('notice', 'link_nicks(): looking for possible aliases');
+		$query = @mysqli_query($this->mysqli, 'select `csnick`, `user_details`.`uid`, `ruid`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (empty($rows)) {
+			return;
+		}
+
+		while ($result = mysqli_fetch_object($query)) {
+			$nicks[(int) $result->uid] = array(
+				'nick' => $result->csnick,
+				'ruid' => (int) $result->ruid,
+				'status' => (int) $result->status);
+
+			/**
+			 * We keep an array with uids for each stripped nick. If we encounter a linked nick we put its uid at the start of the array, otherwise just append the uid.
+			 */
+			$strippednick = preg_replace('/[^a-z0-9]/', '', strtolower($result->csnick));
+
+			/**
+			 * Only proceed if the stripped nick consists of more than one character.
+			 */
+			if (strlen($strippednick) > 1) {
+				if ((int) $result->status != 0 && !empty($strippednicks[$strippednick])) {
+					array_unshift($strippednicks[$strippednick], (int) $result->uid);
+				} else {
+					$strippednicks[$strippednick][] = (int) $result->uid;
+				}
+			}
+		}
+
+		foreach ($strippednicks as $uids) {
+			/**
+			 * If there is only one uid for the stripped nick we don't have anything to link.
+			 */
+			if (count($uids) == 1) {
+				continue;
+			}
+
+			/**
+			 * We use the ruid belonging to the first uid in the array to link all succeeding unlinked uids to.
+			 * If the first uid is unlinked (status = 0) we update its record to become a registered nick (status = 1) when there is at least one new alias found for it (any succeeding uid with status = 0).
+			 */
+			$newaliases = false;
+
+			for ($i = 1, $j = count($uids); $i < $j; $i++) {
+				if ($nicks[$uids[$i]]['status'] == 0) {
+					@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$nicks[$uids[0]]['ruid'].', `status` = 2 where `uid` = '.$uids[$i]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+					$this->output('debug', 'link_nicks(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
+					$newaliases = true;
+				}
+			}
+
+			if ($newaliases && $nicks[$uids[0]]['status'] == 0) {
+				@mysqli_query($this->mysqli, 'update `user_status` set `status` = 1 where `uid` = '.$uids[0]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			}
+		}
 	}
 
 	private function make_html($file)
@@ -251,6 +341,13 @@ final class sss extends base
 		 * Finally run maintenance routines.
 		 */
 		if ($needmaintenance) {
+			/**
+			 * Before we continue do a quick scan for new aliases if $autolinknicks is enabled.
+			 */
+			if ($this->autolinknicks) {
+				$this->link_nicks();
+			}
+
 			$this->do_maintenance();
 		}
 	}
@@ -283,7 +380,7 @@ final class sss extends base
 		     . '	-m'."\n"
 		     . '		Run database maintenance as is automatically done by sss after'."\n"
 		     . '		parsing logs. This option exist for the purpose of updating'."\n"
-		     . '		user records after nicklinking. (Also see "nicklinker.php".).'."\n\n"
+		     . '		user records after nicklinking. (Also see "nicklinker.php".)'."\n\n"
 		     . '	-o <file>'."\n"
 		     . '		Generate statistics and output to <file>.'."\n";
 		exit($man);
