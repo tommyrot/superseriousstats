@@ -93,8 +93,9 @@ final class maintenance extends base
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
+			@mysqli_query($this->mysqli, 'update `user_status` set `status` = 0 where `uid` = `ruid` and `status` = 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
 			while ($result = mysqli_fetch_object($query)) {
-				@mysqli_query($this->mysqli, 'update `user_status` set `status` = 0 where `uid` = '.$result->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				$this->output('debug', 'fix_user_status_errors(): uid '.$result->uid.' set to default (alias of self)');
 			}
 		}
@@ -106,54 +107,24 @@ final class maintenance extends base
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
+			@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `uid` != `ruid` and `status` != 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
 			while ($result = mysqli_fetch_object($query)) {
-				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$result->uid.', `status` = 0 where `uid` = '.$result->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				$this->output('debug', 'fix_user_status_errors(): uid '.$result->uid.' set to default (non alias pointing to non self)');
+				$this->output('debug', 'fix_user_status_errors(): uid '.$result->uid.' set to default (alias with invalid status)');
 			}
 		}
 
 		/**
-		 * Every alias must have their ruid set to the uid of a registered nick. Which in turn has uid = ruid and status = 1 or 3. Unlink aliases pointing to invalid ruids.
+		 * Every alias must have their ruid set to the uid of a registered nick, which in turn has uid = ruid and status = 1 or 3. Unlink aliases pointing to invalid ruids.
 		 */
-		$query_valid_ruids = @mysqli_query($this->mysqli, 'select `ruid` from `user_status` where `uid` = `ruid` and (`status` = 1 or `status` = 3) order by `ruid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query_valid_ruids);
+		$query = @mysqli_query($this->mysqli, 'select `uid` from `user_status` where `uid` != `ruid` and `status` = 2 and `ruid` not in (select `ruid` from `user_status` where `uid` = `ruid` and (`status` = 1 or `status` = 3)) order by `uid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
-			$query_linked_ruids = @mysqli_query($this->mysqli, 'select distinct `ruid` from `user_status` where `uid` != `ruid` and `status` = 2 order by `ruid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$rows = mysqli_num_rows($query_linked_ruids);
+			@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `uid` != `ruid` and `status` = 2 and `ruid` not in (select `ruid` from `user_status` where `uid` = `ruid` and (`status` = 1 or `status` = 3))') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
-			/**
-			 * If there aren't any aliases we can stop here.
-			 */
-			if (empty($rows)) {
-				return;
-			}
-
-			while ($result_valid_ruids = mysqli_fetch_object($query_valid_ruids)) {
-				$valid_ruids[] = $result_valid_ruids->ruid;
-			}
-
-			while ($result_linked_ruids = mysqli_fetch_object($query_linked_ruids)) {
-				$linked_ruids[] = $result_linked_ruids->ruid;
-			}
-
-			/**
-			 * Do what we're here to do, unlink when appropriate.
-			 */
-			foreach ($linked_ruids as $ruid) {
-				if (in_array($ruid, $valid_ruids)) {
-					continue;
-				}
-
-				$query = @mysqli_query($this->mysqli, 'select `uid` from `user_status` where `ruid` = '.$ruid.' and `status` = 2 order by `uid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				$rows = mysqli_num_rows($query);
-
-				if (!empty($rows)) {
-					while ($result = mysqli_fetch_object($query)) {
-						@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$result->uid.', `status` = 0 where `uid` = '.$result->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-						$this->output('debug', 'fix_user_status_errors(): uid '.$result->uid.' set to default (pointing to invalid registered)');
-					}
-				}
+			while ($result = mysqli_fetch_object($query)) {
+				$this->output('debug', 'fix_user_status_errors(): uid '.$result->uid.' set to default (alias of alias or non registered)');
 			}
 		}
 	}
