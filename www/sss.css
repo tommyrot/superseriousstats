@@ -25,13 +25,6 @@ body {
 	font-size:12px;
 	font-weight:bold;
 }
-.even {
-	color:#666;
-	float:left;
-	margin:15px 22px 7px 0;
-	vertical-align:top;
-	width:160px;
-}
 .grey {
 	color:#999;
 }
@@ -51,14 +44,6 @@ body {
 }
 .left {
 	float:left;
-}
-.odd {
-	color:#999;
-	float:left;
-	margin:15px 8px 7px 0;
-	text-align:right;
-	vertical-align:top;
-	width:90px;
 }
 .right {
 	float:right;
