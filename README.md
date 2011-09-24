@@ -10,9 +10,9 @@ superseriousstats is released under the [ISC license](http://opensource.org/lice
 Official links
 --------------
 
-Project home: [GitHub](https://github.com/tommyrot/superseriousstats)
-Open source software catalogue: [freshmeat](http://freshmeat.net/projects/superseriousstats)
-Examples: [Google search](http://www.google.nl/search?q="Statistics+created+with+superseriousstats")
+* Project home: [GitHub](https://github.com/tommyrot/superseriousstats)
+* Open source software catalogue: [freshmeat](http://freshmeat.net/projects/superseriousstats)
+* Examples: [Google search](http://www.google.nl/search?q=%22Statistics+created+with+superseriousstats%22)
 
 Support
 -------
