@@ -114,7 +114,6 @@ final class maintenance extends base
 			if (!empty($ruids)) {
 				@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `status` = 2 and `ruid` not in ('.ltrim($ruids, ',').')') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				$this->output('debug', 'fix_user_status_errors(): '.mysqli_affected_rows($this->mysqli).' uid(s) set to default (alias of non registered)');
-				exit;
 			}
 		}
 	}
