@@ -89,42 +89,32 @@ final class maintenance extends base
 		/**
 		 * Nicks with uid = ruid can only have status = 0, 1 or 3. Set back to 0 if status = 2.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `uid` from `user_status` where `uid` = `ruid` and `status` = 2 order by `uid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (!empty($rows)) {
-			@mysqli_query($this->mysqli, 'update `user_status` set `status` = 0 where `uid` = `ruid` and `status` = 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
-			while ($result = mysqli_fetch_object($query)) {
-				$this->output('debug', 'fix_user_status_errors(): uid '.$result->uid.' set to default (alias of self)');
-			}
-		}
+		@mysqli_query($this->mysqli, 'update `user_status` set `status` = 0 where `uid` = `ruid` and `status` = 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$this->output('debug', 'fix_user_status_errors(): '.mysqli_affected_rows($this->mysqli).' uid(s) set to default (alias of self)');
 
 		/**
 		 * Nicks with uid != ruid can only have status = 2. Set back to 0 if status != 2 and set uid = ruid accordingly.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `uid` from `user_status` where `uid` != `ruid` and `status` != 2 order by `uid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (!empty($rows)) {
-			@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `uid` != `ruid` and `status` != 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
-			while ($result = mysqli_fetch_object($query)) {
-				$this->output('debug', 'fix_user_status_errors(): uid '.$result->uid.' set to default (alias with invalid status)');
-			}
-		}
+		@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `uid` != `ruid` and `status` != 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$this->output('debug', 'fix_user_status_errors(): '.mysqli_affected_rows($this->mysqli).' uid(s) set to default (alias with invalid status)');
 
 		/**
-		 * Every alias must have their ruid set to the uid of a registered nick, which in turn has uid = ruid and status = 1 or 3. Unlink aliases pointing to invalid ruids.
+		 * Every alias must have their ruid set to the uid of a registered nick, which in turn has uid = ruid and status = 1 or 3. Unlink aliases pointing to non ruids.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `uid` from `user_status` where `uid` != `ruid` and `status` = 2 and `ruid` not in (select `ruid` from `user_status` where `uid` = `ruid` and (`status` = 1 or `status` = 3)) order by `uid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `ruid` from `user_status` where `status` = 1 or `status` = 3 order by `uid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
-			@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `uid` != `ruid` and `status` = 2 and `ruid` not in (select `ruid` from `user_status` where `uid` = `ruid` and (`status` = 1 or `status` = 3))') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$ruids = '';
 
 			while ($result = mysqli_fetch_object($query)) {
-				$this->output('debug', 'fix_user_status_errors(): uid '.$result->uid.' set to default (alias of alias or non registered)');
+				$ruids .= ','.$result->ruid;
+			}
+
+			if (!empty($ruids)) {
+				@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `status` = 2 and `ruid` not in ('.ltrim($ruids, ',').')') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				$this->output('debug', 'fix_user_status_errors(): '.mysqli_affected_rows($this->mysqli).' uid(s) set to default (alias of non registered)');
+				exit;
 			}
 		}
 	}
