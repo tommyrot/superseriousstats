@@ -90,13 +90,21 @@ final class maintenance extends base
 		 * Nicks with uid = ruid can only have status = 0, 1 or 3. Set back to 0 if status = 2.
 		 */
 		@mysqli_query($this->mysqli, 'update `user_status` set `status` = 0 where `uid` = `ruid` and `status` = 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$this->output('debug', 'fix_user_status_errors(): '.mysqli_affected_rows($this->mysqli).' uid(s) set to default (alias of self)');
+		$rows_affected = mysqli_affected_rows($this->mysqli);
+
+		if (!empty($rows_affected)) {
+			$this->output('debug', 'fix_user_status_errors(): '.$rows_affected.' uid'.(($rows_affected > 1) ? 's' : '').' set to default (alias of self)');
+		}
 
 		/**
 		 * Nicks with uid != ruid can only have status = 2. Set back to 0 if status != 2 and set uid = ruid accordingly.
 		 */
 		@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `uid` != `ruid` and `status` != 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$this->output('debug', 'fix_user_status_errors(): '.mysqli_affected_rows($this->mysqli).' uid(s) set to default (alias with invalid status)');
+		$rows_affected = mysqli_affected_rows($this->mysqli);
+
+		if (!empty($rows_affected)) {
+			$this->output('debug', 'fix_user_status_errors(): '.$rows_affected.' uid'.(($rows_affected > 1) ? 's' : '').' set to default (alias with invalid status)');
+		}
 
 		/**
 		 * Every alias must have their ruid set to the uid of a registered nick, which in turn has uid = ruid and status = 1 or 3. Unlink aliases pointing to non ruids.
@@ -113,7 +121,11 @@ final class maintenance extends base
 
 			if (!empty($ruids)) {
 				@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `status` = 2 and `ruid` not in ('.ltrim($ruids, ',').')') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				$this->output('debug', 'fix_user_status_errors(): '.mysqli_affected_rows($this->mysqli).' uid(s) set to default (alias of non registered)');
+				$rows_affected = mysqli_affected_rows($this->mysqli);
+
+				if (!empty($rows_affected)) {
+					$this->output('debug', 'fix_user_status_errors(): '.$rows_affected.' uid'.(($rows_affected > 1) ? 's' : '').' set to default (alias of non registered)');
+				}
 			}
 		}
 	}
