@@ -99,7 +99,7 @@ final class maintenance extends base
 		/**
 		 * Nicks with uid != ruid can only have status = 2. Set back to 0 if status != 2 and set uid = ruid accordingly.
 		 */
-		@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `uid` != `ruid` and `status` != 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0 where `uid` != `ruid` and `status` != 2') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows_affected = mysqli_affected_rows($this->mysqli);
 
 		if (!empty($rows_affected)) {
@@ -120,7 +120,7 @@ final class maintenance extends base
 			}
 
 			if (!empty($ruids)) {
-				@mysqli_query($this->mysqli, 'update `user_status` set `uid` = `ruid`, `status` = 0 where `status` = 2 and `ruid` not in ('.ltrim($ruids, ',').')') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0 where `status` = 2 and `ruid` not in ('.ltrim($ruids, ',').')') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				$rows_affected = mysqli_affected_rows($this->mysqli);
 
 				if (!empty($rows_affected)) {
