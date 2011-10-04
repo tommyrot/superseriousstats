@@ -378,7 +378,7 @@ final class sss extends base
 		     . '		to verify, sort and index data.'."\n\n"
 		     . '	-m'."\n"
 		     . '		Run database maintenance as is automatically done after'."\n"
-		     . '		parsing logs. This option exist for the purpose of updating'."\n"
+		     . '		parsing logs. This option exists for the purpose of updating'."\n"
 		     . '		user records after linking nicks through "nicklinker.php".'."\n\n"
 		     . '	-o <file>'."\n"
 		     . '		Generate statistics and output to <file>.'."\n";
