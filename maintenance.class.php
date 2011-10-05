@@ -170,30 +170,34 @@ final class maintenance extends base
 	private function register_most_active_alias()
 	{
 		/**
-		 * Find out which uid has the most lines for each ruid (having either status 1 or 3).
+		 * Find out which alias (uid) has the most lines for each registered user or bot (ruid).
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `ruid`, (select `user_status`.`uid` from `user_status` join `user_lines` on `user_status`.`uid` = `user_lines`.`uid` where `ruid` = `t1`.`ruid` order by `l_total` desc, `user_status`.`uid` asc limit 1) as `uid`, `status` from `user_status` as `t1` where `status` = 1 or `status` = 3 order by `ruid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `ruid`, `csnick`, (select `user_status`.`uid` from `user_status` join `user_lines` on `user_status`.`uid` = `user_lines`.`uid` where `ruid` = `t1`.`ruid` order by `l_total` desc, `user_status`.`uid` asc limit 1) as `uid`, `status` from `user_status` as `t1` join `user_details` on `t1`.`uid` = `user_details`.`uid` where `status` = 1 or `status` = 3 order by `ruid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
 			break;
 		}
 
-		/**
-		 * Go through our findings and update any user records if needed.
-		 */
 		while ($result = mysqli_fetch_object($query)) {
 			/**
-			 * uid can be null here if a user or bot has zero lines. Also, only process results which differ from previous state (which would be uid = ruid).
+			 * No records need to be updated if:
+			 * - All aliases linked to the registered user or bot have zero lines. The uid value will be null in this case.
+			 * - The alias with the most lines is already set to be the registered user or bot.
 			 */
-			if ($result->uid != null && (int) $result->ruid != (int) $result->uid) {
+			if (!is_null($result->uid) && $result->uid != $result->ruid) {
+				$registered = $result->csnick;
+				$query_alias = @mysqli_query($this->mysqli, 'select `csnick` from `user_details` where `uid` = '.$result->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				$result_alias = mysqli_fetch_object($query_alias);
+				$alias = $result_alias->csnick;
+
 				/**
-				 * First query: make the newly found uid the new ruid by updating its ruid value and set its status from 2 to either 1 or 3, depending on the type we are dealing with.
-				 * Second query: update all records which point to the old ruid and set their ruid value to the newly found uid and set the status to 2 (the latter only effects the old ruid).
+				 * First query: make the uid the new ruid by updating its ruid value and set its status from 2 to either 1 or 3, depending on the status we are dealing with.
+				 * Second query: update all records which point to the old ruid and set their ruid value to the uid and set the status to 2 (the latter only effects the old ruid).
 				 */
 				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$result->uid.', `status` = '.$result->status.' where `uid` = '.$result->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$result->uid.', `status` = 2 where `ruid` = '.$result->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				$this->output('debug', 'register_most_active_alias(): uid '.$result->uid.' set to new registered');
+				$this->output('debug', 'register_most_active_alias(): \''.$alias.'\' set to new registered for \''.$registered.'\'');
 			}
 		}
 	}
