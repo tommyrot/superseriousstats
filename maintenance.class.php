@@ -192,8 +192,9 @@ final class maintenance extends base
 				$alias = $result_alias->csnick;
 
 				/**
-				 * First query: make the uid the new ruid by updating its ruid value and set its status from 2 to either 1 or 3, depending on the status we are dealing with.
-				 * Second query: update all records which point to the old ruid and set their ruid value to the uid and set the status to 2 (the latter only effects the old ruid).
+				 * Update records:
+				 * - Make the alias (uid) the new registered nick for the user or bot by setting ruid = uid. The status will be set to either 1 or 3, identical to previous value.
+				 * - Update the ruid field of all records that still point to the old registered nick (ruid) and set it to the new one (uid). Explicitly set the status to 2 so all records including the old registered nick are marked as alias.
 				 */
 				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$result->uid.', `status` = '.$result->status.' where `uid` = '.$result->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$result->uid.', `status` = 2 where `ruid` = '.$result->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
