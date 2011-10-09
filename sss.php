@@ -114,7 +114,8 @@ final class sss extends base
 	private function link_nicks()
 	{
 		/**
-		 * This function tries to link unlinked nicks to any other nick that is identical after stripping them both from non-alphanumeric characters and doing a case insensitive comparison.
+		 * This function tries to link unlinked nicks to any other nick that is identical after stripping them from non-alphanumeric
+		 * characters (at any position in the nick) and numerics (only at the end of the nick). The results are compared in a case insensitive manner.
 		 *
 		 * Example before:
 		 *
@@ -123,9 +124,12 @@ final class sss extends base
 		 * | Jack	| 80		| 80		| 1		| registered nick (linked manually)
 		 * | Jack|away	| 120		| 80		| 2		| alias (linked manually)
 		 * | Jack-away	| 550		| 550		| 0		| unlinked nick
-		 * | ^jack^	| 551		| 551		| 0		| unlinked nick
-		 * | Jack|brb	| 552		| 552		| 0		| unlinked nick
-		 * | Jack[brb]	| 553		| 553		| 0		| unlinked nick
+		 * | Jack|4w4y	| 551		| 551		| 0		| unlinked nick
+		 * | ^jack^	| 552		| 552		| 0		| unlinked nick
+		 * | Jack|brb	| 553		| 553		| 0		| unlinked nick
+		 * | Jack[brb]	| 554		| 554		| 0		| unlinked nick
+		 * | Jack^1337^	| 555		| 555		| 0		| unlinked nick
+		 *
 		 *
 		 * Example after:
 		 *
@@ -134,9 +138,11 @@ final class sss extends base
 		 * | Jack	| 80		| 80		| 1		| registered nick
 		 * | Jack|away	| 120		| 80		| 2		| existing alias
 		 * | Jack-away	| 550		| 80		| 2		| new alias pointing to the ruid of its match
-		 * | ^jack^	| 551		| 80		| 2		| new alias
-		 * | Jack|brb	| 552		| 552		| 1		| new registered nick
-		 * | Jack[brb]	| 553		| 552		| 2		| new alias
+		 * | Jack|4w4y	| 551		| 551		| 0		| remains unlinked
+		 * | ^jack^	| 552		| 80		| 2		| new alias
+		 * | Jack|brb	| 553		| 553		| 1		| new registered nick
+		 * | Jack[brb]	| 554		| 553		| 2		| new alias
+		 * | Jack^1337^ | 555		| 80		| 2		| new alias
 		 *
 		 * This method avoids most false positives and is therefore enabled by default.
 		 */
@@ -157,7 +163,7 @@ final class sss extends base
 			/**
 			 * We keep an array with uids for each stripped nick. If we encounter a linked nick we put its uid at the start of the array, otherwise just append the uid.
 			 */
-			$strippednick = preg_replace('/[^a-z0-9]/', '', strtolower($result->csnick));
+			$strippednick = preg_replace(array('/[^a-z0-9]/', '/[0-9]+$/'), '', strtolower($result->csnick));
 
 			/**
 			 * Only proceed if the stripped nick consists of more than one character.
