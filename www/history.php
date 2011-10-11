@@ -115,10 +115,7 @@ final class history
 		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by substring(`date`, 1, 4), substring(`date`, 6, 2) having `l_total` != 0 order by `year` asc, `month` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
 		while ($result = mysqli_fetch_object($query)) {
-			if (strpos($result->month, '0') === 0) {
-				$result->month = substr($result->month, 1);
-			}
-
+			$result->month = preg_replace('/^0/', '', $result->month);
 			$this->activity[(int) $result->year][(int) $result->month] = (int) $result->l_total;
 
 			if (!isset($this->activity[(int) $result->year][0])) {

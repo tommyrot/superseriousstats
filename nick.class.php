@@ -266,7 +266,7 @@ final class nick extends base
 			@mysqli_query($this->mysqli, 'insert into `user_status` set `uid` = '.$this->uid.', `ruid` = '.$this->uid.', `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} else {
 			$result = mysqli_fetch_object($query);
-			$this->uid = $result->uid;
+			$this->uid = (int) $result->uid;
 
 			/**
 			 * Explicitly not update $csnick if "seen" data hasn't changed. Prevents lowercase $prevnick from becoming new $csnick.

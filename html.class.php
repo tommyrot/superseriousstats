@@ -193,7 +193,7 @@ final class html extends base
 		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `channel` where `l_total` = (select max(`l_total`) from `channel`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->date_max = $result->date_max;
-		$this->l_max = $result->l_max;
+		$this->l_max = (int) $result->l_max;
 		$this->output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			      . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
 			      . '<head>'."\n".'<title>'.htmlspecialchars($this->channel).', seriously.</title>'."\n"

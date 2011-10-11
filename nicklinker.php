@@ -169,7 +169,7 @@ final class nicklinker extends base
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
-			$uids[strtolower($result->csnick)] = $result->uid;
+			$uids[strtolower($result->csnick)] = (int) $result->uid;
 		}
 
 		if (($rp = realpath($file)) === false) {
