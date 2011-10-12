@@ -200,31 +200,29 @@ final class nicklinker extends base
 						$linked2uid[$nick] = $uid;
 					}
 				}
-			} elseif ($lineparts[0] == '*') {
-				for ($i = 1, $j = count($lineparts); $i < $j; $i++) {
-					if (!empty($lineparts[$i])) {
-						$nick = $lineparts[$i];
-						$unlinked[] = $nick;
-					}
-				}
-			}
-		}
-
-		/**
-		 * Set all nicks to their default status before updating them according to new data.
-		 */
-		@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
-		foreach ($users as $uid => $aliases) {
-			@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = '.$statuses[$uid].' where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-
-			for ($i = 1, $j = count($aliases); $i < $j; $i++) {
-				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$uid.', `status` = 2 where `uid` = '.$uids[$aliases[$i]]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			}
 		}
 
 		fclose($fp);
-		$this->output('notice', 'import(): import completed, don\'t forget to run "php sss.php -m"');
+
+		if (empty($users)) {
+			$this->output('warning', 'import(): no user relations found to import');
+		} else {
+			/**
+			 * Set all nicks to their default status before updating them according to new data.
+			 */
+			@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
+			foreach ($users as $uid => $aliases) {
+				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = '.$statuses[$uid].' where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
+				for ($i = 1, $j = count($aliases); $i < $j; $i++) {
+					@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$uid.', `status` = 2 where `uid` = '.$uids[$aliases[$i]]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				}
+			}
+
+			$this->output('notice', 'import(): import completed, don\'t forget to run "php sss.php -m"');
+		}
 	}
 
 	private function print_manual()
