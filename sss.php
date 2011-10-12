@@ -177,6 +177,12 @@ final class sss extends base
 			}
 		}
 
+		if (empty($strippednicks)) {
+			return;
+		}
+
+		$nickslinked = 0;
+
 		foreach ($strippednicks as $uids) {
 			/**
 			 * If there is only one uid for the stripped nick we don't have anything to link.
@@ -189,19 +195,24 @@ final class sss extends base
 			 * We use the ruid belonging to the first uid in the array to link all succeeding unlinked uids to.
 			 * If the first uid is unlinked (status = 0) we update its record to become a registered nick (status = 1) when there is at least one new alias found for it (any succeeding uid with status = 0).
 			 */
-			$newaliases = false;
+			$aliasfound = false;
 
 			for ($i = 1, $j = count($uids); $i < $j; $i++) {
 				if ($nicks[$uids[$i]]['status'] == 0) {
 					@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$nicks[$uids[0]]['ruid'].', `status` = 2 where `uid` = '.$uids[$i]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 					$this->output('debug', 'link_nicks(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
-					$newaliases = true;
+					$nickslinked++;
+					$aliasfound = true;
 				}
 			}
 
-			if ($newaliases && $nicks[$uids[0]]['status'] == 0) {
+			if ($aliasfound && $nicks[$uids[0]]['status'] == 0) {
 				@mysqli_query($this->mysqli, 'update `user_status` set `status` = 1 where `uid` = '.$uids[0]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			}
+		}
+
+		if ($nickslinked == 0) {
+			$this->output('notice', 'link_nicks(): no new aliases found');
 		}
 	}
 
