@@ -91,9 +91,6 @@ final class nicklinker extends base
 		@mysqli_close($this->mysqli);
 	}
 
-	/**
-	 * Export nicks sorted on lines typed. Unlinked nicks are in alphabetical order.
-	 */
 	private function export($file)
 	{
 		$this->output('notice', 'export(): exporting nicks');
@@ -115,22 +112,25 @@ final class nicklinker extends base
 			}
 		}
 
-		ksort($registered);
 		$output = '';
 		$i = 0;
 
-		foreach ($registered as $user => $uid) {
-			$output .= $statuses[$uid].','.$user;
-			$i++;
+		if (!empty($registered)) {
+			ksort($registered);
 
-			if (!empty($aliases[$uid])) {
-				foreach ($aliases[$uid] as $alias) {
-					$output .= ','.$alias;
-					$i++;
+			foreach ($registered as $user => $uid) {
+				$output .= $statuses[$uid].','.$user;
+				$i++;
+
+				if (!empty($aliases[$uid])) {
+					foreach ($aliases[$uid] as $alias) {
+						$output .= ','.$alias;
+						$i++;
+					}
 				}
-			}
 
-			$output .= "\n";
+				$output .= "\n";
+			}
 		}
 
 		if (!empty($unlinked)) {
