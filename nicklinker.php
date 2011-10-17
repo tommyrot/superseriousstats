@@ -97,7 +97,7 @@ final class nicklinker extends base
 	private function export($file)
 	{
 		$this->output('notice', 'export(): exporting nicks');
-		$query = @mysqli_query($this->mysqli, 'select `user_status`.`uid`, `ruid`, `status`, `csnick` from `user_status` join `user_details` on `user_status`.`uid` = `user_details`.`uid` left join `user_lines` on `user_status`.`uid` = `user_lines`.`uid` order by `l_total` desc, `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `user_details`.`uid`, `ruid`, `csnick`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` order by `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -105,33 +105,35 @@ final class nicklinker extends base
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
-			$statuses[$result->uid] = (int) $result->status;
-			$users[$result->ruid][] = strtolower($result->csnick);
-		}
-
-		$output = '';
-		$i = 0;
-
-		foreach ($users as $ruid => $aliases) {
-			if ($statuses[$ruid] == 1 || $statuses[$ruid] == 3) {
-				$output .= $statuses[$ruid];
-
-				foreach ($aliases as $nick) {
-					$output .= ','.$nick;
-					$i++;
-				}
-
-				$output .= "\n";
+			if ((int) $result->status == 1 || (int) $result->status == 3) {
+				$registered[strtolower($result->csnick)] = (int) $result->uid;
+				$statuses[(int) $result->uid] = (int) $result->status;
+			} elseif ((int) $result->status == 2) {
+				$aliases[(int) $result->ruid][] = strtolower($result->csnick);
 			} else {
-				/**
-				 * There is only one nick linked to a user with status 0; itself. Other options fail at the end of this method.
-				 */
-				$unlinked[] = $aliases[0];
+				$unlinked[] = strtolower($result->csnick);
 			}
 		}
 
+		ksort($registered);
+		$output = '';
+		$i = 0;
+
+		foreach ($registered as $user => $uid) {
+			$output .= $statuses[$uid].','.$user;
+			$i++;
+
+			if (!empty($aliases[$uid])) {
+				foreach ($aliases[$uid] as $alias) {
+					$output .= ','.$alias;
+					$i++;
+				}
+			}
+
+			$output .= "\n";
+		}
+
 		if (!empty($unlinked)) {
-			sort($unlinked);
 			$output .= '*';
 
 			foreach ($unlinked as $nick) {
