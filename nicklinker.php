@@ -157,9 +157,6 @@ final class nicklinker extends base
 		$this->output('notice', 'export(): '.number_format($i).' nicks exported');
 	}
 
-	/**
-	 * Import nicks from file. First nick on each line is the initial registered nick to which aliases are linked.
-	 */
 	private function import($file)
 	{
 		$this->output('notice', 'import(): importing nicks');
@@ -187,19 +184,17 @@ final class nicklinker extends base
 			$line = preg_replace('/\s/', '', $line);
 			$lineparts = explode(',', strtolower($line));
 
-			if (($lineparts[0] == '1' || $lineparts[0] == '3') && !empty($lineparts[1])) {
-				$status = (int) $lineparts[0];
-				$nick = $lineparts[1];
-				$uid = $uids[$nick];
-				$statuses[$uid] = $status;
-				$users[$uid][] = $nick;
-				$linked2uid[$nick] = $uid;
+			/**
+			 * First nick on each line is the initial registered nick which aliases are linked to.
+			 */
+			if (((int) $lineparts[0] == 1 || (int) $lineparts[0] == 3) && !empty($lineparts[1])) {
+				$uid = $uids[$lineparts[1]];
+				$registered[] = $uid;
+				$statuses[$uid] = (int) $lineparts[0];
 
 				for ($i = 2, $j = count($lineparts); $i < $j; $i++) {
 					if (!empty($lineparts[$i])) {
-						$nick = $lineparts[$i];
-						$users[$uid][] = $nick;
-						$linked2uid[$nick] = $uid;
+						$aliases[$uid][] = $uids[$lineparts[$i]];
 					}
 				}
 			}
@@ -207,7 +202,7 @@ final class nicklinker extends base
 
 		fclose($fp);
 
-		if (empty($users)) {
+		if (empty($registered)) {
 			$this->output('warning', 'import(): no user relations found to import');
 		} else {
 			/**
@@ -215,11 +210,11 @@ final class nicklinker extends base
 			 */
 			@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
-			foreach ($users as $uid => $aliases) {
+			foreach ($registered as $uid) {
 				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = '.$statuses[$uid].' where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
-				for ($i = 1, $j = count($aliases); $i < $j; $i++) {
-					@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$uid.', `status` = 2 where `uid` = '.$uids[$aliases[$i]]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				if (!empty($aliases[$uid])) {
+					@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$uid.', `status` = 2 where `uid` in ('.implode(',', $aliases[$uid]).')') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				}
 			}
 
