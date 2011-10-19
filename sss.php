@@ -237,13 +237,13 @@ final class sss extends base
 			/**
 			 * First nick on each line is the initial registered nick which aliases are linked to.
 			 */
-			if (((int) $lineparts[0] == 1 || (int) $lineparts[0] == 3) && !empty($lineparts[1])) {
+			if (((int) $lineparts[0] == 1 || (int) $lineparts[0] == 3) && !empty($lineparts[1]) && array_key_exists($lineparts[1], $uids)) {
 				$uid = $uids[$lineparts[1]];
 				$registered[] = $uid;
 				$statuses[$uid] = (int) $lineparts[0];
 
 				for ($i = 2, $j = count($lineparts); $i < $j; $i++) {
-					if (!empty($lineparts[$i])) {
+					if (!empty($lineparts[$i]) && array_key_exists($lineparts[$i], $uids)) {
 						$aliases[$uid][] = $uids[$lineparts[$i]];
 					}
 				}
