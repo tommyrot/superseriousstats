@@ -74,7 +74,7 @@ final class sss extends base
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
-		if (!preg_match('/^(bc?i?o|c?(e|i|i?o|m))$/', $options_keys)) {
+		if (!preg_match('/^(bc?i?o|c|c?(e|i|i?o|m))$/', $options_keys)) {
 			$this->print_manual();
 		}
 
