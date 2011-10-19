@@ -51,7 +51,7 @@ final class sss extends base
 		'parser' => 'string',
 		'outputbits' => 'int',
 		'timezone' => 'string');
-	private $settings_list_required = array('channel', 'db_pass', 'db_user', 'logfile_dateformat', 'parser');
+	private $settings_list_required = array('db_pass', 'db_user');
 
 	public function __construct()
 	{
@@ -68,27 +68,49 @@ final class sss extends base
 		date_default_timezone_set('UTC');
 
 		/**
-		 * Read options from the command line.
+		 * Read options from the command line. If an illegal combination of valid options is given the program will print the manual on screen and exit.
 		 */
 		$options = getopt('b:c:i:mo:');
+		ksort($options);
+		$options_keys = implode('', array_keys($options));
 
-		if (empty($options)) {
+		if (!preg_match('/^(bc?i?o|c?(i|i?o|m))$/', $options_keys)) {
 			$this->print_manual();
 		}
 
+		/**
+		 * Some options require additional settings to be set in the configuration file.
+		 */
+		if (strpos($options_keys, 'i') !== false) {
+			array_push($this->settings_list_required, 'parser', 'logfile_dateformat');
+		}
+
+		if (strpos($options_keys, 'o') !== false) {
+			$this->settings_list_required[] = 'channel';
+		}
+
+		/**
+		 * Read the configuration file.
+		 */
 		if (array_key_exists('c', $options)) {
 			$this->read_config($options['c']);
 		} else {
 			$this->read_config(dirname(__FILE__).'/sss.conf');
 		}
 
-		if (array_key_exists('b', $options)) {
-			$this->settings['sectionbits'] = (int) $options['b'];
-		}
-
+		/**
+		 * Make the database connection. Always needed.
+		 */
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
 		$this->output('notice', '__construct(): succesfully connected to '.$this->db_host.':'.$this->db_port.', database: \''.$this->db_name.'\'');
 		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
+		/**
+		 * The following options are listed in order of execution. Ie. "i" before "o", "b" before "o".
+		 */
+		if (array_key_exists('b', $options)) {
+			$this->settings['sectionbits'] = (int) $options['b'];
+		}
 
 		if (array_key_exists('i', $options)) {
 			$this->parse_log($options['i']);
@@ -398,7 +420,11 @@ final class sss extends base
 		     . '		parsing logs. This option exists for the purpose of updating'."\n"
 		     . '		user records after linking nicks through "nicklinker.php".'."\n\n"
 		     . '	-o <file>'."\n"
-		     . '		Generate statistics and output to <file>.'."\n";
+		     . '		Generate statistics and output to <file>.'."\n\n"
+		     . 'examples:'."\n"
+		     . '	Parse all logfiles found in "/home/foo/bar/" and create a statspage'."\n"
+		     . '	named "/var/www/foobar.html" containing only Activity and URLs data:'."\n\n"
+		     . '		$ php sss.php -i /home/foo/bar/ -o /var/www/foobar.html -b 33'."\n";
 		exit($man);
 	}
 
