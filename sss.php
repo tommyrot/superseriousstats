@@ -465,6 +465,7 @@ final class sss extends base
 	{
 		$man = 'usage:	php sss.php [-c <file>] [-i <file|directory>]'."\n"
 		     . '		    [-o <file> [-b <numbits>]]'."\n"
+		     . '	php sss.php [-c <file>] [-e <file>]'."\n"
 		     . '	php sss.php [-c <file>] [-m]'."\n\n"
 		     . 'options:'."\n"
 		     . '	-b <numbits>'."\n"
