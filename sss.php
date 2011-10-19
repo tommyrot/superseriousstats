@@ -70,11 +70,11 @@ final class sss extends base
 		/**
 		 * Read options from the command line. If an illegal combination of valid options is given the program will print the manual on screen and exit.
 		 */
-		$options = getopt('b:c:i:mo:');
+		$options = getopt('b:c:e:i:mo:');
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
-		if (!preg_match('/^(bc?i?o|c?(i|i?o|m))$/', $options_keys)) {
+		if (!preg_match('/^(bc?i?o|c?(e|i|i?o|m))$/', $options_keys)) {
 			$this->print_manual();
 		}
 
@@ -112,6 +112,10 @@ final class sss extends base
 			$this->settings['sectionbits'] = (int) $options['b'];
 		}
 
+		if (array_key_exists('e', $options)) {
+			$this->export_nicks($options['e']);
+		}
+
 		if (array_key_exists('i', $options)) {
 			$this->parse_log($options['i']);
 		}
@@ -131,6 +135,72 @@ final class sss extends base
 	{
 		$maintenance = new maintenance($this->settings);
 		$maintenance->do_maintenance($this->mysqli);
+	}
+
+	private function export_nicks($file)
+	{
+		$this->output('notice', 'export(): exporting nicks');
+		$query = @mysqli_query($this->mysqli, 'select `user_details`.`uid`, `ruid`, `csnick`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` order by `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (empty($rows)) {
+			$this->output('critical', 'export(): database is empty');
+		}
+
+		while ($result = mysqli_fetch_object($query)) {
+			if ((int) $result->status == 1 || (int) $result->status == 3) {
+				$registered[strtolower($result->csnick)] = (int) $result->uid;
+				$statuses[(int) $result->uid] = (int) $result->status;
+			} elseif ((int) $result->status == 2) {
+				$aliases[(int) $result->ruid][] = strtolower($result->csnick);
+			} else {
+				$unlinked[] = strtolower($result->csnick);
+			}
+		}
+
+		$output = '';
+		$i = 0;
+
+		if (!empty($registered)) {
+			ksort($registered);
+
+			foreach ($registered as $user => $uid) {
+				$output .= $statuses[$uid].','.$user;
+				$i++;
+
+				if (!empty($aliases[$uid])) {
+					foreach ($aliases[$uid] as $alias) {
+						$output .= ','.$alias;
+						$i++;
+					}
+				}
+
+				$output .= "\n";
+			}
+		}
+
+		if (!empty($unlinked)) {
+			$output .= '*';
+
+			foreach ($unlinked as $nick) {
+				$output .= ','.$nick;
+				$i++;
+			}
+
+			$output .= "\n";
+		}
+
+		if ($i != $rows) {
+			$this->output('critical', 'export(): something is wrong, run "php sss.php -m" before export');
+		}
+
+		if (($fp = @fopen($file, 'wb')) === false) {
+			$this->output('critical', 'export(): failed to open file: \''.$file.'\'');
+		}
+
+		fwrite($fp, $output);
+		fclose($fp);
+		$this->output('notice', 'export(): '.number_format($i).' nicks exported');
 	}
 
 	private function link_nicks()
@@ -411,6 +481,8 @@ final class sss extends base
 		     . '		is used, which is 127 by default. This enables all sections.'."\n\n"
 		     . '	-c <file>'."\n"
 		     . '		Read settings from <file>. By default "./sss.conf" is read.'."\n\n"
+		     . '	-e <file>'."\n"
+		     . '		Export all user relations from the database to <file>.'."\n\n"
 		     . '	-i <file|directory>'."\n"
 		     . '		Parse logfile <file>, or all logfiles in <directory>. After the'."\n"
 		     . '		last logfile has been parsed database maintenance will commence'."\n"
