@@ -70,11 +70,11 @@ final class sss extends base
 		/**
 		 * Read options from the command line. If an illegal combination of valid options is given the program will print the manual on screen and exit.
 		 */
-		$options = getopt('b:c:e:i:mo:');
+		$options = getopt('b:c:e:i:mn:o:');
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
-		if (!preg_match('/^(bc?i?o|c|c?(e|i|i?o|m))$/', $options_keys)) {
+		if (!preg_match('/^(bc?i?o|c|c?(e|i|i?o|m|n))$/', $options_keys)) {
 			$this->print_manual();
 		}
 
@@ -122,6 +122,10 @@ final class sss extends base
 
 		if (array_key_exists('m', $options)) {
 			$this->do_maintenance();
+		}
+
+		if (array_key_exists('n', $options)) {
+			$this->import_nicks($options['n']);
 		}
 
 		if (array_key_exists('o', $options)) {
@@ -201,6 +205,71 @@ final class sss extends base
 		fwrite($fp, $output);
 		fclose($fp);
 		$this->output('notice', 'export(): '.number_format($i).' nicks exported');
+	}
+
+	private function import_nicks($file)
+	{
+		$this->output('notice', 'import(): importing nicks');
+		$query = @mysqli_query($this->mysqli, 'select `uid`, `csnick` from `user_details`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (empty($rows)) {
+			$this->output('critical', 'import(): database is empty');
+		}
+
+		while ($result = mysqli_fetch_object($query)) {
+			$uids[strtolower($result->csnick)] = (int) $result->uid;
+		}
+
+		if (($rp = realpath($file)) === false) {
+			$this->output('critical', 'import(): no such file: \''.$file.'\'');
+		}
+
+		if (($fp = @fopen($rp, 'rb')) === false) {
+			$this->output('critical', 'import(): failed to open file: \''.$file.'\'');
+		}
+
+		while (!feof($fp)) {
+			$line = fgets($fp);
+			$line = preg_replace('/\s/', '', $line);
+			$lineparts = explode(',', strtolower($line));
+
+			/**
+			 * First nick on each line is the initial registered nick which aliases are linked to.
+			 */
+			if (((int) $lineparts[0] == 1 || (int) $lineparts[0] == 3) && !empty($lineparts[1])) {
+				$uid = $uids[$lineparts[1]];
+				$registered[] = $uid;
+				$statuses[$uid] = (int) $lineparts[0];
+
+				for ($i = 2, $j = count($lineparts); $i < $j; $i++) {
+					if (!empty($lineparts[$i])) {
+						$aliases[$uid][] = $uids[$lineparts[$i]];
+					}
+				}
+			}
+		}
+
+		fclose($fp);
+
+		if (empty($registered)) {
+			$this->output('warning', 'import(): no user relations found to import');
+		} else {
+			/**
+			 * Set all nicks to their default status before updating them according to new data.
+			 */
+			@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
+			foreach ($registered as $uid) {
+				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = '.$statuses[$uid].' where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+
+				if (!empty($aliases[$uid])) {
+					@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$uid.', `status` = 2 where `uid` in ('.implode(',', $aliases[$uid]).')') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				}
+			}
+
+			$this->output('notice', 'import(): import completed, don\'t forget to run "php sss.php -m"');
+		}
 	}
 
 	private function link_nicks()
@@ -492,6 +561,12 @@ final class sss extends base
 		     . '		Run database maintenance as is automatically done after'."\n"
 		     . '		parsing logs. This option exists for the purpose of updating'."\n"
 		     . '		user records after linking nicks through "nicklinker.php".'."\n\n"
+		     . '	-n <file>'."\n"
+		     . '		Import user relations from <file> into the database. Existing'."\n"
+		     . '		relationships will be unset prior to any updates made. It is'."\n"
+		     . '		highly recommended to keep an export as backup. Nicks contained'."\n"
+		     . '		in <file> are treated as case insensitive and nicks which don\'t'."\n"
+		     . '		exist in the database will be ignored.'."\n\n"
 		     . '	-o <file>'."\n"
 		     . '		Generate statistics and output to <file>.'."\n\n"
 		     . 'examples:'."\n"
