@@ -83,7 +83,7 @@ final class urltools
 		/**
 		 * Convert scheme and authority to lower case.
 		 */
-		$url = preg_replace('/^'.$this->scheme.$this->authority.'/ei', 'strtolower(\'$0\')', $url);
+		$url = preg_replace('/^'.$this->scheme.'?'.$this->authority.'/ei', 'strtolower(\'$0\')', $url);
 
 		/**
 		 * Validate and further process the URL.
