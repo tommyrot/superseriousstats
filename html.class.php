@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2011, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2012, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -622,7 +622,7 @@ final class html extends base
 			$t->set_value('key2', 'TLD');
 			$t->set_value('maxrows', 10);
 			$t->set_value('minrows', 10);
-			$t->set_value('query_main', 'select sum(`total`) as `v1`, `tld` as `v2` from `user_urls` where `tld` != \'\' group by `v2` order by `v1` desc, `v2` asc limit 10;');
+			$t->set_value('query_main', 'select sum(`total`) as `v1`, `tld` as `v2` from `user_urls` where `tld` != \'\' group by `v2` order by `v1` desc, `v2` asc limit 10');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Recent URLs');
