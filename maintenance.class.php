@@ -176,7 +176,7 @@ final class maintenance extends base
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
-			break;
+			return;
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
