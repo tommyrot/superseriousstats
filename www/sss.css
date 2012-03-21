@@ -17,10 +17,8 @@ body {
 	float:left;
 	width:840px;
 }
-.even,
 .head,
-.info,
-.odd {
+.info {
 	font-family:verdana,sans-serif;
 	font-size:12px;
 	font-weight:bold;
