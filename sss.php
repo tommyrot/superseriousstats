@@ -634,10 +634,6 @@ final class sss extends base
 	}
 }
 
-if (substr(phpversion(), 0, 3) != '5.3') {
-	echo 'php version 5.3 is recommended, you are running with version '.phpversion()."\n";
-}
-
 if (!extension_loaded('mysqli')) {
 	exit('mysqli extension isn\'t loaded'."\n");
 }
