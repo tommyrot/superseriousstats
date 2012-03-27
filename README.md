@@ -7,14 +7,15 @@ Suitable for high volume IRC channels and large log archives. Once you have supe
 
 superseriousstats is released under the [ISC license](http://opensource.org/licenses/isc-license.txt).
 
-Official links
---------------
+Links
+-----
 
-* Project home: [GitHub](https://github.com/tommyrot/superseriousstats)
-* Open source software catalogue: [freshmeat](http://freshmeat.net/projects/superseriousstats)
-* Examples: [Google search](http://www.google.nl/search?q=%22Statistics+created+with+superseriousstats%22)
+* Source and project information at [GitHub](https://github.com/tommyrot/superseriousstats).
+* Setup guide at [GitHub](https://github.com/tommyrot/superseriousstats/wiki/Setup-guide).
+* Release log at [Freecode](http://freshmeat.net/projects/superseriousstats).
+* Examples via [Google search](http://www.google.nl/search?q=%22Statistics+created+with+superseriousstats%22).
 
 Support
 -------
 
-For questions, bug reports and feature requests you are welcome to join us in #superseriousstats on chat.freenode.net. We will be more than happy to help you get the program running.
+For questions, bug reports and feature requests you are welcome to join us in #superseriousstats on chat.freenode.net. We will be more than happy to help you get the program running. Please follow the project if you like it, this will give it more exposure!
