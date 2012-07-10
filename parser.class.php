@@ -546,7 +546,7 @@ abstract class parser extends base
 			/**
 			 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than 50% non letter characters from the Basic Latin and Latin-1 Supplement character sets in them.
 			 */
-			if ($line_length_chars >= 2 && mb_strtoupper($line, 'UTF-8') == $line && mb_strlen(preg_replace('/[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7/', '', $line), 'UTF-8') * 2 > $line_length_chars) {
+			if ($line_length_chars >= 2 && mb_strtoupper($line, 'UTF-8') == $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length_chars) {
 				$this->nicks_objs[$nick]->add_value('uppercased', 1);
 
 				if (!$skipquote && $line_length_bytes <= 255) {
