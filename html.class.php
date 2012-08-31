@@ -190,7 +190,7 @@ final class html extends base
 		/**
 		 * HTML Head.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `channel` where `l_total` = (select max(`l_total`) from `channel`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select min(`date`) as `date_max`, `l_total` as `l_max` from `channel` where `l_total` = (select max(`l_total`) from `channel`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->date_max = $result->date_max;
 		$this->l_max = (int) $result->l_max;
