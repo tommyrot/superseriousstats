@@ -112,7 +112,7 @@ final class history
 	}
 
 	private function get_activity() {
-		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by `year`, `month` having `l_total` != 0 order by `date` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by `year`, `month` order by `date` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
 		while ($result = mysqli_fetch_object($query)) {
 			$result->month = preg_replace('/^0/', '', $result->month);
