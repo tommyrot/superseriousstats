@@ -137,6 +137,13 @@ final class sss extends base
 
 	private function do_maintenance()
 	{
+		/**
+		 * Before we continue do a quick scan for new aliases if $autolinknicks is enabled.
+		 */
+		if ($this->autolinknicks) {
+			$this->link_nicks();
+		}
+
 		$maintenance = new maintenance($this->settings);
 		$maintenance->do_maintenance($this->mysqli);
 	}
@@ -526,13 +533,6 @@ final class sss extends base
 		 * Finally run maintenance routines if needed.
 		 */
 		if ($needmaintenance) {
-			/**
-			 * Before we continue do a quick scan for new aliases if $autolinknicks is enabled.
-			 */
-			if ($this->autolinknicks) {
-				$this->link_nicks();
-			}
-
 			$this->do_maintenance();
 		}
 	}
