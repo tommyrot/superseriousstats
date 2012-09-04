@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2011, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2012, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -126,6 +126,7 @@ abstract class parser extends base
 	protected $linenum = 0;
 	protected $linenum_lastnonempty = 0;
 	protected $mysqli;
+	protected $newdata = false;
 	protected $prevline = '';
 	protected $prevnick = '';
 	protected $streak = 0;
@@ -219,6 +220,14 @@ abstract class parser extends base
 
 		gzclose($zp);
 		$this->output('notice', 'gzparse_log(): parsing completed');
+
+		/**
+		 * The $newdata variable can be used outside of the parser class to decide whether we want to run additional routines or skip them.
+		 * Whenever the $nicks_objs count is zero there won't be any new data because the data we are interested in is always related to one or more valid nicks.
+		 */
+		if (!empty($this->nicks_objs)) {
+			$this->newdata = true;
+		}
 	}
 
 	/**
@@ -288,6 +297,14 @@ abstract class parser extends base
 
 		fclose($fp);
 		$this->output('notice', 'parse_log(): parsing completed');
+
+		/**
+		 * The $newdata variable can be used outside of the parser class to decide whether we want to run additional routines or skip them.
+		 * Whenever the $nicks_objs count is zero there won't be any new data because the data we are interested in is always related to one or more valid nicks.
+		 */
+		if (!empty($this->nicks_objs)) {
+			$this->newdata = true;
+		}
 	}
 
 	/**

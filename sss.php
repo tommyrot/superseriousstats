@@ -498,11 +498,17 @@ final class sss extends base
 			$logsparsed++;
 
 			/**
-			 * Update parse history and set $needmaintenance to true when there are actual lines parsed.
+			 * Update the parse history when there are actual (non empty) lines parsed.
 			 */
 			if ($parser->get_value('linenum_lastnonempty') >= $firstline) {
-				$parser->write_data($this->mysqli);
 				@mysqli_query($this->mysqli, 'insert into `parse_history` set `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\', `lines_parsed` = '.$parser->get_value('linenum_lastnonempty').' on duplicate key update `lines_parsed` = '.$parser->get_value('linenum_lastnonempty')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			}
+
+			/**
+			 * When new data is found write it to the database and set $needmaintenance to true.
+			 */
+			if ($parser->get_value('newdata')) {
+				$parser->write_data($this->mysqli);
 				$needmaintenance = true;
 			} else {
 				$this->output('notice', 'parse_log(): no new data to write to database');
