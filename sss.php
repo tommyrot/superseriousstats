@@ -143,12 +143,13 @@ final class sss extends base
 
 	private function export_nicks($file)
 	{
-		$this->output('notice', 'export(): exporting nicks');
+		$this->output('notice', 'export_nicks(): exporting nicks');
 		$query = @mysqli_query($this->mysqli, 'select `user_details`.`uid`, `ruid`, `csnick`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` order by `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
-			$this->output('critical', 'export(): database is empty');
+			$this->output('warning', 'export_nicks(): database is empty, nothing to do');
+			return;
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
@@ -195,26 +196,27 @@ final class sss extends base
 		}
 
 		if ($i != $rows) {
-			$this->output('critical', 'export(): something is wrong, run "php sss.php -m" before export');
+			$this->output('critical', 'export_nicks(): something is wrong, run "php sss.php -m" before export');
 		}
 
 		if (($fp = @fopen($file, 'wb')) === false) {
-			$this->output('critical', 'export(): failed to open file: \''.$file.'\'');
+			$this->output('critical', 'export_nicks(): failed to open file: \''.$file.'\'');
 		}
 
 		fwrite($fp, $output);
 		fclose($fp);
-		$this->output('notice', 'export(): '.number_format($i).' nicks exported');
+		$this->output('notice', 'export_nicks(): '.number_format($i).' nicks exported');
 	}
 
 	private function import_nicks($file)
 	{
-		$this->output('notice', 'import(): importing nicks');
+		$this->output('notice', 'import_nicks(): importing nicks');
 		$query = @mysqli_query($this->mysqli, 'select `uid`, `csnick` from `user_details`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
-			$this->output('critical', 'import(): database is empty');
+			$this->output('warning', 'import_nicks(): database is empty, nothing to do');
+			return;
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
@@ -222,11 +224,11 @@ final class sss extends base
 		}
 
 		if (($rp = realpath($file)) === false) {
-			$this->output('critical', 'import(): no such file: \''.$file.'\'');
+			$this->output('critical', 'import_nicks(): no such file: \''.$file.'\'');
 		}
 
 		if (($fp = @fopen($rp, 'rb')) === false) {
-			$this->output('critical', 'import(): failed to open file: \''.$file.'\'');
+			$this->output('critical', 'import_nicks(): failed to open file: \''.$file.'\'');
 		}
 
 		while (!feof($fp)) {
@@ -253,7 +255,7 @@ final class sss extends base
 		fclose($fp);
 
 		if (empty($registered)) {
-			$this->output('warning', 'import(): no user relations found to import');
+			$this->output('warning', 'import_nicks(): no user relations found to import');
 		} else {
 			/**
 			 * Set all nicks to their default status before updating them according to new data.
@@ -268,7 +270,7 @@ final class sss extends base
 				}
 			}
 
-			$this->output('notice', 'import(): import completed, don\'t forget to run "php sss.php -m"');
+			$this->output('notice', 'import_nicks(): import completed, don\'t forget to run "php sss.php -m"');
 		}
 	}
 
