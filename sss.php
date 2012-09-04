@@ -316,6 +316,8 @@ final class sss extends base
 			return;
 		}
 
+		$strippednicks = array();
+
 		while ($result = mysqli_fetch_object($query)) {
 			$nicks[(int) $result->uid] = array(
 				'nick' => $result->csnick,
@@ -337,10 +339,6 @@ final class sss extends base
 					$strippednicks[$strippednick][] = (int) $result->uid;
 				}
 			}
-		}
-
-		if (empty($strippednicks)) {
-			return;
 		}
 
 		$nickslinked = 0;
