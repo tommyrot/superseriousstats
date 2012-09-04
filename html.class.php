@@ -157,7 +157,8 @@ final class html extends base
 		 * Exit if the channel has no logged activity. Most functions don't expect to be run on an empty database so keep this check in place.
 		 */
 		if (empty($result->l_total)) {
-			$this->output('critical', 'make_html(): database is empty');
+			$this->output('warning', 'make_html(): database is empty, nothing to do');
+			return 'No data.';
 		}
 
 		$this->l_total = (int) $result->l_total;
