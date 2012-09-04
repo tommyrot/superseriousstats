@@ -516,7 +516,7 @@ final class sss extends base
 		}
 
 		/**
-		 * Finally run maintenance routines.
+		 * Finally run maintenance routines if needed.
 		 */
 		if ($needmaintenance) {
 			/**

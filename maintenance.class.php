@@ -62,12 +62,11 @@ final class maintenance extends base
 		}
 
 		if (empty($result->usercount)) {
-			$this->output('notice', 'do_maintenance(): database is empty, skipping some tasks');
-		} else {
-			$this->fix_user_status_errors();
-			$this->register_most_active_alias();
+			$this->output('critical', 'do_maintenance(): database is empty, nothing to do');
 		}
 
+		$this->fix_user_status_errors();
+		$this->register_most_active_alias();
 		$this->make_materialized_views();
 		$this->output('notice', 'do_maintenance(): maintenance completed');
 	}
