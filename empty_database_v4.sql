@@ -1190,7 +1190,7 @@ DROP TABLE IF EXISTS `user_details`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_details` (
   `uid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `csnick` varchar(255) NOT NULL DEFAULT '',
+  `csnick` varchar(30) NOT NULL DEFAULT '',
   `firstseen` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `lastseen` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`uid`),
