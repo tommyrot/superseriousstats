@@ -29,8 +29,6 @@ final class maintenance extends base
 
 	public function __construct($settings)
 	{
-		parent::__construct();
-
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $settings)) {
 				continue;

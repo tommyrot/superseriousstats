@@ -87,8 +87,6 @@ final class html extends base
 
 	public function __construct($settings)
 	{
-		parent::__construct();
-
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $settings)) {
 				continue;
@@ -1153,7 +1151,6 @@ final class table extends base
 
 	public function __construct($head)
 	{
-		parent::__construct();
 		$this->head = $head;
 	}
 
@@ -1170,6 +1167,9 @@ final class table extends base
 			return;
 		}
 
+		/**
+		 * Fetch and structure table contents.
+		 */
 		$i = 0;
 
 		while ($result = mysqli_fetch_object($query)) {
@@ -1211,6 +1211,9 @@ final class table extends base
 			$this->total = (int) $result->total;
 		}
 
+		/**
+		 * Create the actual table according to type.
+		 */
 		if ($this->type == 'small') {
 			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" />';
 			$tr1 = '<tr><th colspan="3">'.($this->total > 0 ? '<span class="left">'.$this->head.'</span><span class="right">'.number_format($this->total).' Total</span>' : $this->head).'</th></tr>';
@@ -1236,6 +1239,7 @@ final class table extends base
 				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2"><a href="'.$row[2].'">'.$row[2].'</a></td><td class="v3">'.$row[3].'</td></tr>';
 			}
 		} elseif ($this->type == 'topics') {
+			$urltools = new urltools();
 			$prevdate = '';
 
 			foreach ($content as $row) {
@@ -1246,7 +1250,7 @@ final class table extends base
 				 * Check if there are URLs in the topic and make hyperlinks out of them. Use htmlspecialchars() here since we skipped doing it before.
 				 */
 				foreach ($words as $word) {
-					if (preg_match('/^(www\.|https?:\/\/)/i', $word) && ($urldata = $this->urltools->get_elements($word)) !== false) {
+					if (preg_match('/^(www\.|https?:\/\/)/i', $word) && ($urldata = $urltools->get_elements($word)) !== false) {
 						$topic .= '<a href="'.htmlspecialchars($urldata['url']).'">'.htmlspecialchars($urldata['url']).'</a> ';
 					} else {
 						$topic .= htmlspecialchars($word).' ';

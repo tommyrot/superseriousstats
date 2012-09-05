@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2011, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2012, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -43,7 +43,6 @@ final class url extends base
 
 	public function __construct($urldata)
 	{
-		parent::__construct();
 		$this->url = $urldata['url'];
 		$this->scheme = $urldata['scheme'];
 		$this->authority = $urldata['authority'];

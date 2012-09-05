@@ -55,8 +55,6 @@ final class sss extends base
 
 	public function __construct()
 	{
-		parent::__construct();
-
 		/**
 		 * Explicitly set the locale to C so we won't run into unexpected results between platforms.
 		 */

@@ -92,6 +92,7 @@ abstract class parser extends base
 		':[' => 's_48',
 		'>:(' => 's_49',
 		';o' => 's_50');
+	private $urltools;
 	private $words_objs = array();
 	protected $date = '';
 	protected $l_00 = 0;
@@ -133,7 +134,7 @@ abstract class parser extends base
 
 	final public function __construct($settings)
 	{
-		parent::__construct();
+		$this->urltools = new urltools();
 
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $settings)) {

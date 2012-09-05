@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2010-2011, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2012, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,12 +31,6 @@ abstract class base
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $prevoutput = array();
-	protected $urltools;
-
-	public function __construct()
-	{
-		$this->urltools = new urltools();
-	}
 
 	final public function add_value($var, $value)
 	{
