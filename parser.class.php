@@ -513,7 +513,9 @@ abstract class parser extends base
 
 					if (($urldata = $this->urltools->get_elements($csword)) !== false) {
 						if (strlen($urldata['url']) > 1024) {
-							$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': exceeds column length (1024)');
+							$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': exceeds column length of `url` (1024)');
+						} elseif (strlen($urldata['authority']) > 255) {
+							$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': exceeds column length of `authority` (255)');
 						} else {
 							$this->nicks_objs[$nick]->add_url($urldata, $datetime);
 							$this->nicks_objs[$nick]->add_value('urls', 1);
@@ -650,7 +652,7 @@ abstract class parser extends base
 			 * Keep track of every single topic set.
 			 */
 			if (strlen($line) > 1024) {
-				$this->output('debug', 'set_topic(): skipping topic on line '.$this->linenum.': exceeds column length (1024)');
+				$this->output('debug', 'set_topic(): skipping topic on line '.$this->linenum.': exceeds column length of `topic` (1024)');
 			} else {
 				$this->nicks_objs[$nick]->add_topic($line, $datetime);
 			}
