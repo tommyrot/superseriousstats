@@ -172,8 +172,6 @@ final class sss extends base
 		$i = 0;
 
 		if (!empty($registered)) {
-			ksort($registered);
-
 			foreach ($registered as $user => $uid) {
 				$output .= $statuses[$uid].','.$user;
 				$i++;
