@@ -106,7 +106,7 @@ final class maintenance extends base
 		/**
 		 * Every alias must have their ruid set to the uid of a registered nick, which in turn has uid = ruid and status = 1 or 3. Unlink aliases pointing to non ruids.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `ruid` from `user_status` where `status` = 1 or `status` = 3 order by `uid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `ruid` from `user_status` where `status` in (1,3) order by `uid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
@@ -169,7 +169,7 @@ final class maintenance extends base
 		/**
 		 * Find out which alias (uid) has the most lines for each registered user or bot (ruid).
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `ruid`, `csnick`, (select `user_status`.`uid` from `user_status` join `user_lines` on `user_status`.`uid` = `user_lines`.`uid` where `ruid` = `t1`.`ruid` order by `l_total` desc, `user_status`.`uid` asc limit 1) as `uid`, `status` from `user_status` as `t1` join `user_details` on `t1`.`uid` = `user_details`.`uid` where `status` = 1 or `status` = 3 order by `ruid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `ruid`, `csnick`, (select `user_status`.`uid` from `user_status` join `user_lines` on `user_status`.`uid` = `user_lines`.`uid` where `ruid` = `t1`.`ruid` order by `l_total` desc, `user_status`.`uid` asc limit 1) as `uid`, `status` from `user_status` as `t1` join `user_details` on `t1`.`uid` = `user_details`.`uid` where `status` in (1,3)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {

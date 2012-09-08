@@ -100,7 +100,7 @@ final class sss extends base
 		 * Make the database connection. Always needed.
 		 */
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
-		$this->output('notice', '__construct(): succesfully connected to '.$this->db_host.':'.$this->db_port.', database: \''.$this->db_name.'\'');
+		$this->output('notice', 'sss(): succesfully connected to '.$this->db_host.':'.$this->db_port.', database: \''.$this->db_name.'\'');
 		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
 		/**
@@ -313,7 +313,7 @@ final class sss extends base
 		 * This method avoids most false positives and is therefore enabled by default.
 		 */
 		$this->output('notice', 'link_nicks(): looking for possible aliases');
-		$query = @mysqli_query($this->mysqli, 'select `csnick`, `user_details`.`uid`, `ruid`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `user_details`.`uid`, `ruid`, `csnick`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
