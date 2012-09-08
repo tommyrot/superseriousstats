@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2011, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2012, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -199,9 +199,9 @@ final class user
 		/**
 		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
-		$this->date_lastlogparsed = $result->date_lastlogparsed;
+		$this->date_lastlogparsed = $result->date;
 		$this->dayofmonth = (int) date('j', strtotime($this->date_lastlogparsed));
 		$this->month = (int) date('n', strtotime($this->date_lastlogparsed));
 		$this->year = (int) date('Y', strtotime($this->date_lastlogparsed));
@@ -217,10 +217,10 @@ final class user
 		/**
 		 * HTML Head.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `date` as `date_max`, `l_total` as `l_max` from `q_activity_by_day` where `ruid` = '.$this->ruid.' order by `l_max` desc, `date_max` asc limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `date`, `l_total` from `q_activity_by_day` where `ruid` = '.$this->ruid.' order by `l_total` desc, `date` asc limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
-		$this->date_max = $result->date_max;
-		$this->l_max = (int) $result->l_max;
+		$this->date_max = $result->date;
+		$this->l_max = (int) $result->l_total;
 		$output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
 			. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
 			. '<head>'."\n".'<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
