@@ -171,7 +171,11 @@ abstract class parser extends base
 		}
 
 		if (!is_null($datetime)) {
-			$this->nicks_objs[$nick]->set_lastseen($datetime);
+			if ($this->nicks_objs[$nick]->get_value('firstseen') == '') {
+				$this->nicks_objs[$nick]->set_value('firstseen', $datetime);
+			}
+
+			$this->nicks_objs[$nick]->set_value('lastseen', $datetime);
 		}
 
 		return $nick;
@@ -427,8 +431,11 @@ abstract class parser extends base
 			$line_length_bytes = strlen($line);
 			$line_length_chars = mb_strlen($line, 'UTF-8');
 			$nick = $this->add_nick($csnick, $datetime);
-			$this->nicks_objs[$nick]->set_lasttalked($datetime);
 			$this->nicks_objs[$nick]->add_value('characters', $line_length_chars);
+
+			if ($this->nicks_objs[$nick]->get_value('lasttalked') == '') {
+				$this->nicks_objs[$nick]->set_value('lasttalked', $datetime);
+			}
 
 			/**
 			 * Keeping track of monologues.

@@ -217,34 +217,13 @@ final class nick extends base
 		} else {
 			/**
 			 * The last used case will be stored for a URL.
-			 * E.g. "www.example.com/file.txt" could be corrected in a followup by "www.example.com/File.txt".
+			 * E.g. "www.example.com/readme.txt" could be corrected in a followup by "www.example.com/README.txt".
 			 */
 			$this->urls_objs[$url]->set_value('url', $urldata['url']);
 		}
 
 		$this->urls_objs[$url]->add_value('total', 1);
 		$this->urls_objs[$url]->set_lastused($datetime);
-	}
-
-	public function set_lastseen($datetime)
-	{
-		if ($this->firstseen == '' || strtotime($datetime) < strtotime($this->firstseen)) {
-			$this->firstseen = $datetime;
-		}
-
-		if ($this->lastseen == '' || strtotime($datetime) > strtotime($this->lastseen)) {
-			$this->lastseen = $datetime;
-		}
-	}
-
-	/**
-	 * $datetime of last "normal" line.
-	 */
-	public function set_lasttalked($datetime)
-	{
-		if ($this->lasttalked == '' || strtotime($datetime) > strtotime($this->lasttalked)) {
-			$this->lasttalked = $datetime;
-		}
 	}
 
 	public function write_data($mysqli)
