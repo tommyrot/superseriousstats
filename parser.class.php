@@ -428,7 +428,6 @@ abstract class parser extends base
 			$line_length_chars = mb_strlen($line, 'UTF-8');
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->set_lasttalked($datetime);
-			$this->nicks_objs[$nick]->set_value('activedays', 1);
 			$this->nicks_objs[$nick]->add_value('characters', $line_length_chars);
 
 			/**
