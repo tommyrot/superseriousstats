@@ -17,9 +17,8 @@
  */
 
 /**
- * Various functions related to URL validation and presentation. This class is far from complete
- * and only serves the basic needs of the superseriousstats program. It tries to follow RFC 3986.
- * Take note of the following caveats if you want to use this class in other projects:
+ * Various functions related to URL validation and presentation. Although this class was initially designed to serve the needs of the superseriousstats program,
+ * it can also fairly easily be used in other projects. It tries to closely follow RFC 3986. Take note of the following caveats:
  *
  * Scheme:
  * - http:// and https:// only.
@@ -27,7 +26,7 @@
  *
  * Authority:
  * - Following preferred syntax, RFC 1034 section 3.5 and RFC 1123 section 2.1.
- * - There is no overall length check, only labels are checked on length (max 63 characters).
+ * - The FQDN should not exceed 255 characters in length.
  * - No user part.
  *
  * IP:
@@ -89,6 +88,13 @@ final class urltools
 		 * Validate and further process the URL.
 		 */
 		if (preg_match('/^(?<url>'.$this->scheme.'?'.$this->authority.$this->path.$this->query.$this->fragment.')$/i', $url, $matches)) {
+			/**
+			 * The maximum allowed length of the FQDN is 255 characters.
+			 */
+			if (strlen(rtrim($matches['fqdn'], '.')) > 254) {
+				return false;
+			}
+
 			/**
 			 * If the URL has no scheme we assume the "http://" one; update the elements we just found.
 			 */

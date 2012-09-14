@@ -22,8 +22,7 @@
 final class html extends base
 {
 	/**
-	 * Default settings for this script, can be overridden in the config file.
-	 * These should all appear in $settings_list[] along with their type.
+	 * Default settings for this script, can be overridden in the config file. These should all appear in $settings_list[] along with their type.
 	 */
 	private $addhtml_foot = '';
 	private $addhtml_head = '';
@@ -87,6 +86,9 @@ final class html extends base
 
 	public function __construct($settings)
 	{
+		/**
+		 * The variables that are listed in $settings_list will have their values overridden by those found in the config file.
+		 */
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $settings)) {
 				continue;
@@ -170,7 +172,7 @@ final class html extends base
 		$this->l_avg = $this->l_total / $this->days;
 
 		/**
-		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
+		 * Date and time variables used throughout the script. These are based on the date of the last logfile parsed and used to define our scope.
 		 */
 		$this->date_lastlogparsed = $result->date_lastlogparsed;
 		$this->dayofmonth = (int) date('j', strtotime($this->date_lastlogparsed));
@@ -506,7 +508,7 @@ final class html extends base
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Topic');
 			$t->set_value('minrows', $this->minrows);
-			$t->set_value('query_main', 'select `setdate` as `v1`, `csnick` as `v2`, `topic` as `v3` from `user_topics` join `user_status` on `user_topics`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc, `v2` asc limit 5');
+			$t->set_value('query_main', 'select `datetime` as `v1`, `csnick` as `v2`, `topic` as `v3` from `user_topics` join `topics` on `user_topics`.`tid` = `topics`.`tid` join `user_status` on `user_topics`.`uid` = `user_status`.`uid` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` order by `v1` desc limit 5');
 			$t->set_value('type', 'topics');
 			$output .= $t->make_table($this->mysqli);
 
@@ -606,13 +608,13 @@ final class html extends base
 		if ($this->sectionbits & 32) {
 			$output = '';
 
-			$t = new table('Most Referenced Domains');
+			$t = new table('Most Referenced Domain Names');
 			$t->set_value('key1', 'Total');
 			$t->set_value('key2', 'Domain');
 			$t->set_value('key3', 'First Used');
 			$t->set_value('maxrows', 10);
 			$t->set_value('minrows', 10);
-			$t->set_value('query_main', 'select sum(`total`) as `v1`, concat(\'http://\', `authority`) as `v2`, min(`firstused`) as `v3` from `user_urls` group by `authority` order by `v1` desc, `v3` asc limit 10');
+			$t->set_value('query_main', 'select count(*) as `v1`, (select concat(\'http://\', `fqdn`) from `fqdns` where `fid` = `urls`.`fid`) as `v2`, min(`datetime`) as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `fid` is not null group by `fid` order by `v1` desc, `v3` asc limit 10');
 			$t->set_value('type', 'domains');
 			$output .= $t->make_table($this->mysqli);
 
@@ -621,7 +623,7 @@ final class html extends base
 			$t->set_value('key2', 'TLD');
 			$t->set_value('maxrows', 10);
 			$t->set_value('minrows', 10);
-			$t->set_value('query_main', 'select sum(`total`) as `v1`, `tld` as `v2` from `user_urls` where `tld` != \'\' group by `v2` order by `v1` desc, `v2` asc limit 10');
+			$t->set_value('query_main', 'select count(*) as `v1`, `tld` as `v2` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `tld` != \'\' group by `tld` order by `v1` desc, `v2` asc limit 10');
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Recent URLs');
@@ -630,7 +632,7 @@ final class html extends base
 			$t->set_value('key3', 'URL');
 			$t->set_value('maxrows', $this->maxrows_recenturls);
 			$t->set_value('minrows', 5);
-			$t->set_value('query_main', 'select `lastused` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` order by `v1` desc limit '.$this->maxrows_recenturls);
+			$t->set_value('query_main', 'select `datetime` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` order by `v1` desc limit '.$this->maxrows_recenturls);
 			$t->set_value('type', 'urls');
 			$output .= $t->make_table($this->mysqli);
 
@@ -694,7 +696,7 @@ final class html extends base
 	{
 		if ($type == 'day') {
 			$class = 'act';
-			$cols = 24;
+			$columns = 24;
 
 			for ($i = 23; $i >= 0; $i--) {
 				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - $i, $this->year));
@@ -704,7 +706,7 @@ final class html extends base
 			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `channel` where `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
 			$class = 'act';
-			$cols = 24;
+			$columns = 24;
 
 			for ($i = 23; $i >= 0; $i--) {
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
@@ -714,7 +716,7 @@ final class html extends base
 			$query = @mysqli_query($this->mysqli, 'select date_format(`date`, \'%Y-%m\') as `date`, sum(`l_total`) as `l_total`, sum(`l_night`) as `l_night`, sum(`l_morning`) as `l_morning`, sum(`l_afternoon`) as `l_afternoon`, sum(`l_evening`) as `l_evening` from `channel` where date_format(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' group by year(`date`), month(`date`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'year') {
 			$class = 'act-year';
-			$cols = $this->years;
+			$columns = $this->years;
 
 			for ($i = $this->years - 1; $i >= 0; $i--) {
 				$dates[] = $this->year - $i;
@@ -730,7 +732,7 @@ final class html extends base
 		 * The queries above will either return one or more rows with activity, or no rows at all.
 		 */
 		if (empty($rows)) {
-			return;
+			return null;
 		}
 
 		$high_date = '';
@@ -749,7 +751,7 @@ final class html extends base
 			}
 		}
 
-		$tr1 = '<tr><th colspan="'.$cols.'">'.$head.'</th></tr>';
+		$tr1 = '<tr><th colspan="'.$columns.'">'.$head.'</th></tr>';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
@@ -951,7 +953,7 @@ final class html extends base
 		}
 
 		if (empty($result->l_total)) {
-			return;
+			return null;
 		}
 
 		$total = (int) $result->l_total;
@@ -1027,7 +1029,7 @@ final class html extends base
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows) || $rows < $maxrows * 4) {
-			return;
+			return null;
 		}
 
 		$current_column = 1;
@@ -1077,7 +1079,7 @@ final class html extends base
 		}
 
 		if (empty($result->l_total)) {
-			return;
+			return null;
 		}
 
 		$high_value = 0;
@@ -1157,14 +1159,14 @@ final class table extends base
 	public function make_table($mysqli)
 	{
 		if (empty($this->query_main)) {
-			return;
+			return null;
 		}
 
 		$query = @mysqli_query($mysqli, $this->query_main) or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows) || $rows < $this->minrows) {
-			return;
+			return null;
 		}
 
 		/**
@@ -1247,7 +1249,8 @@ final class table extends base
 				$topic = '';
 
 				/**
-				 * Check if there are URLs in the topic and make hyperlinks out of them. Use htmlspecialchars() here since we skipped doing it before.
+				 * Check if there are URLs in the topic and make hyperlinks out of them. Use htmlspecialchars() here since we skipped doing it
+				 * before.
 				 */
 				foreach ($words as $word) {
 					if (preg_match('/^(www\.|https?:\/\/)/i', $word) && ($urldata = $urltools->get_elements($word)) !== false) {

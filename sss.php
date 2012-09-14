@@ -16,14 +16,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+if (!extension_loaded('mysqli')) {
+	exit('mysqli extension isn\'t loaded'."\n");
+}
+
+if (!extension_loaded('mbstring')) {
+	exit('mbstring extension isn\'t loaded'."\n");
+}
+
+/**
+ * Class autoloader, new style. Important piece of code right here.
+ */
+spl_autoload_register(function ($class) {
+	require_once(rtrim(dirname(__FILE__), '/\\').'/'.$class.'.php');
+});
+
 /**
  * Class for controlling all main features of the program.
  */
 final class sss extends base
 {
 	/**
-	 * Default settings for this script, can be overridden in the config file.
-	 * These should all appear in $settings_list[] along with their type.
+	 * Default settings for this script, can be overridden in the config file. These should all appear in $settings_list[] along with their type.
 	 */
 	private $autolinknicks = true;
 	private $db_host = '127.0.0.1';
@@ -101,7 +115,7 @@ final class sss extends base
 		 */
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
 		$this->output('notice', 'sss(): succesfully connected to '.$this->db_host.':'.$this->db_port.', database: \''.$this->db_name.'\'');
-		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		mysqli_set_charset($this->mysqli, 'utf8') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 
 		/**
 		 * The following options are listed in order of execution. Ie. "i" before "o", "b" before "o".
@@ -136,7 +150,7 @@ final class sss extends base
 	private function do_maintenance()
 	{
 		/**
-		 * Before we continue do a quick scan for new aliases if $autolinknicks is enabled.
+		 * Scan for new aliases when $autolinknicks is enabled.
 		 */
 		if ($this->autolinknicks) {
 			$this->link_nicks();
@@ -154,7 +168,7 @@ final class sss extends base
 
 		if (empty($rows)) {
 			$this->output('warning', 'export_nicks(): database is empty, nothing to do');
-			return;
+			return null;
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
@@ -219,7 +233,7 @@ final class sss extends base
 
 		if (empty($rows)) {
 			$this->output('warning', 'import_nicks(): database is empty, nothing to do');
-			return;
+			return null;
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
@@ -280,8 +294,8 @@ final class sss extends base
 	private function link_nicks()
 	{
 		/**
-		 * This function tries to link unlinked nicks to any other nick that is identical after stripping them from non-alphanumeric
-		 * characters (at any position in the nick) and numerics (only at the end of the nick). The results are compared in a case insensitive manner.
+		 * This function tries to link unlinked nicks to any other nick that is identical after stripping them from non-alphanumeric characters (at any
+		 * position in the nick) and numerics (only at the end of the nick). The results are compared in a case insensitive manner.
 		 *
 		 * Example before:
 		 *
@@ -310,7 +324,7 @@ final class sss extends base
 		 * | Jack[brb]	| 554		| 553		| 2		| new alias
 		 * | Jack^1337^ | 555		| 80		| 2		| new alias
 		 *
-		 * This method avoids most false positives and is therefore enabled by default.
+		 * This method has very little false positives and is therefore enabled by default.
 		 */
 		$this->output('notice', 'link_nicks(): looking for possible aliases');
 		$query = @mysqli_query($this->mysqli, 'select `user_details`.`uid`, `ruid`, `csnick`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
@@ -318,7 +332,7 @@ final class sss extends base
 
 		if (empty($rows)) {
 			$this->output('warning', 'link_nicks(): database is empty, nothing to do');
-			return;
+			return null;
 		}
 
 		$strippednicks = array();
@@ -330,7 +344,8 @@ final class sss extends base
 				'status' => (int) $result->status);
 
 			/**
-			 * We keep an array with uids for each stripped nick. If we encounter a linked nick we put its uid at the start of the array, otherwise just append the uid.
+			 * We keep an array with uids for each stripped nick. If we encounter a linked nick we put its uid at the start of the array, otherwise
+			 * just append the uid.
 			 */
 			$strippednick = preg_replace(array('/[^a-z0-9]/', '/[0-9]+$/'), '', strtolower($result->csnick));
 
@@ -357,8 +372,9 @@ final class sss extends base
 			}
 
 			/**
-			 * We use the ruid belonging to the first uid in the array to link all succeeding unlinked uids to.
-			 * If the first uid is unlinked (status = 0) we update its record to become a registered nick (status = 1) when there is at least one new alias found for it (any succeeding uid with status = 0).
+			 * Use the ruid that belongs to the first uid in the array to link all succeeding unlinked uids to. If the first uid is unlinked
+			 * (status = 0) we update its record to become a registered nick (status = 1) when there is at least one new alias found for it
+			 * (any succeeding uid with status = 0).
 			 */
 			$aliasfound = false;
 
@@ -460,8 +476,8 @@ final class sss extends base
 			$parser->set_value('date', $date);
 
 			/**
-			 * Get the streak history. This will assume logs are parsed in chronological order with no gaps.
-			 * If this is not the case the correctness of the streak stats might be affected.
+			 * Get the streak history. This will assume logs are parsed in chronological order with no gaps. If this is not the case the correctness
+			 * of the streak stats might be affected.
 			 */
 			$query = @mysqli_query($this->mysqli, 'select * from `streak_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$rows = mysqli_num_rows($query);
@@ -613,6 +629,9 @@ final class sss extends base
 			}
 		}
 
+		/**
+		 * The variables that are listed in $settings_list will have their values overridden by those found in the config file.
+		 */
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $this->settings)) {
 				continue;
@@ -637,22 +656,9 @@ final class sss extends base
 	}
 }
 
-if (!extension_loaded('mysqli')) {
-	exit('mysqli extension isn\'t loaded'."\n");
-}
-
-if (!extension_loaded('mbstring')) {
-	exit('mbstring extension isn\'t loaded'."\n");
-}
-
 /**
- * Class autoloader. Important piece of code right here.
+ * Get ready for the launch.
  */
-function __autoload($class)
-{
-	require_once(dirname(__FILE__).'/'.$class.'.class.php');
-}
-
 $sss = new sss();
 
 ?>

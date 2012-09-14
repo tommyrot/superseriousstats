@@ -22,8 +22,7 @@
 abstract class parser extends base
 {
 	/**
-	 * Default settings for this script, can be overridden in the config file.
-	 * These should all appear in $settings_list[] along with their type.
+	 * Default settings for this script, can be overridden in the config file. These should all appear in $settings_list[] along with their type.
 	 */
 	private $nick_maxlen = 30;
 	private $nick_minlen = 1;
@@ -136,6 +135,9 @@ abstract class parser extends base
 	{
 		$this->urltools = new urltools();
 
+		/**
+		 * The variables that are listed in $settings_list will have their values overridden by those found in the config file.
+		 */
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $settings)) {
 				continue;
@@ -156,8 +158,8 @@ abstract class parser extends base
 	}
 
 	/**
-	 * Create an object of the nick if it doesn't already exist.
-	 * Return the lowercase nick for further referencing by the calling function.
+	 * Create an object of the nick if it doesn't already exist. If it does already exist, update $csnick. Return the lowercase nick for further referencing
+	 * by the calling function.
 	 */
 	final private function add_nick($csnick, $datetime)
 	{
@@ -181,8 +183,21 @@ abstract class parser extends base
 		return $nick;
 	}
 
-	final private function add_word($word, $length)
+	/**
+	 * Words are stored in lower case. Since they can contain UTF-8 encoded characters we should be careful on how to convert words to lower case.
+	 */
+	final private function add_word($csword, $length)
 	{
+		/**
+		 * The multibyte strtolower function is significantly slower than its single-byte counterpart so we throw in a little if-else statement to check
+		 * if its use is needed.
+		 */
+		if (preg_match('/^[\x00-\x7F]+$/', $csword)) {
+			$word = strtolower($csword);
+		} else {
+			$word = mb_strtolower($csword, 'UTF-8');
+		}
+
 		if (!array_key_exists($word, $this->words_objs)) {
 			$this->words_objs[$word] = new word($word);
 			$this->words_objs[$word]->set_value('length', $length);
@@ -192,7 +207,7 @@ abstract class parser extends base
 	}
 
 	/**
-	 * Parser function for gzipped logs.
+	 * Parser function for gzipped logs. The zlib extension must be loaded for this function to work (see sss.php).
 	 */
 	final public function gzparse_log($logfile, $firstline)
 	{
@@ -213,8 +228,8 @@ abstract class parser extends base
 			$line = $this->normalize_line($line);
 
 			/**
-			 * Pass on the normalized line to the logfile format specific parser class extending this class. Empty lines are ignored.
-			 * Remember the line number of the last non empty line so we can store the correct parse history instead of guessing.
+			 * Pass on the normalized line to the logfile format specific parser class extending this class. Empty lines are ignored. Remember the
+			 * line number of the last non empty line so we can store the correct parse history instead of guessing.
 			 */
 			if (!empty($line)) {
 				$this->parse_line($line);
@@ -227,8 +242,8 @@ abstract class parser extends base
 		$this->output('notice', 'gzparse_log(): parsing completed');
 
 		/**
-		 * The $newdata variable can be used outside of the parser class to decide whether we want to run additional routines or skip them.
-		 * Whenever the $nicks_objs count is zero there won't be any new data because the data we are interested in is always related to one or more valid nicks.
+		 * The $newdata variable can be used outside of the parser class to decide whether we want to run additional routines or skip them. Whenever the
+		 * $nicks_objs count is zero there won't be any new data because the data we are interested in is always related to one or more valid nicks.
 		 */
 		if (!empty($this->nicks_objs)) {
 			$this->newdata = true;
@@ -245,9 +260,9 @@ abstract class parser extends base
 
 			while ($line != '') {
 				/**
-				 * Match the first valid multibyte character or otherwise a single byte;
-				 * Pass it on to rebuild_line() and replace the character with an empty string (making $line shorter);
-				 * Continue until $line is zero bytes in length.
+				 * 1. Match the first valid multibyte character or otherwise a single byte.
+				 * 2. Pass it on to rebuild_line() and replace the character with an empty string effectively making $line shorter.
+				 * 3. Continue until $line is zero bytes in length.
 				 */
 				$line = preg_replace('/^('.$this->hex_validutf8.'|.)/es', '$this->rebuild_line(\'$0\')', $line);
 			}
@@ -290,8 +305,8 @@ abstract class parser extends base
 			$line = $this->normalize_line($line);
 
 			/**
-			 * Pass on the normalized line to the logfile format specific parser class extending this class. Empty lines are ignored.
-			 * Remember the line number of the last non empty line so we can store the correct parse history instead of guessing.
+			 * Pass on the normalized line to the logfile format specific parser class extending this class. Empty lines are ignored. Remember the
+			 * line number of the last non empty line so we can store the correct parse history instead of guessing.
 			 */
 			if (!empty($line)) {
 				$this->parse_line($line);
@@ -304,8 +319,8 @@ abstract class parser extends base
 		$this->output('notice', 'parse_log(): parsing completed');
 
 		/**
-		 * The $newdata variable can be used outside of the parser class to decide whether we want to run additional routines or skip them.
-		 * Whenever the $nicks_objs count is zero there won't be any new data because the data we are interested in is always related to one or more valid nicks.
+		 * The $newdata variable can be used outside of the parser class to decide whether we want to run additional routines or skip them. Whenever the
+		 * $nicks_objs count is zero there won't be any new data because the data we are interested in is always related to one or more valid nicks.
 		 */
 		if (!empty($this->nicks_objs)) {
 			$this->newdata = true;
@@ -343,9 +358,13 @@ abstract class parser extends base
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('actions', 1);
+			$line_length = mb_strlen($line, 'UTF-8');
 
-			if (strlen($line) <= 255) {
-				$this->nicks_objs[$nick]->add_quote('ex_actions', $line, mb_strlen($line, 'UTF-8'));
+			/**
+			 * Track quotes/example lines of up to a sensible limit of 255 characters in length.
+			 */
+			if ($line_length <= 255) {
+				$this->nicks_objs[$nick]->add_quote('ex_actions', $line, $line_length);
 			}
 		}
 	}
@@ -372,7 +391,10 @@ abstract class parser extends base
 			$this->nicks_objs[$nick_performing]->add_value('kicks', 1);
 			$this->nicks_objs[$nick_undergoing]->add_value('kicked', 1);
 
-			if (strlen($line) <= 255) {
+			/**
+			 * Track kick messages of up to a limit of 307 characters in length. The majority of IRC servers are within this limit.
+			 */
+			if (mb_strlen($line, 'UTF-8') <= 307) {
 				$this->nicks_objs[$nick_performing]->set_value('ex_kicks', $line);
 				$this->nicks_objs[$nick_undergoing]->set_value('ex_kicked', $line);
 			}
@@ -428,14 +450,10 @@ abstract class parser extends base
 		if (!$this->validate_nick($csnick)) {
 			$this->output('warning', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
-			$line_length_bytes = strlen($line);
-			$line_length_chars = mb_strlen($line, 'UTF-8');
 			$nick = $this->add_nick($csnick, $datetime);
-			$this->nicks_objs[$nick]->add_value('characters', $line_length_chars);
-
-			if ($this->nicks_objs[$nick]->get_value('lasttalked') == '') {
-				$this->nicks_objs[$nick]->set_value('lasttalked', $datetime);
-			}
+			$line_length = mb_strlen($line, 'UTF-8');
+			$this->nicks_objs[$nick]->add_value('characters', $line_length);
+			$this->nicks_objs[$nick]->set_value('lasttalked', $datetime);
 
 			/**
 			 * Keeping track of monologues.
@@ -444,14 +462,14 @@ abstract class parser extends base
 				$this->streak++;
 			} else {
 				/**
-				 * Ohno! Someone else typed a line and the previous streak is interrupted. Check if the streak qualifies as a monologue and store it.
+				 * Someone else typed a line and the previous streak is interrupted. Check if the streak qualifies as a monologue and store it.
 				 */
 				if ($this->streak >= 5) {
 					/**
-					 * If the current line count is 0 then $prevnick is not known to us yet (only seen in previous parse run).
-					 * It's safe to assume that $prevnick is a valid nick since it was set by set_normal().
-					 * We will create an object for it here so we can add the monologue data. Don't worry about $prevnick being lowercase,
-					 * we won't update "user_details" if $prevnick isn't seen plus $csnick will get a refresh on any other activity.
+					 * If the current line count is 0 then $prevnick is not known to us yet (only seen in previous parse run). It's safe to
+					 * assume that $prevnick is a valid nick since it was set by set_normal(). We will create an object for it here so we
+					 * can add the monologue data. Don't worry about $prevnick being lowercase, we won't update "user_details" if $prevnick
+					 * isn't seen plus $csnick will get a refresh on any other activity.
 					 */
 					if ($this->l_total == 0) {
 						$this->add_nick($this->prevnick, null);
@@ -491,6 +509,8 @@ abstract class parser extends base
 
 			$this->{'l_'.($hour < 10 ? '0'.$hour : $hour)}++;
 			$this->l_total++;
+			$this->nicks_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
+			$this->nicks_objs[$nick]->add_value('l_total', 1);
 
 			/**
 			 * "Words" are simply character groups separated by whitespace.
@@ -507,22 +527,22 @@ abstract class parser extends base
 					$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 
 				/**
-				 * Only catch URLs which were intended to be clicked on; most clients can handle URLs that begin with "www." or "http://" and such.
-				 * If we would apply a more liberal approach we are likely to run into filenames (e.g. .py .com), libraries (e.g. .so) and other words that validate as a URL.
+				 * Only catch URLs which were intended to be clicked on; most clients can handle URLs that begin with "www." or "http://" and
+				 * such. If we would apply a more liberal approach we are likely to run into filenames (e.g. .py .com), libraries (e.g. .so) and
+				 * other words that validate as a URL.
 				 */
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 					/**
-					 * Regardless of it being a valid URL or not we set $skipquote to true. This variable enables us to exclude quotes that have
-					 * a URL (or something that looks like it) in them. This is to safeguard a tidy presentation on the statspage.
+					 * Regardless of it being a valid URL or not we set $skipquote to true. This variable enables us to exclude quotes that
+					 * have a URL (or something similar looking) in them. This is to safeguard a tidy presentation on the statspage.
 					 */
 					$skipquote = true;
 
 					if (($urldata = $this->urltools->get_elements($csword)) !== false) {
-						if (strlen($urldata['url']) > 1024) {
-							$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': exceeds column length of `url` (1024)');
-						} elseif (strlen($urldata['authority']) > 255) {
-							$this->output('debug', 'set_normal(): skipping url on line '.$this->linenum.': exceeds column length of `authority` (255)');
-						} else {
+						/**
+						 * Track URLs of up to a (more than) sensible limit of 1024 characters in length.
+						 */
+						if (strlen($urldata['url']) <= 1024) {
 							$this->nicks_objs[$nick]->add_url($urldata, $datetime);
 							$this->nicks_objs[$nick]->add_value('urls', 1);
 						}
@@ -531,9 +551,11 @@ abstract class parser extends base
 					}
 
 				/**
-				 * We keep track of all character groups composed of the letters found in the Basic Latin and Latin-1 Supplement character sets, the Hyphen (used properly), and any multibyte characters beyond those two sets (found in UTF-8) regardless of their meaning.
-				 * The regexp checks for any characters we don't want in our words - from the aforementioned Latin sets. Keep in mind that normalize_line() already took all the dirt out.
-				 * Note that this method of finding words is not 100% accurate - possibly not even 50% - but it serves our purpose.
+				 * We keep track of all character groups composed of the letters found in the Basic Latin and Latin-1 Supplement character sets,
+				 * the Hyphen (used properly), and any multibyte characters beyond those two sets (found in UTF-8) regardless of their meaning.
+				 * The regexp checks for any characters we don't want in our words - from the aforementioned Latin sets. Keep in mind that
+				 * normalize_line() already took all the dirt out. Note that this method of finding words is not 100% accurate - possibly not
+				 * even 50% - but it serves our purpose.
 				 */
 				} elseif ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
 					$word_length = mb_strlen($csword, 'UTF-8');
@@ -542,55 +564,41 @@ abstract class parser extends base
 					 * Words consisting of 30+ characters are most likely not real words so we skip those.
 					 */
 					if ($word_length <= 30) {
-						/**
-						 * The multibyte strtolower is significantly slower than its single-byte counterpart so we throw in a little if-else statement to check if its use is needed.
-						 */
-						if (preg_match('/^[\x00-\x7F]+$/', $csword)) {
-							/**
-							 * Single-byte characters only.
-							 */
-							$word = strtolower($csword);
-						} else {
-							/**
-							 * Multibyte characters present so we use the appropriate function.
-							 */
-							$word = mb_strtolower($csword, 'UTF-8');
-						}
-
-						$this->add_word($word, $word_length);
+						$this->add_word($csword, $word_length);
 					}
 				}
 			}
 
-			$this->nicks_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
-			$this->nicks_objs[$nick]->add_value('l_total', 1);
-
-			if (!$skipquote && $line_length_bytes <= 255) {
-				$this->nicks_objs[$nick]->add_quote('quote', $line, $line_length_chars);
+			/**
+			 * Track quotes/example lines of up to a sensible limit of 255 characters in length. This applies to all of the types seen below.
+			 */
+			if (!$skipquote && $line_length <= 255) {
+				$this->nicks_objs[$nick]->add_quote('quote', $line, $line_length);
 			}
 
 			/**
-			 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than 50% non letter characters from the Basic Latin and Latin-1 Supplement character sets in them.
+			 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than 50% non letter characters from
+			 * the Basic Latin and Latin-1 Supplement character sets in them.
 			 */
-			if ($line_length_chars >= 2 && mb_strtoupper($line, 'UTF-8') == $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length_chars) {
+			if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') == $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length) {
 				$this->nicks_objs[$nick]->add_value('uppercased', 1);
 
-				if (!$skipquote && $line_length_bytes <= 255) {
-					$this->nicks_objs[$nick]->add_quote('ex_uppercased', $line, $line_length_chars);
+				if (!$skipquote && $line_length <= 255) {
+					$this->nicks_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
 				}
 			}
 
 			if (preg_match('/!$/', $line)) {
 				$this->nicks_objs[$nick]->add_value('exclamations', 1);
 
-				if (!$skipquote && $line_length_bytes <= 255) {
-					$this->nicks_objs[$nick]->add_quote('ex_exclamations', $line, $line_length_chars);
+				if (!$skipquote && $line_length <= 255) {
+					$this->nicks_objs[$nick]->add_quote('ex_exclamations', $line, $line_length);
 				}
 			} elseif (preg_match('/\?$/', $line)) {
 				$this->nicks_objs[$nick]->add_value('questions', 1);
 
-				if (!$skipquote && $line_length_bytes <= 255) {
-					$this->nicks_objs[$nick]->add_quote('ex_questions', $line, $line_length_chars);
+				if (!$skipquote && $line_length <= 255) {
+					$this->nicks_objs[$nick]->add_quote('ex_questions', $line, $line_length);
 				}
 			}
 		}
@@ -655,22 +663,21 @@ abstract class parser extends base
 			$this->nicks_objs[$nick]->add_value('topics', 1);
 
 			/**
-			 * Keep track of every single topic set.
+			 * Track topics of up to a limit of 390 characters in length. The majority of IRC servers are within this limit.
 			 */
-			if (strlen($line) > 1024) {
-				$this->output('debug', 'set_topic(): skipping topic on line '.$this->linenum.': exceeds column length of `topic` (1024)');
-			} else {
+			if (mb_strlen($line, 'UTF-8') <= 390) {
 				$this->nicks_objs[$nick]->add_topic($line, $datetime);
 			}
 		}
 	}
 
 	/**
-	 * Check on syntax and defined lengths. Maximum length should not exceed 255 which is the maximum database field length.
+	 * Check on syntax and defined lengths. The nick length should not exceed 32 characters which is the maximum database field length. We want to minimize
+	 * the key's length to optimize performance. Again, the majority of IRC servers are within this limit.
 	 */
 	final private function validate_nick($csnick)
 	{
-		if ($csnick != '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{'.($this->nick_minlen > $this->nick_maxlen ? 1 : $this->nick_minlen).','.($this->nick_maxlen > 30 ? 30 : $this->nick_maxlen).'}$/i', $csnick)) {
+		if ($csnick != '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{'.($this->nick_minlen > $this->nick_maxlen ? 1 : $this->nick_minlen).','.($this->nick_maxlen > 32 ? 32 : $this->nick_maxlen).'}$/i', $csnick)) {
 			return true;
 		} else {
 			return false;
@@ -686,20 +693,8 @@ abstract class parser extends base
 		 * Write channel totals to the database.
 		 */
 		if ($this->l_total != 0) {
-			$query = @mysqli_query($this->mysqli, 'select * from `channel` where `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$rows = mysqli_num_rows($query);
-
-			if (empty($rows)) {
-				$insertquery = $this->create_insert_query(array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
-				@mysqli_query($this->mysqli, 'insert into `channel` set `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\','.$insertquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			} else {
-				$result = mysqli_fetch_object($query);
-				$updatequery = $this->create_update_query($result, array('date'));
-
-				if (!is_null($updatequery)) {
-					@mysqli_query($this->mysqli, 'update `channel` set'.$updatequery.' where `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				}
-			}
+			$createdquery = $this->create_query(array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
+			@mysqli_query($this->mysqli, 'insert into `channel` set `date` = \''.$this->date.'\','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 
 		/**
@@ -725,6 +720,32 @@ abstract class parser extends base
 		}
 
 		$this->output('notice', 'write_data(): writing completed');
+	}
+}
+
+/**
+ * Class for handling word data.
+ */
+final class word extends base
+{
+	/**
+	 * Variables that shouldn't be tampered with.
+	 */
+	private $word = '';
+	protected $length = 0;
+	protected $total = 0;
+
+	public function __construct($word)
+	{
+		$this->word = $word;
+	}
+
+	public function write_data($mysqli)
+	{
+		/**
+		 * Write data to database table "words".
+		 */
+		@mysqli_query($mysqli, 'insert into `words` set `word` = \''.mysqli_real_escape_string($mysqli, $this->word).'\', `length` = '.$this->length.', `total` = '.$this->total.' on duplicate key update `total` = `total` + '.$this->total) or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
 	}
 }
 

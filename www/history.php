@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2010-2011, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2012, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -129,7 +129,7 @@ final class history
 	public function make_html()
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
-		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		mysqli_set_charset($this->mysqli, 'utf8') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
@@ -142,7 +142,7 @@ final class history
 		}
 
 		/**
-		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
+		 * Date and time variables used throughout the script. These are based on the date of the last logfile parsed and used to define our scope.
 		 */
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `year_firstlogparsed`, max(year(`date`)) as `year_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
@@ -174,7 +174,8 @@ final class history
 		$output .= $this->make_index();
 
 		/**
-		 * Only call make_table_* functions for times in which there was activity. This activity includes bots since we got it from the results used in make_index().
+		 * Only call make_table_* functions for times in which there was activity. This activity includes bots since we got it from the results used in
+		 * make_index().
 		 */
 		if (!is_null($this->year) && array_key_exists($this->year, $this->activity) && (is_null($this->month) || array_key_exists($this->month, $this->activity[$this->year]))) {
 			/**
@@ -317,7 +318,7 @@ final class history
 		}
 
 		if (empty($result->l_total)) {
-			return;
+			return null;
 		}
 
 		$total = (int) $result->l_total;
@@ -399,7 +400,7 @@ final class history
 		}
 
 		if (empty($result->l_total)) {
-			return;
+			return null;
 		}
 
 		$high_value = 0;
@@ -458,8 +459,8 @@ final class history
 	}
 
 	/**
-	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments.
-	 * Its functionality is slightly different in that it exits on any type of message passed to it.
+	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments. Its functionality
+	 * is slightly different in that it exits on any type of message passed to it.
 	 */
 	private function output($type, $msg)
 	{

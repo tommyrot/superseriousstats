@@ -93,7 +93,7 @@ final class user
 	public function make_html()
 	{
 		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
-		@mysqli_query($this->mysqli, 'set names \'utf8\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		mysqli_set_charset($this->mysqli, 'utf8') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$query = @mysqli_query($this->mysqli, 'select `ruid` from `user_status` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->nick).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
@@ -197,7 +197,7 @@ final class user
 		}
 
 		/**
-		 * Date and time variables used throughout the script. We take the date of the last logfile parsed. These variables are used to define our scope.
+		 * Date and time variables used throughout the script. These are based on the date of the last logfile parsed and used to define our scope.
 		 */
 		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
@@ -258,7 +258,7 @@ final class user
 	{
 		if ($type == 'day') {
 			$class = 'act';
-			$cols = 24;
+			$columns = 24;
 
 			for ($i = 23; $i >= 0; $i--) {
 				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - $i, $this->year));
@@ -268,7 +268,7 @@ final class user
 			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_day` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
 			$class = 'act';
-			$cols = 24;
+			$columns = 24;
 
 			for ($i = 23; $i >= 0; $i--) {
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->month - $i, 1, $this->year));
@@ -278,7 +278,7 @@ final class user
 			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_month` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'year') {
 			$class = 'act-year';
-			$cols = $this->years;
+			$columns = $this->years;
 
 			for ($i = $this->years - 1; $i >= 0; $i--) {
 				$dates[] = $this->year - $i;
@@ -294,7 +294,7 @@ final class user
 		 * The queries above will either return one or more rows with activity, or no rows at all.
 		 */
 		if (empty($rows)) {
-			return;
+			return null;
 		}
 
 		$high_date = '';
@@ -313,7 +313,7 @@ final class user
 			}
 		}
 
-		$tr1 = '<tr><th colspan="'.$cols.'">'.$head.'</th></tr>';
+		$tr1 = '<tr><th colspan="'.$columns.'">'.$head.'</th></tr>';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
@@ -496,8 +496,8 @@ final class user
 	}
 
 	/**
-	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments.
-	 * Its functionality is slightly different in that it exits on any type of message passed to it.
+	 * For compatibility reasons this function has the same name as the original version in the base class and accepts the same arguments. Its functionality
+	 * is slightly different in that it exits on any type of message passed to it.
 	 */
 	private function output($type, $msg)
 	{

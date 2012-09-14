@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.1.48, for unknown-openbsd4.8 (i386)
+-- MySQL dump 10.13  Distrib 5.1.60, for unknown-openbsd5.1 (i386)
 --
 -- Host: localhost    Database: sss
 -- ------------------------------------------------------
--- Server version	5.1.48-log
+-- Server version	5.1.60
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -55,6 +55,21 @@ CREATE TABLE `channel` (
   `l_total` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`date`),
   KEY `l_total` (`l_total`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `fqdns`
+--
+
+DROP TABLE IF EXISTS `fqdns`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `fqdns` (
+  `fid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `fqdn` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`fid`),
+  UNIQUE KEY `fqdn` (`fqdn`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -137,7 +152,7 @@ DROP TABLE IF EXISTS `mv_ex_kicked`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mv_ex_kicked` (
   `ruid` int(10) unsigned NOT NULL DEFAULT '0',
-  `ex_kicked` varchar(255) NOT NULL DEFAULT '',
+  `ex_kicked` varchar(307) NOT NULL DEFAULT '',
   PRIMARY KEY (`ruid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -151,7 +166,7 @@ DROP TABLE IF EXISTS `mv_ex_kicks`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mv_ex_kicks` (
   `ruid` int(10) unsigned NOT NULL DEFAULT '0',
-  `ex_kicks` varchar(255) NOT NULL DEFAULT '',
+  `ex_kicks` varchar(307) NOT NULL DEFAULT '',
   PRIMARY KEY (`ruid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -375,8 +390,8 @@ CREATE TABLE `q_events` (
   `kicked` int(10) unsigned NOT NULL DEFAULT '0',
   `nickchanges` int(10) unsigned NOT NULL DEFAULT '0',
   `topics` int(10) unsigned NOT NULL DEFAULT '0',
-  `ex_kicks` varchar(255) NOT NULL DEFAULT '',
-  `ex_kicked` varchar(255) NOT NULL DEFAULT '',
+  `ex_kicks` varchar(307) NOT NULL DEFAULT '',
+  `ex_kicked` varchar(307) NOT NULL DEFAULT '',
   PRIMARY KEY (`ruid`),
   KEY `m_op` (`m_op`),
   KEY `m_opped` (`m_opped`),
@@ -618,7 +633,7 @@ DROP TABLE IF EXISTS `streak_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `streak_history` (
-  `prevnick` varchar(255) NOT NULL DEFAULT '',
+  `prevnick` varchar(32) NOT NULL DEFAULT '',
   `streak` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -702,7 +717,7 @@ DROP TABLE IF EXISTS `t_mv_ex_kicked`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `t_mv_ex_kicked` (
   `ruid` int(10) unsigned NOT NULL DEFAULT '0',
-  `ex_kicked` varchar(255) NOT NULL DEFAULT '',
+  `ex_kicked` varchar(307) NOT NULL DEFAULT '',
   PRIMARY KEY (`ruid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -716,7 +731,7 @@ DROP TABLE IF EXISTS `t_mv_ex_kicks`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `t_mv_ex_kicks` (
   `ruid` int(10) unsigned NOT NULL DEFAULT '0',
-  `ex_kicks` varchar(255) NOT NULL DEFAULT '',
+  `ex_kicks` varchar(307) NOT NULL DEFAULT '',
   PRIMARY KEY (`ruid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -926,8 +941,8 @@ CREATE TABLE `t_q_events` (
   `kicked` int(10) unsigned NOT NULL DEFAULT '0',
   `nickchanges` int(10) unsigned NOT NULL DEFAULT '0',
   `topics` int(10) unsigned NOT NULL DEFAULT '0',
-  `ex_kicks` varchar(255) NOT NULL DEFAULT '',
-  `ex_kicked` varchar(255) NOT NULL DEFAULT '',
+  `ex_kicks` varchar(307) NOT NULL DEFAULT '',
+  `ex_kicked` varchar(307) NOT NULL DEFAULT '',
   PRIMARY KEY (`ruid`),
   KEY `m_op` (`m_op`),
   KEY `m_opped` (`m_opped`),
@@ -1162,6 +1177,40 @@ CREATE TABLE `t_q_smileys` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `topics`
+--
+
+DROP TABLE IF EXISTS `topics`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `topics` (
+  `tid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `topic` varchar(390) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT 'This field should be considered unique and case sensitive.',
+  PRIMARY KEY (`tid`),
+  KEY `topic` (`topic`(333))
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `urls`
+--
+
+DROP TABLE IF EXISTS `urls`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `urls` (
+  `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `url` varchar(1024) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT 'This field should be considered unique and case sensitive.',
+  `fid` int(10) unsigned DEFAULT NULL,
+  `tld` varchar(64) NOT NULL DEFAULT '',
+  `extension` varchar(8) NOT NULL DEFAULT '',
+  PRIMARY KEY (`lid`),
+  KEY `url` (`url`(333)),
+  KEY `fid` (`fid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `user_activity`
 --
 
@@ -1176,8 +1225,7 @@ CREATE TABLE `user_activity` (
   `l_afternoon` int(10) unsigned NOT NULL DEFAULT '0',
   `l_evening` int(10) unsigned NOT NULL DEFAULT '0',
   `l_total` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`uid`,`date`),
-  KEY `date` (`date`)
+  PRIMARY KEY (`uid`,`date`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1190,7 +1238,7 @@ DROP TABLE IF EXISTS `user_details`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_details` (
   `uid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `csnick` varchar(30) NOT NULL DEFAULT '',
+  `csnick` varchar(32) NOT NULL DEFAULT '',
   `firstseen` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `lastseen` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`uid`),
@@ -1224,8 +1272,8 @@ CREATE TABLE `user_events` (
   `kicked` int(10) unsigned NOT NULL DEFAULT '0',
   `nickchanges` int(10) unsigned NOT NULL DEFAULT '0',
   `topics` int(10) unsigned NOT NULL DEFAULT '0',
-  `ex_kicks` varchar(255) NOT NULL DEFAULT '',
-  `ex_kicked` varchar(255) NOT NULL DEFAULT '',
+  `ex_kicks` varchar(307) NOT NULL DEFAULT '',
+  `ex_kicked` varchar(307) NOT NULL DEFAULT '',
   PRIMARY KEY (`uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1301,7 +1349,6 @@ CREATE TABLE `user_lines` (
   `characters` int(10) unsigned NOT NULL DEFAULT '0',
   `monologues` int(10) unsigned NOT NULL DEFAULT '0',
   `topmonologue` int(10) unsigned NOT NULL DEFAULT '0',
-  `activedays` int(10) unsigned NOT NULL DEFAULT '0',
   `slaps` int(10) unsigned NOT NULL DEFAULT '0',
   `slapped` int(10) unsigned NOT NULL DEFAULT '0',
   `exclamations` int(10) unsigned NOT NULL DEFAULT '0',
@@ -1406,14 +1453,12 @@ DROP TABLE IF EXISTS `user_topics`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_topics` (
-  `tid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uid` int(10) unsigned NOT NULL DEFAULT '0',
-  `topic` varchar(1024) NOT NULL DEFAULT '',
-  `setdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (`tid`,`uid`,`setdate`),
+  `tid` int(10) unsigned NOT NULL DEFAULT '0',
+  `datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   KEY `uid` (`uid`),
-  KEY `topic` (`topic`(333)),
-  KEY `setdate` (`setdate`)
+  KEY `tid` (`tid`),
+  KEY `datetime` (`datetime`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1425,33 +1470,12 @@ DROP TABLE IF EXISTS `user_urls`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_urls` (
-  `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uid` int(10) unsigned NOT NULL DEFAULT '0',
-  `url` varchar(1024) NOT NULL DEFAULT '',
-  `scheme` varchar(1024) NOT NULL DEFAULT '',
-  `authority` varchar(255) NOT NULL DEFAULT '',
-  `ipv4address` varchar(1024) NOT NULL DEFAULT '',
-  `fqdn` varchar(1024) NOT NULL DEFAULT '',
-  `domain` varchar(1024) NOT NULL DEFAULT '',
-  `tld` varchar(255) NOT NULL DEFAULT '',
-  `port` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `path` varchar(1024) NOT NULL DEFAULT '',
-  `query` varchar(1024) NOT NULL DEFAULT '',
-  `fragment` varchar(1024) NOT NULL DEFAULT '',
-  `extension` varchar(255) NOT NULL DEFAULT '',
-  `total` int(10) unsigned NOT NULL DEFAULT '0',
-  `firstused` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `lastused` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (`lid`,`uid`),
+  `lid` int(10) unsigned NOT NULL DEFAULT '0',
+  `datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   KEY `uid` (`uid`),
-  KEY `url` (`url`(333)),
-  KEY `authority` (`authority`),
-  KEY `fqdn` (`fqdn`(333)),
-  KEY `tld` (`tld`),
-  KEY `extension` (`extension`),
-  KEY `total` (`total`),
-  KEY `firstused` (`firstused`),
-  KEY `lastused` (`lastused`)
+  KEY `lid` (`lid`),
+  KEY `datetime` (`datetime`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1593,7 +1617,7 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `v_ex_kicked` (
   `ruid` int(10) unsigned,
-  `ex_kicked` varchar(255)
+  `ex_kicked` varchar(307)
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -1607,7 +1631,7 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `v_ex_kicked_1` (
   `ruid` int(10) unsigned,
-  `ex_kicked` varchar(255)
+  `ex_kicked` varchar(307)
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -1621,7 +1645,7 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `v_ex_kicks` (
   `ruid` int(10) unsigned,
-  `ex_kicks` varchar(255)
+  `ex_kicks` varchar(307)
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -1635,7 +1659,7 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `v_ex_kicks_1` (
   `ruid` int(10) unsigned,
-  `ex_kicks` varchar(255)
+  `ex_kicks` varchar(307)
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -1889,8 +1913,8 @@ SET character_set_client = utf8;
   `kicked` int(10) unsigned,
   `nickchanges` int(10) unsigned,
   `topics` int(10) unsigned,
-  `ex_kicks` varchar(255),
-  `ex_kicked` varchar(255)
+  `ex_kicks` varchar(307),
+  `ex_kicked` varchar(307)
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -2096,12 +2120,10 @@ DROP TABLE IF EXISTS `words`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `words` (
-  `wid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `word` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '',
-  `length` int(10) unsigned NOT NULL DEFAULT '0',
+  `word` varchar(30) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '',
+  `length` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `total` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`wid`),
-  UNIQUE KEY `word` (`word`),
+  PRIMARY KEY (`word`),
   KEY `length` (`length`),
   KEY `total` (`total`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -2648,4 +2670,4 @@ CREATE TABLE `words` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-05-17  1:07:00
+-- Dump completed on 2012-09-14 15:26:13

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2011, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2012, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -40,7 +40,8 @@
  * - Given that nicks can't contain "<", ">" or ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
  * - The most common channel prefixes are "#&!+".
  * - Some converted mIRC logs do include "!" in "mode" and "topic" lines while there is no host. Legacy feature.
- * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index is both set and has a value.
+ * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index item is
+ *   both set and has a value.
  */
 final class parser_eggdrop extends parser
 {
@@ -125,16 +126,16 @@ final class parser_eggdrop extends parser
 			$this->set_kick($this->date.' '.$matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line']);
 
 		/**
-		 * Eggdrop logs repeated lines (case insensitive matches) in the format: "Last message repeated NUM time(s).".
-		 * We process the previous line NUM times.
+		 * Eggdrop logs repeated lines (case insensitive matches) in the format: "Last message repeated NUM time(s).". We process the previous line NUM
+		 * times.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Last message repeated (?<num>\d+) time\(s\)\.$/', $line, $matches)) {
 			/**
-			 * Prevent the parser from repeating a preceding repeat line.
-			 * Also, skip processing if we find a repeat line on the first line of the logfile. We can't look back across files.
+			 * Prevent the parser from repeating a preceding repeat line. Also, skip processing if we find a repeat line on the first line of the
+			 * logfile. We can't look back across files.
 			 */
 			if ($this->linenum == 1 || $this->repeatlock) {
-				return;
+				return null;
 			}
 
 			$this->repeatlock = true;

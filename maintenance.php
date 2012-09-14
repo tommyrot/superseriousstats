@@ -29,6 +29,9 @@ final class maintenance extends base
 
 	public function __construct($settings)
 	{
+		/**
+		 * The variables that are listed in $settings_list will have their values overridden by those found in the config file.
+		 */
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $settings)) {
 				continue;
@@ -104,7 +107,8 @@ final class maintenance extends base
 		}
 
 		/**
-		 * Every alias must have their ruid set to the uid of a registered nick, which in turn has uid = ruid and status = 1 or 3. Unlink aliases pointing to non ruids.
+		 * Every alias must have their ruid set to the uid of a registered nick, which in turn has uid = ruid and status = 1 or 3. Unlink aliases
+		 * pointing to non ruids.
 		 */
 		$query = @mysqli_query($this->mysqli, 'select `ruid` from `user_status` where `status` in (1,3) order by `uid` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
@@ -128,9 +132,8 @@ final class maintenance extends base
 	}
 
 	/**
-	 * Make materialized views, which are stored copies of dynamic views.
-	 * Query tables are top level materialized views based on various sub views and contain accumulated stats per ruid.
-	 * Legend: mv_ materialized view, q_ query table, t_ template, v_ view. Combinations do exist.
+	 * Make materialized views, which are stored copies of dynamic views. Query tables are top level materialized views based on various sub views and
+	 * contain accumulated stats per ruid. Legend: mv_ materialized view, q_ query table, t_ template, v_ view. Combinations do exist.
 	 */
 	private function make_materialized_views()
 	{
@@ -173,7 +176,7 @@ final class maintenance extends base
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
-			return;
+			return null;
 		}
 
 		while ($result = mysqli_fetch_object($query)) {
@@ -190,8 +193,10 @@ final class maintenance extends base
 
 				/**
 				 * Update records:
-				 * - Make the alias (uid) the new registered nick for the user or bot by setting ruid = uid. The status will be set to either 1 or 3, identical to previous value.
-				 * - Update the ruid field of all records that still point to the old registered nick (ruid) and set it to the new one (uid). Explicitly set the status to 2 so all records including the old registered nick are marked as alias.
+				 * - Make the alias (uid) the new registered nick for the user or bot by setting ruid = uid. The status will be set to either
+				 *   1 or 3, identical to previous value.
+				 * - Update the ruid field of all records that still point to the old registered nick (ruid) and set it to the new one (uid).
+				 *   Explicitly set the status to 2 so all records including the old registered nick are marked as alias.
 				 */
 				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$result->uid.', `status` = '.$result->status.' where `uid` = '.$result->uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$result->uid.', `status` = 2 where `ruid` = '.$result->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
