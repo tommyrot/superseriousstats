@@ -467,7 +467,7 @@ final class sss extends base
 		 */
 		$needmaintenance = false;
 
-		foreach ($logfiles as $date => $file) {
+		foreach ($logfiles as $date => $logfile) {
 			if (!is_null($date_lastlogparsed) && strtotime($date) < strtotime($date_lastlogparsed)) {
 				continue;
 			}
@@ -504,14 +504,14 @@ final class sss extends base
 			/**
 			 * Check if we are dealing with a gzipped log.
 			 */
-			if (preg_match('/\.gz$/', $file)) {
+			if (preg_match('/\.gz$/', $logfile)) {
 				if (!extension_loaded('zlib')) {
 					$this->output('critical', 'parse_log(): zlib extension isn\'t loaded: can\'t parse gzipped logs'."\n");
 				}
 
-				$parser->gzparse_log($file, $firstline);
+				$parser->gzparse_log($logfile, $firstline);
 			} else {
-				$parser->parse_log($file, $firstline);
+				$parser->parse_log($logfile, $firstline);
 			}
 
 			$logsparsed++;
