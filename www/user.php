@@ -25,9 +25,13 @@ final class user
 	 * Default settings for this script, can be overridden in the vars.php file.
 	 */
 	private $bar_afternoon = 'y.png';
+	private $bar_afternoon2 = 'y2.png';
 	private $bar_evening = 'r.png';
+	private $bar_evening2 = 'r2.png';
 	private $bar_morning = 'g.png';
+	private $bar_morning2 = 'g2.png';
 	private $bar_night = 'b.png';
+	private $bar_night2 = 'b2.png';
 	private $channel = '';
 	private $db_host = '127.0.0.1';
 	private $db_pass = '';
@@ -43,10 +47,13 @@ final class user
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $cid = '';
+	private $currentyear = 0;
 	private $csnick = '';
 	private $date_lastlogparsed = '';
 	private $date_max = '';
 	private $dayofmonth = 0;
+	private $daysleft = 0;
+	private $estimate = false;
 	private $firstseen = '';
 	private $l_avg = 0;
 	private $l_max = 0;
@@ -206,12 +213,30 @@ final class user
 		$this->month = (int) date('n', strtotime($this->date_lastlogparsed));
 		$this->year = (int) date('Y', strtotime($this->date_lastlogparsed));
 		$this->years = $this->year - (int) date('Y', strtotime($this->firstseen)) + 1;
+		$this->daysleft = (int) date('z', strtotime('last day of December '.$this->year)) - (int) date('z', strtotime($this->date_lastlogparsed));
+		$this->currentyear = (int) date('Y');
 
 		/**
 		 * If we have less than 3 years of data we set the amount of years to 3 so we have that many columns in our table. Looks better.
 		 */
 		if ($this->years < 3) {
 			$this->years = 3;
+		}
+
+		/**
+		 * If there are still days ahead of us in the current year, we try to calculate an estimated line count and display it in an additional column.
+		 * Don't forget to add another 34px to the table width, a bit further down in the html head.
+		 */
+		if ($this->daysleft != 0 && $this->year == $this->currentyear) {
+			/**
+			 * We base our calculations on the activity of the last 90 days logged. If there is none we won't display the extra column.
+			 */
+			$query = @mysqli_query($this->mysqli, 'select count(*) as `activity` from `q_activity_by_day` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$result = mysqli_fetch_object($query);
+
+			if (!empty($result->activity)) {
+				$this->estimate = true;
+			}
 		}
 
 		/**
@@ -228,7 +253,7 @@ final class user
 			. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
 			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
 			. '<style type="text/css">'."\n"
-			. '  .act-year {width:'.(2 + ($this->years * 34)).'px}'."\n"
+			. '  .act-year {width:'.(2 + (($this->years + ($this->estimate ? 1 : 0)) * 34)).'px}'."\n"
 			. '</style>'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
@@ -284,6 +309,11 @@ final class user
 				$dates[] = $this->year - $i;
 			}
 
+			if ($this->estimate) {
+				$columns++;
+				$dates[] = 'estimate';
+			}
+
 			$head = 'Activity by Year';
 			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_year` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
@@ -313,6 +343,21 @@ final class user
 			}
 		}
 
+		if ($this->estimate && $type == 'year') {
+			$query = @mysqli_query($this->mysqli, 'select (sum(`l_night`) / 90) as `l_night_avg`, (sum(`l_morning`) / 90) as `l_morning_avg`, (sum(`l_afternoon`) / 90) as `l_afternoon_avg`, (sum(`l_evening`) / 90) as `l_evening_avg`, (sum(`l_total`) / 90) as `l_total_avg` from `q_activity_by_day` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$result = mysqli_fetch_object($query);
+			$l_night['estimate'] = $l_night[$this->currentyear] + round((float) $result->l_night_avg * $this->daysleft);
+			$l_morning['estimate'] = $l_morning[$this->currentyear] + round((float) $result->l_morning_avg * $this->daysleft);
+			$l_afternoon['estimate'] = $l_afternoon[$this->currentyear] + round((float) $result->l_afternoon_avg * $this->daysleft);
+			$l_evening['estimate'] = $l_evening[$this->currentyear] + round((float) $result->l_evening_avg * $this->daysleft);
+			$l_total['estimate'] = $l_total[$this->currentyear] + round((float) $result->l_total_avg * $this->daysleft);
+
+			if ($l_total['estimate'] > $high_value) {
+				$high_date = 'estimate';
+				$high_value = $l_total['estimate'];
+			}
+		}
+
 		$tr1 = '<tr><th colspan="'.$columns.'">'.$head.'</th></tr>';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
@@ -322,11 +367,23 @@ final class user
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
 			} else {
 				if ($l_total[$date] >= 999500) {
-					$tr2 .= '<td>'.number_format($l_total[$date] / 1000000, 1).'M';
+					if ($date == 'estimate') {
+						$tr2 .= '<td><span class="grey">'.number_format($l_total[$date] / 1000000, 1).'M</span>';
+					} else {
+						$tr2 .= '<td>'.number_format($l_total[$date] / 1000000, 1).'M';
+					}
 				} elseif ($l_total[$date] >= 10000) {
-					$tr2 .= '<td>'.round($l_total[$date] / 1000).'K';
+					if ($date == 'estimate') {
+						$tr2 .= '<td><span class="grey">'.round($l_total[$date] / 1000).'K</span>';
+					} else {
+						$tr2 .= '<td>'.round($l_total[$date] / 1000).'K';
+					}
 				} else {
-					$tr2 .= '<td>'.$l_total[$date];
+					if ($date == 'estimate') {
+						$tr2 .= '<td><span class="grey">'.$l_total[$date].'</span>';
+					} else {
+						$tr2 .= '<td>'.$l_total[$date];
+					}
 				}
 
 				$times = array('evening', 'afternoon', 'morning', 'night');
@@ -336,7 +393,11 @@ final class user
 						$height = round((${'l_'.$time}[$date] / $high_value) * 100);
 
 						if ($height != 0) {
-							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
+							if ($date == 'estimate') {
+								$tr2 .= '<img src="'.$this->{'bar_'.$time.'2'}.'" height="'.$height.'" alt="" title="" />';
+							} else {
+								$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
+							}
 						}
 					}
 				}
@@ -358,9 +419,17 @@ final class user
 				}
 			} elseif ($type == 'year') {
 				if ($high_date == $date) {
-					$tr3 .= '<td class="bold">'.date('\'y', strtotime($date.'-01-01')).'</td>';
+					if ($date == 'estimate') {
+						$tr3 .= '<td class="bold">Est.</td>';
+					} else {
+						$tr3 .= '<td class="bold">'.date('\'y', strtotime($date.'-01-01')).'</td>';
+					}
 				} else {
-					$tr3 .= '<td>'.date('\'y', strtotime($date.'-01-01')).'</td>';
+					if ($date == 'estimate') {
+						$tr3 .= '<td>Est.</td>';
+					} else {
+						$tr3 .= '<td>'.date('\'y', strtotime($date.'-01-01')).'</td>';
+					}
 				}
 			}
 		}

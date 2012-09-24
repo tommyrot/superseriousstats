@@ -9,9 +9,13 @@
  */
 $settings['__global'] = array(
 	'bar_afternoon' => 'y.png',
+	'bar_afternoon2' => 'y2.png',
 	'bar_evening' => 'r.png',
+	'bar_evening2' => 'r2.png',
 	'bar_morning' => 'g.png',
+	'bar_morning2' => 'g2.png',
 	'bar_night' => 'b.png',
+	'bar_night2' => 'b2.png',
 	'channel' => '',
 	'db_host' => '127.0.0.1',
 	'db_name' => 'sss',
