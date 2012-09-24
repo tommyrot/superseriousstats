@@ -122,6 +122,9 @@ th {
 .act-year tr.sub td.bold {
 	color:#666;
 }
+.est img {
+	opacity:0.6;
+}
 /**
  * Specific table styling: history index
  */

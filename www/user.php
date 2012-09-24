@@ -25,13 +25,9 @@ final class user
 	 * Default settings for this script, can be overridden in the vars.php file.
 	 */
 	private $bar_afternoon = 'y.png';
-	private $bar_afternoon2 = 'y2.png';
 	private $bar_evening = 'r.png';
-	private $bar_evening2 = 'r2.png';
 	private $bar_morning = 'g.png';
-	private $bar_morning2 = 'g2.png';
 	private $bar_night = 'b.png';
-	private $bar_night2 = 'b2.png';
 	private $channel = '';
 	private $db_host = '127.0.0.1';
 	private $db_pass = '';
@@ -368,19 +364,19 @@ final class user
 			} else {
 				if ($l_total[$date] >= 999500) {
 					if ($date == 'estimate') {
-						$tr2 .= '<td><span class="grey">'.number_format($l_total[$date] / 1000000, 1).'M</span>';
+						$tr2 .= '<td class="est"><span class="grey">'.number_format($l_total[$date] / 1000000, 1).'M</span>';
 					} else {
 						$tr2 .= '<td>'.number_format($l_total[$date] / 1000000, 1).'M';
 					}
 				} elseif ($l_total[$date] >= 10000) {
 					if ($date == 'estimate') {
-						$tr2 .= '<td><span class="grey">'.round($l_total[$date] / 1000).'K</span>';
+						$tr2 .= '<td class="est"><span class="grey">'.round($l_total[$date] / 1000).'K</span>';
 					} else {
 						$tr2 .= '<td>'.round($l_total[$date] / 1000).'K';
 					}
 				} else {
 					if ($date == 'estimate') {
-						$tr2 .= '<td><span class="grey">'.$l_total[$date].'</span>';
+						$tr2 .= '<td class="est"><span class="grey">'.$l_total[$date].'</span>';
 					} else {
 						$tr2 .= '<td>'.$l_total[$date];
 					}
@@ -393,11 +389,7 @@ final class user
 						$height = round((${'l_'.$time}[$date] / $high_value) * 100);
 
 						if ($height != 0) {
-							if ($date == 'estimate') {
-								$tr2 .= '<img src="'.$this->{'bar_'.$time.'2'}.'" height="'.$height.'" alt="" title="" />';
-							} else {
-								$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
-							}
+							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
 						}
 					}
 				}

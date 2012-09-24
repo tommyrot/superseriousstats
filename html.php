@@ -27,13 +27,9 @@ final class html extends base
 	private $addhtml_foot = '';
 	private $addhtml_head = '';
 	private $bar_afternoon = 'y.png';
-	private $bar_afternoon2 = 'y2.png';
 	private $bar_evening = 'r.png';
-	private $bar_evening2 = 'r2.png';
 	private $bar_morning = 'g.png';
-	private $bar_morning2 = 'g2.png';
 	private $bar_night = 'b.png';
-	private $bar_night2 = 'b2.png';
 	private $channel = '';
 	private $cid = '';
 	private $history = false;
@@ -71,13 +67,9 @@ final class html extends base
 		'addhtml_foot' => 'string',
 		'addhtml_head' => 'string',
 		'bar_afternoon' => 'string',
-		'bar_afternoon2' => 'string',
 		'bar_evening' => 'string',
-		'bar_evening2' => 'string',
 		'bar_morning' => 'string',
-		'bar_morning2' => 'string',
 		'bar_night' => 'string',
-		'bar_night2' => 'string',
 		'channel' => 'string',
 		'cid' => 'string',
 		'history' => 'bool',
@@ -810,19 +802,19 @@ final class html extends base
 			} else {
 				if ($l_total[$date] >= 999500) {
 					if ($date == 'estimate') {
-						$tr2 .= '<td><span class="grey">'.number_format($l_total[$date] / 1000000, 1).'M</span>';
+						$tr2 .= '<td class="est"><span class="grey">'.number_format($l_total[$date] / 1000000, 1).'M</span>';
 					} else {
 						$tr2 .= '<td>'.number_format($l_total[$date] / 1000000, 1).'M';
 					}
 				} elseif ($l_total[$date] >= 10000) {
 					if ($date == 'estimate') {
-						$tr2 .= '<td><span class="grey">'.round($l_total[$date] / 1000).'K</span>';
+						$tr2 .= '<td class="est"><span class="grey">'.round($l_total[$date] / 1000).'K</span>';
 					} else {
 						$tr2 .= '<td>'.round($l_total[$date] / 1000).'K';
 					}
 				} else {
 					if ($date == 'estimate') {
-						$tr2 .= '<td><span class="grey">'.$l_total[$date].'</span>';
+						$tr2 .= '<td class="est"><span class="grey">'.$l_total[$date].'</span>';
 					} else {
 						$tr2 .= '<td>'.$l_total[$date];
 					}
@@ -835,11 +827,7 @@ final class html extends base
 						$height = round((${'l_'.$time}[$date] / $high_value) * 100);
 
 						if ($height != 0) {
-							if ($date == 'estimate') {
-								$tr2 .= '<img src="'.$this->{'bar_'.$time.'2'}.'" height="'.$height.'" alt="" title="" />';
-							} else {
-								$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
-							}
+							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
 						}
 					}
 				}
