@@ -357,7 +357,7 @@ final class history
 				}
 			}
 
-			if (!empty($width_remainders) && $width > 0) {
+			if (!empty($width_remainders) && $width != 0) {
 				arsort($width_remainders);
 
 				foreach ($width_remainders as $time => $remainder) {

@@ -177,7 +177,7 @@ final class html extends base
 		$result = mysqli_fetch_object($query);
 		$this->date_first = $result->date_first;
 		$this->date_last = $result->date_last;
-		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, max(`date`) as `date_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
 		$this->days = (int) $result->days;
 		$this->l_avg = $this->l_total / $this->days;
@@ -185,14 +185,14 @@ final class html extends base
 		/**
 		 * Date and time variables used throughout the script. These are based on the date of the last logfile parsed and used to define our scope.
 		 */
-		$this->currentyear = (int) date('Y');
-		$this->date_lastlogparsed = $result->date_lastlogparsed;
+		$this->date_lastlogparsed = $result->date;
 		$this->dayofmonth = (int) date('j', strtotime($this->date_lastlogparsed));
 		$this->month = (int) date('n', strtotime($this->date_lastlogparsed));
 		$this->monthname = date('F', strtotime($this->date_lastlogparsed));
 		$this->year = (int) date('Y', strtotime($this->date_lastlogparsed));
 		$this->years = $this->year - (int) date('Y', strtotime($this->date_first)) + 1;
 		$this->daysleft = (int) date('z', strtotime('last day of December '.$this->year)) - (int) date('z', strtotime($this->date_lastlogparsed));
+		$this->currentyear = (int) date('Y');
 
 		/**
 		 * If we have less than 3 years of data we set the amount of years to 3 so we have that many columns in our table. Looks better.
@@ -1071,7 +1071,7 @@ final class html extends base
 				}
 			}
 
-			if (!empty($width_remainders) && $width > 0) {
+			if (!empty($width_remainders) && $width != 0) {
 				arsort($width_remainders);
 
 				foreach ($width_remainders as $time => $remainder) {
@@ -1122,7 +1122,7 @@ final class html extends base
 		$result = mysqli_fetch_object($query);
 		$total = (int) $result->total - $offset - ($maxrows * 4);
 		$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" />';
-		$tr1 = '<tr><th colspan="12">'.($total > 0 ? '<span class="left">Less Talkative People &ndash; Alltime</span><span class="right">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; Alltime').'</th></tr>';
+		$tr1 = '<tr><th colspan="12">'.($total != 0 ? '<span class="left">Less Talkative People &ndash; Alltime</span><span class="right">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; Alltime').'</th></tr>';
 		$tr2 = '<tr><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td></tr>';
 		$trx = '';
 
@@ -1291,12 +1291,12 @@ final class table extends base
 		 */
 		if ($this->type == 'small') {
 			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" />';
-			$tr1 = '<tr><th colspan="3">'.($this->total > 0 ? '<span class="left">'.$this->head.'</span><span class="right">'.number_format($this->total).' Total</span>' : $this->head).'</th></tr>';
+			$tr1 = '<tr><th colspan="3">'.($this->total != 0 ? '<span class="left">'.$this->head.'</span><span class="right">'.number_format($this->total).' Total</span>' : $this->head).'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.$this->key1.'</td><td class="pos"></td><td class="k2">'.$this->key2.'</td></tr>';
 			$trx = '';
 		} elseif ($this->type == 'large' || $this->type == 'domains' || $this->type == 'medium' || $this->type == 'topics' || $this->type == 'urls') {
 			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c3" />';
-			$tr1 = '<tr><th colspan="4">'.($this->total > 0 ? '<span class="left">'.$this->head.'</span><span class="right">'.number_format($this->total).' Total</span>' : $this->head).'</th></tr>';
+			$tr1 = '<tr><th colspan="4">'.($this->total != 0 ? '<span class="left">'.$this->head.'</span><span class="right">'.number_format($this->total).' Total</span>' : $this->head).'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.$this->key1.'</td><td class="pos"></td><td class="k2">'.$this->key2.'</td><td class="k3">'.$this->key3.'</td></tr>';
 			$trx = '';
 		}
