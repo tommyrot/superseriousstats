@@ -705,6 +705,33 @@ final class html extends base
 		}
 
 		/**
+		 * Milestones section.
+		 */
+		if ($this->sectionbits & 128) {
+			$output = '';
+			$query = @mysqli_query($this->mysqli, 'select `milestone`, count(*) as `total` from `q_milestones` group by `milestone` order by `milestone` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query);
+
+			if (!empty($rows)) {
+				while ($result = mysqli_fetch_object($query)) {
+					$t = new table(number_format((int) $result->milestone).' Lines Milestone');
+					$t->set_value('key1', 'Date');
+					$t->set_value('key2', 'User');
+					$t->set_value('minrows', 1);
+					$t->set_value('query_main', 'select `date` as `v1`, `csnick` as `v2` from `q_milestones` join `user_details` on `q_milestones`.`ruid` = `user_details`.`uid` where `milestone` = '.$result->milestone.' order by `v1` asc, `v2` asc limit 5');
+					$t->set_value('total', (int) $result->total);
+					$t->set_value('type', 'milestones');
+					$output .= $t->make_table($this->mysqli);
+				}
+			}
+
+			if (!empty($output)) {
+				$this->output .= "\n".'<div class="head">Milestones</div>'."\n".$output;
+			}
+		}
+
+
+		/**
 		 * HTML Foot.
 		 */
 		$this->output .= "\n".'<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot != '' ? '<br />'.trim(@file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
@@ -1255,11 +1282,13 @@ final class table extends base
 				$content[] = array($i, date('j M \'y', strtotime($result->v1)), htmlspecialchars($result->v2), htmlspecialchars($result->v3));
 			} elseif ($this->type == 'domains') {
 				$content[] = array($i, number_format((int) $result->v1), htmlspecialchars($result->v2), date('j M \'y', strtotime($result->v3)));
+			} elseif ($this->type == 'milestones') {
+				$content[] = array($i, date('j M \'y', strtotime($result->v1)), htmlspecialchars($result->v2));
 			}
 		}
 
 		for ($i = count($content) + 1; $i <= $this->maxrows; $i++) {
-			if ($this->type == 'small') {
+			if ($this->type == 'small' || $this->type == 'milestones') {
 				$content[] = array('&nbsp;', '', '');
 			} elseif ($this->type == 'large' || $this->type == 'topics' || $this->type == 'medium' || $this->type == 'domains') {
 				$content[] = array('&nbsp;', '', '', '');
@@ -1277,7 +1306,7 @@ final class table extends base
 		/**
 		 * Create the actual table according to type.
 		 */
-		if ($this->type == 'small') {
+		if ($this->type == 'small' || $this->type == 'milestones') {
 			$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" />';
 			$tr1 = '<tr><th colspan="3">'.($this->total != 0 ? '<span class="left">'.$this->head.'</span><span class="right">'.number_format($this->total).' Total</span>' : $this->head).'</th></tr>';
 			$tr2 = '<tr><td class="k1">'.$this->key1.'</td><td class="pos"></td><td class="k2">'.$this->key2.'</td></tr>';
@@ -1289,7 +1318,7 @@ final class table extends base
 			$trx = '';
 		}
 
-		if ($this->type == 'small') {
+		if ($this->type == 'small' || $this->type == 'milestones') {
 			foreach ($content as $row) {
 				$trx .= '<tr><td class="v1">'.$row[1].'</td><td class="pos">'.$row[0].'</td><td class="v2">'.$row[2].'</td></tr>';
 			}
@@ -1333,7 +1362,7 @@ final class table extends base
 			}
 		}
 
-		if ($this->type == 'small') {
+		if ($this->type == 'small' || $this->type == 'milestones') {
 			return '<table class="small">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 		} elseif ($this->type == 'medium' || $this->type == 'domains') {
 			return '<table class="medium">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
