@@ -68,7 +68,42 @@ final class maintenance extends base
 			$this->fix_user_status_errors();
 			$this->register_most_active_alias();
 			$this->make_materialized_views();
+			$this->fetch_milestones();
 			$this->output('notice', 'do_maintenance(): maintenance completed');
+		}
+	}
+
+	private function fetch_milestones()
+	{
+		$query = @mysqli_query($this->mysqli, 'select `q_activity_by_day`.`ruid`, `date`, `l_total` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` where `status` != 3 order by `ruid` asc, `date` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		/**
+		* If there is no user activity we can stop here.
+		*/
+		if (empty($rows)) {
+			return null;
+		}
+
+		$values = '';
+
+		while ($result = mysqli_fetch_object($query)) {
+			if (!isset($l_total[(int) $result->ruid])) {
+				$l_total[(int) $result->ruid] = (int) $result->l_total;
+				$milestones = array(1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000);
+				$nextmilestone = array_shift($milestones);
+			} else {
+				$l_total[(int) $result->ruid] += (int) $result->l_total;
+			}
+
+			while (!is_null($nextmilestone) && $l_total[(int) $result->ruid] >= $nextmilestone) {
+				$values .= ', ('.$result->ruid.', '.$nextmilestone.', \''.$result->date.'\')';
+				$nextmilestone = array_shift($milestones);
+			}
+		}
+
+		if (!empty($values)) {
+			@mysqli_query($this->mysqli, 'insert into `q_milestones` (`ruid`, `milestone`, `date`) values '.ltrim($values, ', ')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 	}
 
