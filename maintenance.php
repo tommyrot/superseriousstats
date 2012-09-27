@@ -103,6 +103,7 @@ final class maintenance extends base
 		}
 
 		if (!empty($values)) {
+			@mysqli_query($this->mysqli, 'truncate table `q_milestones`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			@mysqli_query($this->mysqli, 'insert into `q_milestones` (`ruid`, `milestone`, `date`) values '.ltrim($values, ', ')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 	}
