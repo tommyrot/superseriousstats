@@ -545,17 +545,8 @@ final class html extends base
 			$output = '';
 
 			/**
-			 * Display the top 9 smiley tables ordered by totals.
+			 * All the smileys and their info text.
 			 */
-			$query = @mysqli_query($this->mysqli, 'select sum(`s_01`) as `s_01`, sum(`s_02`) as `s_02`, sum(`s_03`) as `s_03`, sum(`s_04`) as `s_04`, sum(`s_05`) as `s_05`, sum(`s_06`) as `s_06`, sum(`s_07`) as `s_07`, sum(`s_08`) as `s_08`, sum(`s_09`) as `s_09`, sum(`s_10`) as `s_10`, sum(`s_11`) as `s_11`, sum(`s_12`) as `s_12`, sum(`s_13`) as `s_13`, sum(`s_14`) as `s_14`, sum(`s_15`) as `s_15`, sum(`s_16`) as `s_16`, sum(`s_17`) as `s_17`, sum(`s_18`) as `s_18`, sum(`s_19`) as `s_19`, sum(`s_20`) as `s_20`, sum(`s_21`) as `s_21`, sum(`s_22`) as `s_22`, sum(`s_23`) as `s_23`, sum(`s_24`) as `s_24`, sum(`s_25`) as `s_25`, sum(`s_26`) as `s_26`, sum(`s_27`) as `s_27`, sum(`s_28`) as `s_28`, sum(`s_29`) as `s_29`, sum(`s_30`) as `s_30`, sum(`s_31`) as `s_31`, sum(`s_32`) as `s_32`, sum(`s_33`) as `s_33`, sum(`s_34`) as `s_34`, sum(`s_35`) as `s_35`, sum(`s_36`) as `s_36`, sum(`s_37`) as `s_37`, sum(`s_38`) as `s_38`, sum(`s_39`) as `s_39`, sum(`s_40`) as `s_40`, sum(`s_41`) as `s_41`, sum(`s_42`) as `s_42`, sum(`s_43`) as `s_43`, sum(`s_44`) as `s_44`, sum(`s_45`) as `s_45`, sum(`s_46`) as `s_46`, sum(`s_47`) as `s_47`, sum(`s_48`) as `s_48`, sum(`s_49`) as `s_49`, sum(`s_50`) as `s_50` from `q_smileys`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$result = mysqli_fetch_object($query);
-
-			foreach ($result as $key => $value) {
-				$smileys_totals[$key] = (int) $value;
-			}
-
-			arsort($smileys_totals);
-			array_splice($smileys_totals, 9);
 			$smileys = array(
 				's_01' => array(':)', 'Happy'),
 				's_02' => array(';)', 'Wink'),
@@ -608,18 +599,39 @@ final class html extends base
 				's_49' => array('>:(', 'Angry'),
 				's_50' => array(';o', 'Joking'));
 
-			foreach ($smileys_totals as $key => $value) {
-				$t = new table($smileys[$key][1]);
-				$t->set_value('key1', htmlspecialchars($smileys[$key][0]));
-				$t->set_value('key2', 'User');
-				$t->set_value('minrows', $this->minrows);
-				$t->set_value('query_main', 'select `'.$key.'` as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$key.'` != 0 order by `v1` desc, `v2` asc limit 5');
-				$t->set_value('total', $value);
-				$output .= $t->make_table($this->mysqli);
-			}
+			/**
+			 * Display the top 9 smiley tables ordered by totals.
+			 */
+			$query = @mysqli_query($this->mysqli, 'select sum(`s_01`) as `s_01`, sum(`s_02`) as `s_02`, sum(`s_03`) as `s_03`, sum(`s_04`) as `s_04`, sum(`s_05`) as `s_05`, sum(`s_06`) as `s_06`, sum(`s_07`) as `s_07`, sum(`s_08`) as `s_08`, sum(`s_09`) as `s_09`, sum(`s_10`) as `s_10`, sum(`s_11`) as `s_11`, sum(`s_12`) as `s_12`, sum(`s_13`) as `s_13`, sum(`s_14`) as `s_14`, sum(`s_15`) as `s_15`, sum(`s_16`) as `s_16`, sum(`s_17`) as `s_17`, sum(`s_18`) as `s_18`, sum(`s_19`) as `s_19`, sum(`s_20`) as `s_20`, sum(`s_21`) as `s_21`, sum(`s_22`) as `s_22`, sum(`s_23`) as `s_23`, sum(`s_24`) as `s_24`, sum(`s_25`) as `s_25`, sum(`s_26`) as `s_26`, sum(`s_27`) as `s_27`, sum(`s_28`) as `s_28`, sum(`s_29`) as `s_29`, sum(`s_30`) as `s_30`, sum(`s_31`) as `s_31`, sum(`s_32`) as `s_32`, sum(`s_33`) as `s_33`, sum(`s_34`) as `s_34`, sum(`s_35`) as `s_35`, sum(`s_36`) as `s_36`, sum(`s_37`) as `s_37`, sum(`s_38`) as `s_38`, sum(`s_39`) as `s_39`, sum(`s_40`) as `s_40`, sum(`s_41`) as `s_41`, sum(`s_42`) as `s_42`, sum(`s_43`) as `s_43`, sum(`s_44`) as `s_44`, sum(`s_45`) as `s_45`, sum(`s_46`) as `s_46`, sum(`s_47`) as `s_47`, sum(`s_48`) as `s_48`, sum(`s_49`) as `s_49`, sum(`s_50`) as `s_50` from `q_smileys`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$rows = mysqli_num_rows($query);
 
-			if (!empty($output)) {
-				$this->output .= "\n".'<div class="head">Smileys</div>'."\n".$output;
+			if (!empty($rows)) {
+				$result = mysqli_fetch_object($query);
+
+				foreach ($result as $key => $value) {
+					if (!empty($value)) {
+						$smileys_totals[$key] = (int) $value;
+					}
+				}
+
+				if (!empty($smileys_totals)) {
+					arsort($smileys_totals);
+					array_splice($smileys_totals, 9);
+
+					foreach ($smileys_totals as $key => $value) {
+						$t = new table($smileys[$key][1]);
+						$t->set_value('key1', htmlspecialchars($smileys[$key][0]));
+						$t->set_value('key2', 'User');
+						$t->set_value('minrows', $this->minrows);
+						$t->set_value('query_main', 'select `'.$key.'` as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$key.'` != 0 order by `v1` desc, `v2` asc limit 5');
+						$t->set_value('total', $value);
+						$output .= $t->make_table($this->mysqli);
+					}
+				}
+
+				if (!empty($output)) {
+					$this->output .= "\n".'<div class="head">Smileys</div>'."\n".$output;
+				}
 			}
 		}
 
