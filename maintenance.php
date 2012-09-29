@@ -51,29 +51,7 @@ final class maintenance extends base
 		}
 	}
 
-	public function do_maintenance($mysqli)
-	{
-		$this->mysqli = $mysqli;
-		$this->output('notice', 'do_maintenance(): performing database maintenance routines');
-		$query = @mysqli_query($this->mysqli, 'select count(*) as `usercount` from `user_status`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
-		}
-
-		if (empty($result->usercount)) {
-			$this->output('warning', 'do_maintenance(): database is empty, nothing to do');
-		} else {
-			$this->fix_user_status_errors();
-			$this->register_most_active_alias();
-			$this->make_materialized_views();
-			$this->fetch_milestones();
-			$this->output('notice', 'do_maintenance(): maintenance completed');
-		}
-	}
-
-	private function fetch_milestones()
+	private function calculate_milestones()
 	{
 		$query = @mysqli_query($this->mysqli, 'select `q_activity_by_day`.`ruid`, `date`, `l_total` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` where `status` != 3 order by `ruid` asc, `date` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
@@ -105,6 +83,28 @@ final class maintenance extends base
 		if (!empty($values)) {
 			@mysqli_query($this->mysqli, 'truncate table `q_milestones`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			@mysqli_query($this->mysqli, 'insert into `q_milestones` (`ruid`, `milestone`, `date`) values '.ltrim($values, ', ')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		}
+	}
+
+	public function do_maintenance($mysqli)
+	{
+		$this->mysqli = $mysqli;
+		$this->output('notice', 'do_maintenance(): performing database maintenance routines');
+		$query = @mysqli_query($this->mysqli, 'select count(*) as `usercount` from `user_status`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$rows = mysqli_num_rows($query);
+
+		if (!empty($rows)) {
+			$result = mysqli_fetch_object($query);
+		}
+
+		if (empty($result->usercount)) {
+			$this->output('warning', 'do_maintenance(): database is empty, nothing to do');
+		} else {
+			$this->fix_user_status_errors();
+			$this->register_most_active_alias();
+			$this->make_materialized_views();
+			$this->calculate_milestones();
+			$this->output('notice', 'do_maintenance(): maintenance completed');
 		}
 	}
 
