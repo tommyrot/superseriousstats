@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.1.60, for unknown-openbsd5.1 (i386)
+-- MySQL dump 10.13  Distrib 5.1.48, for unknown-openbsd4.8 (i386)
 --
 -- Host: localhost    Database: sss
 -- ------------------------------------------------------
--- Server version	5.1.60
+-- Server version	5.1.48
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -509,6 +509,22 @@ CREATE TABLE `q_lines` (
   KEY `questions` (`questions`),
   KEY `actions` (`actions`),
   KEY `uppercased` (`uppercased`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `q_milestones`
+--
+
+DROP TABLE IF EXISTS `q_milestones`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `q_milestones` (
+  `ruid` int(10) unsigned NOT NULL DEFAULT '0',
+  `milestone` int(10) unsigned NOT NULL DEFAULT '0',
+  `date` date NOT NULL DEFAULT '0000-00-00',
+  PRIMARY KEY (`ruid`,`milestone`),
+  KEY `milestone` (`milestone`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -2670,4 +2686,4 @@ CREATE TABLE `words` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-09-14 15:26:13
+-- Dump completed on 2012-09-29 17:39:56
