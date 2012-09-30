@@ -240,11 +240,11 @@ final class html extends base
 			$this->output .= $this->make_table_activity('month');
 			$this->output .= $this->make_table_activity_distribution_day();
 			$this->output .= $this->make_table_activity('year');
-			$this->output .= $this->make_table_people('alltime', $this->maxrows_people_alltime);
-			$this->output .= $this->make_table_people2($this->maxrows_people_alltime, $this->maxrows_people2);
-			$this->output .= $this->make_table_people('year', $this->maxrows_people_year);
-			$this->output .= $this->make_table_people('month', $this->maxrows_people_month);
-			$this->output .= $this->make_table_people_timeofday($this->maxrows_people_timeofday);
+			$this->output .= $this->make_table_people('alltime');
+			$this->output .= $this->make_table_people2();
+			$this->output .= $this->make_table_people('year');
+			$this->output .= $this->make_table_people('month');
+			$this->output .= $this->make_table_people_timeofday();
 		}
 
 		/**
@@ -1036,7 +1036,7 @@ final class html extends base
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function make_table_people($type, $maxrows)
+	private function make_table_people($type)
 	{
 		/**
 		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
@@ -1067,15 +1067,15 @@ final class html extends base
 		if ($type == 'alltime') {
 			$head = 'Most Talkative People &ndash; Alltime';
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_alltime) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'year') {
 			$head = 'Most Talkative People &ndash; '.$this->year;
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'">History</a>';
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_year`.`l_total`) as `l_total`, sum(`q_activity_by_year`.`l_night`) as `l_night`, sum(`q_activity_by_year`.`l_morning`) as `l_morning`, sum(`q_activity_by_year`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_year`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_year` on `q_lines`.`ruid` = `q_activity_by_year`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = '.$this->year.' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_year`.`l_total`) as `l_total`, sum(`q_activity_by_year`.`l_night`) as `l_night`, sum(`q_activity_by_year`.`l_morning`) as `l_morning`, sum(`q_activity_by_year`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_year`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_year` on `q_lines`.`ruid` = `q_activity_by_year`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = '.$this->year.' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		} elseif ($type == 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->monthname.' '.$this->year;
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'&amp;month='.$this->month.'">History</a>';
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_month`.`l_total`) as `l_total`, sum(`q_activity_by_month`.`l_night`) as `l_night`, sum(`q_activity_by_month`.`l_morning`) as `l_morning`, sum(`q_activity_by_month`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_month`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_month` on `q_lines`.`ruid` = `q_activity_by_month`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_month`.`l_total`) as `l_total`, sum(`q_activity_by_month`.`l_night`) as `l_night`, sum(`q_activity_by_month`.`l_morning`) as `l_morning`, sum(`q_activity_by_month`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_month`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_month` on `q_lines`.`ruid` = `q_activity_by_month`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_month) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 
 		$tr0 = '<col class="c1" /><col class="c2" /><col class="pos" /><col class="c3" /><col class="c4" /><col class="c5" /><col class="c6" />';
@@ -1126,12 +1126,12 @@ final class html extends base
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	private function make_table_people2($offset, $maxrows)
+	private function make_table_people2()
 	{
-		$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$offset.', '.($maxrows * 4)) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
-		if (empty($rows) || $rows < $maxrows * 4) {
+		if (empty($rows) || $rows < $this->maxrows_people2 * 4) {
 			return null;
 		}
 
@@ -1139,7 +1139,7 @@ final class html extends base
 		$current_row = 1;
 
 		while ($result = mysqli_fetch_object($query)) {
-			if ($current_row > $maxrows) {
+			if ($current_row > $this->maxrows_people2) {
 				$current_column++;
 				$current_row = 1;
 			}
@@ -1150,17 +1150,17 @@ final class html extends base
 
 		$query = @mysqli_query($this->mysqli, 'select count(*) as `total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$result = mysqli_fetch_object($query);
-		$total = (int) $result->total - $offset - ($maxrows * 4);
+		$total = (int) $result->total - $this->maxrows_people_alltime - ($this->maxrows_people2 * 4);
 		$tr0 = '<col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" /><col class="c1" /><col class="pos" /><col class="c2" />';
 		$tr1 = '<tr><th colspan="12">'.($total != 0 ? '<span class="left">Less Talkative People &ndash; Alltime</span><span class="right">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; Alltime').'</th></tr>';
 		$tr2 = '<tr><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td><td class="k1">Lines</td><td class="pos"></td><td class="k2">User</td></tr>';
 		$trx = '';
 
-		for ($i = 1; $i <= $maxrows; $i++) {
+		for ($i = 1; $i <= $this->maxrows_people2; $i++) {
 			$trx .= '<tr>';
 
 			for ($j = 1; $j <= 4; $j++) {
-				$trx .= '<td class="v1">'.number_format($columns[$j][$i][1]).'</td><td class="pos">'.($offset + ($j > 1 ? ($j - 1) * $maxrows : 0) + $i).'</td><td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i][0]).'">'.htmlspecialchars($columns[$j][$i][0]).'</a>' : htmlspecialchars($columns[$j][$i][0])).'</td>';
+				$trx .= '<td class="v1">'.number_format($columns[$j][$i][1]).'</td><td class="pos">'.($this->maxrows_people_alltime + ($j > 1 ? ($j - 1) * $this->maxrows_people2 : 0) + $i).'</td><td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i][0]).'">'.htmlspecialchars($columns[$j][$i][0]).'</a>' : htmlspecialchars($columns[$j][$i][0])).'</td>';
 			}
 
 			$trx .= '</tr>';
@@ -1169,7 +1169,7 @@ final class html extends base
 		return '<table class="ppl2">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	private function make_table_people_timeofday($maxrows)
+	private function make_table_people_timeofday()
 	{
 		/**
 		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
@@ -1189,7 +1189,7 @@ final class html extends base
 		$times = array('night', 'morning', 'afternoon', 'evening');
 
 		foreach ($times as $time) {
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$maxrows) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$i = 0;
 
 			while ($result = mysqli_fetch_object($query)) {
@@ -1208,7 +1208,7 @@ final class html extends base
 		$tr2 = '<tr><td class="pos"></td><td class="k">Night<br />0h - 5h</td><td class="k">Morning<br />6h - 11h</td><td class="k">Afternoon<br />12h - 17h</td><td class="k">Evening<br />18h - 23h</td></tr>';
 		$tr3 = '';
 
-		for ($i = 1; $i <= $maxrows; $i++) {
+		for ($i = 1; $i <= $this->maxrows_people_timeofday; $i++) {
 			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
 				break;
 			} else {
