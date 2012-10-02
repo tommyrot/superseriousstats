@@ -76,8 +76,8 @@ final class parser_eggdrop extends parser
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] [#&!+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\' by (?<nick>\S+?)(!(\S+)?)?$/', $line, $matches)) {
-			$nicks = explode(' ', $matches['nicks']);
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] [#&!+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)\' by (?<nick_performing>\S+?)(!(\S+)?)?$/', $line, $matches)) {
+			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 			$modenum = 0;
 
 			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
@@ -86,7 +86,7 @@ final class parser_eggdrop extends parser
 				if ($mode == '-' || $mode == '+') {
 					$modesign = $mode;
 				} else {
-					$this->set_mode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modenum], $modesign.$mode);
+					$this->set_mode($this->date.' '.$matches['time'], $matches['nick_performing'], $nicks_undergoing[$modenum], $modesign.$mode);
 					$modenum++;
 				}
 			}

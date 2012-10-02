@@ -37,11 +37,12 @@
  *
  * Notes:
  * - normalize_line() scrubs all lines before passing them on to parse_line().
- * - The order of the regular expressions below is irrelevant (current order aims for best performance).
+ * - Given that nicks can't contain "/" or any of the channel prefixes, the order of the regular expressions below is irrelevant (current order aims for best
+ *   performance).
  * - We have to be mindful that nicks can contain "[" and "]".
  * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*". If one of the nick prefixes slips through then validate_nick()
  *   will fail.
- * - Irssi may log multiple "performing" nicks separated by commas. We use only the first one.
+ * - Irssi may log multiple "performing" nicks in "mode" lines separated by commas. We use only the first one.
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index item is
  *   both set and has a value.
  */
@@ -73,8 +74,8 @@ final class parser_irssi extends parser
 		/**
 		 * "Mode" lines.
 		 */
-		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (ServerMode|mode)\/[#&!+]\S+ \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks>\S+( \S+)*)\] by (?<nick>\S+)(, \S+)*$/', $line, $matches)) {
-			$nicks = explode(' ', $matches['nicks']);
+		} elseif (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) -!- (ServerMode|mode)\/[#&!+]\S+ \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)\] by (?<nick_performing>\S+)(, \S+)*$/', $line, $matches)) {
+			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 			$modenum = 0;
 
 			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
@@ -83,7 +84,7 @@ final class parser_irssi extends parser
 				if ($mode == '-' || $mode == '+') {
 					$modesign = $mode;
 				} else {
-					$this->set_mode($this->date.' '.$matches['time'], $matches['nick'], $nicks[$modenum], $modesign.$mode);
+					$this->set_mode($this->date.' '.$matches['time'], $matches['nick_performing'], $nicks_undergoing[$modenum], $modesign.$mode);
 					$modenum++;
 				}
 			}
