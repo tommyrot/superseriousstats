@@ -36,8 +36,6 @@
  * - normalize_line() scrubs all lines before passing them on to parse_line().
  * - Textual uses the same syntax for actions as "normal" lines. This makes the two indistinguishable. Pretty dumb.
  * - Given that nicks can't contain ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
- * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index item is
- *   both set and has a value.
  */
 final class parser_textual extends parser
 {
@@ -108,7 +106,7 @@ final class parser_textual extends parser
 		/**
 		 * "Kick" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<line>(?<nick_performing>\S+) kicked (?<nick_undergoing>\S+) from the channel\. \(.+\))$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] (?<line>(?<nick_performing>\S+) kicked (?<nick_undergoing>\S+) from the channel\. \(.*\))$/', $line, $matches)) {
 			$this->set_kick($this->date.' '.$matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line']);
 
 		/**
