@@ -17,7 +17,7 @@
  */
 
 /**
- * Parse instructions for the muh2 logfile format.
+ * Parse instructions for the ZNC logfile format.
  *
  * +------------+-------------------------------------------------------+->
  * | Line	| Format						| Notes
@@ -27,7 +27,7 @@
  * | Slap	| * NICK slaps MSG					| Slaps may lack a (valid) target.
  * | Nickchange	| NICK is now known as NICK				|
  * | Join	| *** Joins: NICK (HOST)				|
- * | Part	| *** Parts: NICK (HOST)				|
+ * | Part	| *** Parts: NICK (HOST) (MSG)				| Part message may be absent, or empty due to normalization.
  * | Quit	| *** Quits: NICK (HOST) (MSG)				| Quit message may be empty due to normalization.
  * | Mode	| *** NICK sets mode: +o-v NICK NICK			| Only check for combinations of ops (+o) and voices (+v).
  * | Topic	| *** NICK changes topic to 'MSG'			| Skip empty topics.
@@ -40,7 +40,7 @@
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index item is
  *   both set and has a value.
  */
-final class parser_muh2 extends parser
+final class parser_znc extends parser
 {
 	/**
 	 * Parse a line for various chat data.
@@ -102,7 +102,7 @@ final class parser_muh2 extends parser
 		/**
 		 * "Part" lines.
 		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Parts: (?<nick>\S+) \(\S+\)$/', $line, $matches)) {
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* Parts: (?<nick>\S+) \(\S+\)( \(.*\))?$/', $line, $matches)) {
 			$this->set_part($this->date.' '.$matches['time'], $matches['nick']);
 
 		/**
