@@ -11,11 +11,12 @@ Links
 -----
 
 * Source and project information at [GitHub](https://github.com/tommyrot/superseriousstats).
-* Setup guide at [GitHub](https://github.com/tommyrot/superseriousstats/wiki/Setup-guide).
+* Setup guide and other wiki pages at [GitHub](https://github.com/tommyrot/superseriousstats/wiki).
 * Release log at [Freecode](http://freshmeat.net/projects/superseriousstats).
 * Examples via [Google search](http://www.google.nl/search?q=%22Statistics+created+with+superseriousstats%22).
+* [Demo](http://ubuntu.dutnie.nl/) for #ubuntu.
 
 Support
 -------
 
-For questions, bug reports and feature requests you are welcome to join us in #superseriousstats on chat.freenode.net. We will be more than happy to help you get the program running. Please follow the project if you like it, this will give it more exposure!
+For questions, bug reports and feature requests you are welcome to join us in #superseriousstats on chat.freenode.net. We will be more than happy to help you get the program running.
