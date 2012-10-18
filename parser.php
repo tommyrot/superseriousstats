@@ -24,8 +24,6 @@ abstract class parser extends base
 	/**
 	 * Default settings for this script, can be overridden in the config file. These should all appear in $settings_list[] along with their type.
 	 */
-	private $nick_maxlen = 30;
-	private $nick_minlen = 1;
 	private $wordtracking = true;
 
 	/**
@@ -36,8 +34,6 @@ abstract class parser extends base
 	private $newline = '';
 	private $nicks_objs = array();
 	private $settings_list = array(
-		'nick_maxlen' => 'int',
-		'nick_minlen' => 'int',
 		'outputbits' => 'int',
 		'wordtracking' => 'bool');
 	private $smileys = array(
@@ -677,7 +673,7 @@ abstract class parser extends base
 	 */
 	final private function validate_nick($csnick)
 	{
-		if ($csnick != '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{'.($this->nick_minlen > $this->nick_maxlen ? 1 : $this->nick_minlen).','.($this->nick_maxlen > 32 ? 32 : $this->nick_maxlen).'}$/i', $csnick)) {
+		if ($csnick != '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $csnick)) {
 			return true;
 		} else {
 			return false;
