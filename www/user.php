@@ -242,19 +242,18 @@ final class user
 		$result = mysqli_fetch_object($query);
 		$this->date_max = $result->date;
 		$this->l_max = (int) $result->l_total;
-		$output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
-			. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
+		$output = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">'."\n\n"
 			. '<head>'."\n".'<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
-			. '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'."\n"
-			. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
-			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
+			. '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'."\n"
+			. '<meta http-equiv="Content-Style-Type" content="text/css">'."\n"
+			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'">'."\n"
 			. '<style type="text/css">'."\n"
 			. '  .act-year {width:'.(2 + (($this->years + ($this->estimate ? 1 : 0)) * 34)).'px}'."\n"
 			. '</style>'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
-			. "\n".'<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? ' '.$this->mood : '.').'<br /><br />First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br />'
-			. '<br />'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day.<br />Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' line'.($this->l_max > 1 ? 's' : '').' typed.</div>'."\n";
+			. "\n".'<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? ' '.$this->mood : '.').'<br><br>First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br>'
+			. '<br>'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day.<br>Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' line'.($this->l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * Activity section.
@@ -389,7 +388,7 @@ final class user
 						$height = round((${'l_'.$time}[$date] / $high_value) * 100);
 
 						if ($height != 0) {
-							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="" />';
+							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="">';
 						}
 					}
 				}
@@ -399,15 +398,15 @@ final class user
 
 			if ($type == 'day') {
 				if ($high_date == $date) {
-					$tr3 .= '<td class="bold">'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+					$tr3 .= '<td class="bold">'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date)).'</td>';
 				} else {
-					$tr3 .= '<td>'.date('D', strtotime($date)).'<br />'.date('j', strtotime($date)).'</td>';
+					$tr3 .= '<td>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date)).'</td>';
 				}
 			} elseif ($type == 'month') {
 				if ($high_date == $date) {
-					$tr3 .= '<td class="bold">'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
+					$tr3 .= '<td class="bold">'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01')).'</td>';
 				} else {
-					$tr3 .= '<td>'.date('M', strtotime($date.'-01')).'<br />'.date('\'y', strtotime($date.'-01')).'</td>';
+					$tr3 .= '<td>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01')).'</td>';
 				}
 			} elseif ($type == 'year') {
 				if ($high_date == $date) {
@@ -475,7 +474,7 @@ final class user
 						$height = round((${'l_'.$time}[$day] / $high_value) * 100);
 
 						if ($height != 0) {
-							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="'.number_format($l_total[$day]).'" />';
+							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="'.number_format($l_total[$day]).'">';
 						}
 					}
 				}
@@ -531,13 +530,13 @@ final class user
 
 				if ($height != 0) {
 					if ($hour >= 0 && $hour <= 5) {
-						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
 					} elseif ($hour >= 6 && $hour <= 11) {
-						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
 					} elseif ($hour >= 12 && $hour <= 17) {
-						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
 					} elseif ($hour >= 18 && $hour <= 23) {
-						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
 					}
 				}
 

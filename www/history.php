@@ -156,15 +156,14 @@ final class history
 		/**
 		 * HTML Head.
 		 */
-		$output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'."\n\n"
-			. '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'."\n\n"
+		$output = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">'."\n\n"
 			. '<head>'."\n".'<title>'.htmlspecialchars($this->channel).', historically.</title>'."\n"
-			. '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'."\n"
-			. '<meta http-equiv="Content-Style-Type" content="text/css" />'."\n"
-			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'" />'."\n"
+			. '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'."\n"
+			. '<meta http-equiv="Content-Style-Type" content="text/css">'."\n"
+			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'">'."\n"
 			. '</head>'."\n\n".'<body>'."\n"
 			. '<div class="box">'."\n"
-			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br /><br />'.(is_null($this->year) ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.(!is_null($this->month) ? $this->monthname.' '.$this->year : 'the year '.$this->year).'.').'</div>'."\n";
+			. "\n".'<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br><br>'.(is_null($this->year) ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.(!is_null($this->month) ? $this->monthname.' '.$this->year : 'the year '.$this->year).'.').'</div>'."\n";
 
 		/**
 		 * Activity section.
@@ -208,7 +207,7 @@ final class history
 	}
 
 	private function make_index() {
-		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
+		$tr0 = '<col class="pos"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c">';
 		$tr1 = '<tr><th colspan="13">History</th></tr>';
 		$tr2 = '<tr><td class="pos"></td><td class="k">Jan</td><td class="k">Feb</td><td class="k">Mar</td><td class="k">Apr</td><td class="k">May</td><td class="k">Jun</td><td class="k">Jul</td><td class="k">Aug</td><td class="k">Sep</td><td class="k">Oct</td><td class="k">Nov</td><td class="k">Dec</td></tr>';
 		$trx = '';
@@ -275,13 +274,13 @@ final class history
 
 				if ($height != 0) {
 					if ($hour >= 0 && $hour <= 5) {
-						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
 					} elseif ($hour >= 6 && $hour <= 11) {
-						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
 					} elseif ($hour >= 12 && $hour <= 17) {
-						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
 					} elseif ($hour >= 18 && $hour <= 23) {
-						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'" />';
+						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
 					}
 				}
 
@@ -334,7 +333,7 @@ final class history
 			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_month`.`l_total`) as `l_total`, sum(`q_activity_by_month`.`l_night`) as `l_night`, sum(`q_activity_by_month`.`l_morning`) as `l_morning`, sum(`q_activity_by_month`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_month`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_month` on `q_lines`.`ruid` = `q_activity_by_month`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_month) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 
-		$tr0 = '<col class="c1" /><col class="c2" /><col class="pos" /><col class="c3" /><col class="c4" /><col class="c5" /><col class="c6" />';
+		$tr0 = '<col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
 		$tr1 = '<tr><th colspan="7">'.$head.'</th></tr>';
 		$tr2 = '<tr><td class="k1">Percentage</td><td class="k2">Lines</td><td class="pos"></td><td class="k3">User</td><td class="k4">When?</td><td class="k5">Last Seen</td><td class="k6">Quote</td></tr>';
 		$trx = '';
@@ -372,7 +371,7 @@ final class history
 
 			foreach ($times as $time) {
 				if (!empty($width_int[$time])) {
-					$when .= '<img src="'.$this->{'bar_'.$time}.'" width="'.$width_int[$time].'" alt="" />';
+					$when .= '<img src="'.$this->{'bar_'.$time}.'" width="'.$width_int[$time].'" alt="">';
 				}
 			}
 
@@ -426,9 +425,9 @@ final class history
 			}
 		}
 
-		$tr0 = '<col class="pos" /><col class="c" /><col class="c" /><col class="c" /><col class="c" />';
+		$tr0 = '<col class="pos"><col class="c"><col class="c"><col class="c"><col class="c">';
 		$tr1 = '<tr><th colspan="5">Most Talkative People by Time of Day</th></tr>';
-		$tr2 = '<tr><td class="pos"></td><td class="k">Night<br />0h - 5h</td><td class="k">Morning<br />6h - 11h</td><td class="k">Afternoon<br />12h - 17h</td><td class="k">Evening<br />18h - 23h</td></tr>';
+		$tr2 = '<tr><td class="pos"></td><td class="k">Night<br>0h - 5h</td><td class="k">Morning<br>6h - 11h</td><td class="k">Afternoon<br>12h - 17h</td><td class="k">Evening<br>18h - 23h</td></tr>';
 		$tr3 = '';
 
 		for ($i = 1; $i <= $this->maxrows_people_timeofday; $i++) {
@@ -444,9 +443,9 @@ final class history
 						$width = round((${$time}[$i]['lines'] / $high_value) * 190);
 
 						if ($width != 0) {
-							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br /><img src="'.$this->{'bar_'.$time}.'" width="'.$width.'" alt="" /></td>';
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><img src="'.$this->{'bar_'.$time}.'" width="'.$width.'" alt=""></td>';
 						} else {
-							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br />&nbsp;</td>';
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br>&nbsp;</td>';
 						}
 					}
 				}
