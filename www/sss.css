@@ -141,11 +141,17 @@ th {
 	margin-left:9px;
 	width:16px;
 }
+.act td,
+.act-day td,
+.act-year td {
+	text-align:center;
+}
 .act tr.bars td,
 .act-day tr.bars td,
 .act-year tr.bars td {
 	height:124px;
 	padding:0;
+	vertical-align:bottom;
 }
 .act tr.sub td,
 .act-day tr.sub td,
@@ -153,7 +159,6 @@ th {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
-	text-align:center;
 }
 .act tr.sub td.bold,
 .act-day tr.sub td.bold,
