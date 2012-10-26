@@ -26,10 +26,6 @@ final class html extends base
 	 */
 	private $addhtml_foot = '';
 	private $addhtml_head = '';
-	private $bar_afternoon = 'y.png';
-	private $bar_evening = 'r.png';
-	private $bar_morning = 'g.png';
-	private $bar_night = 'b.png';
 	private $channel = '';
 	private $cid = '';
 	private $history = false;
@@ -66,10 +62,6 @@ final class html extends base
 	private $settings_list = array(
 		'addhtml_foot' => 'string',
 		'addhtml_head' => 'string',
-		'bar_afternoon' => 'string',
-		'bar_evening' => 'string',
-		'bar_morning' => 'string',
-		'bar_night' => 'string',
 		'channel' => 'string',
 		'cid' => 'string',
 		'history' => 'bool',
@@ -842,38 +834,42 @@ final class html extends base
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
 			} else {
 				if ($l_total[$date] >= 999500) {
-					if ($date == 'estimate') {
-						$tr2 .= '<td class="est"><span class="grey">'.number_format($l_total[$date] / 1000000, 1).'M</span>';
-					} else {
-						$tr2 .= '<td>'.number_format($l_total[$date] / 1000000, 1).'M';
-					}
+					$total = number_format($l_total[$date] / 1000000, 1).'M';
 				} elseif ($l_total[$date] >= 10000) {
-					if ($date == 'estimate') {
-						$tr2 .= '<td class="est"><span class="grey">'.round($l_total[$date] / 1000).'K</span>';
-					} else {
-						$tr2 .= '<td>'.round($l_total[$date] / 1000).'K';
-					}
+					$total = round($l_total[$date] / 1000).'K';
 				} else {
-					if ($date == 'estimate') {
-						$tr2 .= '<td class="est"><span class="grey">'.$l_total[$date].'</span>';
-					} else {
-						$tr2 .= '<td>'.$l_total[$date];
-					}
+					$total = $l_total[$date];
 				}
 
 				$times = array('evening', 'afternoon', 'morning', 'night');
 
 				foreach ($times as $time) {
 					if (${'l_'.$time}[$date] != 0) {
-						$height = round((${'l_'.$time}[$date] / $high_value) * 100);
-
-						if ($height != 0) {
-							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="">';
-						}
+						$height[$time] = round((${'l_'.$time}[$date] / $high_value) * 100);
+					} else {
+						$height[$time] = 0;
 					}
 				}
 
-				$tr2 .= '</td>';
+				if ($date == 'estimate') {
+					$tr2 .= '<td class="est"><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total.'</li>';
+				} else {
+					$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total.'</li>';
+				}
+
+				foreach ($times as $time) {
+					if ($time == 'evening' && $height['evening'] != 0) {
+						$tr2 .= '<li class="r" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening']).'px"></li>';
+					} elseif ($time == 'afternoon' && $height['afternoon'] != 0) {
+						$tr2 .= '<li class="y" style="height:'.($height['night'] + $height['morning'] + $height['afternoon']).'px"></li>';
+					} elseif ($time == 'morning' && $height['morning'] != 0) {
+						$tr2 .= '<li class="g" style="height:'.($height['night'] + $height['morning']).'px"></li>';
+					} elseif ($time == 'night' && $height['night'] != 0) {
+						$tr2 .= '<li class="b" style="height:'.$height['night'].'px"></li>';
+					}
+				}
+
+				$tr2 .= '</ul></td>';
 			}
 
 			if ($type == 'day') {
@@ -939,27 +935,39 @@ final class html extends base
 			if ($l_total[$day] == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
 			} else {
-				$perc = ($l_total[$day] / $this->l_total) * 100;
+				$percentage = ($l_total[$day] / $this->l_total) * 100;
 
-				if ($perc >= 9.95) {
-					$tr2 .= '<td>'.round($perc).'%';
+				if ($percentage >= 9.95) {
+					$percentage = round($percentage).'%';
 				} else {
-					$tr2 .= '<td>'.number_format($perc, 1).'%';
+					$percentage = number_format($percentage, 1).'%';
 				}
 
 				$times = array('evening', 'afternoon', 'morning', 'night');
 
 				foreach ($times as $time) {
 					if (${'l_'.$time}[$day] != 0) {
-						$height = round((${'l_'.$time}[$day] / $high_value) * 100);
-
-						if ($height != 0) {
-							$tr2 .= '<img src="'.$this->{'bar_'.$time}.'" height="'.$height.'" alt="" title="'.number_format($l_total[$day]).'">';
-						}
+						$height[$time] = round((${'l_'.$time}[$day] / $high_value) * 100);
+					} else {
+						$height[$time] = 0;
 					}
 				}
 
-				$tr2 .= '</td>';
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage.'</li>';
+
+				foreach ($times as $time) {
+					if ($time == 'evening' && $height['evening'] != 0) {
+						$tr2 .= '<li class="r" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening']).'px" title="'.number_format($l_total[$day]).'"></li>';
+					} elseif ($time == 'afternoon' && $height['afternoon'] != 0) {
+						$tr2 .= '<li class="y" style="height:'.($height['night'] + $height['morning'] + $height['afternoon']).'px" title="'.number_format($l_total[$day]).'"></li>';
+					} elseif ($time == 'morning' && $height['morning'] != 0) {
+						$tr2 .= '<li class="g" style="height:'.($height['night'] + $height['morning']).'px" title="'.number_format($l_total[$day]).'"></li>';
+					} elseif ($time == 'night' && $height['night'] != 0) {
+						$tr2 .= '<li class="b" style="height:'.$height['night'].'px" title="'.number_format($l_total[$day]).'"></li>';
+					}
+				}
+
+				$tr2 .= '</ul></td>';
 			}
 
 			if ($high_day == $day) {
@@ -998,29 +1006,32 @@ final class html extends base
 			if ((int) $value == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
 			} else {
-				$perc = ((int) $value / $this->l_total) * 100;
+				$percentage = ((int) $value / $this->l_total) * 100;
 
-				if ($perc >= 9.95) {
-					$tr2 .= '<td>'.round($perc).'%';
+				if ($percentage >= 9.95) {
+					$percentage = round($percentage).'%';
 				} else {
-					$tr2 .= '<td>'.number_format($perc, 1).'%';
+					$percentage = number_format($percentage, 1).'%';
 				}
 
 				$height = round(((int) $value / $high_value) * 100);
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage.'</li>';
 
 				if ($height != 0) {
 					if ($hour >= 0 && $hour <= 5) {
-						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
+						$class = 'b';
 					} elseif ($hour >= 6 && $hour <= 11) {
-						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
+						$class = 'g';
 					} elseif ($hour >= 12 && $hour <= 17) {
-						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
+						$class = 'y';
 					} elseif ($hour >= 18 && $hour <= 23) {
-						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
+						$class = 'r';
 					}
+
+					$tr2 .= '<li class="'.$class.'" style="height:'.$height.'px" title="'.number_format((int) $value).'"></li>';
 				}
 
-				$tr2 .= '</td>';
+				$tr2 .= '</ul></td>';
 			}
 
 			if ($high_key == $key) {
@@ -1115,11 +1126,21 @@ final class html extends base
 
 			foreach ($times as $time) {
 				if (!empty($width_int[$time])) {
-					$when .= '<img src="'.$this->{'bar_'.$time}.'" width="'.$width_int[$time].'" alt="">';
+					if ($time == 'night') {
+						$class = 'b';
+					} elseif ($time == 'morning') {
+						$class = 'g';
+					} elseif ($time == 'afternoon') {
+						$class = 'y';
+					} elseif ($time == 'evening') {
+						$class = 'r';
+					}
+
+					$when .= '<li class="'.$class.'" style="width:'.$width_int[$time].'px"></li>';
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
+			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4"><ul>'.$when.'</ul></td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
@@ -1220,9 +1241,19 @@ final class html extends base
 						$width = round((${$time}[$i]['lines'] / $high_value) * 190);
 
 						if ($width != 0) {
-							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><img src="'.$this->{'bar_'.$time}.'" width="'.$width.'" alt=""></td>';
+							if ($time == 'night') {
+								$class = 'b';
+							} elseif ($time == 'morning') {
+								$class = 'g';
+							} elseif ($time == 'afternoon') {
+								$class = 'y';
+							} elseif ($time == 'evening') {
+								$class = 'r';
+							}
+
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$class.'" style="width:'.$width.'px"></div></td>';
 						} else {
-							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br>&nbsp;</td>';
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'</td>';
 						}
 					}
 				}

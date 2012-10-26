@@ -8,10 +8,6 @@
  * Global settings are the default for ALL channels.
  */
 $settings['__global'] = array(
-	'bar_afternoon' => 'y.png',
-	'bar_evening' => 'r.png',
-	'bar_morning' => 'g.png',
-	'bar_night' => 'b.png',
 	'channel' => '',
 	'db_host' => '127.0.0.1',
 	'db_name' => 'sss',

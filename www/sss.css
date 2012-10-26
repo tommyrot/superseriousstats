@@ -49,6 +49,21 @@ body {
 	font-weight:normal;
 }
 /**
+ * Graph colors
+ */
+.b {
+	background-color:#416D9C;
+}
+.g {
+	background-color:#70A35E;
+}
+.r {
+	background-color:#C74243;
+}
+.y {
+	background-color:#EBB056;
+}
+/**
  * General table styling
  */
 table {
@@ -90,25 +105,47 @@ th {
 	 * Variable width specified in HTML
 	 */
 }
-.act img,
-.act-day img,
-.act-year img {
-	display:block;
-	margin-left:auto;
-	margin-right:auto;
-	width:16px;
+.act ul,
+.act-day ul,
+.act-year ul {
+	height:124px;
+	margin:0;
+	padding:0;
+	position:relative;
 }
-.act td,
-.act-day td,
-.act-year td {
+.act li,
+.act-day li,
+.act-year li {
+	bottom:0;
+	display:block;
+	position:absolute;
+}
+.act li.num,
+.act-day li.num,
+.act-year li.num {
 	text-align:center;
+	width:34px;
+}
+.act li.b,
+.act li.g,
+.act li.r,
+.act li.y,
+.act-day li.b,
+.act-day li.g,
+.act-day li.r,
+.act-day li.y,
+.act-year li.b,
+.act-year li.g,
+.act-year li.r,
+.act-year li.y {
+	margin-left:9px;
+	width:16px;
 }
 .act tr.bars td,
 .act-day tr.bars td,
 .act-year tr.bars td {
 	height:124px;
 	padding:0;
-	vertical-align:bottom;
 }
 .act tr.sub td,
 .act-day tr.sub td,
@@ -116,13 +153,14 @@ th {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
+	text-align:center;
 }
 .act tr.sub td.bold,
 .act-day tr.sub td.bold,
 .act-year tr.sub td.bold {
 	color:#666;
 }
-.est img {
+.act-year td.est {
 	opacity:0.6;
 }
 /**
@@ -176,10 +214,14 @@ th {
 .ppl col.pos {
 	width:36px;
 }
-.ppl img {
+.ppl ul {
+	margin:0;
+	padding:0;
+}
+.ppl li {
+	display:inline-block;
 	height:6px;
-	padding-bottom:3px;
-	vertical-align:bottom;
+	margin-top:4px;
 }
 .ppl td.k1,
 .ppl td.k2,
@@ -256,9 +298,10 @@ th {
 .ppl-tod col.pos {
 	width:28px;
 }
-.ppl-tod img {
+.ppl-tod div {
+	float:right;
 	height:6px;
-	padding:2px 0 3px 0;
+	margin-top:2px;
 }
 .ppl-tod td.k,
 .ppl-tod td.pos {
@@ -270,6 +313,10 @@ th {
 .ppl-tod td.v {
 	padding-right:2px;
 	text-align:right;
+}
+.ppl-tod td.v {
+	height:3em;
+	padding-bottom:0;
 }
 .ppl-tod td.pos {
 	text-align:center;

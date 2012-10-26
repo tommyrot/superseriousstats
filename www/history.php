@@ -24,10 +24,6 @@ final class history
 	/**
 	 * Default settings for this script, can be overridden in the vars.php file.
 	 */
-	private $bar_afternoon = 'y.png';
-	private $bar_evening = 'r.png';
-	private $bar_morning = 'g.png';
-	private $bar_night = 'b.png';
 	private $channel = '';
 	private $db_host = '127.0.0.1';
 	private $db_pass = '';
@@ -257,34 +253,48 @@ final class history
 		$tr3 = '<tr class="sub">';
 
 		foreach ($result as $key => $value) {
+			if ((int) $value > $high_value) {
+				$high_key = $key;
+				$high_value = (int) $value;
+			}
+		}
+
+		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour</th></tr>';
+		$tr2 = '<tr class="bars">';
+		$tr3 = '<tr class="sub">';
+
+		foreach ($result as $key => $value) {
 			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
 			if ((int) $value == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span></td>';
 			} else {
-				$perc = ((int) $value / $this->l_total) * 100;
+				$percentage = ((int) $value / $this->l_total) * 100;
 
-				if ($perc >= 9.95) {
-					$tr2 .= '<td>'.round($perc).'%';
+				if ($percentage >= 9.95) {
+					$percentage = round($percentage).'%';
 				} else {
-					$tr2 .= '<td>'.number_format($perc, 1).'%';
+					$percentage = number_format($percentage, 1).'%';
 				}
 
 				$height = round(((int) $value / $high_value) * 100);
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage.'</li>';
 
 				if ($height != 0) {
 					if ($hour >= 0 && $hour <= 5) {
-						$tr2 .= '<img src="'.$this->bar_night.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
+						$class = 'b';
 					} elseif ($hour >= 6 && $hour <= 11) {
-						$tr2 .= '<img src="'.$this->bar_morning.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
+						$class = 'g';
 					} elseif ($hour >= 12 && $hour <= 17) {
-						$tr2 .= '<img src="'.$this->bar_afternoon.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
+						$class = 'y';
 					} elseif ($hour >= 18 && $hour <= 23) {
-						$tr2 .= '<img src="'.$this->bar_evening.'" height="'.$height.'" alt="" title="'.number_format((int) $value).'">';
+						$class = 'r';
 					}
+
+					$tr2 .= '<li class="'.$class.'" style="height:'.$height.'px" title="'.number_format((int) $value).'"></li>';
 				}
 
-				$tr2 .= '</td>';
+				$tr2 .= '</ul></td>';
 			}
 
 			if ($high_key == $key) {
@@ -371,11 +381,21 @@ final class history
 
 			foreach ($times as $time) {
 				if (!empty($width_int[$time])) {
-					$when .= '<img src="'.$this->{'bar_'.$time}.'" width="'.$width_int[$time].'" alt="">';
+					if ($time == 'night') {
+						$class = 'b';
+					} elseif ($time == 'morning') {
+						$class = 'g';
+					} elseif ($time == 'afternoon') {
+						$class = 'y';
+					} elseif ($time == 'evening') {
+						$class = 'r';
+					}
+
+					$when .= '<li class="'.$class.'" style="width:'.$width_int[$time].'px"></li>';
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4">'.$when.'</td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
+			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4"><ul>'.$when.'</ul></td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
@@ -406,12 +426,7 @@ final class history
 		$times = array('night', 'morning', 'afternoon', 'evening');
 
 		foreach ($times as $time) {
-			if (is_null($this->month)) {
-				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_year` join `user_details` on `q_activity_by_year`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `date` = '.$this->year.' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			} else {
-				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_month` join `user_details` on `q_activity_by_month`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			}
-
+			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 			$i = 0;
 
 			while ($result = mysqli_fetch_object($query)) {
@@ -443,9 +458,19 @@ final class history
 						$width = round((${$time}[$i]['lines'] / $high_value) * 190);
 
 						if ($width != 0) {
-							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><img src="'.$this->{'bar_'.$time}.'" width="'.$width.'" alt=""></td>';
+							if ($time == 'night') {
+								$class = 'b';
+							} elseif ($time == 'morning') {
+								$class = 'g';
+							} elseif ($time == 'afternoon') {
+								$class = 'y';
+							} elseif ($time == 'evening') {
+								$class = 'r';
+							}
+
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$class.'" style="width:'.$width.'px"></div></td>';
 						} else {
-							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br>&nbsp;</td>';
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'</td>';
 						}
 					}
 				}
