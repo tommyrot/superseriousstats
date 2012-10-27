@@ -39,6 +39,11 @@ final class user
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $cid = '';
+	private $color = array(
+		'night' => 'b',
+		'morning' => 'g',
+		'afternoon' => 'y',
+		'evening' => 'r');
 	private $currentyear = 0;
 	private $csnick = '';
 	private $date_lastlogparsed = '';
@@ -379,21 +384,17 @@ final class user
 
 				foreach ($times as $time) {
 					if ($time == 'evening') {
-						$class_li = 'r';
 						$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
 					} elseif ($time == 'afternoon') {
-						$class_li = 'y';
 						$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
 					} elseif ($time == 'morning') {
-						$class_li = 'g';
 						$height_li = $height['night'] + $height['morning'];
 					} elseif ($time == 'night') {
-						$class_li = 'b';
 						$height_li = $height['night'];
 					}
 
 					if ($height[$time] != 0) {
-						$tr2 .= '<li class="'.$class_li.'" style="height:'.$height_li.'px"></li>';
+						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px"></li>';
 					}
 				}
 
