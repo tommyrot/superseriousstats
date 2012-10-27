@@ -1004,16 +1004,16 @@ final class html extends base
 
 				if ($height != 0) {
 					if ($hour >= 0 && $hour <= 5) {
-						$class = 'b';
+						$time = 'night';
 					} elseif ($hour >= 6 && $hour <= 11) {
-						$class = 'g';
+						$time = 'morning';
 					} elseif ($hour >= 12 && $hour <= 17) {
-						$class = 'y';
+						$time = 'afternoon';
 					} elseif ($hour >= 18 && $hour <= 23) {
-						$class = 'r';
+						$time = 'evening';
 					}
 
-					$tr2 .= '<li class="'.$class.'" style="height:'.$height.'px" title="'.number_format((int) $value).'"></li>';
+					$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height.'px" title="'.number_format((int) $value).'"></li>';
 				}
 
 				$tr2 .= '</ul></td>';
