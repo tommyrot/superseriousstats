@@ -1107,17 +1107,7 @@ final class html extends base
 
 			foreach ($times as $time) {
 				if (!empty($width_int[$time])) {
-					if ($time == 'night') {
-						$class = 'b';
-					} elseif ($time == 'morning') {
-						$class = 'g';
-					} elseif ($time == 'afternoon') {
-						$class = 'y';
-					} elseif ($time == 'evening') {
-						$class = 'r';
-					}
-
-					$when .= '<li class="'.$class.'" style="width:'.$width_int[$time].'px"></li>';
+					$when .= '<li class="'.$this->color[$time].'" style="width:'.$width_int[$time].'px"></li>';
 				}
 			}
 
