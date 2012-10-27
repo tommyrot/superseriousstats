@@ -466,21 +466,17 @@ final class user
 
 				foreach ($times as $time) {
 					if ($time == 'evening') {
-						$class = 'r';
 						$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
 					} elseif ($time == 'afternoon') {
-						$class = 'y';
 						$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
 					} elseif ($time == 'morning') {
-						$class = 'g';
 						$height_li = $height['night'] + $height['morning'];
 					} elseif ($time == 'night') {
-						$class = 'b';
 						$height_li = $height['night'];
 					}
 
 					if ($height[$time] != 0) {
-						$tr2 .= '<li class="'.$class.'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'"></li>';
+						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'"></li>';
 					}
 				}
 
