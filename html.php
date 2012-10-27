@@ -43,6 +43,11 @@ final class html extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
+	private $color = array(
+		'night' => 'b',
+		'morning' => 'g',
+		'afternoon' => 'y',
+		'evening' => 'r');
 	private $currentyear = 0;
 	private $date_first = '';
 	private $date_last = '';
@@ -1225,17 +1230,7 @@ final class html extends base
 						$width = round((${$time}[$i]['lines'] / $high_value) * 190);
 
 						if ($width != 0) {
-							if ($time == 'night') {
-								$class = 'b';
-							} elseif ($time == 'morning') {
-								$class = 'g';
-							} elseif ($time == 'afternoon') {
-								$class = 'y';
-							} elseif ($time == 'evening') {
-								$class = 'r';
-							}
-
-							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$class.'" style="width:'.$width.'px"></div></td>';
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div></td>';
 						} else {
 							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'</td>';
 						}

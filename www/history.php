@@ -44,6 +44,11 @@ final class history
 	 */
 	private $activity = array();
 	private $cid = '';
+	private $color = array(
+		'night' => 'b',
+		'morning' => 'g',
+		'afternoon' => 'y',
+		'evening' => 'r');
 	private $l_total = 0;
 	private $month = 0;
 	private $monthname = '';
@@ -448,17 +453,7 @@ final class history
 						$width = round((${$time}[$i]['lines'] / $high_value) * 190);
 
 						if ($width != 0) {
-							if ($time == 'night') {
-								$class = 'b';
-							} elseif ($time == 'morning') {
-								$class = 'g';
-							} elseif ($time == 'afternoon') {
-								$class = 'y';
-							} elseif ($time == 'evening') {
-								$class = 'r';
-							}
-
-							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$class.'" style="width:'.$width.'px"></div></td>';
+							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div></td>';
 						} else {
 							$tr3 .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'</td>';
 						}
