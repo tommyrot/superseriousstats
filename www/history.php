@@ -253,17 +253,6 @@ final class history
 		$tr3 = '<tr class="sub">';
 
 		foreach ($result as $key => $value) {
-			if ((int) $value > $high_value) {
-				$high_key = $key;
-				$high_value = (int) $value;
-			}
-		}
-
-		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour</th></tr>';
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
-
-		foreach ($result as $key => $value) {
 			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
 			if ((int) $value == 0) {
@@ -297,11 +286,7 @@ final class history
 				$tr2 .= '</ul></td>';
 			}
 
-			if ($high_key == $key) {
-				$tr3 .= '<td class="bold">'.$hour.'h</td>';
-			} else {
-				$tr3 .= '<td>'.$hour.'h</td>';
-			}
+			$tr3 .= '<td'.($high_key == $key ? ' class="bold"' : '').'>'.$hour.'h</td>';
 		}
 
 		$tr2 .= '</tr>';
@@ -426,7 +411,12 @@ final class history
 		$times = array('night', 'morning', 'afternoon', 'evening');
 
 		foreach ($times as $time) {
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			if (is_null($this->month)) {
+				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_year` join `user_details` on `q_activity_by_year`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `date` = '.$this->year.' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			} else {
+				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_month` join `user_details` on `q_activity_by_month`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			}
+
 			$i = 0;
 
 			while ($result = mysqli_fetch_object($query)) {

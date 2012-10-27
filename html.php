@@ -851,21 +851,25 @@ final class html extends base
 					}
 				}
 
-				if ($date == 'estimate') {
-					$tr2 .= '<td class="est"><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total.'</li>';
-				} else {
-					$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total.'</li>';
-				}
+				$tr2 .= '<td'.($date == 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total.'</li>';
 
 				foreach ($times as $time) {
-					if ($time == 'evening' && $height['evening'] != 0) {
-						$tr2 .= '<li class="r" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening']).'px"></li>';
-					} elseif ($time == 'afternoon' && $height['afternoon'] != 0) {
-						$tr2 .= '<li class="y" style="height:'.($height['night'] + $height['morning'] + $height['afternoon']).'px"></li>';
-					} elseif ($time == 'morning' && $height['morning'] != 0) {
-						$tr2 .= '<li class="g" style="height:'.($height['night'] + $height['morning']).'px"></li>';
-					} elseif ($time == 'night' && $height['night'] != 0) {
-						$tr2 .= '<li class="b" style="height:'.$height['night'].'px"></li>';
+					if ($time == 'evening') {
+						$class_li = 'r';
+						$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
+					} elseif ($time == 'afternoon') {
+						$class_li = 'y';
+						$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
+					} elseif ($time == 'morning') {
+						$class_li = 'g';
+						$height_li = $height['night'] + $height['morning'];
+					} elseif ($time == 'night') {
+						$class_li = 'b';
+						$height_li = $height['night'];
+					}
+
+					if ($height[$time] != 0) {
+						$tr2 .= '<li class="'.$class_li.'" style="height:'.$height_li.'px"></li>';
 					}
 				}
 
@@ -873,31 +877,11 @@ final class html extends base
 			}
 
 			if ($type == 'day') {
-				if ($high_date == $date) {
-					$tr3 .= '<td class="bold">'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date)).'</td>';
-				} else {
-					$tr3 .= '<td>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date)).'</td>';
-				}
+				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date)).'</td>';
 			} elseif ($type == 'month') {
-				if ($high_date == $date) {
-					$tr3 .= '<td class="bold">'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01')).'</td>';
-				} else {
-					$tr3 .= '<td>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01')).'</td>';
-				}
+				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01')).'</td>';
 			} elseif ($type == 'year') {
-				if ($high_date == $date) {
-					if ($date == 'estimate') {
-						$tr3 .= '<td class="bold">Est.</td>';
-					} else {
-						$tr3 .= '<td class="bold">'.date('\'y', strtotime($date.'-01-01')).'</td>';
-					}
-				} else {
-					if ($date == 'estimate') {
-						$tr3 .= '<td>Est.</td>';
-					} else {
-						$tr3 .= '<td>'.date('\'y', strtotime($date.'-01-01')).'</td>';
-					}
-				}
+				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.($date == 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01'))).'</td>';
 			}
 		}
 
@@ -956,25 +940,29 @@ final class html extends base
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage.'</li>';
 
 				foreach ($times as $time) {
-					if ($time == 'evening' && $height['evening'] != 0) {
-						$tr2 .= '<li class="r" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening']).'px" title="'.number_format($l_total[$day]).'"></li>';
-					} elseif ($time == 'afternoon' && $height['afternoon'] != 0) {
-						$tr2 .= '<li class="y" style="height:'.($height['night'] + $height['morning'] + $height['afternoon']).'px" title="'.number_format($l_total[$day]).'"></li>';
-					} elseif ($time == 'morning' && $height['morning'] != 0) {
-						$tr2 .= '<li class="g" style="height:'.($height['night'] + $height['morning']).'px" title="'.number_format($l_total[$day]).'"></li>';
-					} elseif ($time == 'night' && $height['night'] != 0) {
-						$tr2 .= '<li class="b" style="height:'.$height['night'].'px" title="'.number_format($l_total[$day]).'"></li>';
+					if ($time == 'evening') {
+						$class = 'r';
+						$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
+					} elseif ($time == 'afternoon') {
+						$class = 'y';
+						$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
+					} elseif ($time == 'morning') {
+						$class = 'g';
+						$height_li = $height['night'] + $height['morning'];
+					} elseif ($time == 'night') {
+						$class = 'b';
+						$height_li = $height['night'];
+					}
+
+					if ($height[$time] != 0) {
+						$tr2 .= '<li class="'.$class.'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'"></li>';
 					}
 				}
 
 				$tr2 .= '</ul></td>';
 			}
 
-			if ($high_day == $day) {
-				$tr3 .= '<td class="bold">'.ucfirst($day).'</td>';
-			} else {
-				$tr3 .= '<td>'.ucfirst($day).'</td>';
-			}
+			$tr3 .= '<td'.($high_day == $day ? ' class="bold"' : '').'>'.ucfirst($day).'</td>';
 		}
 
 		$tr2 .= '</tr>';
@@ -1034,11 +1022,7 @@ final class html extends base
 				$tr2 .= '</ul></td>';
 			}
 
-			if ($high_key == $key) {
-				$tr3 .= '<td class="bold">'.$hour.'h</td>';
-			} else {
-				$tr3 .= '<td>'.$hour.'h</td>';
-			}
+			$tr3 .= '<td'.($high_key == $key ? ' class="bold"' : '').'>'.$hour.'h</td>';
 		}
 
 		$tr2 .= '</tr>';
