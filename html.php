@@ -520,7 +520,7 @@ final class html extends base
 			$t->set_value('query_total', 'select sum(`topics`) as `total` from `q_events`');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Recent Topics');
+			$t = new table('Most Recent Topics');
 			$t->set_value('key1', 'Date');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'Topic');
@@ -655,7 +655,7 @@ final class html extends base
 			$t->set_value('query_main', 'select count(*) as `v1`, `tld` as `v2` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `tld` != \'\' group by `tld` order by `v1` desc, `v2` asc limit 10');
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Recent URLs');
+			$t = new table('Most Recent URLs');
 			$t->set_value('key1', 'Date');
 			$t->set_value('key2', 'User');
 			$t->set_value('key3', 'URL');
