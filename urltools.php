@@ -78,7 +78,8 @@ final class urltools
 	/**
 	 * Normalize and validate a URL and return an array with its elements.
 	 */
-	public function get_elements($url) {
+	public function get_elements($url)
+	{
 		/**
 		 * Convert scheme and authority to lower case.
 		 */

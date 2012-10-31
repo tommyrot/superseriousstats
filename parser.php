@@ -326,7 +326,8 @@ abstract class parser extends base
 	/**
 	 * Build a new line consisting of valid UTF-8 from the characters passed along in $char.
 	 */
-	final private function rebuild_line($char) {
+	final private function rebuild_line($char)
+	{
 		/**
 		 * 1. Valid UTF-8 is passed along unmodified.
 		 * 2. Single byte characters from the Latin-1 Supplement are converted to multibyte unicode.
