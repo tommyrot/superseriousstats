@@ -579,7 +579,7 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select count(*) as `v1`, `csnick` as `v2` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `status` != 3 group by `ruid` having `v1` > 1 order by `v1` desc, `v2` asc limit '.$this->maxrows,
+				'main' => 'select `v1`, `csnick` as `v2` from (select `ruid`, count(*) as `v1` from `user_status` group by `ruid` having `v1` > 1) as `t` join `user_details` on `t`.`ruid` = `user_details`.`uid` join `user_status` on `t`.`ruid` = `user_status`.`uid` where `status` = 1 order by `v1` desc limit '.$this->maxrows,
 				'total' => 'select count(*) as `total` from `user_status`'));
 			$output .= $t->make_table($this->mysqli);
 
