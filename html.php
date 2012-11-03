@@ -1167,8 +1167,6 @@ final class html extends base
 
 		while ($result = mysqli_fetch_object($query)) {
 			$i++;
-			$lastseen = $this->datetime2daysago($result->lastseen);
-			$when = '';
 			$width = 50;
 			unset($width_float, $width_int, $width_remainders);
 			$times = array('night', 'morning', 'afternoon', 'evening');
@@ -1195,13 +1193,15 @@ final class html extends base
 				}
 			}
 
+			$when = '';
+
 			foreach ($times as $time) {
 				if (!empty($width_int[$time])) {
 					$when .= '<li class="'.$this->color[$time].'" style="width:'.$width_int[$time].'px"></li>';
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4"><ul>'.$when.'</ul></td><td class="v5">'.$lastseen.'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
+			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%</td><td class="v2">'.number_format((int) $result->l_total).'</td><td class="pos">'.$i.'</td><td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'</td><td class="v4"><ul>'.$when.'</ul></td><td class="v5">'.$this->datetime2daysago($result->lastseen).'</td><td class="v6">'.htmlspecialchars($result->quote).'</td></tr>';
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
