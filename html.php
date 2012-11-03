@@ -37,6 +37,7 @@ final class html extends base
 	private $maxrows_people_year = 10;
 	private $maxrows_recenturls = 25;
 	private $minrows = 3;
+	private $rows_domains_tlds = 10;
 	private $sectionbits = 127;
 	private $stylesheet = 'sss.css';
 	private $userstats = false;
@@ -80,6 +81,7 @@ final class html extends base
 		'maxrows_recenturls' => 'int',
 		'minrows' => 'int',
 		'outputbits' => 'int',
+		'rows_domains_tlds' => 'int',
 		'sectionbits' => 'int',
 		'stylesheet' => 'string',
 		'userstats' => 'bool');
@@ -714,7 +716,7 @@ final class html extends base
 		if ($this->sectionbits & 32) {
 			$output = '';
 
-			$t = new table('Most Referenced Domain Names', 10, 10);
+			$t = new table('Most Referenced Domain Names', $this->rows_domains_tlds, $this->rows_domains_tlds);
 			$t->set_value('keys', array(
 				'k1' => 'Total',
 				'k2' => 'Domain',
@@ -722,17 +724,17 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'url',
 				'v3' => 'date'));
-			$t->set_value('queries', array('main' => 'select count(*) as `v1`, (select concat(\'http://\', `fqdn`) from `fqdns` where `fid` = `urls`.`fid`) as `v2`, min(`datetime`) as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `fid` is not null group by `fid` order by `v1` desc, `v3` asc limit 10'));
+			$t->set_value('queries', array('main' => 'select count(*) as `v1`, (select concat(\'http://\', `fqdn`) from `fqdns` where `fid` = `urls`.`fid`) as `v2`, min(`datetime`) as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `fid` is not null group by `fid` order by `v1` desc, `v3` asc limit '.$this->rows_domains_tlds));
 			$t->set_value('medium', true);
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Referenced TLDs', 10, 10);
+			$t = new table('Most Referenced TLDs', $this->rows_domains_tlds, $this->rows_domains_tlds);
 			$t->set_value('keys', array(
 				'k1' => 'Total',
 				'k2' => 'TLD',
 				'v1' => 'int',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select count(*) as `v1`, `tld` as `v2` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `tld` != \'\' group by `tld` order by `v1` desc, `v2` asc limit 10'));
+			$t->set_value('queries', array('main' => 'select count(*) as `v1`, `tld` as `v2` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `tld` != \'\' group by `tld` order by `v1` desc, `v2` asc limit '.$this->rows_domains_tlds));
 			$output .= $t->make_table($this->mysqli);
 
 			$t = new table('Most Recent URLs', $this->minrows, $this->maxrows_recenturls);
