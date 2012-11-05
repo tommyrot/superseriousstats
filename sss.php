@@ -70,9 +70,9 @@ final class sss extends base
 	public function __construct()
 	{
 		/**
-		 * Explicitly set the locale to C so we won't run into unexpected results between platforms.
+		 * Explicitly set the locale to C (POSIX) for all categories so we won't run into unexpected results between platforms.
 		 */
-		setlocale(LC_CTYPE, 'C');
+		setlocale(LC_ALL, 'C');
 
 		/**
 		 * Use UTC until user specified timezone is loaded.
