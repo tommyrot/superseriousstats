@@ -260,7 +260,7 @@ abstract class parser extends base
 				 * 2. Pass it on to rebuild_line() and replace the character with an empty string effectively making $line shorter.
 				 * 3. Continue until $line is zero bytes in length.
 				 */
-				$line = preg_replace('/^('.$this->hex_validutf8.'|.)/es', '$this->rebuild_line(\'$0\')', $line);
+				$line = preg_replace_callback('/^('.$this->hex_validutf8.'|.)/s', 'self::rebuild_line', $line);
 			}
 
 			/*
@@ -326,8 +326,13 @@ abstract class parser extends base
 	/**
 	 * Build a new line consisting of valid UTF-8 from the characters passed along in $char.
 	 */
-	final private function rebuild_line($char)
+	final private function rebuild_line($matches)
 	{
+		/**
+		 * $char is passed along as the first element of the array $matches (see preg_replace_callback).
+		 */
+		$char = $matches[0];
+
 		/**
 		 * 1. Valid UTF-8 is passed along unmodified.
 		 * 2. Single byte characters from the Latin-1 Supplement are converted to multibyte unicode.
@@ -336,7 +341,7 @@ abstract class parser extends base
 		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
 			$this->newline .= $char;
 		} elseif (preg_match('/^'.$this->hex_latin1supplement.'$/', $char)) {
-			$char = preg_replace('/^'.$this->hex_latin1supplement.'$/e', 'pack(\'C*\', (ord(\'$0\') >> 6) | 0xC0, (ord(\'$0\') & 0x3F) | 0x80)', $char);
+			$char = preg_replace_callback('/^'.$this->hex_latin1supplement.'$/', create_function('$matches', 'return pack(\'C*\', (ord($matches[0]) >> 6) | 0xC0, (ord($matches[0]) & 0x3F) | 0x80);'), $char);
 			$this->newline .= $char;
 		} else {
 			$this->newline .= "\xEF\xBF\xBD";
