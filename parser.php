@@ -260,7 +260,7 @@ abstract class parser extends base
 				 * 2. Pass it on to rebuild_line() and replace the character with an empty string effectively making $line shorter.
 				 * 3. Continue until $line is zero bytes in length.
 				 */
-				$line = preg_replace_callback('/^('.$this->hex_validutf8.'|.)/s', 'self::rebuild_line', $line);
+				$line = preg_replace_callback('/^('.$this->hex_validutf8.'|.)/s', array($this, 'rebuild_line'), $line);
 			}
 
 			/*
