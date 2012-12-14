@@ -159,6 +159,7 @@ final class history
 		 * HTML Head.
 		 */
 		$output = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">'."\n\n"
+			. '<html>'."\n\n"
 			. '<head>'."\n".'<title>'.htmlspecialchars($this->channel).', historically.</title>'."\n"
 			. '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'."\n"
 			. '<meta http-equiv="Content-Style-Type" content="text/css">'."\n"

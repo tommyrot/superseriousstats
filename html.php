@@ -218,6 +218,7 @@ final class html extends base
 		$this->date_max = $result->date_max;
 		$this->l_max = (int) $result->l_max;
 		$this->output = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">'."\n\n"
+			      . '<html>'."\n\n"
 			      . '<head>'."\n".'<title>'.htmlspecialchars($this->channel).', seriously.</title>'."\n"
 			      . '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'."\n"
 			      . '<meta http-equiv="Content-Style-Type" content="text/css">'."\n"
