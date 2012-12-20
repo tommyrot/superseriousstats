@@ -243,24 +243,26 @@ final class user
 		$result = mysqli_fetch_object($query);
 		$this->date_max = $result->date;
 		$this->l_max = (int) $result->l_total;
-		$output = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">'."\n\n"
+		$output = '<!DOCTYPE html>'."\n\n"
 			. '<html>'."\n\n"
-			. '<head>'."\n".'<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
-			. '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'."\n"
-			. '<meta http-equiv="Content-Style-Type" content="text/css">'."\n"
-			. '<link rel="stylesheet" type="text/css" href="'.$this->stylesheet.'">'."\n"
+			. '<head>'."\n"
+			. '<meta charset="utf-8">'."\n"
+			. '<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
+			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
 			. '<style type="text/css">'."\n"
-			. '  .act-year {width:'.(2 + (($this->years + ($this->estimate ? 1 : 0)) * 34)).'px}'."\n"
+			. '  .act-year { width:'.(2 + (($this->years + ($this->estimate ? 1 : 0)) * 34)).'px }'."\n"
 			. '</style>'."\n"
-			. '</head>'."\n\n".'<body>'."\n"
-			. '<div class="box">'."\n"
-			. "\n".'<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? ' '.$this->mood : '.').'<br><br>First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br>'
-			. '<br>'.htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day.<br>Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' line'.($this->l_max > 1 ? 's' : '').' typed.</div>'."\n";
+			. '</head>'."\n\n"
+			. '<body><div id="#container">'."\n"
+			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? ' '.$this->mood : '.').'<br><br>'
+			. 'First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br><br>'
+			. htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day.<br>'
+			. 'Most active day was '.date('M j, Y', strtotime($this->date_max)).' with a total of '.number_format($this->l_max).' line'.($this->l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * Activity section.
 		 */
-		$output .= "\n".'<div class="head">Activity</div>'."\n";
+		$output .= '<div class="section">Activity</div>'."\n";
 		$output .= $this->make_table_activity_distribution_hour();
 		$output .= $this->make_table_activity('day');
 		$output .= $this->make_table_activity('month');
@@ -270,8 +272,8 @@ final class user
 		/**
 		 * HTML Foot.
 		 */
-		$output .= "\n".'<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').'.</div>'."\n";
-		$output .= "\n".'</div>'."\n".'</body>'."\n\n".'</html>'."\n";
+		$output .= '<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').'.</div>'."\n";
+		$output .= '</div></body>'."\n\n".'</html>'."\n";
 		@mysqli_close($this->mysqli);
 		return $output;
 	}
@@ -355,13 +357,13 @@ final class user
 			}
 		}
 
-		$tr1 = '<tr><th colspan="'.$columns.'">'.$head.'</th></tr>';
+		$tr1 = '<tr><th colspan="'.$columns.'">'.$head;
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
 		foreach ($dates as $date) {
 			if (!array_key_exists($date, $l_total) || $l_total[$date] == 0) {
-				$tr2 .= '<td><span class="grey">n/a</span></td>';
+				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				if ($l_total[$date] >= 999500) {
 					$total = number_format($l_total[$date] / 1000000, 1).'M';
@@ -381,7 +383,7 @@ final class user
 					}
 				}
 
-				$tr2 .= '<td'.($date == 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total.'</li>';
+				$tr2 .= '<td'.($date == 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total;
 
 				foreach ($times as $time) {
 					if ($time == 'evening') {
@@ -395,24 +397,22 @@ final class user
 					}
 
 					if ($height[$time] != 0) {
-						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px"></li>';
+						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px">';
 					}
 				}
 
-				$tr2 .= '</ul></td>';
+				$tr2 .= '</ul>';
 			}
 
 			if ($type == 'day') {
-				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date)).'</td>';
+				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
 			} elseif ($type == 'month') {
-				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01')).'</td>';
+				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
 			} elseif ($type == 'year') {
-				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.($date == 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01'))).'</td>';
+				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.($date == 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
 			}
 		}
 
-		$tr2 .= '</tr>';
-		$tr3 .= '</tr>';
 		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
@@ -437,13 +437,13 @@ final class user
 			}
 		}
 
-		$tr1 = '<tr><th colspan="7">Activity Distribution by Day</th></tr>';
+		$tr1 = '<tr><th colspan="7">Activity Distribution by Day';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
 		foreach ($days as $day) {
 			if ($l_total[$day] == 0) {
-				$tr2 .= '<td><span class="grey">n/a</span></td>';
+				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				$percentage = ($l_total[$day] / $this->l_total) * 100;
 
@@ -463,7 +463,7 @@ final class user
 					}
 				}
 
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage.'</li>';
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage;
 
 				foreach ($times as $time) {
 					if ($time == 'evening') {
@@ -477,18 +477,16 @@ final class user
 					}
 
 					if ($height[$time] != 0) {
-						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'"></li>';
+						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'">';
 					}
 				}
 
-				$tr2 .= '</ul></td>';
+				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($high_day == $day ? ' class="bold"' : '').'>'.ucfirst($day).'</td>';
+			$tr3 .= '<td'.($high_day == $day ? ' class="bold"' : '').'>'.ucfirst($day);
 		}
 
-		$tr2 .= '</tr>';
-		$tr3 .= '</tr>';
 		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
@@ -506,7 +504,7 @@ final class user
 			}
 		}
 
-		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour</th></tr>';
+		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
@@ -514,7 +512,7 @@ final class user
 			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
 			if ((int) $value == 0) {
-				$tr2 .= '<td><span class="grey">n/a</span></td>';
+				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				$percentage = ((int) $value / $this->l_total) * 100;
 
@@ -525,7 +523,7 @@ final class user
 				}
 
 				$height = round(((int) $value / $high_value) * 100);
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage.'</li>';
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage;
 
 				if ($height != 0) {
 					if ($hour >= 0 && $hour <= 5) {
@@ -538,17 +536,15 @@ final class user
 						$time = 'evening';
 					}
 
-					$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height.'px" title="'.number_format((int) $value).'"></li>';
+					$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height.'px" title="'.number_format((int) $value).'">';
 				}
 
-				$tr2 .= '</ul></td>';
+				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($high_key == $key ? ' class="bold"' : '').'>'.$hour.'h</td>';
+			$tr3 .= '<td'.($high_key == $key ? ' class="bold"' : '').'>'.$hour.'h';
 		}
 
-		$tr2 .= '</tr>';
-		$tr3 .= '</tr>';
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 

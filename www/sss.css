@@ -1,49 +1,47 @@
 /**
- * General styling
+ * Assorted global styling
  */
 a {
 	color:#333;
+	font-style:normal;
 }
 a:hover {
 	text-decoration:none;
 }
 body {
 	background-color:#F9F9F9;
-	margin:0 auto 0 auto;
+	margin:0 auto;
 	width:840px;
 }
-.box {
-	clear:both;
+#container {
 	float:left;
-	width:840px;
-}
-.head,
-.info {
-	font-family:verdana,sans-serif;
-	font-size:12px;
-	font-weight:bold;
 }
 .grey {
 	color:#999;
 }
-.head {
-	background-color:#EEE;
+.info,
+.section {
 	color:#666;
 	float:left;
+	font-family:verdana,sans-serif;
+	font-size:12px;
+	font-weight:bold;
 	margin:15px 22px 7px 0;
-	text-align:center;
-	width:818px;
 }
 .info {
-	color:#666;
-	float:left;
-	margin:15px 22px 7px 0;
 	width:818px;
 }
-.left {
+.section {
+	background-color:#F9F9F9;
+	border:1px solid #E0E0E0;
+	padding:1px 0;
+	text-align:center;
+	width:816px;
+}
+.title {
 	float:left;
 }
-.right {
+.total {
 	float:right;
 	font-style:italic;
 	font-weight:normal;
@@ -64,7 +62,7 @@ body {
 	background-color:#EBB056;
 }
 /**
- * General table styling
+ * Global table styling
  */
 table {
 	background-color:#EEE;
@@ -72,23 +70,24 @@ table {
 	border-color:#666;
 	border-spacing:0;
 	border-style:solid;
-	border-width:3px 1px 1px 1px;
-	color:#333;
+	border-width:3px 1px 1px;
 	float:left;
-	font-family:verdana,sans-serif;
-	font-size:10px;
 	margin:15px 22px 7px 0;
 	table-layout:fixed;
-	text-align:left;
+}
+td,
+th {
+	font-family:verdana,sans-serif;
+	font-size:10px;
 }
 td {
-	padding:1px 0 1px 0;
+	color:#333;
+	padding:1px 0;
 	vertical-align:top;
 }
 th {
 	color:#666;
-	font-weight:bold;
-	padding:1px 3px 1px 3px;
+	padding:1px 3px;
 	text-align:left;
 }
 /**
@@ -104,14 +103,6 @@ th {
 	/**
 	 * Variable width specified in HTML
 	 */
-}
-.act ul,
-.act-day ul,
-.act-year ul {
-	height:124px;
-	margin:0;
-	padding:0;
-	position:relative;
 }
 .act li,
 .act-day li,
@@ -146,6 +137,9 @@ th {
 .act-year td {
 	text-align:center;
 }
+.act-year td.est {
+	opacity:0.6;
+}
 .act tr.bars td,
 .act-day tr.bars td,
 .act-year tr.bars td {
@@ -165,8 +159,13 @@ th {
 .act-year tr.sub td.bold {
 	color:#666;
 }
-.act-year td.est {
-	opacity:0.6;
+.act ul,
+.act-day ul,
+.act-year ul {
+	height:124px;
+	margin:0;
+	padding:0;
+	position:relative;
 }
 /**
  * Specific table styling: history index
@@ -219,10 +218,6 @@ th {
 .ppl col.pos {
 	width:36px;
 }
-.ppl ul {
-	margin:0;
-	padding:0;
-}
 .ppl li {
 	display:inline-block;
 	height:6px;
@@ -240,22 +235,31 @@ th {
 	font-weight:bold;
 }
 .ppl td.k1,
-.ppl td.v1,
 .ppl td.k2,
+.ppl td.v1,
 .ppl td.v2 {
 	padding-right:2px;
 	text-align:right;
 }
 .ppl td.k3,
-.ppl td.v3,
 .ppl td.k5,
-.ppl td.v5,
 .ppl td.k6,
+.ppl td.v3,
+.ppl td.v5,
 .ppl td.v6 {
 	padding-left:2px;
 }
 .ppl td.pos {
 	text-align:center;
+}
+.ppl td.v6 {
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+}
+.ppl ul {
+	margin:0;
+	padding:0;
 }
 /**
  * Specific table styling: less talkative people
@@ -319,94 +323,89 @@ th {
 	padding-right:2px;
 	text-align:right;
 }
+.ppl-tod td.pos {
+	text-align:center;
+}
 .ppl-tod td.v {
 	height:3em;
 	padding-bottom:0;
 }
-.ppl-tod td.pos {
-	text-align:center;
-}
 /**
- * Specific table styling: small, medium, large
+ * Specific table styling: large, medium, small
  */
-.small {
-	width:258px;
+.large {
+	width:818px;
 }
 .medium {
 	width:538px;
 }
-.large {
-	width:818px;
+.small {
+	width:258px;
 }
-.small col.c1,
+.large col.c1,
 .medium col.c1,
 .medium col.c3,
-.large col.c1 {
+.small col.c1 {
 	width:80px;
 }
-.small col.c2,
-.large col.c2 {
+.large col.c2,
+.small col.c2 {
 	width:140px;
-}
-.medium col.c2 {
-	width:340px;
 }
 .large col.c3 {
 	width:560px;
 }
-.small col.pos,
+.medium col.c2 {
+	width:340px;
+}
+.large col.pos,
 .medium col.pos,
-.large col.pos {
+.small col.pos {
 	width:36px;
 }
-.small td.k1,
-.small td.k2,
-.small td.pos,
+.large td.k1,
+.large td.k2,
+.large td.k3,
+.large td.pos,
 .medium td.k1,
 .medium td.k2,
 .medium td.k3,
 .medium td.pos,
-.large td.k1,
-.large td.k2,
-.large td.k3,
-.large td.pos {
+.small td.k1,
+.small td.k2,
+.small td.pos {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.small td.k1,
-.small td.v1,
-.medium td.k1,
-.medium td.v1,
-.medium td.k3,
-.medium td.v3,
 .large td.k1,
-.large td.v1 {
+.large td.v1,
+.medium td.k1,
+.medium td.k3,
+.medium td.v1,
+.medium td.v3,
+.small td.k1,
+.small td.v1 {
 	padding-right:2px;
 	text-align:right;
 }
-.small td.k2,
-.small td.v2,
+.large td.k2,
+.large td.k3,
+.large td.v2,
+.large td.v3,
+.large td.v3a,
 .medium td.k2,
 .medium td.v2,
-.large td.k2,
-.large td.v2,
-.large td.k3,
-.large td.v3,
-.large td.v3a {
+.small td.k2,
+.small td.v2 {
 	padding-left:2px;
 }
-.small td.pos,
+.large td.pos,
 .medium td.pos,
-.large td.pos {
+.small td.pos {
 	text-align:center;
 }
-/**
- * Ellipsis, ahead of final CSS3 spec
- */
-.ppl td.v6,
 .large td.v3 {
-	-o-text-overflow:ellipsis;
 	overflow:hidden;
 	text-overflow:ellipsis;
 	white-space:nowrap;
