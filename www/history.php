@@ -165,7 +165,7 @@ final class history
 			. '<title>'.htmlspecialchars($this->channel).', historically.</title>'."\n"
 			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
 			. '</head>'."\n\n"
-			. '<body><div id="#container">'."\n"
+			. '<body><div id="container">'."\n"
 			. '<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br><br>'
 			. (is_null($this->year) ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.(!is_null($this->month) ? $this->monthname.' '.$this->year : 'the year '.$this->year).'.').'</div>'."\n";
 

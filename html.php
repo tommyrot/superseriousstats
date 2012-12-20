@@ -227,7 +227,7 @@ final class html extends base
 			      . '  .act-year { width:'.(2 + (($this->years + ($this->estimate ? 1 : 0)) * 34)).'px }'."\n"
 			      . '</style>'."\n"
 			      . '</head>'."\n\n"
-			      . '<body><div id="#container">'."\n"
+			      . '<body><div id="container">'."\n"
 			      . '<div class="info">'.htmlspecialchars($this->channel).', seriously.<br><br>'
 			      . number_format($this->days).' day'.($this->days > 1 ? 's logged from '.date('M j, Y', strtotime($this->date_first)).' to '.date('M j, Y', strtotime($this->date_last)) : ' logged on '.date('M j, Y', strtotime($this->date_first))).'.<br><br>'
 			      . 'Logs contain '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' &ndash; an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day.<br>'

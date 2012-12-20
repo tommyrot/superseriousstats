@@ -253,7 +253,7 @@ final class user
 			. '  .act-year { width:'.(2 + (($this->years + ($this->estimate ? 1 : 0)) * 34)).'px }'."\n"
 			. '</style>'."\n"
 			. '</head>'."\n\n"
-			. '<body><div id="#container">'."\n"
+			. '<body><div id="container">'."\n"
 			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($this->mood != '' ? ' '.$this->mood : '.').'<br><br>'
 			. 'First seen on '.date('M j, Y', strtotime($this->firstseen)).' and last seen on '.date('M j, Y', strtotime($this->lastseen)).'.<br><br>'
 			. htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($this->l_avg).' line'.($this->l_avg > 1 ? 's' : '').' per day.<br>'
