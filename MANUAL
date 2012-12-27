@@ -1,0 +1,51 @@
+usage:	php sss.php [-c <file>] [-i <file|directory>]
+		    [-o <file> [-b <numbits>]]
+	php sss.php [-c <file>] [-e <file>]
+	php sss.php [-c <file>] [-m]
+	php sss.php [-c <file>] [-n <file>]
+
+options:
+	-b <numbits>
+		Specifies which sections to display on the statspage. Add up the
+		bits corresponding to the sections you want to enable:
+			  1  Activity
+			  2  General Chat
+			  4  Modes
+			  8  Events
+			 16  Smileys
+			 32  URLs
+			 64  Words
+			128  Milestones
+		This option overrides the value from the configuration file.
+
+	-c <file>
+		Read settings from <file>. By default "./sss.conf" is read.
+
+	-e <file>
+		Export all user relations from the database to <file>.
+
+	-i <file|directory>
+		Parse logfile <file>, or all logfiles in <directory>. After the
+		last logfile has been parsed database maintenance will commence
+		to verify, sort and index data.
+
+	-m
+		Run database maintenance as is automatically done after parsing
+		logs. This option exists for the purpose of updating user
+		records after manually linking nicks.
+
+	-n <file>
+		Import user relations from <file> into the database. Existing
+		relationships will be unset prior to any updates made. It is
+		highly recommended to keep an export as backup. Nicks contained
+		in <file> are treated as case insensitive and nicks which don't
+		exist in the database will be ignored.
+
+	-o <file>
+		Generate statistics and output to <file>.
+
+examples:
+	Parse all logfiles found in "/home/foo/bar/" and create a statspage
+	named "/var/www/foobar.html" containing only Activity and URLs data:
+
+		$ php sss.php -i /home/foo/bar/ -o /var/www/foobar.html -b 33
