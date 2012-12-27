@@ -1317,15 +1317,15 @@ final class html extends base
  */
 final class table extends base
 {
-        private $head = '';
-        private $maxrows = 0;
-        private $minrows = 0;
-        private $urltools;
-        protected $decimals = 1;
-        protected $keys = array();
-        protected $medium = false;
-        protected $percentage = false;
-        protected $queries = array();
+	private $head = '';
+	private $maxrows = 0;
+	private $minrows = 0;
+	private $urltools;
+	protected $decimals = 1;
+	protected $keys = array();
+	protected $medium = false;
+	protected $percentage = false;
+	protected $queries = array();
 	protected $total = 0;
 
 	/**

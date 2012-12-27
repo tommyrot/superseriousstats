@@ -340,10 +340,10 @@ final class url extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-        private $datetime = array();
+	private $datetime = array();
 	private $extension = '';
-        private $fqdn = '';
-        private $tld = '';
+	private $fqdn = '';
+	private $tld = '';
 	private $url = '';
 
 	public function __construct($urldata)
@@ -411,7 +411,7 @@ final class topic extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-        private $datetime = array();
+	private $datetime = array();
 	private $topic = '';
 
 	public function __construct($topic)
