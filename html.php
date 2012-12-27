@@ -38,7 +38,7 @@ final class html extends base
 	private $maxrows_recenturls = 25;
 	private $minrows = 3;
 	private $rows_domains_tlds = 10;
-	private $sectionbits = 127;
+	private $sectionbits = 255;
 	private $stylesheet = 'sss.css';
 	private $userstats = false;
 

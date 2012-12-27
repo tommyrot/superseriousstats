@@ -24,7 +24,7 @@ abstract class base
 	/**
 	 * Default settings for this script, can be overridden in the config file. These should all appear in $settings_list[] along with their type.
 	 */
-	protected $outputbits = 1;
+	protected $outputbits = 7;
 
 	/**
 	 * Variables that shouldn't be tampered with.
