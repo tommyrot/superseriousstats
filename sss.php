@@ -432,7 +432,7 @@ final class sss extends base
 
 		foreach ($files as $file) {
 			/**
-			 * If the filename doesn't match the pattern provided with $logfile_dateformat this step will fail.
+			 * If the filename doesn't match the pattern provided by $logfile_dateformat this condition will not be met.
 			 */
 			if (($datetime = date_create_from_format($this->logfile_dateformat, basename($file))) !== false) {
 				$logfiles[date_format($datetime, 'Y-m-d')] = $file;
@@ -447,6 +447,10 @@ final class sss extends base
 		 * Sort the files on the date found in the filename.
 		 */
 		ksort($logfiles);
+
+		/**
+		 * Get the date of the last log that has been parsed.
+		 */
 		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		$rows = mysqli_num_rows($query);
 
