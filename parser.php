@@ -114,10 +114,10 @@ abstract class parser extends base
 	protected $l_21 = 0;
 	protected $l_22 = 0;
 	protected $l_23 = 0;
-	protected $l_night = 0;
-	protected $l_morning = 0;
 	protected $l_afternoon = 0;
 	protected $l_evening = 0;
+	protected $l_morning = 0;
+	protected $l_night = 0;
 	protected $l_total = 0;
 	protected $linenum = 0;
 	protected $linenum_lastnonempty = 0;

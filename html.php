@@ -30,8 +30,8 @@ final class html extends base
 	private $cid = '';
 	private $history = false;
 	private $maxrows = 5;
-	private $maxrows_people_alltime = 30;
 	private $maxrows_people2 = 10;
+	private $maxrows_people_alltime = 30;
 	private $maxrows_people_month = 10;
 	private $maxrows_people_timeofday = 10;
 	private $maxrows_people_year = 10;
@@ -55,8 +55,8 @@ final class html extends base
 	private $date_last = '';
 	private $date_lastlogparsed = '';
 	private $date_max = '';
-	private $days = 0;
 	private $dayofmonth = 0;
+	private $days = 0;
 	private $daysleft = 0;
 	private $estimate = false;
 	private $l_avg = 0;

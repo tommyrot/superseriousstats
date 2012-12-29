@@ -26,9 +26,9 @@ final class user
 	 */
 	private $channel = '';
 	private $db_host = '127.0.0.1';
+	private $db_name = 'sss';
 	private $db_pass = '';
 	private $db_port = 3306;
-	private $db_name = 'sss';
 	private $db_user = '';
 	private $debug = false;
 	private $mainpage = './';
@@ -44,8 +44,8 @@ final class user
 		'morning' => 'g',
 		'afternoon' => 'y',
 		'evening' => 'r');
-	private $currentyear = 0;
 	private $csnick = '';
+	private $currentyear = 0;
 	private $date_lastlogparsed = '';
 	private $date_max = '';
 	private $dayofmonth = 0;

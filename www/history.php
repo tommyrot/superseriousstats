@@ -26,9 +26,9 @@ final class history
 	 */
 	private $channel = '';
 	private $db_host = '127.0.0.1';
+	private $db_name = 'sss';
 	private $db_pass = '';
 	private $db_port = 3306;
-	private $db_name = 'sss';
 	private $db_user = '';
 	private $debug = false;
 	private $mainpage = './';
