@@ -70,18 +70,14 @@ final class user
 		$this->nick = $nick;
 
 		/**
-		 * Open the vars.php file and load settings from it. First the global settings then the channel specific ones.
+		 * Load settings from vars.php.
 		 */
 		if ((@include 'vars.php') === false) {
 			exit('Missing configuration.');
 		}
 
-		if (empty($settings['__global']) || empty($settings[$this->cid])) {
+		if (empty($settings[$this->cid])) {
 			exit('Not configured.');
-		}
-
-		foreach ($settings['__global'] as $key => $value) {
-			$this->$key = $value;
 		}
 
 		/**
