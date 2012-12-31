@@ -82,11 +82,11 @@ final class sss extends base
 		/**
 		 * Read options from the command line. If an illegal combination of valid options is given the program will print the manual on screen and exit.
 		 */
-		$options = getopt('b:c:e:i:mn:o:');
+		$options = getopt('b:c:e:i:mn:o:s');
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
-		if (!preg_match('/^(bc?i?o|c|c?(e|i|i?o|m|n))$/', $options_keys)) {
+		if (!preg_match('/^(bc?i?o|c|c?(e|i|i?o|m|n|s))$/', $options_keys)) {
 			$this->print_manual();
 		}
 
@@ -108,6 +108,13 @@ final class sss extends base
 			$this->read_config($options['c']);
 		} else {
 			$this->read_config(dirname(__FILE__).'/sss.conf');
+		}
+
+		/**
+		 * Export settings from the configuration file in the format vars.php accepts them.
+		 */
+		if (array_key_exists('s', $options)) {
+			$this->export_settings();
 		}
 
 		/**
@@ -223,6 +230,23 @@ final class sss extends base
 		fwrite($fp, $output);
 		fclose($fp);
 		$this->output('notice', 'export_nicks(): '.number_format($i).' nicks exported');
+	}
+
+	private function export_settings()
+	{
+		if (!empty($this->settings['cid'])) {
+			$vars = '$settings[\''.$this->settings['cid'].'\'] = array(';
+		} elseif (!empty($this->settings['channel'])) {
+			$vars = '$settings[\''.$this->settings['channel'].'\'] = array(';
+		} else {
+			$this->output('critical', 'export_settings(): both \'cid\' and \'channel\' are empty');
+		}
+
+		foreach ($this->settings as $key => $value) {
+			$vars .= "\n\t".'\''.$key.'\' => \''.$value.'\',';
+		}
+
+		exit(rtrim($vars, ',')."\n".');'."\n");
 	}
 
 	private function import_nicks($file)
@@ -556,11 +580,8 @@ final class sss extends base
 	private function print_manual()
 	{
 		$man = 'usage:	php sss.php [-c <file>] [-i <file|directory>]'."\n"
-		     . '		    [-o <file> [-b <numbits>]]'."\n"
-		     . '	php sss.php [-c <file>] [-e <file>]'."\n"
-		     . '	php sss.php [-c <file>] [-m]'."\n"
-		     . '	php sss.php [-c <file>] [-n <file>]'."\n\n"
-		     . 'See the MANUAL file for an overview of available options.'."\n";
+		     . '		    [-o <file> [-b <numbits>]]'."\n\n"
+		     . 'See the MANUAL file for an overview of all available options.'."\n";
 		exit($man);
 	}
 

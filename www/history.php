@@ -32,9 +32,9 @@ final class history
 	private $db_user = '';
 	private $debug = false;
 	private $mainpage = './';
-	private $maxrows_people_month = 30;
+	private $maxrows_people_month = 10;
 	private $maxrows_people_timeofday = 10;
-	private $maxrows_people_year = 30;
+	private $maxrows_people_year = 10;
 	private $stylesheet = 'sss.css';
 	private $timezone = 'UTC';
 	private $userstats = false;

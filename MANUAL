@@ -3,6 +3,7 @@ usage:	php sss.php [-c <file>] [-i <file|directory>]
 	php sss.php [-c <file>] [-e <file>]
 	php sss.php [-c <file>] [-m]
 	php sss.php [-c <file>] [-n <file>]
+	php sss.php [-c <file>] [-s]
 
 options:
 	-b <numbits>
@@ -43,6 +44,10 @@ options:
 
 	-o <file>
 		Generate statistics and output to <file>.
+
+	-s
+		Export settings from the configuration file in the format
+		"vars.php" accepts them. See "vars.php" for details.
 
 examples:
 	Parse all logfiles found in "/home/foo/bar/" and create a statspage
