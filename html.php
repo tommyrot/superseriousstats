@@ -37,6 +37,7 @@ final class html extends base
 	private $maxrows_people_year = 10;
 	private $maxrows_recenturls = 25;
 	private $minrows = 3;
+	private $recenturls_type = 1;
 	private $rows_domains_tlds = 10;
 	private $sectionbits = 255;
 	private $stylesheet = 'sss.css';
@@ -81,6 +82,7 @@ final class html extends base
 		'maxrows_recenturls' => 'int',
 		'minrows' => 'int',
 		'outputbits' => 'int',
+		'recenturls_type' => 'int',
 		'rows_domains_tlds' => 'int',
 		'sectionbits' => 'int',
 		'stylesheet' => 'string',
@@ -740,16 +742,24 @@ final class html extends base
 			$t->set_value('queries', array('main' => 'select count(*) as `v1`, `tld` as `v2` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `tld` != \'\' group by `tld` order by `v1` desc, `v2` asc limit '.$this->rows_domains_tlds));
 			$output .= $t->make_table($this->mysqli);
 
-			$t = new table('Most Recent URLs', $this->minrows, $this->maxrows_recenturls);
-			$t->set_value('keys', array(
-				'k1' => 'Date',
-				'k2' => 'User',
-				'k3' => 'URL',
-				'v1' => 'date',
-				'v2' => 'string',
-				'v3' => 'url'));
-			$t->set_value('queries', array('main' => 'select `datetime` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` order by `v1` desc limit '.$this->maxrows_recenturls));
-			$output .= $t->make_table($this->mysqli);
+			if ($this->recenturls_type != 0) {
+				$t = new table('Most Recent URLs', $this->minrows, $this->maxrows_recenturls);
+				$t->set_value('keys', array(
+					'k1' => 'Date',
+					'k2' => 'User',
+					'k3' => 'URL',
+					'v1' => 'date',
+					'v2' => 'string',
+					'v3' => 'url'));
+
+				if ($this->recenturls_type == 1) {
+					$t->set_value('queries', array('main' => 'select `datetime` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` order by `v1` desc limit '.$this->maxrows_recenturls));
+				} elseif ($this->recenturls_type == 2) {
+					$t->set_value('queries', array('main' => 'select `datetime` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` where `ruid` not in (select `ruid` from `user_status` where `status` = 3) order by `v1` desc limit '.$this->maxrows_recenturls));
+				}
+
+				$output .= $t->make_table($this->mysqli);
+			}
 
 			$t = new table('URLs by Users', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
