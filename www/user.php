@@ -22,7 +22,7 @@
 final class user
 {
 	/**
-	 * Default settings for this script, can be overridden in the vars.php file.
+	 * Default settings for this script, can be overridden in the vars.php file. Should be present in $settings_whitelist in order to get changed.
 	 */
 	private $channel = '';
 	private $db_host = '127.0.0.1';
@@ -61,6 +61,7 @@ final class user
 	private $mysqli;
 	private $nick = '';
 	private $ruid = 0;
+	private $settings_whitelist = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'debug', 'mainpage', 'stylesheet', 'timezone');
 	private $year = 0;
 	private $years = 0;
 
@@ -84,7 +85,9 @@ final class user
 		 * $cid is the channel ID used in vars.php and is passed along in the URL so that channel specific settings can be identified and loaded.
 		 */
 		foreach ($settings[$this->cid] as $key => $value) {
-			$this->$key = $value;
+			if (in_array($key, $this->settings_whitelist)) {
+				$this->$key = $value;
+			}
 		}
 
 		date_default_timezone_set($this->timezone);
