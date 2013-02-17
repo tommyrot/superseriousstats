@@ -748,7 +748,7 @@ final class html extends base
 					'k1' => 'Date',
 					'k2' => 'User',
 					'k3' => 'URL',
-					'v1' => 'date',
+					'v1' => 'date-norepeat',
 					'v2' => 'string',
 					'v3' => 'url'));
 
@@ -1450,6 +1450,9 @@ final class table extends base
 						${$key} = number_format((float) $result->$key, $this->decimals).($this->percentage ? '%' : '');
 						break;
 					case 'date':
+						${$key} = date('j M \'y', strtotime($result->$key));
+						break;
+					case 'date-norepeat':
 						${$key} = date('j M \'y', strtotime($result->$key));
 
 						if (!empty($prevdate) && ${$key} == $prevdate) {
