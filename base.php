@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2010-2012, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2013, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -37,29 +37,26 @@ abstract class base
 	}
 
 	/**
-	 * Create parts of the mysql query.
+	 * Create parts of the sqlite3 query.
 	 */
-	final protected function create_query($columns)
+	final protected function get_queryparts($sqlite3, $columns)
 	{
-		$insert = '';
-		$update = '';
+		$queryparts = array();
 
 		foreach ($columns as $key) {
 			if (is_int($this->$key) && $this->$key != 0) {
-				$insert .= ' `'.$key.'` = '.$this->$key.',';
-				$update .= ' `'.$key.'` = `'.$key.'` + '.$this->$key.',';
+				$queryparts['columnlist'][] = $key;
+				$queryparts['values'][] = $this->$key;
+				$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
 			} elseif (is_string($this->$key) && $this->$key != '') {
-				$tmp = ' `'.$key.'` = \''.mysqli_real_escape_string($this->mysqli, $this->$key).'\',';
-				$insert .= $tmp;
-				$update .= $tmp;
+				$value = '\''.$sqlite3->escapeString($this->$key).'\'';
+				$queryparts['columnlist'][] = $key;
+				$queryparts['values'][] = $value;
+				$queryparts['update-assignments'][] = $key.' = '.$value;
 			}
 		}
 
-		if (!empty($insert)) {
-			return rtrim($insert, ',').' on duplicate key update'.rtrim($update, ',');
-		} else {
-			return null;
-		}
+		return $queryparts;
 	}
 
 	final public function get_value($var)

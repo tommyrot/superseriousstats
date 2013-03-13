@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2012, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2013, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -121,7 +121,6 @@ abstract class parser extends base
 	protected $l_total = 0;
 	protected $linenum = 0;
 	protected $linenum_lastnonempty = 0;
-	protected $mysqli;
 	protected $newdata = false;
 	protected $prevline = '';
 	protected $prevnick = '';
@@ -686,39 +685,39 @@ abstract class parser extends base
 		}
 	}
 
-	final public function write_data($mysqli)
+	final public function write_data($sqlite3)
 	{
-		$this->mysqli = $mysqli;
 		$this->output('notice', 'write_data(): writing data to database');
 
 		/**
 		 * Write channel totals to the database.
 		 */
 		if ($this->l_total != 0) {
-			$createdquery = $this->create_query(array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
-			@mysqli_query($this->mysqli, 'insert into `channel` set `date` = \''.$this->date.'\','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$queryparts = $this->get_queryparts($sqlite3, array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
+			@$sqlite3->exec('INSERT OR IGNORE INTO channel (date, '.implode(', ', $queryparts['columnlist']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('UPDATE channel SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
 		 * Write user data to the database.
 		 */
 		foreach ($this->nicks_objs as $nick) {
-			$nick->write_data($this->mysqli);
+			$nick->write_data($sqlite3);
 		}
 
 		/**
 		 * Write word data to the database.
 		 */
 		foreach ($this->words_objs as $word) {
-			$word->write_data($this->mysqli);
+			$word->write_data($sqlite3);
 		}
 
 		/**
 		 * Write streak data (history) to the database.
 		 */
 		if ($this->l_total != 0) {
-			@mysqli_query($this->mysqli, 'truncate table `streak_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			@mysqli_query($this->mysqli, 'insert into `streak_history` set `prevnick` = \''.mysqli_real_escape_string($this->mysqli, $this->prevnick).'\', `streak` = '.$this->streak) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			@$sqlite3->exec('DELETE FROM streak_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('INSERT INTO streak_history (prevnick, streak) VALUES (\''.$sqlite3->escapeString($this->prevnick).'\', '.$this->streak.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		$this->output('notice', 'write_data(): writing completed');
@@ -742,12 +741,13 @@ final class word extends base
 		$this->word = $word;
 	}
 
-	public function write_data($mysqli)
+	public function write_data($sqlite3)
 	{
 		/**
 		 * Write data to database table "words".
 		 */
-		@mysqli_query($mysqli, 'insert into `words` set `word` = \''.mysqli_real_escape_string($mysqli, $this->word).'\', `length` = '.$this->length.', `total` = '.$this->total.' on duplicate key update `total` = `total` + '.$this->total) or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
+		$sqlite3->exec('INSERT OR IGNORE INTO words (word, length, total) VALUES (\''.$sqlite3->escapeString($this->word).'\', '.$this->length.', '.$this->total.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('UPDATE words SET total = total + '.$this->total.' WHERE CHANGES() = 0 AND word = \''.$sqlite3->escapeString($this->word).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 	}
 }
 

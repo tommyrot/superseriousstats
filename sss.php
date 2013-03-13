@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009-2012, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2013, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,8 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-if (!extension_loaded('mysqli')) {
-	exit('mysqli extension isn\'t loaded'."\n");
+if (!extension_loaded('sqlite3')) {
+	exit('sqlite3 extension isn\'t loaded'."\n");
 }
 
 if (!extension_loaded('mbstring')) {
@@ -40,11 +40,7 @@ final class sss extends base
 	 * Default settings for this script, can be overridden in the config file. These should all appear in $settings_list[] along with their type.
 	 */
 	private $autolinknicks = true;
-	private $db_host = '127.0.0.1';
-	private $db_name = 'sss';
-	private $db_pass = '';
-	private $db_port = 3306;
-	private $db_user = '';
+	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
 	private $parser = '';
 	private $timezone = 'UTC';
@@ -52,20 +48,16 @@ final class sss extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $mysqli;
 	private $settings = array();
 	private $settings_list = array(
 		'autolinknicks' => 'bool',
-		'db_host' => 'string',
-		'db_name' => 'string',
-		'db_pass' => 'string',
-		'db_port' => 'int',
-		'db_user' => 'string',
+		'database' => 'string',
 		'logfile_dateformat' => 'string',
-		'parser' => 'string',
 		'outputbits' => 'int',
+		'parser' => 'string',
 		'timezone' => 'string');
-	private $settings_list_required = array('db_pass', 'db_user');
+	private $settings_list_required = array();
+	private $sqlite3;
 
 	public function __construct()
 	{
@@ -120,9 +112,13 @@ final class sss extends base
 		/**
 		 * Make the database connection. Always needed.
 		 */
-		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
-		$this->output('notice', 'sss(): succesfully connected to '.$this->db_host.':'.$this->db_port.', database: \''.$this->db_name.'\'');
-		mysqli_set_charset($this->mysqli, 'utf8') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		try {
+			$this->sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
+		} catch (Exception $e) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
+		}
+
+		$this->output('notice', 'sss(): succesfully connected to database: \''.$this->database.'\'');
 
 		/**
 		 * The following options are listed in order of execution. Ie. "i" before "o", "b" before "o".
@@ -151,7 +147,7 @@ final class sss extends base
 			$this->make_html($options['o']);
 		}
 
-		@mysqli_close($this->mysqli);
+		$this->sqlite3->close();
 	}
 
 	private function do_maintenance()
@@ -164,7 +160,7 @@ final class sss extends base
 		}
 
 		$maintenance = new maintenance($this->settings);
-		$maintenance->do_maintenance($this->mysqli);
+		$maintenance->do_maintenance($this->sqlite3);
 	}
 
 	private function export_nicks($file)
@@ -475,12 +471,11 @@ final class sss extends base
 		/**
 		 * Get the date of the last log that has been parsed.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
+		$query = @$this->sqlite3->query('SELECT MAX(date) AS date FROM parse_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
-			$date_lastlogparsed = $result->date;
+		if (!empty($result)) {
+			$date_lastlogparsed = $result['date'];
 		} else {
 			$date_lastlogparsed = null;
 		}
@@ -507,24 +502,22 @@ final class sss extends base
 			 * Get the streak history. This will assume logs are parsed in chronological order with no gaps. If this is not the case the correctness
 			 * of the streak stats might be affected.
 			 */
-			$query = @mysqli_query($this->mysqli, 'select * from `streak_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$rows = mysqli_num_rows($query);
+			$query = @$this->sqlite3->query('SELECT prevnick, streak FROM streak_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			$result = $query->fetchArray(SQLITE3_ASSOC);
 
-			if (!empty($rows)) {
-				$result = mysqli_fetch_object($query);
-				$parser->set_value('prevnick', $result->prevnick);
-				$parser->set_value('streak', (int) $result->streak);
+			if (!empty($result)) {
+				$parser->set_value('prevnick', $result['prevnick']);
+				$parser->set_value('streak', (int) $result['streak']);
 			}
 
 			/**
 			 * Get the parse history.
 			 */
-			$query = @mysqli_query($this->mysqli, 'select `lines_parsed` from `parse_history` where `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$rows = mysqli_num_rows($query);
+			$query = @$this->sqlite3->query('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			$result = $query->fetchArray(SQLITE3_ASSOC);
 
-			if (!empty($rows)) {
-				$result = mysqli_fetch_object($query);
-				$firstline = (int) $result->lines_parsed + 1;
+			if (!empty($result)) {
+				$firstline = (int) $result['lines_parsed'] + 1;
 			} else {
 				$firstline = 1;
 			}
@@ -548,14 +541,15 @@ final class sss extends base
 			 * Update the parse history when there are actual (non empty) lines parsed.
 			 */
 			if ($parser->get_value('linenum_lastnonempty') >= $firstline) {
-				@mysqli_query($this->mysqli, 'insert into `parse_history` set `date` = \''.mysqli_real_escape_string($this->mysqli, $date).'\', `lines_parsed` = '.$parser->get_value('linenum_lastnonempty').' on duplicate key update `lines_parsed` = '.$parser->get_value('linenum_lastnonempty')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				@$this->sqlite3->exec('INSERT OR IGNORE INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_value('linenum_lastnonempty').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+				@$this->sqlite3->exec('UPDATE parse_history SET lines_parsed = '.$parser->get_value('linenum_lastnonempty').' WHERE CHANGES() = 0 AND date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 
 			/**
 			 * When new data is found write it to the database and set $needmaintenance to true.
 			 */
 			if ($parser->get_value('newdata')) {
-				$parser->write_data($this->mysqli);
+				$parser->write_data($this->sqlite3);
 				$needmaintenance = true;
 			} else {
 				$this->output('notice', 'parse_log(): no new data to write to database');

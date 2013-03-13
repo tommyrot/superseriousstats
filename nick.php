@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2012, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2013, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -114,7 +114,6 @@ final class nick extends base
 	protected $m_voice = 0;
 	protected $m_voiced = 0;
 	protected $monologues = 0;
-	protected $mysqli;
 	protected $nickchanges = 0;
 	protected $parts = 0;
 	protected $questions = 0;
@@ -226,23 +225,20 @@ final class nick extends base
 		$this->urls_objs[$url]->add_datetime($datetime);
 	}
 
-	public function write_data($mysqli)
+	public function write_data($sqlite3)
 	{
-		$this->mysqli = $mysqli;
-
 		/**
 		 * Write data to database tables "user_details" and "user_status".
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `uid`, `firstseen` from `user_details` where `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->csnick).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
+		$query = @$sqlite3->query('SELECT uid, firstseen FROM user_details WHERE csnick = \''.$sqlite3->escapeString($this->csnick).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if (empty($rows)) {
-			@mysqli_query($this->mysqli, 'insert into `user_details` set `uid` = 0, `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->csnick).'\''.($this->firstseen != '' ? ', `firstseen` = \''.$this->firstseen.'\', `lastseen` = \''.$this->lastseen.'\'' : '')) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$uid = mysqli_insert_id($this->mysqli);
-			@mysqli_query($this->mysqli, 'insert into `user_status` set `uid` = '.$uid.', `ruid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		if (empty($result)) {
+			@$sqlite3->exec('INSERT INTO user_details (uid, csnick'.($this->firstseen != '' ? ', firstseen, lastseen' : '').') VALUES (null, \''.$sqlite3->escapeString($this->csnick).'\''.($this->firstseen != '' ? ', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\')' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$uid = $sqlite3->lastInsertRowID();
+			@$sqlite3->exec('INSERT INTO user_status (uid, ruid) VALUES ('.$uid.', '.$uid.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} else {
-			$result = mysqli_fetch_object($query);
-			$uid = (int) $result->uid;
+			$uid = (int) $result['uid'];
 
 			/**
 			 * Only update $firstseen if the value stored in the database is zero. We're parsing logs in chronological order so the stored value of
@@ -251,7 +247,7 @@ final class nick extends base
 			 * by a lowercase $prevnick (streak code) or weirdly cased nick due to a slap.
 			 */
 			if ($this->firstseen != '') {
-				@mysqli_query($this->mysqli, 'update `user_details` set `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->csnick).'\''.($result->firstseen == '0000-00-00 00:00:00' ? ', `firstseen` = \''.$this->firstseen.'\'' : '').', `lastseen` = \''.$this->lastseen.'\' where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				@$sqlite3->exec('UPDATE user_details SET csnick = \''.$sqlite3->escapeString($this->csnick).'\''.($result['firstseen'] == '0000-00-00 00:00:00' ? ', firstseen = DATETIME(\''.$this->firstseen.'\')' : '').', lastseen = DATETIME(\''.$this->lastseen.'\') WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 
@@ -259,17 +255,19 @@ final class nick extends base
 		 * Write data to database table "user_activity".
 		 */
 		if ($this->l_total != 0) {
-			$createdquery = $this->create_query(array('l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
-			@mysqli_query($this->mysqli, 'insert into `user_activity` set `uid` = '.$uid.', `date` = \''.mysqli_real_escape_string($this->mysqli, $this->date).'\','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$queryparts = $this->get_queryparts($sqlite3, array('l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
+			@$sqlite3->exec('INSERT OR IGNORE INTO user_activity (uid, date, '.implode(', ', $queryparts['columnlist']).') VALUES ('.$uid.', \''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('UPDATE user_activity SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND uid = '.$uid.' AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
 		 * Write data to database table "user_events".
 		 */
-		$createdquery = $this->create_query(array('m_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deop', 'm_deopped', 'm_devoice', 'm_devoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked'));
+		$queryparts = $this->get_queryparts($sqlite3, array('m_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deop', 'm_deopped', 'm_devoice', 'm_devoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked'));
 
-		if (!is_null($createdquery)) {
-			@mysqli_query($this->mysqli, 'insert into `user_events` set `uid` = '.$uid.','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		if (!empty($queryparts)) {
+			@$sqlite3->exec('INSERT OR IGNORE INTO user_events (uid, '.implode(', ', $queryparts['columnlist']).') VALUES ('.$uid.', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('UPDATE user_events SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
@@ -286,23 +284,24 @@ final class nick extends base
 		}
 
 		/**
-		 * Write data to database table "user_lines".
+		 * Write data to database table "user_lines". Special care taken for $lasttalked because get_queryparts() won't do it for us.
 		 */
-		$createdquery = $this->create_query(array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'urls', 'words', 'characters', 'monologues', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased', 'lasttalked'));
+		$queryparts = $this->get_queryparts($sqlite3, array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'urls', 'words', 'characters', 'monologues', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased'));
 
-		if (!is_null($createdquery)) {
-			@mysqli_query($this->mysqli, 'insert into `user_lines` set `uid` = '.$uid.','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		if (!empty($queryparts)) {
+			@$sqlite3->exec('INSERT OR IGNORE INTO user_lines (uid, '.implode(', ', $queryparts['columnlist']).($this->lasttalked != '' ? ', lasttalked' : '').') VALUES ('.$uid.', '.implode(', ', $queryparts['values']).($this->lasttalked != '' ? ', DATETIME(\''.$this->lasttalked.'\')' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('UPDATE user_lines SET '.implode(', ', $queryparts['update-assignments']).($this->lasttalked != '' ? ', lasttalked = DATETIME(\''.$this->lasttalked.'\')' : '').' WHERE CHANGES() = 0 AND uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			/**
 			 * Update $topmonologue separately as we want to keep the highest value instead of the sum. Note that $createdquery can't be null when
 			 * $topmonologue is non zero because, at the very least, $monologues will have a value of 1.
 			 */
 			if ($this->topmonologue != 0) {
-				$query = @mysqli_query($this->mysqli, 'select `topmonologue` from `user_lines` where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-				$result = mysqli_fetch_object($query);
+				$query = @$sqlite3->query('SELECT topmonologue FROM user_lines WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				$result = $query->fetchArray(SQLITE3_ASSOC);
 
-				if ($this->topmonologue > (int) $result->topmonologue) {
-					@mysqli_query($this->mysqli, 'update `user_lines` set `topmonologue` = '.$this->topmonologue.' where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				if ($this->topmonologue > (int) $result['topmonologue']) {
+					@$sqlite3->exec('UPDATE user_lines SET topmonologue = '.$this->topmonologue.' WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				}
 			}
 		}
@@ -310,24 +309,25 @@ final class nick extends base
 		/**
 		 * Write data to database table "user_smileys".
 		 */
-		$createdquery = $this->create_query(array('s_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19', 's_20', 's_21', 's_22', 's_23', 's_24', 's_25', 's_26', 's_27', 's_28', 's_29', 's_30', 's_31', 's_32', 's_33', 's_34', 's_35', 's_36', 's_37', 's_38', 's_39', 's_40', 's_41', 's_42', 's_43', 's_44', 's_45', 's_46', 's_47', 's_48', 's_49', 's_50'));
+		$queryparts = $this->get_queryparts($sqlite3, array('s_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19', 's_20', 's_21', 's_22', 's_23', 's_24', 's_25', 's_26', 's_27', 's_28', 's_29', 's_30', 's_31', 's_32', 's_33', 's_34', 's_35', 's_36', 's_37', 's_38', 's_39', 's_40', 's_41', 's_42', 's_43', 's_44', 's_45', 's_46', 's_47', 's_48', 's_49', 's_50'));
 
-		if (!is_null($createdquery)) {
-			@mysqli_query($this->mysqli, 'insert into `user_smileys` set `uid` = '.$uid.','.$createdquery) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		if (!empty($queryparts)) {
+			@$sqlite3->exec('INSERT OR IGNORE INTO user_smileys (uid, '.implode(', ', $queryparts['columnlist']).') VALUES ('.$uid.', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('UPDATE user_smileys SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
 		 * Write topic data to the database.
 		 */
 		foreach ($this->topics_objs as $topic) {
-			$topic->write_data($this->mysqli, $uid);
+			$topic->write_data($sqlite3, $uid);
 		}
 
 		/**
 		 * Write URL data to the database.
 		 */
 		foreach ($this->urls_objs as $url) {
-			$url->write_data($this->mysqli, $uid);
+			$url->write_data($sqlite3, $uid);
 		}
 	}
 }
@@ -365,40 +365,38 @@ final class url extends base
 		$this->datetime[] = $datetime;
 	}
 
-	public function write_data($mysqli, $uid)
+	public function write_data($sqlite3, $uid)
 	{
 		/**
 		 * Write data to database table "fqdns".
 		 */
 		if ($this->fqdn != '') {
-			$query = @mysqli_query($mysqli, 'select `fid` from `fqdns` where `fqdn` = \''.$this->fqdn.'\'') or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
-			$rows = mysqli_num_rows($query);
+			$query = @$sqlite3->query('SELECT fid FROM fqdns WHERE fqdn = \''.$this->fqdn.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$result = $query->fetchArray(SQLITE3_ASSOC);
 
-			if (empty($rows)) {
-				@mysqli_query($mysqli, 'insert into `fqdns` set `fid` = 0, `fqdn` = \''.$this->fqdn.'\'') or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
-				$fid = mysqli_insert_id($mysqli);
+			if (empty($result)) {
+				@$sqlite3->exec('INSERT INTO fqdns (fid, fqdn) VALUES (null, \''.$this->fqdn.'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				$fid = $sqlite3->lastInsertRowID();
 			} else {
-				$result = mysqli_fetch_object($query);
-				$fid = (int) $result->fid;
+				$fid = (int) $result['fid'];
 			}
 		}
 
 		/**
 		 * Write data to database tables "urls" and "user_urls".
 		 */
-		$query = @mysqli_query($mysqli, 'select `lid` from `urls` where `url` = \''.mysqli_real_escape_string($mysqli, $this->url).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
-		$rows = mysqli_num_rows($query);
+		$query = @$sqlite3->query('SELECT lid FROM urls WHERE url = \''.$sqlite3->escapeString($this->url).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if (empty($rows)) {
-			@mysqli_query($mysqli, 'insert into `urls` set `lid` = 0, `url` = \''.mysqli_real_escape_string($mysqli, $this->url).'\''.($this->fqdn != '' ? ', `fid` = \''.$fid.'\', `tld` = \''.$this->tld.'\'' : '').($this->extension != '' ? ', `extension` = \''.$this->extension.'\'' : '')) or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
-			$lid = mysqli_insert_id($mysqli);
+		if (empty($result)) {
+			@$sqlite3->exec('INSERT INTO urls (lid, url'.($this->fqdn != '' ? ', fid, tld' : '').($this->extension != '' ? ', extension' : '').') VALUES (null, \''.$sqlite3->escapeString($this->url).'\''.($this->fqdn != '' ? ', '.$fid.', \''.$this->tld.'\'' : '').($this->extension != '' ? ', \''.$this->extension.'\'' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$lid = $sqlite3->lastInsertRowID();
 		} else {
-			$result = mysqli_fetch_object($query);
-			$lid = (int) $result->lid;
+			$lid = (int) $result['lid'];
 		}
 
 		foreach ($this->datetime as $datetime) {
-			@mysqli_query($mysqli, 'insert into `user_urls` set `uid` = '.$uid.', `lid` = '.$lid.', `datetime` = \''.$datetime.'\'') or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
+			@$sqlite3->exec('INSERT INTO user_urls (uid, lid, datetime) VALUES ('.$uid.', '.$lid.', DATETIME(\''.$datetime.'\'))') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 }
@@ -427,21 +425,20 @@ final class topic extends base
 	/**
 	 * Write data to database tables "topics" and "user_topics".
 	 */
-	public function write_data($mysqli, $uid)
+	public function write_data($sqlite3, $uid)
 	{
-		$query = @mysqli_query($mysqli, 'select `tid` from `topics` where `topic` = \''.mysqli_real_escape_string($mysqli, $this->topic).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
-		$rows = mysqli_num_rows($query);
+		$query = @$sqlite3->query('SELECT tid FROM topics WHERE topic = \''.$sqlite3->escapeString($this->topic).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if (empty($rows)) {
-			@mysqli_query($mysqli, 'insert into `topics` set `tid` = 0, `topic` = \''.mysqli_real_escape_string($mysqli, $this->topic).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
-			$tid = mysqli_insert_id($mysqli);
+		if (empty($result)) {
+			@$sqlite3->exec('INSERT INTO topics (tid, topic) VALUES (null, \''.$sqlite3->escapeString($this->topic).'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$tid = $sqlite3->lastInsertRowID();
 		} else {
-			$result = mysqli_fetch_object($query);
-			$tid = (int) $result->tid;
+			$tid = (int) $result['tid'];
 		}
 
 		foreach ($this->datetime as $datetime) {
-			@mysqli_query($mysqli, 'insert into `user_topics` set `uid` = '.$uid.', `tid` = '.$tid.', `datetime` = \''.$datetime.'\'') or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
+			@$sqlite3->exec('INSERT INTO user_topics (uid, tid, datetime) VALUES ('.$uid.', '.$tid.', DATETIME(\''.$datetime.'\'))') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 }
