@@ -57,7 +57,6 @@ final class sss extends base
 		'parser' => 'string',
 		'timezone' => 'string');
 	private $settings_list_required = array();
-	private $sqlite3;
 
 	public function __construct()
 	{
@@ -113,7 +112,7 @@ final class sss extends base
 		 * Make the database connection. Always needed.
 		 */
 		try {
-			$this->sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
+			$sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
 		} catch (Exception $e) {
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
 		}
@@ -128,42 +127,42 @@ final class sss extends base
 		}
 
 		if (array_key_exists('e', $options)) {
-			$this->export_nicks($options['e']);
+			$this->export_nicks($sqlite3, $options['e']);
 		}
 
 		if (array_key_exists('i', $options)) {
-			$this->parse_log($options['i']);
+			$this->parse_log($sqlite3, $options['i']);
 		}
 
 		if (array_key_exists('m', $options)) {
-			$this->do_maintenance();
+			$this->do_maintenance($sqlite3);
 		}
 
 		if (array_key_exists('n', $options)) {
-			$this->import_nicks($options['n']);
+			$this->import_nicks($sqlite3, $options['n']);
 		}
 
 		if (array_key_exists('o', $options)) {
-			$this->make_html($options['o']);
+			$this->make_html($sqlite3, $options['o']);
 		}
 
-		$this->sqlite3->close();
+		$sqlite3->close();
 	}
 
-	private function do_maintenance()
+	private function do_maintenance($sqlite3)
 	{
 		/**
 		 * Scan for new aliases when $autolinknicks is enabled.
 		 */
 		if ($this->autolinknicks) {
-			$this->link_nicks();
+			$this->link_nicks($sqlite3);
 		}
 
 		$maintenance = new maintenance($this->settings);
-		$maintenance->do_maintenance($this->sqlite3);
+		$maintenance->do_maintenance($sqlite3);
 	}
 
-	private function export_nicks($file)
+	private function export_nicks($sqlite3, $file)
 	{
 		$this->output('notice', 'export_nicks(): exporting nicks');
 		$query = @mysqli_query($this->mysqli, 'select `user_details`.`uid`, `ruid`, `csnick`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` order by `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
@@ -245,7 +244,7 @@ final class sss extends base
 		exit(rtrim($vars, ',')."\n".');'."\n");
 	}
 
-	private function import_nicks($file)
+	private function import_nicks($sqlite3, $file)
 	{
 		$this->output('notice', 'import_nicks(): importing nicks');
 		$query = @mysqli_query($this->mysqli, 'select `uid`, `csnick` from `user_details`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
@@ -311,7 +310,7 @@ final class sss extends base
 		}
 	}
 
-	private function link_nicks()
+	private function link_nicks($sqlite3)
 	{
 		/**
 		 * This function tries to link unlinked nicks to any other nick that is identical after stripping them from non-alphanumeric characters (at any
@@ -417,10 +416,10 @@ final class sss extends base
 		}
 	}
 
-	private function make_html($file)
+	private function make_html($sqlite3, $file)
 	{
 		$html = new html($this->settings);
-		$output = $html->make_html($this->sqlite3);
+		$output = $html->make_html($sqlite3);
 
 		if (($fp = @fopen($file, 'wb')) === false) {
 			$this->output('critical', 'make_html(): failed to open file: \''.$file.'\'');
@@ -430,7 +429,7 @@ final class sss extends base
 		fclose($fp);
 	}
 
-	private function parse_log($filedir)
+	private function parse_log($sqlite3, $filedir)
 	{
 		if (($rp = realpath($filedir)) === false) {
 			$this->output('critical', 'parse_log(): no such file or directory: \''.$filedir.'\'');
@@ -471,7 +470,7 @@ final class sss extends base
 		/**
 		 * Get the date of the last log that has been parsed.
 		 */
-		$date_lastlogparsed = @$this->sqlite3->querySingle('SELECT MAX(date) FROM parse_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		$date_lastlogparsed = @$sqlite3->querySingle('SELECT MAX(date) FROM parse_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		/**
 		 * $logsparsed increases after each log parsed.
@@ -495,8 +494,7 @@ final class sss extends base
 			 * Get the streak history. This will assume logs are parsed in chronological order with no gaps. If this is not the case the correctness
 			 * of the streak stats might be affected.
 			 */
-			$query = @$this->sqlite3->query('SELECT prevnick, streak FROM streak_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-			$result = $query->fetchArray(SQLITE3_ASSOC);
+			$result = @$sqlite3->querySingle('SELECT prevnick, streak FROM streak_history', true) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			if (!empty($result)) {
 				$parser->set_value('prevnick', $result['prevnick']);
@@ -506,7 +504,7 @@ final class sss extends base
 			/**
 			 * Get the parse history and set the line number on which to start parsing the log.
 			 */
-			$firstline = @$this->sqlite3->querySingle('SELECT lines_parsed + 1 FROM parse_history WHERE date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			$firstline = @$sqlite3->querySingle('SELECT lines_parsed + 1 FROM parse_history WHERE date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			if (is_null($firstline)) {
 				$firstline = 1;
@@ -531,15 +529,15 @@ final class sss extends base
 			 * Update the parse history when there are actual (non empty) lines parsed.
 			 */
 			if ($parser->get_value('linenum_lastnonempty') >= $firstline) {
-				@$this->sqlite3->exec('INSERT OR IGNORE INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_value('linenum_lastnonempty').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-				@$this->sqlite3->exec('UPDATE parse_history SET lines_parsed = '.$parser->get_value('linenum_lastnonempty').' WHERE CHANGES() = 0 AND date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+				@$sqlite3->exec('INSERT OR IGNORE INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_value('linenum_lastnonempty').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				@$sqlite3->exec('UPDATE parse_history SET lines_parsed = '.$parser->get_value('linenum_lastnonempty').' WHERE CHANGES() = 0 AND date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
 			/**
 			 * When new data is found write it to the database and set $needmaintenance to true.
 			 */
 			if ($parser->get_value('newdata')) {
-				$parser->write_data($this->sqlite3);
+				$parser->write_data($sqlite3);
 				$needmaintenance = true;
 			} else {
 				$this->output('notice', 'parse_log(): no new data to write to database');
@@ -557,7 +555,7 @@ final class sss extends base
 		 * Finally run maintenance routines if needed.
 		 */
 		if ($needmaintenance) {
-			$this->do_maintenance();
+			$this->do_maintenance($sqlite3);
 		}
 	}
 
