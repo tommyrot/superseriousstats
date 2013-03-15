@@ -234,11 +234,11 @@ final class nick extends base
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if (empty($result)) {
-			@$sqlite3->exec('INSERT INTO user_details (uid, csnick'.($this->firstseen != '' ? ', firstseen, lastseen' : '').') VALUES (null, \''.$sqlite3->escapeString($this->csnick).'\''.($this->firstseen != '' ? ', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\')' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('INSERT INTO user_details (uid, csnick'.($this->firstseen != '' ? ', firstseen, lastseen' : '').') VALUES (NULL, \''.$sqlite3->escapeString($this->csnick).'\''.($this->firstseen != '' ? ', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\')' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$uid = $sqlite3->lastInsertRowID();
 			@$sqlite3->exec('INSERT INTO user_status (uid, ruid) VALUES ('.$uid.', '.$uid.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} else {
-			$uid = (int) $result['uid'];
+			$uid = $result['uid'];
 
 			/**
 			 * Only update $firstseen if the value stored in the database is zero. We're parsing logs in chronological order so the stored value of
@@ -297,10 +297,9 @@ final class nick extends base
 			 * $topmonologue is non zero because, at the very least, $monologues will have a value of 1.
 			 */
 			if ($this->topmonologue != 0) {
-				$query = @$sqlite3->query('SELECT topmonologue FROM user_lines WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				$result = $query->fetchArray(SQLITE3_ASSOC);
+				$topmonologue = @$sqlite3->querySingle('SELECT topmonologue FROM user_lines WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-				if ($this->topmonologue > (int) $result['topmonologue']) {
+				if ($this->topmonologue > $topmonologue) {
 					@$sqlite3->exec('UPDATE user_lines SET topmonologue = '.$this->topmonologue.' WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				}
 			}
@@ -371,28 +370,22 @@ final class url extends base
 		 * Write data to database table "fqdns".
 		 */
 		if ($this->fqdn != '') {
-			$query = @$sqlite3->query('SELECT fid FROM fqdns WHERE fqdn = \''.$this->fqdn.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$result = $query->fetchArray(SQLITE3_ASSOC);
+			$fid = @$sqlite3->querySingle('SELECT fid FROM fqdns WHERE fqdn = \''.$this->fqdn.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-			if (empty($result)) {
-				@$sqlite3->exec('INSERT INTO fqdns (fid, fqdn) VALUES (null, \''.$this->fqdn.'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			if (is_null($fid)) {
+				@$sqlite3->exec('INSERT INTO fqdns (fid, fqdn) VALUES (NULL, \''.$this->fqdn.'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				$fid = $sqlite3->lastInsertRowID();
-			} else {
-				$fid = (int) $result['fid'];
 			}
 		}
 
 		/**
 		 * Write data to database tables "urls" and "user_urls".
 		 */
-		$query = @$sqlite3->query('SELECT lid FROM urls WHERE url = \''.$sqlite3->escapeString($this->url).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
+		$lid = @$sqlite3->querySingle('SELECT lid FROM urls WHERE url = \''.$sqlite3->escapeString($this->url).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-		if (empty($result)) {
-			@$sqlite3->exec('INSERT INTO urls (lid, url'.($this->fqdn != '' ? ', fid, tld' : '').($this->extension != '' ? ', extension' : '').') VALUES (null, \''.$sqlite3->escapeString($this->url).'\''.($this->fqdn != '' ? ', '.$fid.', \''.$this->tld.'\'' : '').($this->extension != '' ? ', \''.$this->extension.'\'' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if (is_null($lid)) {
+			@$sqlite3->exec('INSERT INTO urls (lid, url'.($this->fqdn != '' ? ', fid, tld' : '').($this->extension != '' ? ', extension' : '').') VALUES (NULL, \''.$sqlite3->escapeString($this->url).'\''.($this->fqdn != '' ? ', '.$fid.', \''.$this->tld.'\'' : '').($this->extension != '' ? ', \''.$this->extension.'\'' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$lid = $sqlite3->lastInsertRowID();
-		} else {
-			$lid = (int) $result['lid'];
 		}
 
 		foreach ($this->datetime as $datetime) {
@@ -427,14 +420,11 @@ final class topic extends base
 	 */
 	public function write_data($sqlite3, $uid)
 	{
-		$query = @$sqlite3->query('SELECT tid FROM topics WHERE topic = \''.$sqlite3->escapeString($this->topic).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
+		$tid = @$sqlite3->querySingle('SELECT tid FROM topics WHERE topic = \''.$sqlite3->escapeString($this->topic).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-		if (empty($result)) {
-			@$sqlite3->exec('INSERT INTO topics (tid, topic) VALUES (null, \''.$sqlite3->escapeString($this->topic).'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if (is_null($tid)) {
+			@$sqlite3->exec('INSERT INTO topics (tid, topic) VALUES (NULL, \''.$sqlite3->escapeString($this->topic).'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$tid = $sqlite3->lastInsertRowID();
-		} else {
-			$tid = (int) $result['tid'];
 		}
 
 		foreach ($this->datetime as $datetime) {

@@ -500,7 +500,7 @@ final class sss extends base
 
 			if (!empty($result)) {
 				$parser->set_value('prevnick', $result['prevnick']);
-				$parser->set_value('streak', (int) $result['streak']);
+				$parser->set_value('streak', $result['streak']);
 			}
 
 			/**
