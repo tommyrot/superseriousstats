@@ -420,7 +420,7 @@ final class sss extends base
 	private function make_html($file)
 	{
 		$html = new html($this->settings);
-		$output = $html->make_html($this->mysqli);
+		$output = $html->make_html($this->sqlite3);
 
 		if (($fp = @fopen($file, 'wb')) === false) {
 			$this->output('critical', 'make_html(): failed to open file: \''.$file.'\'');
@@ -471,14 +471,7 @@ final class sss extends base
 		/**
 		 * Get the date of the last log that has been parsed.
 		 */
-		$query = @$this->sqlite3->query('SELECT MAX(date) AS date FROM parse_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
-
-		if (!empty($result)) {
-			$date_lastlogparsed = $result['date'];
-		} else {
-			$date_lastlogparsed = null;
-		}
+		$date_lastlogparsed = @$this->sqlite3->querySingle('SELECT MAX(date) FROM parse_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
 		/**
 		 * $logsparsed increases after each log parsed.
@@ -511,14 +504,11 @@ final class sss extends base
 			}
 
 			/**
-			 * Get the parse history.
+			 * Get the parse history and set the line number on which to start parsing the log.
 			 */
-			$query = @$this->sqlite3->query('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-			$result = $query->fetchArray(SQLITE3_ASSOC);
+			$firstline = @$this->sqlite3->querySingle('SELECT lines_parsed + 1 FROM parse_history WHERE date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
-			if (!empty($result)) {
-				$firstline = (int) $result['lines_parsed'] + 1;
-			} else {
+			if (is_null($firstline)) {
 				$firstline = 1;
 			}
 
