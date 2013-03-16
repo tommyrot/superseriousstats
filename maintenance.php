@@ -81,8 +81,8 @@ final class maintenance extends base
 		}
 
 		if (!empty($values)) {
-			@sqlite3->exec('DELETE FROM q_milestones') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@sqlite3->exec('INSERT INTO q_milestones (ruid, milestone, date) VALUES '.ltrim($values, ', ')) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('DELETE FROM q_milestones') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('INSERT INTO q_milestones (ruid, milestone, date) VALUES '.ltrim($values, ', ')) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 
@@ -227,7 +227,7 @@ final class maintenance extends base
 		/**
 		 * Find out which alias (uid) has the most lines for each registered user or bot (ruid).
 		 */
-		$query = @sqlite3->query('SELECT ruid, csnick, (SELECT user_status.uid AS uid FROM user_status JOIN user_lines ON user_status.uid = user_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS uid, status FROM user_status AS t1 JOIN user_details ON t1.uid = user_details.uid WHERE status IN (1,3)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = @$sqlite3->query('SELECT ruid, csnick, (SELECT user_status.uid AS uid FROM user_status JOIN user_lines ON user_status.uid = user_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS uid, status FROM user_status AS t1 JOIN user_details ON t1.uid = user_details.uid WHERE status IN (1,3)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {

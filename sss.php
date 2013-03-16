@@ -165,7 +165,7 @@ final class sss extends base
 	private function export_nicks($sqlite3, $file)
 	{
 		$this->output('notice', 'export_nicks(): exporting nicks');
-		$query = @sqlite3->query('SELECT user_details.uid AS uid, ruid, csnick, status FROM user_details JOIN user_status ON user_details.uid = user_status.uid ORDER BY csnick ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = @$sqlite3->query('SELECT user_details.uid AS uid, ruid, csnick, status FROM user_details JOIN user_status ON user_details.uid = user_status.uid ORDER BY csnick ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
@@ -350,7 +350,7 @@ final class sss extends base
 		 * This method has very little false positives and is therefore enabled by default.
 		 */
 		$this->output('notice', 'link_nicks(): looking for possible aliases');
-		$query = @sqlite3->query('SELECT user_details.uid AS uid, ruid, csnick, status FROM user_details JOIN user_status ON user_details.uid = user_status.uid') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = @$sqlite3->query('SELECT user_details.uid AS uid, ruid, csnick, status FROM user_details JOIN user_status ON user_details.uid = user_status.uid') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
