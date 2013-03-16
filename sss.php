@@ -178,7 +178,7 @@ final class sss extends base
 			return null;
 		}
 
-		$result->reset();
+		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if ($result['status'] == 1 || $result['status'] == 3) {
@@ -262,7 +262,7 @@ final class sss extends base
 			return null;
 		}
 
-		$result->reset();
+		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$uids[strtolower($result['csnick'])] = $result['uid'];
@@ -364,7 +364,7 @@ final class sss extends base
 		}
 
 		$strippednicks = array();
-		$result->reset();
+		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$nicks[$result['uid']] = array(

@@ -63,7 +63,7 @@ final class maintenance extends base
 		}
 
 		$values = '';
-		$result->reset();
+		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if (!isset($l_total[$result['ruid']])) {
@@ -148,7 +148,7 @@ final class maintenance extends base
 
 		if ($result !== false) {
 			$ruids = '';
-			$result->reset();
+			$query->reset();
 
 			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 				$ruids .= ','.$result['ruid'];
@@ -243,7 +243,7 @@ final class maintenance extends base
 			return null;
 		}
 
-		$result->reset();
+		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			/**
