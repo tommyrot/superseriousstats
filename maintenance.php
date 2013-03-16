@@ -184,7 +184,10 @@ final class maintenance extends base
 			 * 4. Drop old final table.
 			 * 5. Rename temporary table to final table.
 			 */
-			$sql = @$sqlite3->querySingle('SELECT sql FROM sqlite_master WHERE type = \'table\' AND name = \'mv_'.$table.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
+			if (($sql = @$sqlite3->querySingle('SELECT sql FROM sqlite_master WHERE type = \'table\' AND name = \'mv_'.$table.'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
+
 			@$sqlite3->exec(preg_replace('/mv_'.$table.'/', 'tmp_mv_'.$table, $sql)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
 			@$sqlite3->exec('INSERT INTO tmp_mv_'.$table.' SELECT * FROM v_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			@$sqlite3->exec('DROP TABLE mv_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -205,7 +208,10 @@ final class maintenance extends base
 			 * 5. Drop old final table.
 			 * 6. Rename temporary table to final table.
 			 */
-			$sql = @$sqlite3->querySingle('SELECT sql FROM sqlite_master WHERE type = \'table\' AND name = \'q_'.$table.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
+			if (($sql = @$sqlite3->querySingle('SELECT sql FROM sqlite_master WHERE type = \'table\' AND name = \'q_'.$table.'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
+			}
+
 			@$sqlite3->exec(preg_replace('/q_'.$table.'/', 'tmp_q_'.$table, $sql)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
 
 			if (in_array($table, array('events', 'lines', 'smileys'))) {
@@ -247,7 +253,10 @@ final class maintenance extends base
 			 */
 			if (!is_null($result['uid']) && $result['uid'] != $result['ruid']) {
 				$registered = $result['csnick'];
-				$alias = @$sqlite3->querySingle('SELECT csnick FROM user_details WHERE uid = '.$result['uid']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+				if (($alias = @$sqlite3->querySingle('SELECT csnick FROM user_details WHERE uid = '.$result['uid'])) === false) {
+					$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				}
 
 				/**
 				 * Update records:

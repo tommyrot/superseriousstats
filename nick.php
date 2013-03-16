@@ -230,7 +230,9 @@ final class nick extends base
 		/**
 		 * Write data to database tables "user_details" and "user_status".
 		 */
-		$result = @$sqlite3->querySingle('SELECT uid, firstseen FROM user_details WHERE csnick = \''.$sqlite3->escapeString($this->csnick).'\'', true) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if (($result = @$sqlite3->querySingle('SELECT uid, firstseen FROM user_details WHERE csnick = \''.$sqlite3->escapeString($this->csnick).'\'', true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
 
 		if (empty($result)) {
 			@$sqlite3->exec('INSERT INTO user_details (uid, csnick'.($this->firstseen != '' ? ', firstseen, lastseen' : '').') VALUES (NULL, \''.$sqlite3->escapeString($this->csnick).'\''.($this->firstseen != '' ? ', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\')' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -371,7 +373,9 @@ final class url extends base
 		 * Write data to database table "fqdns".
 		 */
 		if ($this->fqdn != '') {
-			$fid = @$sqlite3->querySingle('SELECT fid FROM fqdns WHERE fqdn = \''.$this->fqdn.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			if (($fid = @$sqlite3->querySingle('SELECT fid FROM fqdns WHERE fqdn = \''.$this->fqdn.'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 
 			if (is_null($fid)) {
 				@$sqlite3->exec('INSERT INTO fqdns (fid, fqdn) VALUES (NULL, \''.$this->fqdn.'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -382,7 +386,9 @@ final class url extends base
 		/**
 		 * Write data to database tables "urls" and "user_urls".
 		 */
-		$lid = @$sqlite3->querySingle('SELECT lid FROM urls WHERE url = \''.$sqlite3->escapeString($this->url).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if (($lid = @$sqlite3->querySingle('SELECT lid FROM urls WHERE url = \''.$sqlite3->escapeString($this->url).'\'')) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
 
 		if (is_null($lid)) {
 			@$sqlite3->exec('INSERT INTO urls (lid, url'.($this->fqdn != '' ? ', fid, tld' : '').($this->extension != '' ? ', extension' : '').') VALUES (NULL, \''.$sqlite3->escapeString($this->url).'\''.($this->fqdn != '' ? ', '.$fid.', \''.$this->tld.'\'' : '').($this->extension != '' ? ', \''.$this->extension.'\'' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -421,7 +427,9 @@ final class topic extends base
 	 */
 	public function write_data($sqlite3, $uid)
 	{
-		$tid = @$sqlite3->querySingle('SELECT tid FROM topics WHERE topic = \''.$sqlite3->escapeString($this->topic).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if (($tid = @$sqlite3->querySingle('SELECT tid FROM topics WHERE topic = \''.$sqlite3->escapeString($this->topic).'\'')) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
 
 		if (is_null($tid)) {
 			@$sqlite3->exec('INSERT INTO topics (tid, topic) VALUES (NULL, \''.$sqlite3->escapeString($this->topic).'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());

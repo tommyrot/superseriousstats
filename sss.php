@@ -508,7 +508,9 @@ final class sss extends base
 			 * Get the streak history. This will assume logs are parsed in chronological order with no gaps. If this is not the case the correctness
 			 * of the streak stats might be affected.
 			 */
-			$result = @$sqlite3->querySingle('SELECT prevnick, streak FROM streak_history', true) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			if (($result = @$sqlite3->querySingle('SELECT prevnick, streak FROM streak_history', true)) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 
 			if (!empty($result)) {
 				$parser->set_value('prevnick', $result['prevnick']);
@@ -518,7 +520,9 @@ final class sss extends base
 			/**
 			 * Get the parse history and set the line number on which to start parsing the log.
 			 */
-			$firstline = @$sqlite3->querySingle('SELECT lines_parsed + 1 FROM parse_history WHERE date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			if (($firstline = @$sqlite3->querySingle('SELECT lines_parsed + 1 FROM parse_history WHERE date = \''.$date.'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 
 			if (is_null($firstline)) {
 				$firstline = 1;
