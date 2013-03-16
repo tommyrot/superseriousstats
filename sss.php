@@ -306,7 +306,7 @@ final class sss extends base
 				@$sqlite3->exec('UPDATE user_status SET ruid = uid, status = '.$statuses[$uid].' WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 				if (!empty($aliases[$uid])) {
-					@$sqlite3->exec('UPDATE user_status SET ruid = '.$uid.', status = 2 WHERE uid IN ('.implode(', ', $aliases[$uid]).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+					@$sqlite3->exec('UPDATE user_status SET ruid = '.$uid.', status = 2 WHERE uid IN ('.implode(',', $aliases[$uid]).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				}
 			}
 
