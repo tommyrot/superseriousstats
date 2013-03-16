@@ -165,22 +165,24 @@ final class sss extends base
 	private function export_nicks($sqlite3, $file)
 	{
 		$this->output('notice', 'export_nicks(): exporting nicks');
-		$query = @mysqli_query($this->mysqli, 'select `user_details`.`uid`, `ruid`, `csnick`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` order by `csnick` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
+		$query = @sqlite3->query('SELECT user_details.uid AS uid, ruid, csnick, status FROM user_details JOIN user_status ON user_details.uid = user_status.uid ORDER BY csnick ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if (empty($rows)) {
+		if ($result === false) {
 			$this->output('warning', 'export_nicks(): database is empty, nothing to do');
 			return null;
 		}
 
-		while ($result = mysqli_fetch_object($query)) {
-			if ((int) $result->status == 1 || (int) $result->status == 3) {
-				$registered[strtolower($result->csnick)] = (int) $result->uid;
-				$statuses[(int) $result->uid] = (int) $result->status;
-			} elseif ((int) $result->status == 2) {
-				$aliases[(int) $result->ruid][] = strtolower($result->csnick);
+		$result->reset();
+
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			if ($result['status'] == 1 || $result['status'] == 3) {
+				$registered[strtolower($result['csnick'])] = $result['uid'];
+				$statuses[$result['uid']] = $result['status'];
+			} elseif ($result['status'] == 2) {
+				$aliases[$result['ruid']][] = strtolower($result['csnick']);
 			} else {
-				$unlinked[] = strtolower($result->csnick);
+				$unlinked[] = strtolower($result['csnick']);
 			}
 		}
 
@@ -247,16 +249,18 @@ final class sss extends base
 	private function import_nicks($sqlite3, $file)
 	{
 		$this->output('notice', 'import_nicks(): importing nicks');
-		$query = @mysqli_query($this->mysqli, 'select `uid`, `csnick` from `user_details`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
+		$query = @$sqlite3->query('SELECT uid, csnick FROM user_details') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if (empty($rows)) {
+		if ($result === false) {
 			$this->output('warning', 'import_nicks(): database is empty, nothing to do');
 			return null;
 		}
 
-		while ($result = mysqli_fetch_object($query)) {
-			$uids[strtolower($result->csnick)] = (int) $result->uid;
+		$result->reset();
+
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$uids[strtolower($result['csnick'])] = $result['uid'];
 		}
 
 		if (($rp = realpath($file)) === false) {
@@ -296,13 +300,13 @@ final class sss extends base
 			/**
 			 * Set all nicks to their default status before updating them according to new data.
 			 */
-			@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = 0') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			@$sqlite3->exec('UPDATE user_status SET ruid = uid, status = 0') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			foreach ($registered as $uid) {
-				@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = `uid`, `status` = '.$statuses[$uid].' where `uid` = '.$uid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				@$sqlite3->exec('UPDATE user_status SET ruid = uid, status = '.$statuses[$uid].' WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 				if (!empty($aliases[$uid])) {
-					@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$uid.', `status` = 2 where `uid` in ('.implode(',', $aliases[$uid]).')') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+					@$sqlite3->exec('UPDATE user_status SET ruid = '.$uid.', status = 2 WHERE uid IN ('.implode(', ', $aliases[$uid]).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				}
 			}
 
@@ -346,7 +350,7 @@ final class sss extends base
 		 * This method has very little false positives and is therefore enabled by default.
 		 */
 		$this->output('notice', 'link_nicks(): looking for possible aliases');
-		$query = @mysqli_query($this->mysqli, 'select `user_details`.`uid`, `ruid`, `csnick`, `status` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'select user_details.uid, ruid, csnick, status from user_details join user_status on user_details.uid = user_status.uid') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows)) {
@@ -399,7 +403,7 @@ final class sss extends base
 
 			for ($i = 1, $j = count($uids); $i < $j; $i++) {
 				if ($nicks[$uids[$i]]['status'] == 0) {
-					@mysqli_query($this->mysqli, 'update `user_status` set `ruid` = '.$nicks[$uids[0]]['ruid'].', `status` = 2 where `uid` = '.$uids[$i]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+					@mysqli_query($this->mysqli, 'update user_status set ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 where uid = '.$uids[$i]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 					$this->output('debug', 'link_nicks(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
 					$nickslinked++;
 					$aliasfound = true;
@@ -407,7 +411,7 @@ final class sss extends base
 			}
 
 			if ($aliasfound && $nicks[$uids[0]]['status'] == 0) {
-				@mysqli_query($this->mysqli, 'update `user_status` set `status` = 1 where `uid` = '.$uids[0]) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				@mysqli_query($this->mysqli, 'update user_status set status = 1 where uid = '.$uids[0]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 
