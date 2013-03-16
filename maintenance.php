@@ -188,7 +188,7 @@ final class maintenance extends base
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			@$sqlite3->exec(preg_replace('/mv_'.$table.'/', 'tmp_mv_'.$table, $sql)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
+			@$sqlite3->exec(preg_replace('/mv_'.$table.'/', 'tmp_mv_'.$table, $sql)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			@$sqlite3->exec('INSERT INTO tmp_mv_'.$table.' SELECT * FROM v_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			@$sqlite3->exec('DROP TABLE mv_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			@$sqlite3->exec('ALTER TABLE tmp_mv_'.$table.' RENAME TO mv_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -209,16 +209,16 @@ final class maintenance extends base
 			 * 6. Rename temporary table to final table.
 			 */
 			if (($sql = @$sqlite3->querySingle('SELECT sql FROM sqlite_master WHERE type = \'table\' AND name = \'q_'.$table.'\'')) === false) {
-				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			@$sqlite3->exec(preg_replace('/q_'.$table.'/', 'tmp_q_'.$table, $sql)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
+			@$sqlite3->exec(preg_replace('/q_'.$table.'/', 'tmp_q_'.$table, $sql)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			if (in_array($table, array('events', 'lines', 'smileys'))) {
-				$query = @$sqlite3->query('SELECT sql FROM sqlite_master WHERE type = \'index\' AND tbl_name = \'q_'.$table.'\' AND sql IS NOT NULL') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
+				$query = @$sqlite3->query('SELECT sql FROM sqlite_master WHERE type = \'index\' AND tbl_name = \'q_'.$table.'\' AND sql IS NOT NULL') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 				while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-					@$sqlite3->exec(preg_replace('/q_'.$table.'/', 'tmp_q_'.$table, $result['sql'])) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());;
+					@$sqlite3->exec(preg_replace('/q_'.$table.'/', 'tmp_q_'.$table, $result['sql'])) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				}
 			}
 
