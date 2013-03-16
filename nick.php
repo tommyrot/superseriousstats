@@ -296,7 +296,9 @@ final class nick extends base
 			 * $topmonologue is non zero because, at the very least, $monologues will have a value of 1.
 			 */
 			if ($this->topmonologue != 0) {
-				$topmonologue = @$sqlite3->querySingle('SELECT topmonologue FROM user_lines WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				if (($topmonologue = @$sqlite3->querySingle('SELECT topmonologue FROM user_lines WHERE uid = '.$uid)) === false) {
+					$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				}
 
 				if ($this->topmonologue > $topmonologue) {
 					@$sqlite3->exec('UPDATE user_lines SET topmonologue = '.$this->topmonologue.' WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());

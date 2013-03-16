@@ -89,9 +89,12 @@ final class maintenance extends base
 	public function do_maintenance($sqlite3)
 	{
 		$this->output('notice', 'do_maintenance(): performing database maintenance routines');
-		$usercount = @$sqlite3->querySingle('SELECT COUNT(*) FROM user_status') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-		if (is_null($usercount)) {
+		if (($usercount = @$sqlite3->querySingle('SELECT COUNT(*) FROM user_status')) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		if ($usercount == 0) {
 			$this->output('warning', 'do_maintenance(): database is empty, nothing to do');
 		} else {
 			$this->fix_user_status_errors($sqlite3);

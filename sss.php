@@ -155,7 +155,12 @@ final class sss extends base
 		 * Scan for new aliases when $autolinknicks is enabled.
 		 */
 		if ($this->autolinknicks) {
-			$this->link_nicks($sqlite3);
+			/**
+			 * Returns false if the database is empty, indicating we can stop straight away.
+			 */
+			if (!$this->link_nicks($sqlite3)) {
+				return null;
+			}
 		}
 
 		$maintenance = new maintenance($this->settings);
@@ -355,7 +360,7 @@ final class sss extends base
 
 		if ($result === false) {
 			$this->output('warning', 'link_nicks(): database is empty, nothing to do');
-			return null;
+			return false;
 		}
 
 		$strippednicks = array();
@@ -419,6 +424,8 @@ final class sss extends base
 		if ($nickslinked == 0) {
 			$this->output('notice', 'link_nicks(): no new aliases found');
 		}
+
+		return true;
 	}
 
 	private function make_html($sqlite3, $file)
@@ -475,7 +482,9 @@ final class sss extends base
 		/**
 		 * Get the date of the last log that has been parsed.
 		 */
-		$date_lastlogparsed = @$sqlite3->querySingle('SELECT MAX(date) FROM parse_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if (($date_lastlogparsed = @$sqlite3->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
 
 		/**
 		 * $logsparsed increases after each log parsed.
