@@ -100,7 +100,7 @@ final class maintenance extends base
 			$this->fix_user_status_errors($sqlite3);
 			$this->register_most_active_alias($sqlite3);
 			$this->make_materialized_views($sqlite3);
-			$this->calculate_milestones($sqlite3);
+			//$this->calculate_milestones($sqlite3);
 			$this->output('notice', 'do_maintenance(): maintenance completed');
 		}
 	}
@@ -172,59 +172,27 @@ final class maintenance extends base
 	private function make_materialized_views($sqlite3)
 	{
 		/**
-		 * Create materialized views.
+		 * Recreate materialized views.
 		 */
 		$tables = array('activedays', 'events', 'ex_actions', 'ex_exclamations', 'ex_kicked', 'ex_kicks', 'ex_questions', 'ex_uppercased', 'lines', 'quote');
 
 		foreach ($tables as $table) {
-			/**
-			 * 1. Get schema of the final table stored in "sqlite_master".
-			 * 2. Create temporary table.
-			 * 3. Insert data from view into temporary table.
-			 * 4. Drop old final table.
-			 * 5. Rename temporary table to final table.
-			 */
-			if (($sql = @$sqlite3->querySingle('SELECT sql FROM sqlite_master WHERE type = \'table\' AND name = \'mv_'.$table.'\'')) === false) {
-				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-
-			@$sqlite3->exec(preg_replace('/mv_'.$table.'/', 'tmp_mv_'.$table, $sql)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@$sqlite3->exec('INSERT INTO tmp_mv_'.$table.' SELECT * FROM v_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@$sqlite3->exec('DROP TABLE mv_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@$sqlite3->exec('ALTER TABLE tmp_mv_'.$table.' RENAME TO mv_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('DELETE FROM mv_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('INSERT INTO mv_'.$table.' SELECT * FROM v_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
-		 * Create query tables. Some of these depend on the materialized views we created above.
+		 * Recreate query tables. Some of these depend on the materialized views we recreated above. Also, some need reindexing.
 		 */
 		$tables = array('activity_by_day', 'activity_by_month', 'activity_by_year', 'events', 'lines', 'smileys');
 
 		foreach ($tables as $table) {
-			/**
-			 * 1. Get schema of the final table stored in "sqlite_master".
-			 * 2. Create temporary table.
-			 * 3. Likewise, if applicable, get and create indexes for temporary table.
-			 * 4. Insert data from view into temporary table.
-			 * 5. Drop old final table.
-			 * 6. Rename temporary table to final table.
-			 */
-			if (($sql = @$sqlite3->querySingle('SELECT sql FROM sqlite_master WHERE type = \'table\' AND name = \'q_'.$table.'\'')) === false) {
-				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-
-			@$sqlite3->exec(preg_replace('/q_'.$table.'/', 'tmp_q_'.$table, $sql)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('DELETE FROM q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('INSERT INTO q_'.$table.' SELECT * FROM v_q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			if (in_array($table, array('events', 'lines', 'smileys'))) {
-				$query = @$sqlite3->query('SELECT sql FROM sqlite_master WHERE type = \'index\' AND tbl_name = \'q_'.$table.'\' AND sql IS NOT NULL') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-				while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-					@$sqlite3->exec(preg_replace('/q_'.$table.'/', 'tmp_q_'.$table, $result['sql'])) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				}
+				@$sqlite3->exec('REINDEX q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
-
-			@$sqlite3->exec('INSERT INTO tmp_q_'.$table.' SELECT * FROM v_q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@$sqlite3->exec('DROP TABLE q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@$sqlite3->exec('ALTER TABLE tmp_q_'.$table.' RENAME TO q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 
