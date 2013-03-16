@@ -62,7 +62,7 @@ final class maintenance extends base
 			return null;
 		}
 
-		$values = '';
+		$values = array();
 		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -75,14 +75,20 @@ final class maintenance extends base
 			}
 
 			while (!is_null($nextmilestone) && $l_total[$result['ruid']] >= $nextmilestone) {
-				$values .= ', ('.$result['ruid'].', '.$nextmilestone.', \''.$result['date'].'\')';
+				$values[] = '('.$result['ruid'].', '.$nextmilestone.', \''.$result['date'].'\')';
 				$nextmilestone = array_shift($milestones);
 			}
 		}
 
 		if (!empty($values)) {
 			@$sqlite3->exec('DELETE FROM q_milestones') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@$sqlite3->exec('INSERT INTO q_milestones (ruid, milestone, date) VALUES '.ltrim($values, ', ')) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			@$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+			foreach ($values as $value) {
+				@$sqlite3->exec('INSERT INTO q_milestones (ruid, milestone, date) VALUES '.$value) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
+
+			@$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 
@@ -100,7 +106,7 @@ final class maintenance extends base
 			$this->fix_user_status_errors($sqlite3);
 			$this->register_most_active_alias($sqlite3);
 			$this->make_materialized_views($sqlite3);
-			//$this->calculate_milestones($sqlite3);
+			$this->calculate_milestones($sqlite3);
 			$this->output('notice', 'do_maintenance(): maintenance completed');
 		}
 	}
@@ -182,7 +188,7 @@ final class maintenance extends base
 		}
 
 		/**
-		 * Recreate query tables. Some of these depend on the materialized views we recreated above. Also, some need reindexing.
+		 * Recreate query tables. Some of these depend on the materialized views we recreated above.
 		 */
 		$tables = array('activity_by_day', 'activity_by_month', 'activity_by_year', 'events', 'lines', 'smileys');
 
@@ -190,6 +196,9 @@ final class maintenance extends base
 			@$sqlite3->exec('DELETE FROM q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			@$sqlite3->exec('INSERT INTO q_'.$table.' SELECT * FROM v_q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
+			/**
+			 * Reindex if the query table has indices.
+			 */
 			if (in_array($table, array('events', 'lines', 'smileys'))) {
 				@$sqlite3->exec('REINDEX q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
