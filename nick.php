@@ -230,8 +230,7 @@ final class nick extends base
 		/**
 		 * Write data to database tables "user_details" and "user_status".
 		 */
-		$query = @$sqlite3->query('SELECT uid, firstseen FROM user_details WHERE csnick = \''.$sqlite3->escapeString($this->csnick).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
+		$result = @$sqlite3->querySingle('SELECT uid, firstseen FROM user_details WHERE csnick = \''.$sqlite3->escapeString($this->csnick).'\'', true) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		if (empty($result)) {
 			@$sqlite3->exec('INSERT INTO user_details (uid, csnick'.($this->firstseen != '' ? ', firstseen, lastseen' : '').') VALUES (NULL, \''.$sqlite3->escapeString($this->csnick).'\''.($this->firstseen != '' ? ', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\')' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
