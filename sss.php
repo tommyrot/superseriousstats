@@ -350,36 +350,37 @@ final class sss extends base
 		 * This method has very little false positives and is therefore enabled by default.
 		 */
 		$this->output('notice', 'link_nicks(): looking for possible aliases');
-		$query = @mysqli_query($this->mysqli, 'select user_details.uid, ruid, csnick, status from user_details join user_status on user_details.uid = user_status.uid') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$rows = mysqli_num_rows($query);
+		$query = @sqlite3->query('SELECT user_details.uid AS uid, ruid, csnick, status FROM user_details JOIN user_status ON user_details.uid = user_status.uid') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if (empty($rows)) {
+		if ($result === false) {
 			$this->output('warning', 'link_nicks(): database is empty, nothing to do');
 			return null;
 		}
 
 		$strippednicks = array();
+		$result->reset();
 
-		while ($result = mysqli_fetch_object($query)) {
-			$nicks[(int) $result->uid] = array(
-				'nick' => $result->csnick,
-				'ruid' => (int) $result->ruid,
-				'status' => (int) $result->status);
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$nicks[$result['uid']] = array(
+				'nick' => $result['csnick'],
+				'ruid' => $result['ruid'],
+				'status' => $result['status']);
 
 			/**
 			 * We keep an array with uids for each stripped nick. If we encounter a linked nick we put its uid at the start of the array, otherwise
 			 * just append the uid.
 			 */
-			$strippednick = preg_replace(array('/[^a-z0-9]/', '/[0-9]+$/'), '', strtolower($result->csnick));
+			$strippednick = preg_replace(array('/[^a-z0-9]/', '/[0-9]+$/'), '', strtolower($result['csnick']));
 
 			/**
 			 * Only proceed if the stripped nick consists of more than one character.
 			 */
 			if (strlen($strippednick) > 1) {
-				if ((int) $result->status != 0 && !empty($strippednicks[$strippednick])) {
-					array_unshift($strippednicks[$strippednick], (int) $result->uid);
+				if ($result['status'] != 0 && !empty($strippednicks[$strippednick])) {
+					array_unshift($strippednicks[$strippednick], $result['uid']);
 				} else {
-					$strippednicks[$strippednick][] = (int) $result->uid;
+					$strippednicks[$strippednick][] = $result['uid'];
 				}
 			}
 		}
@@ -403,7 +404,7 @@ final class sss extends base
 
 			for ($i = 1, $j = count($uids); $i < $j; $i++) {
 				if ($nicks[$uids[$i]]['status'] == 0) {
-					@mysqli_query($this->mysqli, 'update user_status set ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 where uid = '.$uids[$i]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+					@$sqlite3->exec('UPDATE user_status SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 					$this->output('debug', 'link_nicks(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
 					$nickslinked++;
 					$aliasfound = true;
@@ -411,7 +412,7 @@ final class sss extends base
 			}
 
 			if ($aliasfound && $nicks[$uids[0]]['status'] == 0) {
-				@mysqli_query($this->mysqli, 'update user_status set status = 1 where uid = '.$uids[0]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				@$sqlite3->exec('UPDATE user_status SET status = 1 WHERE uid = '.$uids[0]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 
