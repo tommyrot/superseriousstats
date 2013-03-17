@@ -688,6 +688,7 @@ abstract class parser extends base
 	final public function write_data($sqlite3)
 	{
 		$this->output('notice', 'write_data(): writing data to database');
+		@$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		/**
 		 * Write channel totals to the database.
@@ -720,6 +721,7 @@ abstract class parser extends base
 			@$sqlite3->exec('INSERT INTO streak_history (prevnick, streak) VALUES (\''.$sqlite3->escapeString($this->prevnick).'\', '.$this->streak.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
+		@$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$this->output('notice', 'write_data(): writing completed');
 	}
 }
