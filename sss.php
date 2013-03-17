@@ -193,9 +193,12 @@ final class sss extends base
 			return null;
 		}
 
+		$rows = 0;
 		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$rows++;
+
 			if ($result['status'] == 1 || $result['status'] == 3) {
 				$registered[strtolower($result['csnick'])] = $result['uid'];
 				$statuses[$result['uid']] = $result['status'];
