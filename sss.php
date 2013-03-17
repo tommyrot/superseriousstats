@@ -313,6 +313,7 @@ final class sss extends base
 			/**
 			 * Set all nicks to their default status before updating them according to new data.
 			 */
+			@$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			@$sqlite3->exec('UPDATE user_status SET ruid = uid, status = 0') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			foreach ($registered as $uid) {
@@ -323,6 +324,7 @@ final class sss extends base
 				}
 			}
 
+			@$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$this->output('notice', 'import_nicks(): import completed, don\'t forget to run "php sss.php -m"');
 		}
 	}
@@ -398,6 +400,7 @@ final class sss extends base
 			}
 		}
 
+		@$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$nickslinked = 0;
 
 		foreach ($strippednicks as $uids) {
@@ -428,6 +431,8 @@ final class sss extends base
 				@$sqlite3->exec('UPDATE user_status SET status = 1 WHERE uid = '.$uids[0]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
+
+		@$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		if ($nickslinked == 0) {
 			$this->output('notice', 'link_nicks(): no new aliases found');
