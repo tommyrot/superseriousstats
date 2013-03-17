@@ -82,13 +82,10 @@ final class maintenance extends base
 
 		if (!empty($values)) {
 			@$sqlite3->exec('DELETE FROM q_milestones') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			foreach ($values as $value) {
 				@$sqlite3->exec('INSERT INTO q_milestones (ruid, milestone, date) VALUES '.$value) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
-
-			@$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 
@@ -103,10 +100,12 @@ final class maintenance extends base
 		if ($usercount == 0) {
 			$this->output('warning', 'do_maintenance(): database is empty, nothing to do');
 		} else {
+			@$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$this->fix_user_status_errors($sqlite3);
 			$this->register_most_active_alias($sqlite3);
 			$this->make_materialized_views($sqlite3);
 			$this->calculate_milestones($sqlite3);
+			@$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$this->output('notice', 'do_maintenance(): maintenance completed');
 		}
 	}
