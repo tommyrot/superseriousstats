@@ -218,25 +218,15 @@ final class sss extends base
 				$i++;
 
 				if (!empty($aliases[$uid])) {
-					foreach ($aliases[$uid] as $alias) {
-						$output .= ','.$alias;
-						$i++;
-					}
+					$output .= ','.implode(',', $aliases[$uid])."\n";
+					$i += count($aliases[$uid]);
 				}
-
-				$output .= "\n";
 			}
 		}
 
 		if (!empty($unlinked)) {
-			$output .= '*';
-
-			foreach ($unlinked as $nick) {
-				$output .= ','.$nick;
-				$i++;
-			}
-
-			$output .= "\n";
+			$output .= '*,'.implode(',', $unlinked)."\n";
+			$i += count($unlinked);
 		}
 
 		if ($i != $rows) {
