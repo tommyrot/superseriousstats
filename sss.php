@@ -117,6 +117,21 @@ final class sss extends base
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
 		}
 
+		/**
+		 * Set PRAGMAs:
+		 * - journal_mode = OFF: disable the rollback journal completely.
+		 * - synchronous = OFF: continue without syncing as soon as data is handed off to the operating system.
+		 * - temp_store = MEMORY: temporary tables and indices are kept in memory.
+		 */
+		$pragmas = array(
+			'journal_mode' => 'OFF',
+			'synchronous' => 'OFF',
+			'temp_store' => 'MEMORY');
+
+		foreach ($pragmas as $key => $value) {
+			$sqlite3->exec('PRAGMA '.$key.' = '.$value);
+		}
+
 		$this->output('notice', 'sss(): succesfully connected to database: \''.$this->database.'\'');
 
 		/**
@@ -156,7 +171,7 @@ final class sss extends base
 		 */
 		if ($this->autolinknicks) {
 			/**
-			 * Returns false if the database is empty, indicating we can stop straight away.
+			 * link_nicks() returns false if the database is empty, indicating we don't have to continue with further maintenance.
 			 */
 			if (!$this->link_nicks($sqlite3)) {
 				return null;
