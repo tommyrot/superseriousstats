@@ -334,7 +334,7 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE STRFTIME(\'%Y\', date) = '.$this->year.')) * 100 AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y\', date) = '.$this->year.' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE STRFTIME(\'%Y\', date) = \''.$this->year.'\')) * 100 AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y\', date) = \''.$this->year.'\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Active Chatters &ndash; '.$this->monthname.' '.$this->year, $this->minrows, $this->maxrows);
