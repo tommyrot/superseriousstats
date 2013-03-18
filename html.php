@@ -65,7 +65,6 @@ final class html extends base
 	private $l_total = 0;
 	private $month = 0;
 	private $monthname = '';
-	private $mysqli;
 	private $output = '';
 	private $settings_list = array(
 		'addhtml_foot' => 'string',
@@ -148,39 +147,40 @@ final class html extends base
 	/**
 	 * Generate the HTML page.
 	 */
-	public function make_html($mysqli)
+	public function make_html($sqlite3)
 	{
-		$this->mysqli = $mysqli;
 		$this->output('notice', 'make_html(): creating statspage');
-		$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
 
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
+		if (($this->l_total = @$sqlite3->querySingle('SELECT SUM(l_total) FROM channel')) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
-		 * Exit if the channel has no logged activity. Most functions don't expect to be run on an empty database so keep this check in place.
+		 * Stop if the channel has no logged activity. Everything beyond this point expects a non empty database.
 		 */
-		if (empty($result->l_total)) {
+		if (is_null($this->l_total)) {
 			$this->output('warning', 'make_html(): database is empty, nothing to do');
 			return 'No data.';
 		}
 
-		$this->l_total = (int) $result->l_total;
-		$query = @mysqli_query($this->mysqli, 'select min(`date`) as `date_first`, max(`date`) as `date_last` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
-		$this->date_first = $result->date_first;
-		$this->date_last = $result->date_last;
-		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
-		$this->days = (int) $result->days;
+		if (($result = @$sqlite3->querySingle('SELECT MIN(date) AS date_first, MAX(date) AS date_last FROM channel', true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		$this->date_first = $result['date_first'];
+		$this->date_last = $result['date_last'];
+
+		if (($result = @$sqlite3->querySingle('SELECT COUNT(*) AS days, MAX(date) AS date FROM parse_history', true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		$this->days = $result['days'];
 		$this->l_avg = $this->l_total / $this->days;
 
 		/**
 		 * Date and time variables used throughout the script. These are based on the date of the last logfile parsed and used to define our scope.
 		 */
-		$this->date_lastlogparsed = $result->date;
+		$this->date_lastlogparsed = $result['date'];
 		$this->dayofmonth = (int) date('j', strtotime($this->date_lastlogparsed));
 		$this->month = (int) date('n', strtotime($this->date_lastlogparsed));
 		$this->monthname = date('F', strtotime($this->date_lastlogparsed));
@@ -204,10 +204,11 @@ final class html extends base
 			/**
 			 * We base our calculations on the activity of the last 90 days logged. If there is none we won't display the extra column.
 			 */
-			$query = @mysqli_query($this->mysqli, 'select count(*) as `activity` from `q_activity_by_day` where `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$result = mysqli_fetch_object($query);
+			if (($activity = @$sqlite3->querySingle('SELECT COUNT(*) FROM q_activity_by_day WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 
-			if (!empty($result->activity)) {
+			if ($activity > 0) {
 				$this->estimate = true;
 			}
 		}
@@ -215,10 +216,12 @@ final class html extends base
 		/**
 		 * HTML Head.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select min(`date`) as `date_max`, `l_total` as `l_max` from `channel` where `l_total` = (select max(`l_total`) from `channel`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
-		$this->date_max = $result->date_max;
-		$this->l_max = (int) $result->l_max;
+		if (($query = @$sqlite3->querySingle('SELECT MIN(date) AS date_max, l_total AS l_max FROM channel WHERE l_total = (SELECT MAX(l_total) FROM channel)', true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		$this->date_max = $result['date_max'];
+		$this->l_max = $result['l_max'];
 		$this->output = '<!DOCTYPE html>'."\n\n"
 			      . '<html>'."\n\n"
 			      . '<head>'."\n"
@@ -264,8 +267,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select (`l_total` / `activedays`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `activedays` >= 7 and `lasttalked` >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT (CAST(l_total AS REAL) / activedays) AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Fluent Chatters', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -273,8 +276,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select (`words` / `l_total`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `activedays` >= 7 and `lasttalked` >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT (CAST(words AS REAL) / l_total) AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Tedious Chatters', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -282,8 +285,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select (`characters` / `l_total`) as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `activedays` >= 7 and `lasttalked` >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT (CAST(characters AS REAL) / l_total) AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Individual Top Days &ndash; Alltime', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -291,8 +294,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'int',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select max(`l_total`) as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT MAX(l_total) AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Individual Top Days &ndash; '.$this->year, $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -300,8 +303,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'int',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select max(`l_total`) as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and year(`date`) = \''.$this->year.'\' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT MAX(l_total) AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y\', date) = \''.$this->year.'\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Individual Top Days &ndash; '.$this->monthname.' '.$this->year, $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -309,8 +312,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'int',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select max(`l_total`) as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and date_format(`date`, \'%Y-%m\') = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT MAX(l_total) AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y-%m\', date) = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Active Chatters &ndash; Alltime', $this->minrows, $this->maxrows);
 			$t->set_value('decimals', 2);
@@ -320,8 +323,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select (`activedays` / '.$this->days.') * 100 as `v1`, `csnick` as `v2` from `user_status` join `q_lines` on `user_status`.`uid` = `q_lines`.`ruid` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `status` != 3 order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT (CAST(activedays AS REAL) / '.$this->days.') * 100 AS v1, csnick AS v2 FROM user_status JOIN q_lines ON user_status.uid = q_lines.ruid JOIN user_details ON user_status.uid = user_details.uid WHERE status != 3 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Active Chatters &ndash; '.$this->year, $this->minrows, $this->maxrows);
 			$t->set_value('decimals', 2);
@@ -331,8 +334,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select (count(distinct `date`) / (select count(*) from parse_history where year(`date`) = '.$this->year.')) * 100 as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and year(`date`) = '.$this->year.' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE STRFTIME(\'%Y\', date) = '.$this->year.')) * 100 AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y\', date) = '.$this->year.' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Active Chatters &ndash; '.$this->monthname.' '.$this->year, $this->minrows, $this->maxrows);
 			$t->set_value('decimals', 2);
@@ -342,8 +345,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select (count(distinct `date`) / (select count(*) from parse_history where date_format(`date`, \'%Y-%m\') = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\')) * 100 as `v1`, `csnick` as `v2` from `q_activity_by_day` join `user_status` on `q_activity_by_day`.`ruid` = `user_status`.`uid` join `user_details` on `q_activity_by_day`.`ruid` = `user_details`.`uid` where `status` != 3 and date_format(`date`, \'%Y-%m\') = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' group by `q_activity_by_day`.`ruid` order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE STRFTIME(\'%Y-%m\', date) = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\')) * 100 AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y-%m\', date) = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Exclamations', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -354,9 +357,9 @@ final class html extends base
 				'v2' => 'string',
 				'v3' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `exclamations` as `v1`, `csnick` as `v2`, `ex_exclamations` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `exclamations` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`exclamations`) as `total` from `q_lines`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT exclamations AS v1, csnick AS v2, ex_exclamations AS v3 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND exclamations != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(exclamations) FROM q_lines'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Questions', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -367,9 +370,9 @@ final class html extends base
 				'v2' => 'string',
 				'v3' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `questions` as `v1`, `csnick` as `v2`, `ex_questions` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `questions` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`questions`) as `total` from `q_lines`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT questions AS v1, csnick AS v2, ex_questions AS v3 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND questions != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(questions) FROM q_lines'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('UPPERCASED Lines', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -380,9 +383,9 @@ final class html extends base
 				'v2' => 'string',
 				'v3' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `uppercased` as `v1`, `csnick` as `v2`, `ex_uppercased` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `uppercased` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`uppercased`) as `total` from `q_lines`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT uppercased AS v1, csnick AS v2, ex_uppercased AS v3 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND uppercased != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(uppercased) FROM q_lines'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Monologues', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -391,9 +394,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `monologues` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `monologues` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`monologues`) as `total` from `q_lines`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT monologues AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND monologues != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(monologues) FROM q_lines'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Longest Monologue', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -401,8 +404,8 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'int',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select `topmonologue` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `topmonologue` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT topmonologue AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND topmonologue != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Moodiest People', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -411,9 +414,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select (`s_01` + `s_02` + `s_03` + `s_04` + `s_05` + `s_06` + `s_07` + `s_08` + `s_09` + `s_10` + `s_11` + `s_12` + `s_13` + `s_14` + `s_15` + `s_16` + `s_17` + `s_18` + `s_19` + `s_20` + `s_21` + `s_22` + `s_23` + `s_24` + `s_25` + `s_26` + `s_27` + `s_28` + `s_29` + `s_30` + `s_31` + `s_32` + `s_33` + `s_34` + `s_35` + `s_36` + `s_37` + `s_38` + `s_39` + `s_40` + `s_41` + `s_42` + `s_43` + `s_44` + `s_45` + `s_46` + `s_47` + `s_48` + `s_49` + `s_50`) as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select (sum(`s_01`) + sum(`s_02`) + sum(`s_03`) + sum(`s_04`) + sum(`s_05`) + sum(`s_06`) + sum(`s_07`) + sum(`s_08`) + sum(`s_09`) + sum(`s_10`) + sum(`s_11`) + sum(`s_12`) + sum(`s_13`) + sum(`s_14`) + sum(`s_15`) + sum(`s_16`) + sum(`s_17`) + sum(`s_18`) + sum(`s_19`) + sum(`s_20`) + sum(`s_21`) + sum(`s_22`) + sum(`s_23`) + sum(`s_24`) + sum(`s_25`) + sum(`s_26`) + sum(`s_27`) + sum(`s_28`) + sum(`s_29`) + sum(`s_30`) + sum(`s_31`) + sum(`s_32`) + sum(`s_33`) + sum(`s_34`) + sum(`s_35`) + sum(`s_36`) + sum(`s_37`) + sum(`s_38`) + sum(`s_39`) + sum(`s_40`) + sum(`s_41`) + sum(`s_42`) + sum(`s_43`) + sum(`s_44`) + sum(`s_45`) + sum(`s_46`) + sum(`s_47`) + sum(`s_48`) + sum(`s_49`) + sum(`s_50`)) as `total` from `q_smileys`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT (s_01 + s_02 + s_03 + s_04 + s_05 + s_06 + s_07 + s_08 + s_09 + s_10 + s_11 + s_12 + s_13 + s_14 + s_15 + s_16 + s_17 + s_18 + s_19 + s_20 + s_21 + s_22 + s_23 + s_24 + s_25 + s_26 + s_27 + s_28 + s_29 + s_30 + s_31 + s_32 + s_33 + s_34 + s_35 + s_36 + s_37 + s_38 + s_39 + s_40 + s_41 + s_42 + s_43 + s_44 + s_45 + s_46 + s_47 + s_48 + s_49 + s_50) AS v1, csnick AS v2 FROM q_smileys JOIN user_details ON q_smileys.ruid = user_details.uid JOIN user_status ON q_smileys.ruid = user_status.uid WHERE status != 3 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT sum(s_01) + SUM(s_02) + SUM(s_03) + SUM(s_04) + SUM(s_05) + SUM(s_06) + SUM(s_07) + SUM(s_08) + SUM(s_09) + SUM(s_10) + SUM(s_11) + SUM(s_12) + SUM(s_13) + SUM(s_14) + SUM(s_15) + SUM(s_16) + SUM(s_17) + SUM(s_18) + SUM(s_19) + SUM(s_20) + SUM(s_21) + SUM(s_22) + SUM(s_23) + SUM(s_24) + SUM(s_25) + SUM(s_26) + SUM(s_27) + SUM(s_28) + SUM(s_29) + SUM(s_30) + SUM(s_31) + SUM(s_32) + SUM(s_33) + SUM(s_34) + SUM(s_35) + SUM(s_36) + SUM(s_37) + SUM(s_38) + SUM(s_39) + SUM(s_40) + SUM(s_41) + SUM(s_42) + SUM(s_43) + SUM(s_44) + SUM(s_45) + SUM(s_46) + SUM(s_47) + SUM(s_48) + SUM(s_49) + SUM(s_50) FROM q_smileys'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Slaps Given', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -422,9 +425,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `slaps` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `slaps` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`slaps`) as `total` from `q_lines`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT slaps AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND slaps != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(slaps) FROM q_lines'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Slaps Received', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -433,9 +436,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `slapped` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `slapped` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`slapped`) as `total` from `q_lines`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT slapped AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND slapped != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(slapped) FROM q_lines'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Lively Bots', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -443,8 +446,8 @@ final class html extends base
 				'k2' => 'Bot',
 				'v1' => 'int',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select `l_total` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` = 3 and `l_total` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT l_total AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status = 3 AND l_total != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Actions Performed', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -455,9 +458,9 @@ final class html extends base
 				'v2' => 'string',
 				'v3' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `actions` as `v1`, `csnick` as `v2`, `ex_actions` as `v3` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `actions` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`actions`) as `total` from `q_lines`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT actions AS v1, csnick AS v2, ex_actions AS v3 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND actions != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(actions) FROM q_lines'));
+			$output .= $t->make_table($sqlite3);
 
 			if (!empty($output)) {
 				$this->output .= '<div class="section">General Chat</div>'."\n".$output;
@@ -491,9 +494,9 @@ final class html extends base
 					'v1' => 'int',
 					'v2' => 'string'));
 				$t->set_value('queries', array(
-					'main' => 'select `'.$key.'` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$key.'` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-					'total' => 'select sum(`'.$key.'`) as `total` from `q_events`'));
-				$output .= $t->make_table($this->mysqli);
+					'main' => 'SELECT '.$key.' AS v1, csnick AS v2 FROM q_events JOIN user_details ON q_events.ruid = user_details.uid JOIN user_status ON q_events.ruid = user_status.uid WHERE status != 3 AND '.$key.' != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+					'total' => 'SELECT SUM('.$key.') FROM q_events'));
+				$output .= $t->make_table($sqlite3);
 			}
 
 			if (!empty($output)) {
@@ -516,9 +519,9 @@ final class html extends base
 				'v2' => 'string',
 				'v3' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `kicks` as `v1`, `csnick` as `v2`, `ex_kicks` as `v3` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `kicks` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`kicks`) as `total` from `q_events`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT kicks AS v1, csnick AS v2, ex_kicks AS v3 FROM q_events JOIN user_details ON q_events.ruid = user_details.uid JOIN user_status ON q_events.ruid = user_status.uid WHERE status != 3 AND kicks != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(kicks) FROM q_events'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Kicks Received', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -529,9 +532,9 @@ final class html extends base
 				'v2' => 'string',
 				'v3' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `kicked` as `v1`, `csnick` as `v2`, `ex_kicked` as `v3` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `kicked` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`kicked`) as `total` from `q_events`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT kicked AS v1, csnick AS v2, ex_kicked AS v3 FROM q_events JOIN user_details ON q_events.ruid = user_details.uid JOIN user_status ON q_events.ruid = user_status.uid WHERE status != 3 AND kicked != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(kicked) FROM q_events'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Channel Joins', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -540,9 +543,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `joins` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `joins` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`joins`) as `total` from `q_events`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT joins AS v1, csnick AS v2 FROM q_events JOIN user_details ON q_events.ruid = user_details.uid JOIN user_status ON q_events.ruid = user_status.uid WHERE status != 3 AND joins != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(joins) FROM q_events'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Channel Parts', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -551,9 +554,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `parts` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `parts` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`parts`) as `total` from `q_events`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT parts AS v1, csnick AS v2 FROM q_events JOIN user_details ON q_events.ruid = user_details.uid JOIN user_status ON q_events.ruid = user_status.uid WHERE status != 3 AND parts != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(parts) FROM q_events'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('IRC Quits', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -562,9 +565,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `quits` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `quits` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`quits`) as `total` from `q_events`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT quits AS v1, csnick AS v2 FROM q_events JOIN user_details ON q_events.ruid = user_details.uid JOIN user_status ON q_events.ruid = user_status.uid WHERE status != 3 AND quits != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(quits) FROM q_events'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Nick Changes', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -573,9 +576,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `nickchanges` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `nickchanges` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`nickchanges`) as `total` from `q_events`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT nickchanges AS v1, csnick AS v2 FROM q_events JOIN user_details ON q_events.ruid = user_details.uid JOIN user_status ON q_events.ruid = user_status.uid WHERE status != 3 AND nickchanges != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(nickchanges) FROM q_events'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Aliases', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -584,9 +587,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `v1`, `csnick` as `v2` from (select `ruid`, count(*) as `v1` from `user_status` group by `ruid` having `v1` > 1) as `t` join `user_details` on `t`.`ruid` = `user_details`.`uid` join `user_status` on `t`.`ruid` = `user_status`.`uid` where `status` = 1 order by `v1` desc limit '.$this->maxrows,
-				'total' => 'select count(*) as `total` from `user_status`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT v1, csnick AS v2 FROM (SELECT ruid, COUNT(*) AS v1 FROM user_status GROUP BY ruid having v1 > 1) AS t JOIN user_details ON t.ruid = user_details.uid JOIN user_status ON t.ruid = user_status.uid WHERE status = 1 ORDER BY v1 DESC LIMIT '.$this->maxrows,
+				'total' => 'SELECT COUNT(*) FROM user_status'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Topics Set', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -595,9 +598,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `topics` as `v1`, `csnick` as `v2` from `q_events` join `user_details` on `q_events`.`ruid` = `user_details`.`uid` join `user_status` on `q_events`.`ruid` = `user_status`.`uid` where `status` != 3 and `topics` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`topics`) as `total` from `q_events`'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT topics AS v1, csnick AS v2 FROM q_events JOIN user_details ON q_events.ruid = user_details.uid JOIN user_status ON q_events.ruid = user_status.uid WHERE status != 3 AND topics != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(topics) FROM q_events'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Recent Topics', $this->minrows, $this->maxrows);
 			$t->set_value('v3a', true);
@@ -608,8 +611,8 @@ final class html extends base
 				'v1' => 'date',
 				'v2' => 'string',
 				'v3' => 'string-url'));
-			$t->set_value('queries', array('main' => 'select `datetime` as `v1`, `csnick` as `v2`, `topic` as `v3` from `user_topics` join `topics` on `user_topics`.`tid` = `topics`.`tid` join `user_status` on `user_topics`.`uid` = `user_status`.`uid` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` order by `v1` desc limit '.$this->maxrows));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT datetime AS v1, csnick AS v2, topic AS v3 FROM user_topics JOIN topics ON user_topics.tid = topics.tid JOIN user_status ON user_topics.uid = user_status.uid JOIN user_details ON user_status.ruid = user_details.uid ORDER BY v1 DESC LIMIT '.$this->maxrows));
+			$output .= $t->make_table($sqlite3);
 
 			if (!empty($output)) {
 				$this->output .= '<div class="section">Events</div>'."\n".$output;
@@ -680,15 +683,14 @@ final class html extends base
 			/**
 			 * Display the top 9 smiley tables ordered by totals.
 			 */
-			$query = @mysqli_query($this->mysqli, 'select sum(`s_01`) as `s_01`, sum(`s_02`) as `s_02`, sum(`s_03`) as `s_03`, sum(`s_04`) as `s_04`, sum(`s_05`) as `s_05`, sum(`s_06`) as `s_06`, sum(`s_07`) as `s_07`, sum(`s_08`) as `s_08`, sum(`s_09`) as `s_09`, sum(`s_10`) as `s_10`, sum(`s_11`) as `s_11`, sum(`s_12`) as `s_12`, sum(`s_13`) as `s_13`, sum(`s_14`) as `s_14`, sum(`s_15`) as `s_15`, sum(`s_16`) as `s_16`, sum(`s_17`) as `s_17`, sum(`s_18`) as `s_18`, sum(`s_19`) as `s_19`, sum(`s_20`) as `s_20`, sum(`s_21`) as `s_21`, sum(`s_22`) as `s_22`, sum(`s_23`) as `s_23`, sum(`s_24`) as `s_24`, sum(`s_25`) as `s_25`, sum(`s_26`) as `s_26`, sum(`s_27`) as `s_27`, sum(`s_28`) as `s_28`, sum(`s_29`) as `s_29`, sum(`s_30`) as `s_30`, sum(`s_31`) as `s_31`, sum(`s_32`) as `s_32`, sum(`s_33`) as `s_33`, sum(`s_34`) as `s_34`, sum(`s_35`) as `s_35`, sum(`s_36`) as `s_36`, sum(`s_37`) as `s_37`, sum(`s_38`) as `s_38`, sum(`s_39`) as `s_39`, sum(`s_40`) as `s_40`, sum(`s_41`) as `s_41`, sum(`s_42`) as `s_42`, sum(`s_43`) as `s_43`, sum(`s_44`) as `s_44`, sum(`s_45`) as `s_45`, sum(`s_46`) as `s_46`, sum(`s_47`) as `s_47`, sum(`s_48`) as `s_48`, sum(`s_49`) as `s_49`, sum(`s_50`) as `s_50` from `q_smileys`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$rows = mysqli_num_rows($query);
+			if (($result = @$sqlite3->querySingle('SELECT SUM(s_01) AS s_01, SUM(s_02) AS s_02, SUM(s_03) AS s_03, SUM(s_04) AS s_04, SUM(s_05) AS s_05, SUM(s_06) AS s_06, SUM(s_07) AS s_07, SUM(s_08) AS s_08, SUM(s_09) AS s_09, SUM(s_10) AS s_10, SUM(s_11) AS s_11, SUM(s_12) AS s_12, SUM(s_13) AS s_13, SUM(s_14) AS s_14, SUM(s_15) AS s_15, SUM(s_16) AS s_16, SUM(s_17) AS s_17, SUM(s_18) AS s_18, SUM(s_19) AS s_19, SUM(s_20) AS s_20, SUM(s_21) AS s_21, SUM(s_22) AS s_22, SUM(s_23) AS s_23, SUM(s_24) AS s_24, SUM(s_25) AS s_25, SUM(s_26) AS s_26, SUM(s_27) AS s_27, SUM(s_28) AS s_28, SUM(s_29) AS s_29, SUM(s_30) AS s_30, SUM(s_31) AS s_31, SUM(s_32) AS s_32, SUM(s_33) AS s_33, SUM(s_34) AS s_34, SUM(s_35) AS s_35, SUM(s_36) AS s_36, SUM(s_37) AS s_37, SUM(s_38) AS s_38, SUM(s_39) AS s_39, SUM(s_40) AS s_40, SUM(s_41) AS s_41, SUM(s_42) AS s_42, SUM(s_43) AS s_43, SUM(s_44) AS s_44, SUM(s_45) AS s_45, SUM(s_46) AS s_46, SUM(s_47) AS s_47, SUM(s_48) AS s_48, SUM(s_49) AS s_49, SUM(s_50) AS s_50 FROM q_smileys', true)) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 
-			if (!empty($rows)) {
-				$result = mysqli_fetch_object($query);
-
+			if (!empty($result)) {
 				foreach ($result as $key => $value) {
-					if (!empty($value)) {
-						$smileys_totals[$key] = (int) $value;
+					if ($value > 0) {
+						$smileys_totals[$key] = $value;
 					}
 				}
 
@@ -703,9 +705,9 @@ final class html extends base
 							'k2' => 'User',
 							'v1' => 'int',
 							'v2' => 'string'));
-						$t->set_value('queries', array('main' => 'select `'.$key.'` as `v1`, `csnick` as `v2` from `q_smileys` join `user_details` on `q_smileys`.`ruid` = `user_details`.`uid` join `user_status` on `q_smileys`.`ruid` = `user_status`.`uid` where `status` != 3 and `'.$key.'` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows));
+						$t->set_value('queries', array('main' => 'SELECT '.$key.' AS v1, csnick AS v2 FROM q_smileys JOIN user_details ON q_smileys.ruid = user_details.uid JOIN user_status ON q_smileys.ruid = user_status.uid WHERE status != 3 AND '.$key.' != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
 						$t->set_value('total', $value);
-						$output .= $t->make_table($this->mysqli);
+						$output .= $t->make_table($sqlite3);
 					}
 				}
 
@@ -729,9 +731,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'url',
 				'v3' => 'date'));
-			$t->set_value('queries', array('main' => 'select count(*) as `v1`, (select concat(\'http://\', `fqdn`) from `fqdns` where `fid` = `urls`.`fid`) as `v2`, min(`datetime`) as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `fid` is not null group by `fid` order by `v1` desc, `v3` asc limit '.$this->rows_domains_tlds));
+			$t->set_value('queries', array('main' => 'SELECT COUNT(*) AS v1, (SELECT \'http://\' || fqdn FROM fqdns WHERE fid = urls.fid) AS v2, MIN(datetime) AS v3 FROM user_urls JOIN urls ON user_urls.lid = urls.lid WHERE fid IS NOT NULL GROUP BY fid ORDER BY v1 DESC, v3 ASC LIMIT '.$this->rows_domains_tlds));
 			$t->set_value('medium', true);
-			$output .= $t->make_table($this->mysqli);
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Referenced TLDs', $this->rows_domains_tlds, $this->rows_domains_tlds);
 			$t->set_value('keys', array(
@@ -739,8 +741,8 @@ final class html extends base
 				'k2' => 'TLD',
 				'v1' => 'int',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'select count(*) as `v1`, `tld` as `v2` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` where `tld` != \'\' group by `tld` order by `v1` desc, `v2` asc limit '.$this->rows_domains_tlds));
-			$output .= $t->make_table($this->mysqli);
+			$t->set_value('queries', array('main' => 'SELECT COUNT(*) AS v1, tld AS v2 FROM user_urls JOIN urls ON user_urls.lid = urls.lid WHERE tld IS NOT NULL GROUP BY tld ORDER BY v1 DESC, v2 ASC LIMIT '.$this->rows_domains_tlds));
+			$output .= $t->make_table($sqlite3);
 
 			if ($this->recenturls_type != 0) {
 				$t = new table('Most Recent URLs', $this->minrows, $this->maxrows_recenturls);
@@ -753,12 +755,12 @@ final class html extends base
 					'v3' => 'url'));
 
 				if ($this->recenturls_type == 1) {
-					$t->set_value('queries', array('main' => 'select `datetime` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` order by `v1` desc limit '.$this->maxrows_recenturls));
+					$t->set_value('queries', array('main' => 'SELECT datetime AS v1, csnick AS v2, url AS v3 FROM user_urls JOIN urls ON user_urls.lid = urls.lid JOIN user_status ON user_urls.uid = user_status.uid JOIN user_details ON user_status.ruid = user_details.uid ORDER BY v1 DESC LIMIT '.$this->maxrows_recenturls));
 				} elseif ($this->recenturls_type == 2) {
-					$t->set_value('queries', array('main' => 'select `datetime` as `v1`, `csnick` as `v2`, `url` as `v3` from `user_urls` join `urls` on `user_urls`.`lid` = `urls`.`lid` join `user_status` on `user_urls`.`uid` = `user_status`.`uid` join `user_details` on `user_status`.`ruid` = `user_details`.`uid` where `ruid` not in (select `ruid` from `user_status` where `status` = 3) order by `v1` desc limit '.$this->maxrows_recenturls));
+					$t->set_value('queries', array('main' => 'SELECT datetime AS v1, csnick AS v2, url AS v3 FROM user_urls JOIN urls ON user_urls.lid = urls.lid JOIN user_status ON user_urls.uid = user_status.uid JOIN user_details ON user_status.ruid = user_details.uid WHERE ruid NOT IN (SELECT ruid FROM user_status WHERE status = 3) ORDER BY v1 DESC LIMIT '.$this->maxrows_recenturls));
 				}
 
-				$output .= $t->make_table($this->mysqli);
+				$output .= $t->make_table($sqlite3);
 			}
 
 			$t = new table('URLs by Users', $this->minrows, $this->maxrows);
@@ -768,9 +770,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `urls` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `urls` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`urls`) as `total` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT urls AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND urls != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(urls) FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3'));
+			$output .= $t->make_table($sqlite3);
 
 			$t = new table('URLs by Bots', $this->minrows, $this->maxrows);
 			$t->set_value('keys', array(
@@ -779,9 +781,9 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'select `urls` as `v1`, `csnick` as `v2` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` = 3 and `urls` != 0 order by `v1` desc, `v2` asc limit '.$this->maxrows,
-				'total' => 'select sum(`urls`) as `total` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` = 3'));
-			$output .= $t->make_table($this->mysqli);
+				'main' => 'SELECT urls AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status = 3 AND urls != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(urls) FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status = 3'));
+			$output .= $t->make_table($sqlite3);
 
 			if (!empty($output)) {
 				$this->output .= '<div class="section">URLs</div>'."\n".$output;
@@ -797,20 +799,22 @@ final class html extends base
 			/**
 			 * Display the top 9 word tables ordered by totals.
 			 */
-			$query = @mysqli_query($this->mysqli, 'select `length`, count(*) as `total` from `words` group by `length` order by `total` desc, `length` desc limit 9') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$rows = mysqli_num_rows($query);
+			$query = @$sqlite3->query('SELECT length, COUNT(*) AS total FROM words GROUP BY length ORDER BY total DESC, length DESC LIMIT 9') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$result = $query->fetchArray(SQLITE3_ASSOC);
 
-			if (!empty($rows)) {
-				while ($result = mysqli_fetch_object($query)) {
-					$t = new table('Words of '.$result->length.' Characters', $this->minrows, $this->maxrows);
+			if ($result !== false) {
+				$query->reset();
+
+				while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+					$t = new table('Words of '.$result['length'].' Characters', $this->minrows, $this->maxrows);
 					$t->set_value('keys', array(
 						'k1' => 'Times Used',
 						'k2' => 'Word',
 						'v1' => 'int',
 						'v2' => 'string'));
-					$t->set_value('queries', array('main' => 'select `total` as `v1`, `word` as `v2` from `words` where `length` = '.$result->length.' order by `v1` desc, `v2` asc limit '.$this->maxrows));
-					$t->set_value('total', (int) $result->total);
-					$output .= $t->make_table($this->mysqli);
+					$t->set_value('queries', array('main' => 'SELECT total AS v1, word AS v2 FROM words WHERE length = '.$result['length'].' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+					$t->set_value('total', $result['total']);
+					$output .= $t->make_table($sqlite3);
 				}
 
 				if (!empty($output)) {
@@ -824,20 +828,22 @@ final class html extends base
 		 */
 		if ($this->sectionbits & 128) {
 			$output = '';
-			$query = @mysqli_query($this->mysqli, 'select `milestone`, count(*) as `total` from `q_milestones` group by `milestone` order by `milestone` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$rows = mysqli_num_rows($query);
+			$query = @$sqlite3->query('SELECT milestone, COUNT(*) AS total FROM q_milestones GROUP BY milestone ORDER BY milestone ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$result = $query->fetchArray(SQLITE3_ASSOC);
 
-			if (!empty($rows)) {
-				while ($result = mysqli_fetch_object($query)) {
-					$t = new table(number_format((int) $result->milestone).' Lines Milestone', 1, $this->maxrows);
+			if ($result !== false) {
+				$query->reset();
+
+				while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+					$t = new table(number_format($result['milestone']).' Lines Milestone', 1, $this->maxrows);
 					$t->set_value('keys', array(
 						'k1' => 'Date',
 						'k2' => 'User',
 						'v1' => 'date',
 						'v2' => 'string'));
-					$t->set_value('queries', array('main' => 'select `date` as `v1`, `csnick` as `v2` from `q_milestones` join `user_details` on `q_milestones`.`ruid` = `user_details`.`uid` where `milestone` = '.$result->milestone.' order by `v1` asc, `v2` asc limit '.$this->maxrows));
-					$t->set_value('total', (int) $result->total);
-					$output .= $t->make_table($this->mysqli);
+					$t->set_value('queries', array('main' => 'SELECT date AS v1, csnick AS v2 FROM q_milestones JOIN user_details ON q_milestones.ruid = user_details.uid WHERE milestone = '.$result['milestone'].' ORDER BY v1 ASC, v2 ASC LIMIT '.$this->maxrows));
+					$t->set_value('total', $result['total']);
+					$output .= $t->make_table($sqlite3);
 				}
 			}
 
@@ -867,7 +873,7 @@ final class html extends base
 			}
 
 			$head = 'Activity by Day';
-			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `channel` where `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
 			$class = 'act';
 			$columns = 24;
@@ -877,7 +883,7 @@ final class html extends base
 			}
 
 			$head = 'Activity by Month';
-			$query = @mysqli_query($this->mysqli, 'select date_format(`date`, \'%Y-%m\') as `date`, sum(`l_total`) as `l_total`, sum(`l_night`) as `l_night`, sum(`l_morning`) as `l_morning`, sum(`l_afternoon`) as `l_afternoon`, sum(`l_evening`) as `l_evening` from `channel` where date_format(`date`, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' group by year(`date`), month(`date`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT date_format(date, \'%Y-%m\') as date, SUM(l_total) as l_total, SUM(l_night) as l_night, SUM(l_morning) as l_morning, SUM(l_afternoon) as l_afternoon, SUM(l_evening) as l_evening FROM channel WHERE date_format(date, \'%Y-%m\') > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' GROUP BY year(date), month(date)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'year') {
 			$class = 'act-year';
 			$columns = $this->years;
@@ -892,7 +898,7 @@ final class html extends base
 			}
 
 			$head = 'Activity by Year';
-			$query = @mysqli_query($this->mysqli, 'select year(`date`) as `date`, sum(`l_total`) as `l_total`, sum(`l_night`) as `l_night`, sum(`l_morning`) as `l_morning`, sum(`l_afternoon`) as `l_afternoon`, sum(`l_evening`) as `l_evening` from `channel` group by year(`date`)') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT year(date) as date, SUM(l_total) as l_total, SUM(l_night) as l_night, SUM(l_morning) as l_morning, SUM(l_afternoon) as l_afternoon, SUM(l_evening) as l_evening FROM channel GROUP BY year(date)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		$rows = mysqli_num_rows($query);
@@ -921,7 +927,7 @@ final class html extends base
 		}
 
 		if ($this->estimate && $type == 'year' && !empty($l_total[$this->currentyear])) {
-			$query = @mysqli_query($this->mysqli, 'select (sum(`l_night`) / 90) as `l_night_avg`, (sum(`l_morning`) / 90) as `l_morning_avg`, (sum(`l_afternoon`) / 90) as `l_afternoon_avg`, (sum(`l_evening`) / 90) as `l_evening_avg`, (sum(`l_total`) / 90) as `l_total_avg` from `q_activity_by_day` where `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT (sum(l_night) / 90) as l_night_avg, (sum(l_morning) / 90) as l_morning_avg, (sum(l_afternoon) / 90) as l_afternoon_avg, (sum(l_evening) / 90) as l_evening_avg, (sum(l_total) / 90) as l_total_avg FROM q_activity_by_day WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$result = mysqli_fetch_object($query);
 			$l_night['estimate'] = $l_night[$this->currentyear] + round((float) $result->l_night_avg * $this->daysleft);
 			$l_morning['estimate'] = $l_morning[$this->currentyear] + round((float) $result->l_morning_avg * $this->daysleft);
@@ -996,7 +1002,7 @@ final class html extends base
 
 	private function make_table_activity_distribution_day()
 	{
-		$query = @mysqli_query($this->mysqli, 'select sum(`l_mon_night`) as `l_mon_night`, sum(`l_mon_morning`) as `l_mon_morning`, sum(`l_mon_afternoon`) as `l_mon_afternoon`, sum(`l_mon_evening`) as `l_mon_evening`, sum(`l_tue_night`) as `l_tue_night`, sum(`l_tue_morning`) as `l_tue_morning`, sum(`l_tue_afternoon`) as `l_tue_afternoon`, sum(`l_tue_evening`) as `l_tue_evening`, sum(`l_wed_night`) as `l_wed_night`, sum(`l_wed_morning`) as `l_wed_morning`, sum(`l_wed_afternoon`) as `l_wed_afternoon`, sum(`l_wed_evening`) as `l_wed_evening`, sum(`l_thu_night`) as `l_thu_night`, sum(`l_thu_morning`) as `l_thu_morning`, sum(`l_thu_afternoon`) as `l_thu_afternoon`, sum(`l_thu_evening`) as `l_thu_evening`, sum(`l_fri_night`) as `l_fri_night`, sum(`l_fri_morning`) as `l_fri_morning`, sum(`l_fri_afternoon`) as `l_fri_afternoon`, sum(`l_fri_evening`) as `l_fri_evening`, sum(`l_sat_night`) as `l_sat_night`, sum(`l_sat_morning`) as `l_sat_morning`, sum(`l_sat_afternoon`) as `l_sat_afternoon`, sum(`l_sat_evening`) as `l_sat_evening`, sum(`l_sun_night`) as `l_sun_night`, sum(`l_sun_morning`) as `l_sun_morning`, sum(`l_sun_afternoon`) as `l_sun_afternoon`, sum(`l_sun_evening`) as `l_sun_evening` from `q_lines`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT SUM(l_mon_night) as l_mon_night, SUM(l_mon_morning) as l_mon_morning, SUM(l_mon_afternoon) as l_mon_afternoon, SUM(l_mon_evening) as l_mon_evening, SUM(l_tue_night) as l_tue_night, SUM(l_tue_morning) as l_tue_morning, SUM(l_tue_afternoon) as l_tue_afternoon, SUM(l_tue_evening) as l_tue_evening, SUM(l_wed_night) as l_wed_night, SUM(l_wed_morning) as l_wed_morning, SUM(l_wed_afternoon) as l_wed_afternoon, SUM(l_wed_evening) as l_wed_evening, SUM(l_thu_night) as l_thu_night, SUM(l_thu_morning) as l_thu_morning, SUM(l_thu_afternoon) as l_thu_afternoon, SUM(l_thu_evening) as l_thu_evening, SUM(l_fri_night) as l_fri_night, SUM(l_fri_morning) as l_fri_morning, SUM(l_fri_afternoon) as l_fri_afternoon, SUM(l_fri_evening) as l_fri_evening, SUM(l_sat_night) as l_sat_night, SUM(l_sat_morning) as l_sat_morning, SUM(l_sat_afternoon) as l_sat_afternoon, SUM(l_sat_evening) as l_sat_evening, SUM(l_sun_night) as l_sun_night, SUM(l_sun_morning) as l_sun_morning, SUM(l_sun_afternoon) as l_sun_afternoon, SUM(l_sun_evening) as l_sun_evening FROM q_lines') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = mysqli_fetch_object($query);
 		$high_day = '';
 		$high_value = 0;
@@ -1070,7 +1076,7 @@ final class html extends base
 
 	private function make_table_activity_distribution_hour()
 	{
-		$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT SUM(l_00) as l_00, SUM(l_01) as l_01, SUM(l_02) as l_02, SUM(l_03) as l_03, SUM(l_04) as l_04, SUM(l_05) as l_05, SUM(l_06) as l_06, SUM(l_07) as l_07, SUM(l_08) as l_08, SUM(l_09) as l_09, SUM(l_10) as l_10, SUM(l_11) as l_11, SUM(l_12) as l_12, SUM(l_13) as l_13, SUM(l_14) as l_14, SUM(l_15) as l_15, SUM(l_16) as l_16, SUM(l_17) as l_17, SUM(l_18) as l_18, SUM(l_19) as l_19, SUM(l_20) as l_20, SUM(l_21) as l_21, SUM(l_22) as l_22, SUM(l_23) as l_23 FROM channel') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = mysqli_fetch_object($query);
 		$high_key = '';
 		$high_value = 0;
@@ -1132,11 +1138,11 @@ final class html extends base
 		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
 		 */
 		if ($type == 'alltime') {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT SUM(l_total) as l_total FROM q_lines JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'year') {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_year` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT SUM(l_total) as l_total FROM q_activity_by_year JOIN user_status ON q_activity_by_year.ruid = user_status.uid WHERE status != 3 and date = '.$this->year) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_month` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT SUM(l_total) as l_total FROM q_activity_by_month JOIN user_status ON q_activity_by_month.ruid = user_status.uid WHERE status != 3 and date = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		$rows = mysqli_num_rows($query);
@@ -1157,15 +1163,15 @@ final class html extends base
 		if ($type == 'alltime') {
 			$head = 'Most Talkative People &ndash; Alltime';
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_alltime) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, (SELECT MAX(lastseen) FROM user_details JOIN user_status ON user_details.uid = user_status.uid WHERE user_status.ruid = q_lines.ruid) as lastseen FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 and l_total != 0 ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_alltime) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'year') {
 			$head = 'Most Talkative People &ndash; '.$this->year;
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'">History</a>';
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_year`.`l_total`) as `l_total`, sum(`q_activity_by_year`.`l_night`) as `l_night`, sum(`q_activity_by_year`.`l_morning`) as `l_morning`, sum(`q_activity_by_year`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_year`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_year` on `q_lines`.`ruid` = `q_activity_by_year`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = '.$this->year.' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT csnick, SUM(q_activity_by_year.l_total) as l_total, SUM(q_activity_by_year.l_night) as l_night, SUM(q_activity_by_year.l_morning) as l_morning, SUM(q_activity_by_year.l_afternoon) as l_afternoon, SUM(q_activity_by_year.l_evening) as l_evening, quote, (SELECT MAX(lastseen) FROM user_details JOIN user_status ON user_details.uid = user_status.uid WHERE user_status.ruid = q_lines.ruid) as lastseen FROM q_lines JOIN q_activity_by_year ON q_lines.ruid = q_activity_by_year.ruid JOIN user_status ON q_lines.ruid = user_status.uid JOIN user_details ON q_lines.ruid = user_details.uid WHERE status != 3 and date = '.$this->year.' GROUP BY q_lines.ruid ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_year) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->monthname.' '.$this->year;
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'&amp;month='.$this->month.'">History</a>';
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_month`.`l_total`) as `l_total`, sum(`q_activity_by_month`.`l_night`) as `l_night`, sum(`q_activity_by_month`.`l_morning`) as `l_morning`, sum(`q_activity_by_month`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_month`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_month` on `q_lines`.`ruid` = `q_activity_by_month`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_month) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT csnick, SUM(q_activity_by_month.l_total) as l_total, SUM(q_activity_by_month.l_night) as l_night, SUM(q_activity_by_month.l_morning) as l_morning, SUM(q_activity_by_month.l_afternoon) as l_afternoon, SUM(q_activity_by_month.l_evening) as l_evening, quote, (SELECT MAX(lastseen) FROM user_details JOIN user_status ON user_details.uid = user_status.uid WHERE user_status.ruid = q_lines.ruid) as lastseen FROM q_lines JOIN q_activity_by_month ON q_lines.ruid = q_activity_by_month.ruid JOIN user_status ON q_lines.ruid = user_status.uid JOIN user_details ON q_lines.ruid = user_details.uid WHERE status != 3 and date = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' GROUP BY q_lines.ruid ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_month) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
@@ -1218,7 +1224,7 @@ final class html extends base
 
 	private function make_table_people2()
 	{
-		$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `user_details`.`uid` = `user_status`.`ruid` where `status` != 3 and `l_total` != 0 order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT csnick, l_total FROM q_lines JOIN user_status ON q_lines.ruid = user_status.uid JOIN user_details ON user_details.uid = user_status.ruid WHERE status != 3 and l_total != 0 ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$rows = mysqli_num_rows($query);
 
 		if (empty($rows) || $rows < $this->maxrows_people2 * 4) {
@@ -1238,7 +1244,7 @@ final class html extends base
 			$current_row++;
 		}
 
-		$query = @mysqli_query($this->mysqli, 'select count(*) as `total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT COUNT(*) AS total FROM q_lines JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = mysqli_fetch_object($query);
 		$total = (int) $result->total - $this->maxrows_people_alltime - ($this->maxrows_people2 * 4);
 		$tr0 = '<colgroup><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2">';
@@ -1262,7 +1268,7 @@ final class html extends base
 		/**
 		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_lines` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		$query = @mysqli_query($this->mysqli, 'SELECT SUM(l_total) as l_total FROM q_lines JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$rows = mysqli_num_rows($query);
 
 		if (!empty($rows)) {
@@ -1277,7 +1283,7 @@ final class html extends base
 		$times = array('night', 'morning', 'afternoon', 'evening');
 
 		foreach ($times as $time) {
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_lines` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` where `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = @mysqli_query($this->mysqli, 'SELECT csnick, l_'.$time.' FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 and l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, csnick ASC LIMIT '.$this->maxrows_people_timeofday) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$i = 0;
 
 			while ($result = mysqli_fetch_object($query)) {
@@ -1373,7 +1379,7 @@ final class table extends base
 		return rtrim($newstring);
 	}
 
-	public function make_table($mysqli)
+	public function make_table($sqlite3)
 	{
 		/**
 		 * Find out what table class we are dealing with. The "medium" class is a special case and should be set manually by setting $medium to true.
@@ -1389,19 +1395,21 @@ final class table extends base
 		/**
 		 * Run the "main" query which fetches the contents of the table. Additionally, run the "total" query if present.
 		 */
-		$query = @mysqli_query($mysqli, $this->queries['main']) or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
-		$rows = mysqli_num_rows($query);
+		$query = @$sqlite3->query($this->queries['main']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$rows = 0;
 
-		if (empty($rows) || $rows < $this->minrows) {
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$rows++;
+		}
+
+		if ($rows < $this->minrows) {
 			return null;
 		}
 
-		$rawdata = $query;
-
 		if (!empty($this->queries['total'])) {
-			$query = @mysqli_query($mysqli, $this->queries['total']) or $this->output('critical', 'mysqli: '.mysqli_error($mysqli));
-			$result = mysqli_fetch_object($query);
-			$this->total = (int) $result->total;
+			if (($this->total = @$sqlite3->querySingle($this->queries['total'])) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 		}
 
 		/**
@@ -1423,8 +1431,9 @@ final class table extends base
 		 * Fetch and structure the table contents.
 		 */
 		$i = 0;
+		$query->reset();
 
-		while ($result = mysqli_fetch_object($rawdata)) {
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$i++;
 
 			if ($i > $this->maxrows) {
@@ -1441,19 +1450,19 @@ final class table extends base
 
 				switch ($type) {
 					case 'string':
-						${$key} = htmlspecialchars($result->$key);
+						${$key} = htmlspecialchars($result[$key]);
 						break;
 					case 'int':
-						${$key} = number_format((int) $result->$key);
+						${$key} = number_format($result[$key]);
 						break;
 					case 'float':
-						${$key} = number_format((float) $result->$key, $this->decimals).($this->percentage ? '%' : '');
+						${$key} = number_format($result[$key], $this->decimals).($this->percentage ? '%' : '');
 						break;
 					case 'date':
-						${$key} = date('j M \'y', strtotime($result->$key));
+						${$key} = date('j M \'y', strtotime($result[$key]));
 						break;
 					case 'date-norepeat':
-						${$key} = date('j M \'y', strtotime($result->$key));
+						${$key} = date('j M \'y', strtotime($result[$key]));
 
 						if (!empty($prevdate) && ${$key} == $prevdate) {
 							${$key} = '';
@@ -1463,10 +1472,10 @@ final class table extends base
 
 						break;
 					case 'url':
-						${$key} = '<a href="'.htmlspecialchars($result->$key).'">'.htmlspecialchars($result->$key).'</a>';
+						${$key} = '<a href="'.htmlspecialchars($result[$key]).'">'.htmlspecialchars($result[$key]).'</a>';
 						break;
 					case 'string-url':
-						${$key} = $this->find_urls($result->$key);
+						${$key} = $this->find_urls($result[$key]);
 						break;
 				}
 			}
