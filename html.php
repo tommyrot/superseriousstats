@@ -883,7 +883,7 @@ final class html extends base
 			}
 
 			$head = 'Activity by Month';
-			$query = @$sqlite3->query('SELECT STRFTIME(\'%Y-%m\', date) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel WHERE STRFTIME(\'%Y-%m\', date) > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\' GROUP BY STRFTIME(\'%Y\', date), STRFTIME(\'%m\', date)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = @$sqlite3->query('SELECT STRFTIME(\'%Y-%m\', date) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel WHERE date > \''.date('Y-m-00', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'%\' GROUP BY STRFTIME(\'%Y\', date), STRFTIME(\'%m\', date)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'year') {
 			$class = 'act-year';
 			$columns = $this->years;
@@ -1226,20 +1226,9 @@ final class html extends base
 
 	private function make_table_people2($sqlite3)
 	{
-		$query = @$sqlite3->query('SELECT csnick, l_total FROM q_lines JOIN user_status ON q_lines.ruid = user_status.uid JOIN user_details ON user_details.uid = user_status.ruid WHERE status != 3 AND l_total != 0 ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$rows = 0;
-
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$rows++;
-		}
-
-		if ($rows < $this->maxrows_people2 * 4) {
-			return null;
-		}
-
 		$current_column = 1;
 		$current_row = 1;
-		$query->reset();
+		$query = @$sqlite3->query('SELECT csnick, l_total FROM q_lines JOIN user_status ON q_lines.ruid = user_status.uid JOIN user_details ON user_details.uid = user_status.ruid WHERE status != 3 AND l_total != 0 ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if ($current_row > $this->maxrows_people2) {
@@ -1249,6 +1238,10 @@ final class html extends base
 
 			$columns[$current_column][$current_row] = array($result['csnick'], $result['l_total']);
 			$current_row++;
+		}
+
+		if ($current_row < $this->maxrows_people2) {
+			return null;
 		}
 
 		if (($total = @$sqlite3->querySingle('SELECT COUNT(*) FROM q_lines JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3')) === false) {
@@ -1399,10 +1392,8 @@ final class table extends base
 		}
 
 		/**
-		 * Run the "main" query which fetches the contents of the table. Additionally, run the "total" query if present.
+		 * Run the "total" query if present.
 		 */
-		$query = @$sqlite3->query($this->queries['main']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
 		if (!empty($this->queries['total'])) {
 			if (($this->total = @$sqlite3->querySingle($this->queries['total'])) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -1425,9 +1416,10 @@ final class table extends base
 		}
 
 		/**
-		 * Fetch and structure the table contents.
+		 * Run the "main" query and structure the table contents.
 		 */
 		$i = 0;
+		$query = @$sqlite3->query($this->queries['main']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$i++;
