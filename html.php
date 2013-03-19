@@ -216,12 +216,12 @@ final class html extends base
 		/**
 		 * HTML Head.
 		 */
-		if (($result = @$sqlite3->querySingle('SELECT MIN(date) AS date_max, l_total AS l_max FROM channel WHERE l_total = (SELECT MAX(l_total) FROM channel)', true)) === false) {
+		if (($result = @$sqlite3->querySingle('SELECT MIN(date) AS date, l_total FROM channel WHERE l_total = (SELECT MAX(l_total) FROM channel)', true)) === false) {
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		$this->date_max = $result['date_max'];
-		$this->l_max = $result['l_max'];
+		$this->date_max = $result['date'];
+		$this->l_max = $result['l_total'];
 		$this->output = '<!DOCTYPE html>'."\n\n"
 			      . '<html>'."\n\n"
 			      . '<head>'."\n"
