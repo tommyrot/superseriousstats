@@ -267,7 +267,7 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'SELECT (CAST(l_total AS REAL) / activedays) AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$t->set_value('queries', array('main' => 'SELECT CAST(l_total AS REAL) / activedays AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Fluent Chatters', $this->minrows, $this->maxrows);
@@ -276,7 +276,7 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'SELECT (CAST(words AS REAL) / l_total) AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$t->set_value('queries', array('main' => 'SELECT CAST(words AS REAL) / l_total AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Tedious Chatters', $this->minrows, $this->maxrows);
@@ -285,7 +285,7 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'SELECT (CAST(characters AS REAL) / l_total) AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$t->set_value('queries', array('main' => 'SELECT CAST(characters AS REAL) / l_total AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, $this->month, $this->dayofmonth - 30, $this->year)).'\' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Individual Top Days &ndash; Alltime', $this->minrows, $this->maxrows);
@@ -303,7 +303,7 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'int',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'SELECT MAX(l_total) AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y\', date) = \''.$this->year.'\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$t->set_value('queries', array('main' => 'SELECT MAX(l_total) AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND date LIKE \''.$this->year.'%\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Individual Top Days &ndash; '.$this->monthname.' '.$this->year, $this->minrows, $this->maxrows);
@@ -312,7 +312,7 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'int',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'SELECT MAX(l_total) AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y-%m\', date) = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$t->set_value('queries', array('main' => 'SELECT MAX(l_total) AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND date LIKE \''.date('Y-m', strtotime($this->date_lastlogparsed)).'%\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Active Chatters &ndash; Alltime', $this->minrows, $this->maxrows);
@@ -334,7 +334,7 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE STRFTIME(\'%Y\', date) = \''.$this->year.'\')) * 100 AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y\', date) = \''.$this->year.'\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.$this->year.'%\')) * 100 AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND date LIKE \''.$this->year.'%\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Active Chatters &ndash; '.$this->monthname.' '.$this->year, $this->minrows, $this->maxrows);
@@ -345,7 +345,7 @@ final class html extends base
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
-			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE STRFTIME(\'%Y-%m\', date) = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\')) * 100 AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND STRFTIME(\'%Y-%m\', date) = \''.date('Y-m', strtotime($this->date_lastlogparsed)).'\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
+			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.date('Y-m', strtotime($this->date_lastlogparsed)).'%\')) * 100 AS v1, csnick AS v2 FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid JOIN user_details ON q_activity_by_day.ruid = user_details.uid WHERE status != 3 AND date LIKE \''.date('Y-m', strtotime($this->date_lastlogparsed)).'%\' GROUP BY q_activity_by_day.ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Exclamations', $this->minrows, $this->maxrows);
@@ -414,8 +414,8 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'SELECT (s_01 + s_02 + s_03 + s_04 + s_05 + s_06 + s_07 + s_08 + s_09 + s_10 + s_11 + s_12 + s_13 + s_14 + s_15 + s_16 + s_17 + s_18 + s_19 + s_20 + s_21 + s_22 + s_23 + s_24 + s_25 + s_26 + s_27 + s_28 + s_29 + s_30 + s_31 + s_32 + s_33 + s_34 + s_35 + s_36 + s_37 + s_38 + s_39 + s_40 + s_41 + s_42 + s_43 + s_44 + s_45 + s_46 + s_47 + s_48 + s_49 + s_50) AS v1, csnick AS v2 FROM q_smileys JOIN user_details ON q_smileys.ruid = user_details.uid JOIN user_status ON q_smileys.ruid = user_status.uid WHERE status != 3 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT sum(s_01) + SUM(s_02) + SUM(s_03) + SUM(s_04) + SUM(s_05) + SUM(s_06) + SUM(s_07) + SUM(s_08) + SUM(s_09) + SUM(s_10) + SUM(s_11) + SUM(s_12) + SUM(s_13) + SUM(s_14) + SUM(s_15) + SUM(s_16) + SUM(s_17) + SUM(s_18) + SUM(s_19) + SUM(s_20) + SUM(s_21) + SUM(s_22) + SUM(s_23) + SUM(s_24) + SUM(s_25) + SUM(s_26) + SUM(s_27) + SUM(s_28) + SUM(s_29) + SUM(s_30) + SUM(s_31) + SUM(s_32) + SUM(s_33) + SUM(s_34) + SUM(s_35) + SUM(s_36) + SUM(s_37) + SUM(s_38) + SUM(s_39) + SUM(s_40) + SUM(s_41) + SUM(s_42) + SUM(s_43) + SUM(s_44) + SUM(s_45) + SUM(s_46) + SUM(s_47) + SUM(s_48) + SUM(s_49) + SUM(s_50) FROM q_smileys'));
+				'main' => 'SELECT s_01 + s_02 + s_03 + s_04 + s_05 + s_06 + s_07 + s_08 + s_09 + s_10 + s_11 + s_12 + s_13 + s_14 + s_15 + s_16 + s_17 + s_18 + s_19 + s_20 + s_21 + s_22 + s_23 + s_24 + s_25 + s_26 + s_27 + s_28 + s_29 + s_30 + s_31 + s_32 + s_33 + s_34 + s_35 + s_36 + s_37 + s_38 + s_39 + s_40 + s_41 + s_42 + s_43 + s_44 + s_45 + s_46 + s_47 + s_48 + s_49 + s_50 AS v1, csnick AS v2 FROM q_smileys JOIN user_details ON q_smileys.ruid = user_details.uid JOIN user_status ON q_smileys.ruid = user_status.uid WHERE status != 3 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
+				'total' => 'SELECT SUM(s_01) + SUM(s_02) + SUM(s_03) + SUM(s_04) + SUM(s_05) + SUM(s_06) + SUM(s_07) + SUM(s_08) + SUM(s_09) + SUM(s_10) + SUM(s_11) + SUM(s_12) + SUM(s_13) + SUM(s_14) + SUM(s_15) + SUM(s_16) + SUM(s_17) + SUM(s_18) + SUM(s_19) + SUM(s_20) + SUM(s_21) + SUM(s_22) + SUM(s_23) + SUM(s_24) + SUM(s_25) + SUM(s_26) + SUM(s_27) + SUM(s_28) + SUM(s_29) + SUM(s_30) + SUM(s_31) + SUM(s_32) + SUM(s_33) + SUM(s_34) + SUM(s_35) + SUM(s_36) + SUM(s_37) + SUM(s_38) + SUM(s_39) + SUM(s_40) + SUM(s_41) + SUM(s_42) + SUM(s_43) + SUM(s_44) + SUM(s_45) + SUM(s_46) + SUM(s_47) + SUM(s_48) + SUM(s_49) + SUM(s_50) FROM q_smileys'));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Slaps Given', $this->minrows, $this->maxrows);
@@ -587,7 +587,7 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'string'));
 			$t->set_value('queries', array(
-				'main' => 'SELECT v1, csnick AS v2 FROM (SELECT ruid, COUNT(*) AS v1 FROM user_status GROUP BY ruid having v1 > 1) AS t JOIN user_details ON t.ruid = user_details.uid JOIN user_status ON t.ruid = user_status.uid WHERE status = 1 ORDER BY v1 DESC LIMIT '.$this->maxrows,
+				'main' => 'SELECT COUNT(*) AS v1, csnick AS v2 FROM user_status JOIN user_details ON user_status.ruid = user_details.uid GROUP BY ruid ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
 				'total' => 'SELECT COUNT(*) FROM user_status'));
 			$output .= $t->make_table($sqlite3);
 
@@ -731,7 +731,7 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'url',
 				'v3' => 'date'));
-			$t->set_value('queries', array('main' => 'SELECT COUNT(*) AS v1, (SELECT \'http://\' || fqdn FROM fqdns WHERE fid = urls.fid) AS v2, MIN(datetime) AS v3 FROM user_urls JOIN urls ON user_urls.lid = urls.lid WHERE fid IS NOT NULL GROUP BY fid ORDER BY v1 DESC, v3 ASC LIMIT '.$this->rows_domains_tlds));
+			$t->set_value('queries', array('main' => 'SELECT COUNT(*) AS v1, \'http://\' || fqdn AS v2, MIN(datetime) AS v3 FROM user_urls JOIN urls ON user_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY urls.fid ORDER BY v1 DESC, v3 ASC LIMIT '.$this->rows_domains_tlds));
 			$t->set_value('medium', true);
 			$output .= $t->make_table($sqlite3);
 
@@ -771,7 +771,7 @@ final class html extends base
 				'v2' => 'string'));
 			$t->set_value('queries', array(
 				'main' => 'SELECT urls AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3 AND urls != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(urls) FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3'));
+				'total' => 'SELECT SUM(urls) FROM q_lines JOIN user_status ON q_lines.ruid = user_status.uid WHERE status != 3'));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('URLs by Bots', $this->minrows, $this->maxrows);
@@ -782,7 +782,7 @@ final class html extends base
 				'v2' => 'string'));
 			$t->set_value('queries', array(
 				'main' => 'SELECT urls AS v1, csnick AS v2 FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status = 3 AND urls != 0 ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(urls) FROM q_lines JOIN user_details ON q_lines.ruid = user_details.uid JOIN user_status ON q_lines.ruid = user_status.uid WHERE status = 3'));
+				'total' => 'SELECT SUM(urls) FROM q_lines JOIN user_status ON q_lines.ruid = user_status.uid WHERE status = 3'));
 			$output .= $t->make_table($sqlite3);
 
 			if (!empty($output)) {
@@ -925,7 +925,7 @@ final class html extends base
 		}
 
 		if ($this->estimate && $type == 'year' && !empty($l_total[$this->currentyear])) {
-			if (($result = @$sqlite3->querySingle('SELECT (CAST(SUM(l_night) AS REAL) / 90) AS l_night_avg, (CAST(SUM(l_morning) AS REAL) / 90) AS l_morning_avg, (CAST(SUM(l_afternoon) AS REAL) / 90) AS l_afternoon_avg, (CAST(SUM(l_evening) AS REAL) / 90) AS l_evening_avg, (CAST(SUM(l_total) AS REAL) / 90) AS l_total_avg FROM q_activity_by_day WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'', true)) === false) {
+			if (($result = @$sqlite3->querySingle('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg, CAST(SUM(l_total) AS REAL) / 90 AS l_total_avg FROM q_activity_by_day WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'', true)) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
