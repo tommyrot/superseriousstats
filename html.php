@@ -1402,15 +1402,6 @@ final class table extends base
 		 * Run the "main" query which fetches the contents of the table. Additionally, run the "total" query if present.
 		 */
 		$query = @$sqlite3->query($this->queries['main']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$rows = 0;
-
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$rows++;
-		}
-
-		if ($rows < $this->minrows) {
-			return null;
-		}
 
 		if (!empty($this->queries['total'])) {
 			if (($this->total = @$sqlite3->querySingle($this->queries['total'])) === false) {
@@ -1437,7 +1428,6 @@ final class table extends base
 		 * Fetch and structure the table contents.
 		 */
 		$i = 0;
-		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$i++;
@@ -1491,6 +1481,10 @@ final class table extends base
 			} else {
 				$trx .= '<tr><td class="v1">'.$v1.'<td class="pos">'.$i.'<td class="v2">'.$v2.'<td class="'.($this->v3a ? 'v3a' : 'v3').'">'.$v3;
 			}
+		}
+
+		if ($i < $this->minrows) {
+			return null;
 		}
 
 		for ($i; $i < $this->maxrows; $i++) {
