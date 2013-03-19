@@ -151,22 +151,21 @@ final class maintenance extends base
 		$query = @$sqlite3->query('SELECT ruid FROM user_status WHERE status IN (1,3) ORDER BY uid ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if ($result !== false) {
-			$ruids = '';
-			$query->reset();
+		if ($result === false) {
+			return null;
+		}
 
-			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-				$ruids .= ','.$result['ruid'];
-			}
+		$query->reset();
 
-			if (!empty($ruids)) {
-				@$sqlite3->exec('UPDATE user_status SET ruid = uid, status = 0 WHERE status = 2 AND ruid NOT IN ('.ltrim($ruids, ',').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				$rows_affected = $sqlite3->changes();
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$ruids[] = $result['ruid'];
+		}
 
-				if ($rows_affected > 0) {
-					$this->output('debug', 'fix_user_status_errors(): '.$rows_affected.' uid'.(($rows_affected > 1) ? 's' : '').' set to default (alias of non registered)');
-				}
-			}
+		@$sqlite3->exec('UPDATE user_status SET ruid = uid, status = 0 WHERE status = 2 AND ruid NOT IN ('.implode(',', $ruids).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$rows_affected = $sqlite3->changes();
+
+		if ($rows_affected > 0) {
+			$this->output('debug', 'fix_user_status_errors(): '.$rows_affected.' uid'.(($rows_affected > 1) ? 's' : '').' set to default (alias of non registered)');
 		}
 	}
 
@@ -194,13 +193,6 @@ final class maintenance extends base
 		foreach ($tables as $table) {
 			@$sqlite3->exec('DELETE FROM q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			@$sqlite3->exec('INSERT INTO q_'.$table.' SELECT * FROM v_q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-			/**
-			 * Reindex if the query table has indices.
-			 */
-			if (in_array($table, array('events', 'lines', 'smileys'))) {
-				@$sqlite3->exec('REINDEX q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
 		}
 	}
 
