@@ -114,9 +114,6 @@ final class history
 
 	private function get_activity($sqlite3)
 	{
-		/**
-		 * Suffix a day to the date so strftime has a valid value to work with.
-		 */
 		$query = $sqlite3->query('SELECT SUBSTR(date, 1, 4) AS year, SUBSTR(date, 6, 2) AS month, SUM(l_total) AS l_total FROM q_activity_by_month GROUP BY year, month ORDER BY date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
