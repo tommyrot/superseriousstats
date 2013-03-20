@@ -117,7 +117,7 @@ final class history
 		/**
 		 * Suffix a day to the date so strftime has a valid value to work with.
 		 */
-		$query = $sqlite3->query('SELECT STRFTIME(\'%Y\', date || \'-01\') AS year, STRFTIME(\'%m\', date || \'-01\') AS month, SUM(l_total) AS l_total FROM q_activity_by_month GROUP BY year, month ORDER BY date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT SUBSTR(date, 1, 4) AS year, SUBSTR(date, 6, 2) AS month, SUM(l_total) AS l_total FROM q_activity_by_month GROUP BY year, month ORDER BY date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$result['month'] = (int) preg_replace('/^0/', '', $result['month']);
@@ -141,21 +141,21 @@ final class history
 
 		$sqlite3->exec('PRAGMA temp_store = MEMORY');
 
-		if (($l_total = $sqlite3->querySingle('SELECT SUM(l_total) FROM channel')) === false) {
+		if (($daycount = $sqlite3->querySingle('SELECT COUNT(*) FROM channel')) === false) {
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
 		 * Stop if the channel has no logged activity. Everything beyond this point expects a non empty database.
 		 */
-		if (is_null($l_total)) {
+		if ($daycount == 0) {
 			exit('No data.');
 		}
 
 		/**
 		 * Date and time variables used throughout the script. These are based on the date of the last logfile parsed and used to define our scope.
 		 */
-		if (($result = $sqlite3->querySingle('SELECT MIN(STRFTIME(\'%Y\', date)) AS year_firstlogparsed, MAX(STRFTIME(\'%Y\', date)) AS year_lastlogparsed FROM parse_history', true)) === false) {
+		if (($result = $sqlite3->querySingle('SELECT MIN(SUBSTR(date, 1, 4)) AS year_firstlogparsed, MAX(SUBSTR(date, 1, 4)) AS year_lastlogparsed FROM parse_history', true)) === false) {
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
