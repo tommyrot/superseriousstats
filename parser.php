@@ -206,7 +206,7 @@ abstract class parser extends base
 	 */
 	final public function gzparse_log($logfile, $firstline)
 	{
-		if (($zp = @gzopen($logfile, 'rb')) === false) {
+		if (($zp = gzopen($logfile, 'rb')) === false) {
 			$this->output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
 		}
 
@@ -283,7 +283,7 @@ abstract class parser extends base
 	 */
 	final public function parse_log($logfile, $firstline)
 	{
-		if (($fp = @fopen($logfile, 'rb')) === false) {
+		if (($fp = fopen($logfile, 'rb')) === false) {
 			$this->output('critical', 'parse_log(): failed to open file: \''.$logfile.'\'');
 		}
 
@@ -688,15 +688,15 @@ abstract class parser extends base
 	final public function write_data($sqlite3)
 	{
 		$this->output('notice', 'write_data(): writing data to database');
-		@$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		/**
 		 * Write channel totals to the database.
 		 */
 		if ($this->l_total != 0) {
 			$queryparts = $this->get_queryparts($sqlite3, array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
-			@$sqlite3->exec('INSERT OR IGNORE INTO channel (date, '.implode(', ', $queryparts['columnlist']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@$sqlite3->exec('UPDATE channel SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT OR IGNORE INTO channel (date, '.implode(', ', $queryparts['columnlist']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('UPDATE channel SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
@@ -717,11 +717,11 @@ abstract class parser extends base
 		 * Write streak data (history) to the database.
 		 */
 		if ($this->l_total != 0) {
-			@$sqlite3->exec('DELETE FROM streak_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			@$sqlite3->exec('INSERT INTO streak_history (prevnick, streak) VALUES (\''.$sqlite3->escapeString($this->prevnick).'\', '.$this->streak.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('DELETE FROM streak_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO streak_history (prevnick, streak) VALUES (\''.$sqlite3->escapeString($this->prevnick).'\', '.$this->streak.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		@$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$this->output('notice', 'write_data(): writing completed');
 	}
 }
