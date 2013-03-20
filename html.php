@@ -883,7 +883,7 @@ final class html extends base
 			}
 
 			$head = 'Activity by Month';
-			$query = $sqlite3->query('SELECT STRFTIME(\'%Y-%m\', date) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel WHERE date > \''.date('Y-m-00', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'%\' GROUP BY STRFTIME(\'%Y\', date), STRFTIME(\'%m\', date)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel WHERE date > \''.date('Y-m-00', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'%\' GROUP BY SUBSTR(date, 1, 4), SUBSTR(date, 6, 2)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'year') {
 			$class = 'act-year';
 			$columns = $this->years;
@@ -898,7 +898,7 @@ final class html extends base
 			}
 
 			$head = 'Activity by Year';
-			$query = $sqlite3->query('SELECT STRFTIME(\'%Y\', date) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel GROUP BY STRFTIME(\'%Y\', date)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel GROUP BY SUBSTR(date, 1, 4)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		$result = $query->fetchArray(SQLITE3_ASSOC);
