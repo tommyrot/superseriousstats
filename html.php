@@ -1146,7 +1146,7 @@ final class html extends base
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		} elseif ($type == 'year') {
-			if (($total = @$sqlite3->querySingle('SELECT SUM(l_total) FROM q_activity_by_year JOIN user_status ON q_activity_by_year.ruid = user_status.uid WHERE status != 3 AND date = '.$this->year)) === false) {
+			if (($total = @$sqlite3->querySingle('SELECT SUM(l_total) FROM q_activity_by_year JOIN user_status ON q_activity_by_year.ruid = user_status.uid WHERE status != 3 AND date = \''.$this->year.'\'')) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		} elseif ($type == 'month') {
@@ -1169,7 +1169,7 @@ final class html extends base
 		} elseif ($type == 'year') {
 			$head = 'Most Talkative People &ndash; '.$this->year;
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'">History</a>';
-			$query = @$sqlite3->query('SELECT csnick, SUM(q_activity_by_year.l_total) AS l_total, SUM(q_activity_by_year.l_night) AS l_night, SUM(q_activity_by_year.l_morning) AS l_morning, SUM(q_activity_by_year.l_afternoon) AS l_afternoon, SUM(q_activity_by_year.l_evening) AS l_evening, quote, (SELECT MAX(lastseen) FROM user_details JOIN user_status ON user_details.uid = user_status.uid WHERE user_status.ruid = q_lines.ruid) AS lastseen FROM q_lines JOIN q_activity_by_year ON q_lines.ruid = q_activity_by_year.ruid JOIN user_status ON q_lines.ruid = user_status.uid JOIN user_details ON q_lines.ruid = user_details.uid WHERE status != 3 AND date = '.$this->year.' GROUP BY q_lines.ruid ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_year) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = @$sqlite3->query('SELECT csnick, SUM(q_activity_by_year.l_total) AS l_total, SUM(q_activity_by_year.l_night) AS l_night, SUM(q_activity_by_year.l_morning) AS l_morning, SUM(q_activity_by_year.l_afternoon) AS l_afternoon, SUM(q_activity_by_year.l_evening) AS l_evening, quote, (SELECT MAX(lastseen) FROM user_details JOIN user_status ON user_details.uid = user_status.uid WHERE user_status.ruid = q_lines.ruid) AS lastseen FROM q_lines JOIN q_activity_by_year ON q_lines.ruid = q_activity_by_year.ruid JOIN user_status ON q_lines.ruid = user_status.uid JOIN user_details ON q_lines.ruid = user_details.uid WHERE status != 3 AND date = \''.$this->year.'\' GROUP BY q_lines.ruid ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_year) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->monthname.' '.$this->year;
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->year.'&amp;month='.$this->month.'">History</a>';

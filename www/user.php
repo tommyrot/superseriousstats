@@ -17,6 +17,12 @@
  */
 
 /**
+ * Suppress any error output.
+ */
+ini_set('display_errors', '0');
+ini_set('error_reporting', 0);
+
+/**
  * Class for creating userstats.
  */
 final class user
@@ -25,11 +31,7 @@ final class user
 	 * Default settings for this script, can be overridden in the vars.php file. Should be present in $settings_whitelist in order to get changed.
 	 */
 	private $channel = '';
-	private $db_host = '127.0.0.1';
-	private $db_name = 'sss';
-	private $db_pass = '';
-	private $db_port = 3306;
-	private $db_user = '';
+	private $database = 'sss.db3';
 	private $debug = false;
 	private $mainpage = './';
 	private $stylesheet = 'sss.css';
@@ -58,10 +60,9 @@ final class user
 	private $lastseen = '';
 	private $month = 0;
 	private $mood = '';
-	private $mysqli;
 	private $nick = '';
 	private $ruid = 0;
-	private $settings_whitelist = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'debug', 'mainpage', 'stylesheet', 'timezone');
+	private $settings_whitelist = array('channel', 'database', 'debug', 'mainpage', 'stylesheet', 'timezone');
 	private $year = 0;
 	private $years = 0;
 
@@ -73,7 +74,7 @@ final class user
 		/**
 		 * Load settings from vars.php.
 		 */
-		if ((@include 'vars.php') === false) {
+		if ((include 'vars.php') === false) {
 			exit('Missing configuration.');
 		}
 
@@ -95,47 +96,49 @@ final class user
 
 	public function make_html()
 	{
-		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
-		mysqli_set_charset($this->mysqli, 'utf8') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$query = @mysqli_query($this->mysqli, 'select `ruid` from `user_status` join `user_details` on `user_status`.`uid` = `user_details`.`uid` where `csnick` = \''.mysqli_real_escape_string($this->mysqli, $this->nick).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
+		try {
+			$sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READONLY);
+		} catch (Exception $e) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
+		}
 
-		/**
-		 * The user does not exist in the database.
-		 */
-		if (empty($rows)) {
+		$sqlite3->exec('PRAGMA temp_store = MEMORY');
+
+		if (($this->ruid = $sqlite3->querySingle('SELECT ruid FROM user_status JOIN user_details ON user_status.uid = user_details.uid WHERE csnick = \''.$sqlite3->escapeString($this->nick).'\'')) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		if (is_null($this->ruid)) {
 			exit('No data.');
 		}
 
-		$result = mysqli_fetch_object($query);
-		$this->ruid = (int) $result->ruid;
-		$query = @mysqli_query($this->mysqli, 'select (select `csnick` from `user_details` where `uid` = '.$this->ruid.') as `csnick`, min(`firstseen`) as `firstseen`, max(`lastseen`) as `lastseen`, `l_total`, (`l_total` / `activedays`) as `l_avg` from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` join `q_lines` on `user_status`.`ruid` = `q_lines`.`ruid` where `user_status`.`ruid` = '.$this->ruid.' and `firstseen` != \'0000-00-00 00:00:00\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
+		if (($result = $sqlite3->querySingle('SELECT (SELECT csnick FROM user_details WHERE uid = '.$this->ruid.') AS csnick, MIN(firstseen) AS firstseen, MAX(lastseen) AS lastseen, l_total, CAST(l_total AS REAL) / activedays AS l_avg FROM user_details JOIN user_status ON user_details.uid = user_status.uid JOIN q_lines ON user_status.ruid = q_lines.ruid WHERE user_status.ruid = '.$this->ruid.' AND firstseen != \'0000-00-00 00:00:00\'', true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
 
 		/**
-		 * Exit if the user has no logged activity. Most functions don't expect to be run on an empty database so keep this check in place.
+		 * Stop if the user has no logged activity. Everything beyond this point expects a non empty database.
 		 */
-		if (empty($result->l_total)) {
+		if (empty($result['l_total'])) {
 			exit('No data.');
 		}
 
-		$this->csnick = $result->csnick;
-		$this->firstseen = $result->firstseen;
-		$this->lastseen = $result->lastseen;
-		$this->l_total = (int) $result->l_total;
-		$this->l_avg = (float) $result->l_avg;
+		$this->csnick = $result['csnick'];
+		$this->firstseen = $result['firstseen'];
+		$this->lastseen = $result['lastseen'];
+		$this->l_total = $result['l_total'];
+		$this->l_avg = $result['l_avg'];
 
 		/**
 		 * Fetch the users mood.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select * from `q_smileys` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
+		if (($result = $sqlite3->querySingle('SELECT * FROM q_smileys WHERE ruid = '.$this->ruid, true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
 
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
-
+		if (!empty($result)) {
 			foreach ($result as $key => $value) {
-				$smileys_totals[$key] = (int) $value;
+				$smileys_totals[$key] = $value;
 			}
 
 			arsort($smileys_totals);
@@ -202,9 +205,10 @@ final class user
 		/**
 		 * Date and time variables used throughout the script. These are based on the date of the last logfile parsed and used to define our scope.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select max(`date`) as `date` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
-		$this->date_lastlogparsed = $result->date;
+		if (($this->date_lastlogparsed = $sqlite3->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
 		$this->dayofmonth = (int) date('j', strtotime($this->date_lastlogparsed));
 		$this->month = (int) date('n', strtotime($this->date_lastlogparsed));
 		$this->year = (int) date('Y', strtotime($this->date_lastlogparsed));
@@ -227,10 +231,11 @@ final class user
 			/**
 			 * We base our calculations on the activity of the last 90 days logged. If there is none we won't display the extra column.
 			 */
-			$query = @mysqli_query($this->mysqli, 'select count(*) as `activity` from `q_activity_by_day` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$result = mysqli_fetch_object($query);
+			if (($activity = $sqlite3->querySingle('SELECT COUNT(*) FROM q_activity_by_day WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 
-			if (!empty($result->activity)) {
+			if ($activity > 0) {
 				$this->estimate = true;
 			}
 		}
@@ -238,10 +243,12 @@ final class user
 		/**
 		 * HTML Head.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select `date`, `l_total` from `q_activity_by_day` where `ruid` = '.$this->ruid.' order by `l_total` desc, `date` asc limit 1') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
-		$this->date_max = $result->date;
-		$this->l_max = (int) $result->l_total;
+		if (($result = $sqlite3->querySingle('SELECT MIN(date) AS date, l_total FROM q_activity_by_day WHERE ruid = '.$this->ruid.' AND l_total = (SELECT MAX(l_total) FROM q_activity_by_day WHERE ruid = '.$this->ruid.')', true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		$this->date_max = $result['date'];
+		$this->l_max = $result['l_total'];
 		$output = '<!DOCTYPE html>'."\n\n"
 			. '<html>'."\n\n"
 			. '<head>'."\n"
@@ -262,22 +269,22 @@ final class user
 		 * Activity section.
 		 */
 		$output .= '<div class="section">Activity</div>'."\n";
-		$output .= $this->make_table_activity_distribution_hour();
-		$output .= $this->make_table_activity('day');
-		$output .= $this->make_table_activity('month');
-		$output .= $this->make_table_activity_distribution_day();
-		$output .= $this->make_table_activity('year');
+		$output .= $this->make_table_activity_distribution_hour($sqlite3);
+		$output .= $this->make_table_activity($sqlite3, 'day');
+		$output .= $this->make_table_activity($sqlite3, 'month');
+		$output .= $this->make_table_activity_distribution_day($sqlite3);
+		$output .= $this->make_table_activity($sqlite3, 'year');
 
 		/**
 		 * HTML Foot.
 		 */
 		$output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
 		$output .= '</div></body>'."\n\n".'</html>'."\n";
-		@mysqli_close($this->mysqli);
+		$sqlite3->close();
 		return $output;
 	}
 
-	private function make_table_activity($type)
+	private function make_table_activity($sqlite3, $type)
 	{
 		if ($type == 'day') {
 			$class = 'act';
@@ -288,7 +295,7 @@ final class user
 			}
 
 			$head = 'Activity by Day';
-			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_day` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM q_activity_by_day WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 24, $this->year)).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
 			$class = 'act';
 			$columns = 24;
@@ -298,7 +305,8 @@ final class user
 			}
 
 			$head = 'Activity by Month';
-			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_month` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM q_activity_by_month WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m', mktime(0, 0, 0, $this->month - 24, 1, $this->year)).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
 		} elseif ($type == 'year') {
 			$class = 'act-year';
 			$columns = $this->years;
@@ -313,42 +321,42 @@ final class user
 			}
 
 			$head = 'Activity by Year';
-			$query = @mysqli_query($this->mysqli, 'select `date`, `l_total`, `l_night`, `l_morning`, `l_afternoon`, `l_evening` from `q_activity_by_year` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM q_activity_by_year WHERE ruid = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
 		}
 
-		$rows = mysqli_num_rows($query);
+		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		/**
-		 * The queries above will either return one or more rows with activity, or no rows at all.
-		 */
-		if (empty($rows)) {
+		if ($result === false) {
 			return null;
 		}
 
 		$high_date = '';
 		$high_value = 0;
+		$query->reset();
 
-		while ($result = mysqli_fetch_object($query)) {
-			$l_night[$result->date] = (int) $result->l_night;
-			$l_morning[$result->date] = (int) $result->l_morning;
-			$l_afternoon[$result->date] = (int) $result->l_afternoon;
-			$l_evening[$result->date] = (int) $result->l_evening;
-			$l_total[$result->date] = (int) $result->l_total;
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$l_night[$result['date']] = $result['l_night'];
+			$l_morning[$result['date']] = $result['l_morning'];
+			$l_afternoon[$result['date']] = $result['l_afternoon'];
+			$l_evening[$result['date']] = $result['l_evening'];
+			$l_total[$result['date']] = $result['l_total'];
 
-			if ($l_total[$result->date] > $high_value) {
-				$high_date = $result->date;
-				$high_value = $l_total[$result->date];
+			if ($l_total[$result['date']] > $high_value) {
+				$high_date = $result['date'];
+				$high_value = $l_total[$result['date']];
 			}
 		}
 
-		if ($this->estimate && $type == 'year') {
-			$query = @mysqli_query($this->mysqli, 'select (sum(`l_night`) / 90) as `l_night_avg`, (sum(`l_morning`) / 90) as `l_morning_avg`, (sum(`l_afternoon`) / 90) as `l_afternoon_avg`, (sum(`l_evening`) / 90) as `l_evening_avg`, (sum(`l_total`) / 90) as `l_total_avg` from `q_activity_by_day` where `ruid` = '.$this->ruid.' and `date` > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-			$result = mysqli_fetch_object($query);
-			$l_night['estimate'] = $l_night[$this->currentyear] + round((float) $result->l_night_avg * $this->daysleft);
-			$l_morning['estimate'] = $l_morning[$this->currentyear] + round((float) $result->l_morning_avg * $this->daysleft);
-			$l_afternoon['estimate'] = $l_afternoon[$this->currentyear] + round((float) $result->l_afternoon_avg * $this->daysleft);
-			$l_evening['estimate'] = $l_evening[$this->currentyear] + round((float) $result->l_evening_avg * $this->daysleft);
-			$l_total['estimate'] = $l_total[$this->currentyear] + round((float) $result->l_total_avg * $this->daysleft);
+		if ($this->estimate && $type == 'year' && !empty($l_total[$this->currentyear])) {
+			if (($result = $sqlite3->querySingle('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg, CAST(SUM(l_total) AS REAL) / 90 AS l_total_avg FROM q_activity_by_day WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m-d', mktime(0, 0, 0, $this->month, $this->dayofmonth - 90, $this->year)).'\'', true)) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
+
+			$l_night['estimate'] = $l_night[$this->currentyear] + round($result['l_night_avg'] * $this->daysleft);
+			$l_morning['estimate'] = $l_morning[$this->currentyear] + round($result['l_morning_avg'] * $this->daysleft);
+			$l_afternoon['estimate'] = $l_afternoon[$this->currentyear] + round($result['l_afternoon_avg'] * $this->daysleft);
+			$l_evening['estimate'] = $l_evening[$this->currentyear] + round($result['l_evening_avg'] * $this->daysleft);
+			$l_total['estimate'] = $l_total[$this->currentyear] + round($result['l_total_avg'] * $this->daysleft);
 
 			if ($l_total['estimate'] > $high_value) {
 				$high_date = 'estimate';
@@ -415,19 +423,21 @@ final class user
 		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function make_table_activity_distribution_day()
+	private function make_table_activity_distribution_day($sqlite3)
 	{
-		$query = @mysqli_query($this->mysqli, 'select `l_mon_night`, `l_mon_morning`, `l_mon_afternoon`, `l_mon_evening`, `l_tue_night`, `l_tue_morning`, `l_tue_afternoon`, `l_tue_evening`, `l_wed_night`, `l_wed_morning`, `l_wed_afternoon`, `l_wed_evening`, `l_thu_night`, `l_thu_morning`, `l_thu_afternoon`, `l_thu_evening`, `l_fri_night`, `l_fri_morning`, `l_fri_afternoon`, `l_fri_evening`, `l_sat_night`, `l_sat_morning`, `l_sat_afternoon`, `l_sat_evening`, `l_sun_night`, `l_sun_morning`, `l_sun_afternoon`, `l_sun_evening` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
+		if (($result = $sqlite3->querySingle('SELECT l_mon_night, l_mon_morning, l_mon_afternoon, l_mon_evening, l_tue_night, l_tue_morning, l_tue_afternoon, l_tue_evening, l_wed_night, l_wed_morning, l_wed_afternoon, l_wed_evening, l_thu_night, l_thu_morning, l_thu_afternoon, l_thu_evening, l_fri_night, l_fri_morning, l_fri_afternoon, l_fri_evening, l_sat_night, l_sat_morning, l_sat_afternoon, l_sat_evening, l_sun_night, l_sun_morning, l_sun_afternoon, l_sun_evening FROM q_lines WHERE ruid = '.$this->ruid, true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
 		$high_day = '';
 		$high_value = 0;
 		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
 
 		foreach ($days as $day) {
-			$l_night[$day] = (int) $result->{'l_'.$day.'_night'};
-			$l_morning[$day] = (int) $result->{'l_'.$day.'_morning'};
-			$l_afternoon[$day] = (int) $result->{'l_'.$day.'_afternoon'};
-			$l_evening[$day] = (int) $result->{'l_'.$day.'_evening'};
+			$l_night[$day] = $result['l_'.$day.'_night'];
+			$l_morning[$day] = $result['l_'.$day.'_morning'];
+			$l_afternoon[$day] = $result['l_'.$day.'_afternoon'];
+			$l_evening[$day] = $result['l_'.$day.'_evening'];
 			$l_total[$day] = $l_night[$day] + $l_morning[$day] + $l_afternoon[$day] + $l_evening[$day];
 
 			if ($l_total[$day] > $high_value) {
@@ -489,17 +499,19 @@ final class user
 		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function make_table_activity_distribution_hour()
+	private function make_table_activity_distribution_hour($sqlite3)
 	{
-		$query = @mysqli_query($this->mysqli, 'select `l_00`, `l_01`, `l_02`, `l_03`, `l_04`, `l_05`, `l_06`, `l_07`, `l_08`, `l_09`, `l_10`, `l_11`, `l_12`, `l_13`, `l_14`, `l_15`, `l_16`, `l_17`, `l_18`, `l_19`, `l_20`, `l_21`, `l_22`, `l_23` from `q_lines` where `ruid` = '.$this->ruid) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
+		if (($result = $sqlite3->querySingle('SELECT l_00, l_01, l_02, l_03, l_04, l_05, l_06, l_07, l_08, l_09, l_10, l_11, l_12, l_13, l_14, l_15, l_16, l_17, l_18, l_19, l_20, l_21, l_22, l_23 FROM q_lines WHERE ruid = '.$this->ruid, true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
 		$high_key = '';
 		$high_value = 0;
 
 		foreach ($result as $key => $value) {
-			if ((int) $value > $high_value) {
+			if ($value > $high_value) {
 				$high_key = $key;
-				$high_value = (int) $value;
+				$high_value = $value;
 			}
 		}
 
@@ -510,10 +522,10 @@ final class user
 		foreach ($result as $key => $value) {
 			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
-			if ((int) $value == 0) {
+			if ($value == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
-				$percentage = ((int) $value / $this->l_total) * 100;
+				$percentage = ($value / $this->l_total) * 100;
 
 				if ($percentage >= 9.95) {
 					$percentage = round($percentage).'%';
@@ -521,7 +533,7 @@ final class user
 					$percentage = number_format($percentage, 1).'%';
 				}
 
-				$height = round(((int) $value / $high_value) * 100);
+				$height = round(($value / $high_value) * 100);
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage;
 
 				if ($height != 0) {
@@ -535,7 +547,7 @@ final class user
 						$time = 'evening';
 					}
 
-					$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height.'px" title="'.number_format((int) $value).'">';
+					$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height.'px" title="'.number_format($value).'">';
 				}
 
 				$tr2 .= '</ul>';
@@ -565,9 +577,9 @@ final class user
 }
 
 /**
- * If the channel ID is not set, empty, or has the value "__global" we exit.
+ * The channel ID cannot be empty or of excessive length.
  */
-if (!isset($_GET['cid']) || !preg_match('/^\S+$/', $_GET['cid']) || preg_match('/^__global$/', $_GET['cid'])) {
+if (!isset($_GET['cid']) || !preg_match('/^\S{1,50}$/', $_GET['cid'])) {
 	exit;
 }
 
@@ -576,7 +588,7 @@ $cid = $_GET['cid'];
 /**
  * If nick is not set, empty, or has an erroneous value we also exit.
  */
-if (!isset($_GET['nick']) || !preg_match('/^[][^{}|\\\`_0-9a-z-]{1,255}$/i', $_GET['nick'])) {
+if (!isset($_GET['nick']) || $_GET['nick'] == '0' || !preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $_GET['nick'])) {
 	exit;
 }
 

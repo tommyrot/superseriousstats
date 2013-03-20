@@ -17,6 +17,12 @@
  */
 
 /**
+ * Suppress any error output.
+ */
+ini_set('display_errors', '0');
+ini_set('error_reporting', 0);
+
+/**
  * Class for creating historical stats.
  */
 final class history
@@ -25,11 +31,7 @@ final class history
 	 * Default settings for this script, can be overridden in the vars.php file. Should be present in $settings_whitelist in order to get changed.
 	 */
 	private $channel = '';
-	private $db_host = '127.0.0.1';
-	private $db_name = 'sss';
-	private $db_pass = '';
-	private $db_port = 3306;
-	private $db_user = '';
+	private $database = 'sss.db3';
 	private $debug = false;
 	private $mainpage = './';
 	private $maxrows_people_month = 10;
@@ -52,8 +54,7 @@ final class history
 	private $l_total = 0;
 	private $month = 0;
 	private $monthname = '';
-	private $mysqli;
-	private $settings_whitelist = array('channel', 'db_host', 'db_name', 'db_pass', 'db_port', 'db_user', 'debug', 'mainpage', 'maxrows_people_month', 'maxrows_people_timeofday', 'maxrows_people_year', 'stylesheet', 'timezone', 'userstats');
+	private $settings_whitelist = array('channel', 'database', 'debug', 'mainpage', 'maxrows_people_month', 'maxrows_people_timeofday', 'maxrows_people_year', 'stylesheet', 'timezone', 'userstats');
 	private $year = 0;
 	private $year_firstlogparsed = 0;
 	private $year_lastlogparsed = 0;
@@ -67,7 +68,7 @@ final class history
 		/**
 		 * Load settings from vars.php.
 		 */
-		if ((@include 'vars.php') === false) {
+		if ((include 'vars.php') === false) {
 			exit('Missing configuration.');
 		}
 
@@ -111,44 +112,55 @@ final class history
 		return $daysago;
 	}
 
-	private function get_activity()
+	private function get_activity($sqlite3)
 	{
-		$query = @mysqli_query($this->mysqli, 'select substring(`date`, 1, 4) as `year`, substring(`date`, 6, 2) as `month`, sum(`l_total`) as `l_total` from `q_activity_by_month` group by `year`, `month` order by `date` asc') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+		/**
+		 * Suffix a day to the date so strftime has a valid value to work with.
+		 */
+		$query = $sqlite3->query('SELECT STRFTIME(\'%Y\', date || \'-01\') AS year, STRFTIME(\'%m\', date || \'-01\') AS month, SUM(l_total) AS l_total FROM q_activity_by_month GROUP BY year, month ORDER BY date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-		while ($result = mysqli_fetch_object($query)) {
-			$result->month = preg_replace('/^0/', '', $result->month);
-			$this->activity[(int) $result->year][(int) $result->month] = (int) $result->l_total;
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$result['month'] = (int) preg_replace('/^0/', '', $result['month']);
+			$this->activity[$result['year']][$result['month']] = $result['l_total'];
 
-			if (!isset($this->activity[(int) $result->year][0])) {
-				$this->activity[(int) $result->year][0] = 0;
+			if (!isset($this->activity[$result['year']][0])) {
+				$this->activity[$result['year']][0] = 0;
 			}
 
-			$this->activity[(int) $result->year][0] += (int) $result->l_total;
+			$this->activity[$result['year']][0] += $result['l_total'];
 		}
 	}
 
 	public function make_html()
 	{
-		$this->mysqli = @mysqli_connect($this->db_host, $this->db_user, $this->db_pass, $this->db_name, $this->db_port) or $this->output('critical', 'mysqli: '.mysqli_connect_error());
-		mysqli_set_charset($this->mysqli, 'utf8') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `channel`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$rows = mysqli_num_rows($query);
-
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
+		try {
+			$sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READONLY);
+		} catch (Exception $e) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
 		}
 
-		if (empty($result->l_total)) {
+		$sqlite3->exec('PRAGMA temp_store = MEMORY');
+
+		if (($l_total = $sqlite3->querySingle('SELECT SUM(l_total) FROM channel')) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		/**
+		 * Stop if the channel has no logged activity. Everything beyond this point expects a non empty database.
+		 */
+		if (is_null($l_total)) {
 			exit('No data.');
 		}
 
 		/**
 		 * Date and time variables used throughout the script. These are based on the date of the last logfile parsed and used to define our scope.
 		 */
-		$query = @mysqli_query($this->mysqli, 'select count(*) as `days`, min(year(`date`)) as `year_firstlogparsed`, max(year(`date`)) as `year_lastlogparsed` from `parse_history`') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
-		$result = mysqli_fetch_object($query);
-		$this->year_firstlogparsed = (int) $result->year_firstlogparsed;
-		$this->year_lastlogparsed = (int) $result->year_lastlogparsed;
+		if (($result = $sqlite3->querySingle('SELECT MIN(STRFTIME(\'%Y\', date)) AS year_firstlogparsed, MAX(STRFTIME(\'%Y\', date)) AS year_lastlogparsed FROM parse_history', true)) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		$this->year_firstlogparsed = (int) $result['year_firstlogparsed'];
+		$this->year_lastlogparsed = (int) $result['year_lastlogparsed'];
 
 		if (!is_null($this->month)) {
 			$this->monthname = date('F', mktime(0, 0, 0, $this->month, 1, $this->year));
@@ -171,7 +183,7 @@ final class history
 		/**
 		 * Activity section.
 		 */
-		$this->get_activity();
+		$this->get_activity($sqlite3);
 		$output .= '<div class="section">Activity</div>'."\n";
 		$output .= $this->make_index();
 
@@ -189,15 +201,15 @@ final class history
 				$this->l_total = $this->activity[$this->year][$this->month];
 			}
 
-			$output .= $this->make_table_activity_distribution_hour();
+			$output .= $this->make_table_activity_distribution_hour($sqlite3);
 
 			if (is_null($this->month)) {
-				$output .= $this->make_table_people('year');
+				$output .= $this->make_table_people($sqlite3, 'year');
 			} else {
-				$output .= $this->make_table_people('month');
+				$output .= $this->make_table_people($sqlite3, 'month');
 			}
 
-			$output .= $this->make_table_people_timeofday();
+			$output .= $this->make_table_people_timeofday($sqlite3);
 		}
 
 		/**
@@ -205,7 +217,7 @@ final class history
 		 */
 		$output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
 		$output .= '</div></body>'."\n\n".'</html>'."\n";
-		@mysqli_close($this->mysqli);
+		$sqlite3->close();
 		return $output;
 	}
 
@@ -235,22 +247,25 @@ final class history
 		return '<table class="index">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	private function make_table_activity_distribution_hour()
+	private function make_table_activity_distribution_hour($sqlite3)
 	{
 		if (is_null($this->month)) {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel` where year(`date`) = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			if (($result = $sqlite3->querySingle('SELECT SUM(l_00) AS l_00, SUM(l_01) AS l_01, SUM(l_02) AS l_02, SUM(l_03) AS l_03, SUM(l_04) AS l_04, SUM(l_05) AS l_05, SUM(l_06) AS l_06, SUM(l_07) AS l_07, SUM(l_08) AS l_08, SUM(l_09) AS l_09, SUM(l_10) AS l_10, SUM(l_11) AS l_11, SUM(l_12) AS l_12, SUM(l_13) AS l_13, SUM(l_14) AS l_14, SUM(l_15) AS l_15, SUM(l_16) AS l_16, SUM(l_17) AS l_17, SUM(l_18) AS l_18, SUM(l_19) AS l_19, SUM(l_20) AS l_20, SUM(l_21) AS l_21, SUM(l_22) AS l_22, SUM(l_23) AS l_23 FROM channel WHERE date LIKE \''.$this->year.'%\'', true)) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 		} else {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_00`) as `l_00`, sum(`l_01`) as `l_01`, sum(`l_02`) as `l_02`, sum(`l_03`) as `l_03`, sum(`l_04`) as `l_04`, sum(`l_05`) as `l_05`, sum(`l_06`) as `l_06`, sum(`l_07`) as `l_07`, sum(`l_08`) as `l_08`, sum(`l_09`) as `l_09`, sum(`l_10`) as `l_10`, sum(`l_11`) as `l_11`, sum(`l_12`) as `l_12`, sum(`l_13`) as `l_13`, sum(`l_14`) as `l_14`, sum(`l_15`) as `l_15`, sum(`l_16`) as `l_16`, sum(`l_17`) as `l_17`, sum(`l_18`) as `l_18`, sum(`l_19`) as `l_19`, sum(`l_20`) as `l_20`, sum(`l_21`) as `l_21`, sum(`l_22`) as `l_22`, sum(`l_23`) as `l_23` from `channel` where date_format(`date`, \'%Y-%m\') = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			if (($result = $sqlite3->querySingle('SELECT SUM(l_00) AS l_00, SUM(l_01) AS l_01, SUM(l_02) AS l_02, SUM(l_03) AS l_03, SUM(l_04) AS l_04, SUM(l_05) AS l_05, SUM(l_06) AS l_06, SUM(l_07) AS l_07, SUM(l_08) AS l_08, SUM(l_09) AS l_09, SUM(l_10) AS l_10, SUM(l_11) AS l_11, SUM(l_12) AS l_12, SUM(l_13) AS l_13, SUM(l_14) AS l_14, SUM(l_15) AS l_15, SUM(l_16) AS l_16, SUM(l_17) AS l_17, SUM(l_18) AS l_18, SUM(l_19) AS l_19, SUM(l_20) AS l_20, SUM(l_21) AS l_21, SUM(l_22) AS l_22, SUM(l_23) AS l_23 FROM channel WHERE date LIKE \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'%\'', true)) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 		}
 
-		$result = mysqli_fetch_object($query);
 		$high_key = '';
 		$high_value = 0;
 
 		foreach ($result as $key => $value) {
-			if ((int) $value > $high_value) {
+			if ($value > $high_value) {
 				$high_key = $key;
-				$high_value = (int) $value;
+				$high_value = $value;
 			}
 		}
 
@@ -261,10 +276,10 @@ final class history
 		foreach ($result as $key => $value) {
 			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
-			if ((int) $value == 0) {
+			if ($value == 0) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
-				$percentage = ((int) $value / $this->l_total) * 100;
+				$percentage = ($value / $this->l_total) * 100;
 
 				if ($percentage >= 9.95) {
 					$percentage = round($percentage).'%';
@@ -272,7 +287,7 @@ final class history
 					$percentage = number_format($percentage, 1).'%';
 				}
 
-				$height = round(((int) $value / $high_value) * 100);
+				$height = round(($value / $high_value) * 100);
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage;
 
 				if ($height != 0) {
@@ -286,7 +301,7 @@ final class history
 						$time = 'evening';
 					}
 
-					$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height.'px" title="'.number_format((int) $value).'">';
+					$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height.'px" title="'.number_format($value).'">';
 				}
 
 				$tr2 .= '</ul>';
@@ -298,38 +313,34 @@ final class history
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function make_table_people($type)
+	private function make_table_people($sqlite3, $type)
 	{
 		/**
 		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
 		 */
 		if ($type == 'year') {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_year` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM q_activity_by_year JOIN user_status ON q_activity_by_year.ruid = user_status.uid WHERE status != 3 AND date = \''.$this->year.'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 		} elseif ($type == 'month') {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_month` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM q_activity_by_month JOIN user_status ON q_activity_by_month.ruid = user_status.uid WHERE status != 3 AND date = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 		}
 
-		$rows = mysqli_num_rows($query);
-
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
-		}
-
-		if (empty($result->l_total)) {
+		if (is_null($total)) {
 			return null;
 		}
-
-		$total = (int) $result->l_total;
 
 		/**
 		 * The queries below will always yield a proper workable result set.
 		 */
 		if ($type == 'year') {
 			$head = 'Most Talkative People &ndash; '.$this->year;
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_year`.`l_total`) as `l_total`, sum(`q_activity_by_year`.`l_night`) as `l_night`, sum(`q_activity_by_year`.`l_morning`) as `l_morning`, sum(`q_activity_by_year`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_year`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_year` on `q_lines`.`ruid` = `q_activity_by_year`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = '.$this->year.' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = $sqlite3->query('SELECT csnick, SUM(q_activity_by_year.l_total) AS l_total, SUM(q_activity_by_year.l_night) AS l_night, SUM(q_activity_by_year.l_morning) AS l_morning, SUM(q_activity_by_year.l_afternoon) AS l_afternoon, SUM(q_activity_by_year.l_evening) AS l_evening, quote, (SELECT MAX(lastseen) FROM user_details JOIN user_status ON user_details.uid = user_status.uid WHERE user_status.ruid = q_lines.ruid) AS lastseen FROM q_lines JOIN q_activity_by_year ON q_lines.ruid = q_activity_by_year.ruid JOIN user_status ON q_lines.ruid = user_status.uid JOIN user_details ON q_lines.ruid = user_details.uid WHERE status != 3 AND date = \''.$this->year.'\' GROUP BY q_lines.ruid ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_year) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->monthname.' '.$this->year;
-			$query = @mysqli_query($this->mysqli, 'select `csnick`, sum(`q_activity_by_month`.`l_total`) as `l_total`, sum(`q_activity_by_month`.`l_night`) as `l_night`, sum(`q_activity_by_month`.`l_morning`) as `l_morning`, sum(`q_activity_by_month`.`l_afternoon`) as `l_afternoon`, sum(`q_activity_by_month`.`l_evening`) as `l_evening`, `quote`, (select max(`lastseen`) from `user_details` join `user_status` on `user_details`.`uid` = `user_status`.`uid` where `user_status`.`ruid` = `q_lines`.`ruid`) as `lastseen` from `q_lines` join `q_activity_by_month` on `q_lines`.`ruid` = `q_activity_by_month`.`ruid` join `user_status` on `q_lines`.`ruid` = `user_status`.`uid` join `user_details` on `q_lines`.`ruid` = `user_details`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' group by `q_lines`.`ruid` order by `l_total` desc, `csnick` asc limit '.$this->maxrows_people_month) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			$query = $sqlite3->query('SELECT csnick, SUM(q_activity_by_month.l_total) AS l_total, SUM(q_activity_by_month.l_night) AS l_night, SUM(q_activity_by_month.l_morning) AS l_morning, SUM(q_activity_by_month.l_afternoon) AS l_afternoon, SUM(q_activity_by_month.l_evening) AS l_evening, quote, (SELECT MAX(lastseen) FROM user_details JOIN user_status ON user_details.uid = user_status.uid WHERE user_status.ruid = q_lines.ruid) AS lastseen FROM q_lines JOIN q_activity_by_month ON q_lines.ruid = q_activity_by_month.ruid JOIN user_status ON q_lines.ruid = user_status.uid JOIN user_details ON q_lines.ruid = user_details.uid WHERE status != 3 AND date = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' GROUP BY q_lines.ruid ORDER BY l_total DESC, csnick ASC LIMIT '.$this->maxrows_people_month) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
@@ -338,15 +349,15 @@ final class history
 		$trx = '';
 		$i = 0;
 
-		while ($result = mysqli_fetch_object($query)) {
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$i++;
 			$width = 50;
 			unset($width_float, $width_int, $width_remainders);
 			$times = array('night', 'morning', 'afternoon', 'evening');
 
 			foreach ($times as $time) {
-				if ((int) $result->{'l_'.$time} != 0) {
-					$width_float[$time] = ((int) $result->{'l_'.$time} / (int) $result->l_total) * 50;
+				if ($result['l_'.$time] != 0) {
+					$width_float[$time] = ($result['l_'.$time] / $result['l_total']) * 50;
 					$width_int[$time] = floor($width_float[$time]);
 					$width -= $width_int[$time];
 					$width_remainders[$time] = $width_float[$time] - $width_int[$time];
@@ -374,30 +385,28 @@ final class history
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(((int) $result->l_total / $total) * 100, 2).'%<td class="v2">'.number_format((int) $result->l_total).'<td class="pos">'.$i.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result->csnick).'">'.htmlspecialchars($result->csnick).'</a>' : htmlspecialchars($result->csnick)).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->datetime2daysago($result->lastseen).'<td class="v6">'.htmlspecialchars($result->quote);
+			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$i.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.htmlspecialchars($result['csnick']).'</a>' : htmlspecialchars($result['csnick'])).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->datetime2daysago($result['lastseen']).'<td class="v6">'.htmlspecialchars($result['quote']);
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	private function make_table_people_timeofday()
+	private function make_table_people_timeofday($sqlite3)
 	{
 		/**
 		 * Check if there is user activity (bots excluded). If there is none we can skip making the table.
 		 */
 		if (is_null($this->month)) {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_year` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = '.$this->year) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM q_activity_by_year JOIN user_status ON q_activity_by_year.ruid = user_status.uid WHERE status != 3 AND date = \''.$this->year.'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 		} else {
-			$query = @mysqli_query($this->mysqli, 'select sum(`l_total`) as `l_total` from `q_activity_by_month` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `status` != 3 and `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'') or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM q_activity_by_month JOIN user_status ON q_activity_by_month.ruid = user_status.uid WHERE status != 3 AND date = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
 		}
 
-		$rows = mysqli_num_rows($query);
-
-		if (!empty($rows)) {
-			$result = mysqli_fetch_object($query);
-		}
-
-		if (empty($result->l_total)) {
+		if (is_null($total)) {
 			return null;
 		}
 
@@ -406,17 +415,17 @@ final class history
 
 		foreach ($times as $time) {
 			if (is_null($this->month)) {
-				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_year` join `user_details` on `q_activity_by_year`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_year`.`ruid` = `user_status`.`uid` where `date` = '.$this->year.' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				$query = $sqlite3->query('SELECT csnick, l_'.$time.' FROM q_activity_by_year JOIN user_details ON q_activity_by_year.ruid = user_details.uid JOIN user_status ON q_activity_by_year.ruid = user_status.uid WHERE date = \''.$this->year.'\' AND status != 3 AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, csnick ASC LIMIT '.$this->maxrows_people_timeofday) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			} else {
-				$query = @mysqli_query($this->mysqli, 'select `csnick`, `l_'.$time.'` from `q_activity_by_month` join `user_details` on `q_activity_by_month`.`ruid` = `user_details`.`uid` join `user_status` on `q_activity_by_month`.`ruid` = `user_status`.`uid` where `date` = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' and `status` != 3 and `l_'.$time.'` != 0 order by `l_'.$time.'` desc, `csnick` asc limit '.$this->maxrows_people_timeofday) or $this->output('critical', 'mysqli: '.mysqli_error($this->mysqli));
+				$query = $sqlite3->query('SELECT csnick, l_'.$time.' FROM q_activity_by_month JOIN user_details ON q_activity_by_month.ruid = user_details.uid JOIN user_status ON q_activity_by_month.ruid = user_status.uid WHERE date = \''.date('Y-m', mktime(0, 0, 0, $this->month, 1, $this->year)).'\' AND status != 3 AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, csnick ASC LIMIT '.$this->maxrows_people_timeofday) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
 			$i = 0;
 
-			while ($result = mysqli_fetch_object($query)) {
+			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 				$i++;
-				${$time}[$i]['user'] = $result->csnick;
-				${$time}[$i]['lines'] = (int) $result->{'l_'.$time};
+				${$time}[$i]['user'] = $result['csnick'];
+				${$time}[$i]['lines'] = $result['l_'.$time];
 
 				if (${$time}[$i]['lines'] > $high_value) {
 					$high_value = ${$time}[$i]['lines'];
@@ -472,9 +481,9 @@ final class history
 }
 
 /**
- * If the channel ID is not set, empty, or has the value "__global" we exit.
+ * The channel ID cannot be empty or of excessive length.
  */
-if (!isset($_GET['cid']) || !preg_match('/^\S+$/', $_GET['cid']) || preg_match('/^__global$/', $_GET['cid'])) {
+if (!isset($_GET['cid']) || !preg_match('/^\S{1,50}$/', $_GET['cid'])) {
 	exit;
 }
 
