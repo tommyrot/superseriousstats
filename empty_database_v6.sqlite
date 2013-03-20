@@ -1,3 +1,5 @@
+PRAGMA encoding = "UTF-8";
+
 BEGIN TRANSACTION;
 
 CREATE TABLE channel (
