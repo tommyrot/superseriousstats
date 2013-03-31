@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2012, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2013, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,32 +17,15 @@
  */
 
 /**
- * Various functions related to URL validation and presentation. Although this class was initially designed to serve the needs of the superseriousstats program,
- * it can also fairly easily be used in other projects. It tries to closely follow RFC 3986. Take note of the following caveats:
+ * Various functions related to URL validation and presentation. It follows RFC 3986, and the preferred syntax as
+ * mentioned in RFC 1034 section 3.5 and RFC 1123 section 2.1.
  *
- * Scheme:
- * - http:// and https:// only.
- * - URLs without a scheme get http:// prefixed.
- *
- * Authority:
- * - Following preferred syntax, RFC 1034 section 3.5 and RFC 1123 section 2.1.
- * - The FQDN should not exceed 255 characters in length.
- * - No user part.
- *
- * IP:
- * - IPv4 only.
- * - 0.0.0.0 to 255.255.255.255
- * - No leading zeros.
- *
- * Port:
- * - 0 to 65535
- * - No leading zeros.
- *
- * TLD:
- * - http://data.iana.org/TLD/tlds-alpha-by-domain.txt (2013031700).
- * - No ASCII variants of internationalized country codes (xn--).
- *
- * Other:
+ * Take note of the following which may differ from the specification:
+ * - Only the http:// and https:// schemes will validate. URLs without a scheme get http:// prefixed.
+ * - User part in authority is not recognized, and will not validate.
+ * - IPv4 addresses only.
+ * - TLDs as in http://data.iana.org/TLD/tlds-alpha-by-domain.txt but no internationalized country codes (xn--).
+ * - The root domain is excluded from the FQDN (not from the other elements).
  * - Square brackets must be percent encoded.
  */
 final class urltools
@@ -68,7 +51,7 @@ final class urltools
 	{
 		$this->reserved = '('.$this->gen_delims.'|'.$this->sub_delims.')';
 		$this->pchar = '('.$this->unreserved.'|'.$this->pct_encoded.'|'.$this->sub_delims.'|[:@])';
-		$this->fqdn = '(?<fqdn>'.$this->domain.$this->tld.'\.?)';
+		$this->fqdn = '(?<fqdn>'.$this->domain.$this->tld.')\.?';
 		$this->authority = '(?<authority>('.$this->ipv4address.'|'.$this->fqdn.')(:'.$this->port.')?)';
 		$this->fragment = '(?<fragment>(#('.$this->pchar.'|[\/?])*)?)';
 		$this->path = '(?<path>(\/\/?('.$this->pchar.'+\/?)*)?)';
@@ -90,14 +73,14 @@ final class urltools
 		 */
 		if (preg_match('/^(?<url>'.$this->scheme.'?'.$this->authority.$this->path.$this->query.$this->fragment.')$/i', $url, $matches)) {
 			/**
-			 * The maximum allowed length of the FQDN is 255 characters.
+			 * The maximum allowed length of the FQDN (root domain excluded) is 254 characters.
 			 */
-			if (strlen($matches['fqdn']) > 255) {
+			if (strlen($matches['fqdn']) > 254) {
 				return false;
 			}
 
 			/**
-			 * If the URL has no scheme we assume the "http://" one; update the elements we just found.
+			 * If the URL has no scheme, http:// is assumed. Update the elements.
 			 */
 			if (empty($matches['scheme'])) {
 				$matches['url'] = 'http://'.$matches['url'];

@@ -22,7 +22,8 @@
 abstract class parser extends base
 {
 	/**
-	 * Default settings for this script, can be overridden in the config file. These should all appear in $settings_list[] along with their type.
+	 * Default settings for this script, which can be overridden in the config file. These variables should all
+	 * appear in $settings_list[] along with their type.
 	 */
 	private $wordtracking = true;
 
@@ -121,7 +122,6 @@ abstract class parser extends base
 	protected $l_total = 0;
 	protected $linenum = 0;
 	protected $linenum_lastnonempty = 0;
-	protected $newdata = false;
 	protected $prevline = '';
 	protected $prevnick = '';
 	protected $streak = 0;
@@ -131,7 +131,7 @@ abstract class parser extends base
 		$this->urltools = new urltools();
 
 		/**
-		 * The variables that are listed in $settings_list will have their values overridden by those found in the config file.
+		 * If set, override variables listed in $settings_list[].
 		 */
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $settings)) {
@@ -153,8 +153,8 @@ abstract class parser extends base
 	}
 
 	/**
-	 * Create an object of the nick if it doesn't already exist. If it does already exist, update $csnick. Return the lowercase nick for further referencing
-	 * by the calling function.
+	 * Create an object of the nick if it doesn't already exist, otherwise update $csnick. Return the lowercase nick
+	 * for further referencing by the calling function.
 	 */
 	final private function add_nick($csnick, $datetime)
 	{
@@ -179,13 +179,13 @@ abstract class parser extends base
 	}
 
 	/**
-	 * Words are stored in lower case. Since they can contain UTF-8 encoded characters we should be careful on how to convert words to lower case.
+	 * Words are stored in lower case. Handle UTF-8 conversion appropriately.
 	 */
 	final private function add_word($csword, $length)
 	{
 		/**
-		 * The multibyte strtolower function is significantly slower than its single-byte counterpart so we throw in a little if-else statement to check
-		 * if its use is needed.
+		 * The multibyte strtolower function is significantly slower than its single-byte counterpart. Only use
+		 * it if necessary.
 		 */
 		if (preg_match('/^[\x00-\x7F]+$/', $csword)) {
 			$word = strtolower($csword);
@@ -202,9 +202,9 @@ abstract class parser extends base
 	}
 
 	/**
-	 * Parser function for gzipped logs. The zlib extension must be loaded for this function to work (see sss.php).
+	 * Parser function for gzipped logs. This function requires the zlib extension.
 	 */
-	final public function gzparse_log($logfile, $firstline)
+	final public function gzparse_log($sqlite3, $logfile, $firstline)
 	{
 		if (($zp = gzopen($logfile, 'rb')) === false) {
 			$this->output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
@@ -223,8 +223,8 @@ abstract class parser extends base
 			$line = $this->normalize_line($line);
 
 			/**
-			 * Pass on the normalized line to the logfile format specific parser class extending this class. Empty lines are ignored. Remember the
-			 * line number of the last non empty line so we can store the correct parse history instead of guessing.
+			 * Pass on the normalized line to the logfile format specific parser class extending this class.
+			 * Empty lines are ignored. Remember the line number of the last non empty line.
 			 */
 			if (!empty($line)) {
 				$this->parse_line($line);
@@ -234,15 +234,6 @@ abstract class parser extends base
 		}
 
 		gzclose($zp);
-		$this->output('notice', 'gzparse_log(): parsing completed');
-
-		/**
-		 * The $newdata variable can be used outside of the parser class to decide whether we want to run additional routines or skip them. Whenever the
-		 * $nicks_objs count is zero there won't be any new data because the data we are interested in is always related to one or more valid nicks.
-		 */
-		if (!empty($this->nicks_objs)) {
-			$this->newdata = true;
-		}
 	}
 
 	/**
@@ -256,7 +247,8 @@ abstract class parser extends base
 			while ($line != '') {
 				/**
 				 * 1. Match the first valid multibyte character or otherwise a single byte.
-				 * 2. Pass it on to rebuild_line() and replace the character with an empty string effectively making $line shorter.
+				 * 2. Pass it on to rebuild_line() and replace the character with an empty string
+				 *    effectively making $line shorter.
 				 * 3. Continue until $line is zero bytes in length.
 				 */
 				$line = preg_replace_callback('/^('.$this->hex_validutf8.'|.)/s', array($this, 'rebuild_line'), $line);
@@ -269,9 +261,11 @@ abstract class parser extends base
 		}
 
 		/**
-		 * 1. Remove control codes from the Basic Latin (7-bit ASCII) and Latin-1 Supplement character sets (the latter after conversion to multibyte).
-		 *    0x03 is used for (mIRC) color codes and may be followed by additional characters; remove those as well.
-		 * 2. Replace all possible formations of adjacent spaces and tabs, including the no-break space (multibyte), with a single space.
+		 * 1. Remove control codes from the Basic Latin (7-bit ASCII) and Latin-1 Supplement character sets (the
+		 *    latter after conversion to multibyte). 0x03 is used for (mIRC) color codes and may be followed by
+		 *    additional characters; remove those as well.
+		 * 2. Replace all possible formations of adjacent tabs and spaces (including the multibyte no-break
+		 *    space) with a single space.
 		 * 3. Remove whitespace characters at the beginning and end of a line.
 		 */
 		$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
@@ -281,7 +275,7 @@ abstract class parser extends base
 	/**
 	 * Parser function for normal logs.
 	 */
-	final public function parse_log($logfile, $firstline)
+	final public function parse_log($sqlite3, $logfile, $firstline)
 	{
 		if (($fp = fopen($logfile, 'rb')) === false) {
 			$this->output('critical', 'parse_log(): failed to open file: \''.$logfile.'\'');
@@ -300,8 +294,8 @@ abstract class parser extends base
 			$line = $this->normalize_line($line);
 
 			/**
-			 * Pass on the normalized line to the logfile format specific parser class extending this class. Empty lines are ignored. Remember the
-			 * line number of the last non empty line so we can store the correct parse history instead of guessing.
+			 * Pass on the normalized line to the logfile format specific parser class extending this class.
+			 * Empty lines are ignored. Remember the line number of the last non empty line.
 			 */
 			if (!empty($line)) {
 				$this->parse_line($line);
@@ -311,15 +305,6 @@ abstract class parser extends base
 		}
 
 		fclose($fp);
-		$this->output('notice', 'parse_log(): parsing completed');
-
-		/**
-		 * The $newdata variable can be used outside of the parser class to decide whether we want to run additional routines or skip them. Whenever the
-		 * $nicks_objs count is zero there won't be any new data because the data we are interested in is always related to one or more valid nicks.
-		 */
-		if (!empty($this->nicks_objs)) {
-			$this->newdata = true;
-		}
 	}
 
 	/**
@@ -335,7 +320,8 @@ abstract class parser extends base
 		/**
 		 * 1. Valid UTF-8 is passed along unmodified.
 		 * 2. Single byte characters from the Latin-1 Supplement are converted to multibyte unicode.
-		 * 3. Everything else is converted to the unicode questionmark sign (commonly used to depict unknown characters).
+		 * 3. Everything else is converted to the unicode questionmark sign (commonly used to depict unknown
+		 *    characters).
 		 */
 		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
 			$this->newline .= $char;
@@ -347,7 +333,7 @@ abstract class parser extends base
 		}
 
 		/**
-		 * Returns an empty string; see normalize_line() for it to make sense.
+		 * Return an empty string; see normalize_line() for it to make sense.
 		 */
 		return '';
 	}
@@ -355,7 +341,7 @@ abstract class parser extends base
 	final protected function set_action($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('warning', 'set_action(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_action(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('actions', 1);
@@ -373,7 +359,7 @@ abstract class parser extends base
 	final protected function set_join($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('warning', 'set_join(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_join(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('joins', 1);
@@ -383,9 +369,9 @@ abstract class parser extends base
 	final protected function set_kick($datetime, $csnick_performing, $csnick_undergoing, $line)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			$this->output('warning', 'set_kick(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_kick(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			$this->output('warning', 'set_kick(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_kick(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 		} else {
 			$nick_performing = $this->add_nick($csnick_performing, $datetime);
 			$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
@@ -393,7 +379,8 @@ abstract class parser extends base
 			$this->nicks_objs[$nick_undergoing]->add_value('kicked', 1);
 
 			/**
-			 * Track kick messages of up to a limit of 307 characters in length. The majority of IRC servers are within this limit.
+			 * Track kick messages of up to a limit of 307 characters in length. The majority of IRC servers
+			 * are within this limit.
 			 */
 			if (mb_strlen($line, 'UTF-8') <= 307) {
 				$this->nicks_objs[$nick_performing]->set_value('ex_kicks', $line);
@@ -405,9 +392,9 @@ abstract class parser extends base
 	final protected function set_mode($datetime, $csnick_performing, $csnick_undergoing, $mode)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			$this->output('warning', 'set_mode(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_mode(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			$this->output('warning', 'set_mode(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_mode(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 		} else {
 			$nick_performing = $this->add_nick($csnick_performing, $datetime);
 			$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
@@ -436,9 +423,9 @@ abstract class parser extends base
 	final protected function set_nickchange($datetime, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			$this->output('warning', 'set_nickchange(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_nickchange(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			$this->output('warning', 'set_nickchange(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_nickchange(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 		} else {
 			$nick_performing = $this->add_nick($csnick_performing, $datetime);
 			$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
@@ -449,7 +436,7 @@ abstract class parser extends base
 	final protected function set_normal($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('warning', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$line_length = mb_strlen($line, 'UTF-8');
@@ -457,20 +444,22 @@ abstract class parser extends base
 			$this->nicks_objs[$nick]->set_value('lasttalked', $datetime);
 
 			/**
-			 * Keeping track of monologues.
+			 * Keep track of monologues.
 			 */
 			if ($nick == $this->prevnick) {
 				$this->streak++;
 			} else {
 				/**
-				 * Someone else typed a line and the previous streak is interrupted. Check if the streak qualifies as a monologue and store it.
+				 * Someone else typed a line and the previous streak is interrupted. Check if the streak
+				 * qualifies as a monologue and store it.
 				 */
 				if ($this->streak >= 5) {
 					/**
-					 * If the current line count is 0 then $prevnick is not known to us yet (only seen in previous parse run). It's safe to
-					 * assume that $prevnick is a valid nick since it was set by set_normal(). We will create an object for it here so we
-					 * can add the monologue data. Don't worry about $prevnick being lowercase, we won't update "user_details" if $prevnick
-					 * isn't seen plus $csnick will get a refresh on any other activity.
+					 * If the current line count is 0 then $prevnick is not known yet (only seen in
+					 * previous parse run). It's safe to assume that $prevnick is a valid nick since
+					 * it was set by set_normal(). Create an object for it here so the monologue
+					 * data can be added. It doesn't matter if $prevnick is lowercase since it won't
+					 * be updated before it is actually seen (ie. on any other activity).
 					 */
 					if ($this->l_total == 0) {
 						$this->add_nick($this->prevnick, null);
@@ -514,7 +503,7 @@ abstract class parser extends base
 			$this->nicks_objs[$nick]->add_value('l_total', 1);
 
 			/**
-			 * "Words" are simply character groups separated by whitespace.
+			 * Words are simply character groups separated by whitespace.
 			 */
 			$words = explode(' ', $line);
 			$this->nicks_objs[$nick]->add_value('words', count($words));
@@ -528,20 +517,20 @@ abstract class parser extends base
 					$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 
 				/**
-				 * Only catch URLs which were intended to be clicked on; most clients can handle URLs that begin with "www." or "http://" and
-				 * such. If we would apply a more liberal approach we are likely to run into filenames (e.g. .py .com), libraries (e.g. .so) and
-				 * other words that validate as a URL.
+				 * Only catch URLs which were intended to be clicked on. Most clients can handle URLs
+				 * that begin with "www." or a scheme like "http://".
 				 */
 				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 					/**
-					 * Regardless of it being a valid URL or not we set $skipquote to true. This variable enables us to exclude quotes that
-					 * have a URL (or something similar looking) in them. This is to safeguard a tidy presentation on the statspage.
+					 * Regardless of it being a valid URL or not, set $skipquote to true, which
+					 * ensures that lines which contain a URL are not used as a quote. Quotes with
+					 * URLs in them often look messy/confusing on the stats page.
 					 */
 					$skipquote = true;
 
 					if (($urldata = $this->urltools->get_elements($csword)) !== false) {
 						/**
-						 * Track URLs of up to a (more than) sensible limit of 1024 characters in length.
+						 * Track URLs of up to a sensible limit of 1024 characters in length.
 						 */
 						if (strlen($urldata['url']) <= 1024) {
 							$this->nicks_objs[$nick]->add_url($urldata, $datetime);
@@ -552,17 +541,18 @@ abstract class parser extends base
 					}
 
 				/**
-				 * We keep track of all character groups composed of the letters found in the Basic Latin and Latin-1 Supplement character sets,
-				 * the Hyphen (used properly), and any multibyte characters beyond those two sets (found in UTF-8) regardless of their meaning.
-				 * The regexp checks for any characters we don't want in our words - from the aforementioned Latin sets. Keep in mind that
-				 * normalize_line() already took all the dirt out. Note that this method of finding words is not 100% accurate - possibly not
-				 * even 50% - but it serves our purpose.
+				 * Keep track of all character groups composed of the letters found in the Basic Latin
+				 * and Latin-1 Supplement character sets, the Hyphen (used properly), and any multibyte
+				 * characters beyond those two sets (found in UTF-8) regardless of their meaning. The
+				 * regexp checks for any characters not wanted in the word - from the aforementioned
+				 * Latin sets. Note that normalize_line() already took all the dirt out. This method of
+				 * finding words is not 100% accurate, but it serves its purpose.
 				 */
 				} elseif ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
 					$word_length = mb_strlen($csword, 'UTF-8');
 
 					/**
-					 * Words consisting of 30+ characters are most likely not real words so we skip those.
+					 * Words consisting of 30+ characters are most likely not real words.
 					 */
 					if ($word_length <= 30) {
 						$this->add_word($csword, $word_length);
@@ -571,15 +561,17 @@ abstract class parser extends base
 			}
 
 			/**
-			 * Track quotes/example lines of up to a sensible limit of 255 characters in length. This applies to all of the types seen below.
+			 * Track quotes/example lines of up to a sensible limit of 255 characters in length. This
+			 * applies to all of the types seen below.
 			 */
 			if (!$skipquote && $line_length <= 255) {
 				$this->nicks_objs[$nick]->add_quote('quote', $line, $line_length);
 			}
 
 			/**
-			 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than 50% non letter characters from
-			 * the Basic Latin and Latin-1 Supplement character sets in them.
+			 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have
+			 * less than 50% non letter characters from the Basic Latin and Latin-1 Supplement character
+			 * sets in them.
 			 */
 			if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') == $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length) {
 				$this->nicks_objs[$nick]->add_value('uppercased', 1);
@@ -608,7 +600,7 @@ abstract class parser extends base
 	final protected function set_part($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('warning', 'set_part(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_part(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('parts', 1);
@@ -618,7 +610,7 @@ abstract class parser extends base
 	final protected function set_quit($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('warning', 'set_quit(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_quit(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('quits', 1);
@@ -628,14 +620,14 @@ abstract class parser extends base
 	final protected function set_slap($datetime, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			$this->output('warning', 'set_slap(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_slap(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 		} else {
 			$nick_performing = $this->add_nick($csnick_performing, $datetime);
 			$this->nicks_objs[$nick_performing]->add_value('slaps', 1);
 
 			if (!is_null($csnick_undergoing)) {
 				/**
-				 * Clean possible network prefix (psyBNC) from "undergoing" nick.
+				 * Clean possible network prefix (psyBNC) from the "undergoing" nick.
 				 */
 				if (preg_match('/^.*?[~\'](?<nick>.+)$/', $csnick_undergoing, $matches)) {
 					$this->output('debug', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
@@ -643,10 +635,11 @@ abstract class parser extends base
 				}
 
 				if (!$this->validate_nick($csnick_undergoing)) {
-					$this->output('warning', 'set_slap(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+					$this->output('debug', 'set_slap(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 				} else {
 					/**
-					 * Don't pass a time when adding the "undergoing" nick while it may only be referred to instead of being seen for real.
+					 * Don't pass a time when adding the "undergoing" nick while it may only be
+					 * referred to instead of being seen for real.
 					 */
 					$nick_undergoing = $this->add_nick($csnick_undergoing, null);
 					$this->nicks_objs[$nick_undergoing]->add_value('slapped', 1);
@@ -658,13 +651,14 @@ abstract class parser extends base
 	final protected function set_topic($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('warning', 'set_topic(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			$this->output('debug', 'set_topic(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('topics', 1);
 
 			/**
-			 * Track topics of up to a limit of 390 characters in length. The majority of IRC servers are within this limit.
+			 * Track topics of up to a limit of 390 characters in length. The majority of IRC servers are
+			 * within this limit.
 			 */
 			if (mb_strlen($line, 'UTF-8') <= 390) {
 				$this->nicks_objs[$nick]->add_topic($line, $datetime);
@@ -673,8 +667,7 @@ abstract class parser extends base
 	}
 
 	/**
-	 * Check on syntax and defined lengths. The nick length should not exceed 32 characters which is the maximum database field length. We want to minimize
-	 * the key's length to optimize performance. Again, the majority of IRC servers are within this limit.
+	 * Check a nick on syntax and defined lengths. Again, the majority of IRC servers are within this limit.
 	 */
 	final private function validate_nick($csnick)
 	{
@@ -687,34 +680,41 @@ abstract class parser extends base
 
 	final public function write_data($sqlite3)
 	{
+		/**
+		 * If there are no nicks there is no data.
+		 */
+		if (empty($this->nicks_objs)) {
+			return false;
+		}
+
 		$this->output('notice', 'write_data(): writing data to database');
 		$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		/**
-		 * Write channel totals to the database.
+		 * Write channel totals to database.
 		 */
 		if ($this->l_total != 0) {
 			$queryparts = $this->get_queryparts($sqlite3, array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
-			$sqlite3->exec('INSERT OR IGNORE INTO channel (date, '.implode(', ', $queryparts['columnlist']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('UPDATE channel SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT OR IGNORE INTO channel_activity (date, '.implode(', ', $queryparts['columnlist']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('UPDATE channel_activity SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
-		 * Write user data to the database.
+		 * Write user data to database.
 		 */
 		foreach ($this->nicks_objs as $nick) {
 			$nick->write_data($sqlite3);
 		}
 
 		/**
-		 * Write word data to the database.
+		 * Write word data to database.
 		 */
 		foreach ($this->words_objs as $word) {
 			$word->write_data($sqlite3);
 		}
 
 		/**
-		 * Write streak data (history) to the database.
+		 * Write streak data (history) to database.
 		 */
 		if ($this->l_total != 0) {
 			$sqlite3->exec('DELETE FROM streak_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -722,7 +722,7 @@ abstract class parser extends base
 		}
 
 		$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$this->output('notice', 'write_data(): writing completed');
+		return true;
 	}
 }
 

@@ -17,7 +17,7 @@
  */
 
 /**
- * Class for performing database maintenance. Crucial to keep data up2date and usable.
+ * Class for performing database maintenance.
  */
 final class maintenance extends base
 {
@@ -29,7 +29,7 @@ final class maintenance extends base
 	public function __construct($settings)
 	{
 		/**
-		 * The variables that are listed in $settings_list will have their values overridden by those found in the config file.
+		 * If set, override variables listed in $settings_list[].
 		 */
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $settings)) {
@@ -50,19 +50,18 @@ final class maintenance extends base
 		}
 	}
 
-	private function calculate_milestones($sqlite3)
+	/**
+	 * Calculate on which dates a user reached certain milestones.
+	 */
+	public function calculate_milestones($sqlite3)
 	{
-		$query = $sqlite3->query('SELECT q_activity_by_day.ruid AS ruid, date, l_total FROM q_activity_by_day JOIN user_status ON q_activity_by_day.ruid = user_status.uid WHERE status != 3 ORDER BY ruid ASC, date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		/**
-		* If there is no user activity we can stop here.
-		*/
 		if ($result === false) {
 			return null;
 		}
 
-		$values = array();
 		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -81,10 +80,10 @@ final class maintenance extends base
 		}
 
 		if (!empty($values)) {
-			$sqlite3->exec('DELETE FROM q_milestones') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('DELETE FROM ruid_milestones') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			foreach ($values as $value) {
-				$sqlite3->exec('INSERT INTO q_milestones (ruid, milestone, date) VALUES '.$value) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				$sqlite3->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES '.$value) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 	}
@@ -92,107 +91,44 @@ final class maintenance extends base
 	public function do_maintenance($sqlite3)
 	{
 		$this->output('notice', 'do_maintenance(): performing database maintenance routines');
-
-		if (($usercount = $sqlite3->querySingle('SELECT COUNT(*) FROM user_status')) === false) {
-			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		if ($usercount == 0) {
-			$this->output('warning', 'do_maintenance(): database is empty, nothing to do');
-		} else {
-			$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$this->fix_user_status_errors($sqlite3);
-			$this->register_most_active_alias($sqlite3);
-			$this->make_materialized_views($sqlite3);
-			$this->calculate_milestones($sqlite3);
-			$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$this->output('notice', 'do_maintenance(): maintenance completed');
-		}
+		$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$this->register_most_active_alias($sqlite3);
+		$this->make_materialized_views($sqlite3);
+		$this->calculate_milestones($sqlite3);
+		$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 	}
 
 	/**
-	 * Fix user status errors.
-	 *
-	 * | uid	| ruid		| status	| type
-	 * +------------+---------------+---------------+----------------------------------
-	 * | x		| x		| 0		| unlinked (default)
-	 * | x		| x		| 1		| registered nick, can have aliases
-	 * | x		| y		| 2		| alias
-	 * | x		| x		| 3		| registered bot, can have aliases
-	 *
-	 * Conditions that don't fit the schema depicted above will be set to the default, unlinked state.
-	 */
-	private function fix_user_status_errors($sqlite3)
-	{
-		/**
-		 * Nicks with uid = ruid can only have status = 0, 1 or 3. Set back to 0 if status = 2.
-		 */
-		$sqlite3->exec('UPDATE user_status SET status = 0 WHERE uid = ruid AND status = 2') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$rows_affected = $sqlite3->changes();
-
-		if ($rows_affected > 0) {
-			$this->output('debug', 'fix_user_status_errors(): '.$rows_affected.' uid'.(($rows_affected > 1) ? 's' : '').' set to default (alias of self)');
-		}
-
-		/**
-		 * Nicks with uid != ruid can only have status = 2. Set back to 0 if status != 2 and set uid = ruid accordingly.
-		 */
-		$sqlite3->exec('UPDATE user_status SET ruid = uid, status = 0 WHERE uid != ruid AND status != 2') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$rows_affected = $sqlite3->changes();
-
-		if ($rows_affected > 0) {
-			$this->output('debug', 'fix_user_status_errors(): '.$rows_affected.' uid'.(($rows_affected > 1) ? 's' : '').' set to default (alias with invalid status)');
-		}
-
-		/**
-		 * Every alias must have their ruid set to the uid of a registered nick, which in turn has uid = ruid and status = 1 or 3. Unlink aliases
-		 * pointing to non ruids.
-		 */
-		$query = $sqlite3->query('SELECT ruid FROM user_status WHERE status IN (1,3) ORDER BY uid ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
-
-		if ($result === false) {
-			return null;
-		}
-
-		$query->reset();
-
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$ruids[] = $result['ruid'];
-		}
-
-		$sqlite3->exec('UPDATE user_status SET ruid = uid, status = 0 WHERE status = 2 AND ruid NOT IN ('.implode(',', $ruids).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$rows_affected = $sqlite3->changes();
-
-		if ($rows_affected > 0) {
-			$this->output('debug', 'fix_user_status_errors(): '.$rows_affected.' uid'.(($rows_affected > 1) ? 's' : '').' set to default (alias of non registered)');
-		}
-	}
-
-	/**
-	 * Make materialized views, which are stored copies of dynamic views. Query tables are top level materialized views based on various sub views and
-	 * contain accumulated stats per ruid. Legend: mv_ materialized view, q_ query table, v_ view.
+	 * Make materialized views, which are actual stored copies of virtual tables (views).
 	 */
 	private function make_materialized_views($sqlite3)
 	{
 		/**
-		 * Recreate materialized views.
+		 * The results from the view in the left column will be stored as the materialized view in the right
+		 * column. The order in which they are listed is important, as some views depend on materialized views
+		 * created before them.
 		 */
-		$tables = array('activedays', 'events', 'ex_actions', 'ex_exclamations', 'ex_kicked', 'ex_kicks', 'ex_questions', 'ex_uppercased', 'lines', 'quote');
+		$views = array(
+			'v_ruid_activity_by_day' => 'ruid_activity_by_day',
+			'v_ruid_activity_by_month' => 'ruid_activity_by_month',
+			'v_ruid_activity_by_year' => 'ruid_activity_by_year',
+			'v_activedays' => 'mv_activedays',
+			'v_events' => 'mv_events',
+			'v_ex_actions' => 'mv_ex_actions',
+			'v_ex_exclamations' => 'mv_ex_exclamations',
+			'v_ex_kicked' => 'mv_ex_kicked',
+			'v_ex_kicks' => 'mv_ex_kicks',
+			'v_ex_questions' => 'mv_ex_questions',
+			'v_ex_uppercased' => 'mv_ex_uppercased',
+			'v_quote' => 'mv_quote',
+			'v_lines' => 'mv_lines',
+			'v_ruid_smileys' => 'ruid_smileys',
+			'v_ruid_events' => 'ruid_events',
+			'v_ruid_lines' => 'ruid_lines');
 
-		foreach ($tables as $table) {
-			$sqlite3->exec('DELETE FROM mv_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('INSERT INTO mv_'.$table.' SELECT * FROM v_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		/**
-		 * Recreate query tables. Some of these depend on the materialized views we recreated above.
-		 */
-		$tables = array('activity_by_day', 'activity_by_month', 'activity_by_year', 'events', 'lines', 'smileys');
-
-		foreach ($tables as $table) {
-			$sqlite3->exec('DELETE FROM q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('INSERT INTO q_'.$table.' SELECT * FROM v_q_'.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		foreach ($views as $view => $table) {
+			$sqlite3->exec('DELETE FROM '.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO '.$table.' SELECT * FROM '.$view) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 
@@ -201,10 +137,7 @@ final class maintenance extends base
 	 */
 	private function register_most_active_alias($sqlite3)
 	{
-		/**
-		 * Find out which alias (uid) has the most lines for each registered user or bot (ruid).
-		 */
-		$query = $sqlite3->query('SELECT ruid, csnick, (SELECT user_status.uid AS uid FROM user_status JOIN user_lines ON user_status.uid = user_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS uid, status FROM user_status AS t1 JOIN user_details ON t1.uid = user_details.uid WHERE status IN (1,3)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS newruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND newruid IS NOT NULL AND ruid != newruid') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
@@ -214,29 +147,15 @@ final class maintenance extends base
 		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			/**
-			 * No records need to be updated if:
-			 * - All aliases linked to the registered user or bot have zero lines. The uid value will be null in this case.
-			 * - The alias with the most lines is already set to be the registered user or bot.
-			 */
-			if (!is_null($result['uid']) && $result['uid'] != $result['ruid']) {
-				$registered = $result['csnick'];
+			$registered = $result['csnick'];
 
-				if (($alias = $sqlite3->querySingle('SELECT csnick FROM user_details WHERE uid = '.$result['uid'])) === false) {
-					$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				}
-
-				/**
-				 * Update records:
-				 * - Make the alias (uid) the new registered nick for the user or bot by setting ruid = uid. The status will be set to either
-				 *   1 or 3, identical to previous value.
-				 * - Update the ruid field of all records that still point to the old registered nick (ruid) and set it to the new one (uid).
-				 *   Explicitly set the status to 2 so all records including the old registered nick are marked as alias.
-				 */
-				$sqlite3->exec('UPDATE user_status SET ruid = '.$result['uid'].', status = '.$result['status'].' WHERE uid = '.$result['uid']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				$sqlite3->exec('UPDATE user_status SET ruid = '.$result['uid'].', status = 2 WHERE ruid = '.$result['ruid']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				$this->output('debug', 'register_most_active_alias(): \''.$alias.'\' set to new registered for \''.$registered.'\'');
+			if (($alias = $sqlite3->querySingle('SELECT csnick FROM uid_details WHERE uid = '.$result['newruid'])) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
+
+			$sqlite3->exec('UPDATE uid_details SET ruid = '.$result['newruid'].', status = '.$result['status'].' WHERE uid = '.$result['newruid']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('UPDATE uid_details SET ruid = '.$result['newruid'].', status = 2 WHERE ruid = '.$result['ruid']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$this->output('debug', 'register_most_active_alias(): \''.$alias.'\' set to new registered for \''.$registered.'\'');
 		}
 	}
 }

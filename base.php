@@ -22,9 +22,10 @@
 abstract class base
 {
 	/**
-	 * Default settings for this script, can be overridden in the config file. These should all appear in $settings_list[] along with their type.
+	 * Default settings for this script, which can be overridden in the configuration file. These variables should
+	 * all appear in $settings_list[] along with their type.
 	 */
-	protected $outputbits = 7;
+	protected $outputbits = 3;
 
 	/**
 	 * Variables that shouldn't be tampered with.
@@ -37,7 +38,7 @@ abstract class base
 	}
 
 	/**
-	 * Create parts of the sqlite3 query.
+	 * Create parts of the SQLite3 query.
 	 */
 	final protected function get_queryparts($sqlite3, $columns)
 	{
@@ -90,20 +91,14 @@ abstract class base
 				}
 
 				exit;
-			case 'warning':
-				if ($this->outputbits & 2) {
-					echo $datetime.' [!] '.$msg."\n";
-				}
-
-				break;
 			case 'notice':
-				if ($this->outputbits & 4) {
+				if ($this->outputbits & 2) {
 					echo $datetime.' [ ] '.$msg."\n";
 				}
 
 				break;
 			case 'debug':
-				if ($this->outputbits & 8) {
+				if ($this->outputbits & 4) {
 					echo $datetime.' [D] '.$msg."\n";
 				}
 

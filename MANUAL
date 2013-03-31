@@ -1,14 +1,13 @@
 usage:	php sss.php [-c <file>] [-i <file|directory>]
 		    [-o <file> [-b <numbits>]]
 	php sss.php [-c <file>] [-e <file>]
-	php sss.php [-c <file>] [-m]
 	php sss.php [-c <file>] [-n <file>]
 	php sss.php [-c <file>] [-s]
 
 options:
 	-b <numbits>
-		Specifies which sections to display on the statspage. Add up the
-		bits corresponding to the sections you want to enable:
+		Specifies which sections to display on the stats page. Add up
+		the bits corresponding to the sections you want to enable:
 			  1  Activity
 			  2  General Chat
 			  4  Modes
@@ -30,11 +29,6 @@ options:
 		last logfile has been parsed database maintenance will commence
 		to verify, sort and index data.
 
-	-m
-		Run database maintenance as is automatically done after parsing
-		logs. This option exists for the purpose of updating user
-		records after manually linking nicks.
-
 	-n <file>
 		Import user relations from <file> into the database. Existing
 		relationships will be unset prior to any updates made. It is
@@ -50,7 +44,7 @@ options:
 		"vars.php" accepts them. See "vars.php" for details.
 
 examples:
-	Parse all logfiles found in "/home/foo/bar/" and create a statspage
+	Parse all logfiles found in "/home/foo/bar/" and create a stats page
 	named "/var/www/foobar.html" containing only Activity and URLs data:
 
 		$ php sss.php -i /home/foo/bar/ -o /var/www/foobar.html -b 33

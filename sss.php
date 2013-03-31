@@ -22,6 +22,9 @@
 ini_set('display_errors', '0');
 ini_set('error_reporting', 0);
 
+/**
+ * Check if all required extension are loaded.
+ */
 if (!extension_loaded('sqlite3')) {
 	exit('sqlite3 extension isn\'t loaded'."\n");
 }
@@ -31,7 +34,7 @@ if (!extension_loaded('mbstring')) {
 }
 
 /**
- * Class autoloader, new style. Important piece of code right here.
+ * Class autoloader. This code handles on the fly inclusion of class files at time of instantiation.
  */
 spl_autoload_register(function ($class) {
 	require_once(rtrim(dirname(__FILE__), '/\\').'/'.$class.'.php');
@@ -43,7 +46,8 @@ spl_autoload_register(function ($class) {
 final class sss extends base
 {
 	/**
-	 * Default settings for this script, can be overridden in the config file. These should all appear in $settings_list[] along with their type.
+	 * Default settings for this script, which can be overridden in the configuration file. These variables should
+	 * all appear in $settings_list[] along with their type.
 	 */
 	private $autolinknicks = true;
 	private $database = 'sss.db3';
@@ -67,28 +71,29 @@ final class sss extends base
 	public function __construct()
 	{
 		/**
-		 * Explicitly set the locale to C (POSIX) for all categories so we won't run into unexpected results between platforms.
+		 * Explicitly set the locale to C (POSIX) for all categories so there hopefully won't be any unexpected
+		 * results between platforms.
 		 */
 		setlocale(LC_ALL, 'C');
 
 		/**
-		 * Use UTC until user specified timezone is loaded.
+		 * Use UTC until the default, or user specified, timezone is loaded.
 		 */
 		date_default_timezone_set('UTC');
 
 		/**
-		 * Read options from the command line. If an illegal combination of valid options is given the program will print the manual on screen and exit.
+		 * Read options from the command line. Print the manual on invalid input.
 		 */
-		$options = getopt('b:c:e:i:mn:o:s');
+		$options = getopt('b:c:e:i:n:o:s');
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
-		if (!preg_match('/^(bc?i?o|c|c?(e|i|i?o|m|n|s))$/', $options_keys)) {
+		if (!preg_match('/^(bc?i?o|c|c?(e|i|i?o|n|s))$/', $options_keys)) {
 			$this->print_manual();
 		}
 
 		/**
-		 * Some options require additional settings to be set in the configuration file.
+		 * Some options require additional settings to be set in the configuration file. Add those to the list.
 		 */
 		if (strpos($options_keys, 'i') !== false) {
 			array_push($this->settings_list_required, 'parser', 'logfile_dateformat');
@@ -115,19 +120,20 @@ final class sss extends base
 		}
 
 		/**
-		 * Make the database connection. Always needed.
+		 * Open the database connection. Always needed from this point forward.
 		 */
 		try {
 			$sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
+			$sqlite3->busyTimeout(60000);
 		} catch (Exception $e) {
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
 		}
 
 		/**
-		 * Set PRAGMAs:
-		 * - journal_mode = OFF: disable the rollback journal completely.
-		 * - synchronous = OFF: continue without syncing as soon as data is handed off to the operating system.
-		 * - temp_store = MEMORY: temporary tables and indices are kept in memory.
+		 * Set SQLite3 PRAGMAs:
+		 *  journal_mode = OFF - Disable the rollback journal completely.
+		 *  synchronous = OFF - Continue without syncing as soon as data is handed off to the operating system.
+		 *  temp_store = MEMORY - Temporary tables and indices are kept in memory.
 		 */
 		$pragmas = array(
 			'journal_mode' => 'OFF',
@@ -155,12 +161,13 @@ final class sss extends base
 			$this->parse_log($sqlite3, $options['i']);
 		}
 
-		if (array_key_exists('m', $options)) {
-			$this->do_maintenance($sqlite3);
-		}
-
 		if (array_key_exists('n', $options)) {
 			$this->import_nicks($sqlite3, $options['n']);
+
+			/**
+			 * Run maintenance after import.
+			 */
+			$this->do_maintenance($sqlite3);
 		}
 
 		if (array_key_exists('o', $options)) {
@@ -168,20 +175,19 @@ final class sss extends base
 		}
 
 		$sqlite3->close();
+		$this->output('notice', 'sss(): kthxbye');
 	}
 
+	/**
+	 * The maintenance routines ensure that all relevant user data is accumulated properly.
+	 */
 	private function do_maintenance($sqlite3)
 	{
 		/**
-		 * Scan for new aliases when $autolinknicks is enabled.
+		 * Search for new aliases if $autolinknicks is enabled.
 		 */
 		if ($this->autolinknicks) {
-			/**
-			 * link_nicks() returns false if the database is empty, indicating we don't have to continue with further maintenance.
-			 */
-			if (!$this->link_nicks($sqlite3)) {
-				return null;
-			}
+			$this->link_nicks($sqlite3);
 		}
 
 		$maintenance = new maintenance($this->settings);
@@ -191,23 +197,19 @@ final class sss extends base
 	private function export_nicks($sqlite3, $file)
 	{
 		$this->output('notice', 'export_nicks(): exporting nicks');
-		$query = $sqlite3->query('SELECT user_details.uid AS uid, ruid, csnick, status FROM user_details JOIN user_status ON user_details.uid = user_status.uid ORDER BY csnick ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT csnick, ruid, status FROM uid_details ORDER BY csnick ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
-			$this->output('warning', 'export_nicks(): database is empty, nothing to do');
-			return null;
+			$this->output('critical', 'export_nicks(): database is empty');
 		}
 
-		$rows = 0;
 		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$rows++;
-
-			if ($result['status'] == 1 || $result['status'] == 3) {
-				$registered[strtolower($result['csnick'])] = $result['uid'];
-				$statuses[$result['uid']] = $result['status'];
+			if ($result['status'] == 1 || $result['status'] == 3 || $result['status'] == 4) {
+				$registerednicks[$result['ruid']] = strtolower($result['csnick']);
+				$statuses[$result['ruid']] = $result['status'];
 			} elseif ($result['status'] == 2) {
 				$aliases[$result['ruid']][] = strtolower($result['csnick']);
 			} else {
@@ -218,25 +220,23 @@ final class sss extends base
 		$output = '';
 		$i = 0;
 
-		if (!empty($registered)) {
-			foreach ($registered as $user => $uid) {
-				$output .= $statuses[$uid].','.$user;
+		if (!empty($registerednicks)) {
+			foreach ($registerednicks as $ruid => $nick) {
+				$output .= $statuses[$ruid].','.$nick;
 				$i++;
 
-				if (!empty($aliases[$uid])) {
-					$output .= ','.implode(',', $aliases[$uid])."\n";
-					$i += count($aliases[$uid]);
+				if (!empty($aliases[$ruid])) {
+					$output .= ','.implode(',', $aliases[$ruid]);
+					$i += count($aliases[$ruid]);
 				}
+
+				$output .= "\n";
 			}
 		}
 
 		if (!empty($unlinked)) {
 			$output .= '*,'.implode(',', $unlinked)."\n";
 			$i += count($unlinked);
-		}
-
-		if ($i != $rows) {
-			$this->output('critical', 'export_nicks(): something is wrong, run "php sss.php -m" before export');
 		}
 
 		if (($fp = fopen($file, 'wb')) === false) {
@@ -268,12 +268,11 @@ final class sss extends base
 	private function import_nicks($sqlite3, $file)
 	{
 		$this->output('notice', 'import_nicks(): importing nicks');
-		$query = $sqlite3->query('SELECT uid, csnick FROM user_details') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT uid, csnick FROM uid_details') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
-			$this->output('warning', 'import_nicks(): database is empty, nothing to do');
-			return null;
+			$this->output('critical', 'import_nicks(): database is empty');
 		}
 
 		$query->reset();
@@ -294,18 +293,19 @@ final class sss extends base
 			$line = fgets($fp);
 			$line = preg_replace('/\s/', '', $line);
 			$lineparts = explode(',', strtolower($line));
+			$status = (int) $lineparts[0];
 
 			/**
-			 * First nick on each line is the initial registered nick which aliases are linked to.
+			 * The first nick on each line will be the initial registered nick which aliases are linked to.
 			 */
-			if (((int) $lineparts[0] == 1 || (int) $lineparts[0] == 3) && !empty($lineparts[1]) && array_key_exists($lineparts[1], $uids)) {
-				$uid = $uids[$lineparts[1]];
-				$registered[] = $uid;
-				$statuses[$uid] = (int) $lineparts[0];
+			if (($status == 1 || $status == 3 || $status == 4) && !empty($lineparts[1]) && array_key_exists($lineparts[1], $uids)) {
+				$ruid = $uids[$lineparts[1]];
+				$ruids[] = $ruid;
+				$statuses[$ruid] = $status;
 
 				for ($i = 2, $j = count($lineparts); $i < $j; $i++) {
 					if (!empty($lineparts[$i]) && array_key_exists($lineparts[$i], $uids)) {
-						$aliases[$uid][] = $uids[$lineparts[$i]];
+						$aliases[$ruid][] = $uids[$lineparts[$i]];
 					}
 				}
 			}
@@ -313,91 +313,54 @@ final class sss extends base
 
 		fclose($fp);
 
-		if (empty($registered)) {
-			$this->output('warning', 'import_nicks(): no user relations found to import');
+		if (empty($ruids)) {
+			$this->output('critical', 'import_nicks(): no user relations found to import');
 		} else {
 			/**
-			 * Set all nicks to their default status before updating them according to new data.
+			 * Set all nicks to their default status before updating them according to imported data.
 			 */
 			$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('UPDATE user_status SET ruid = uid, status = 0') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('UPDATE uid_details SET ruid = uid, status = 0') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-			foreach ($registered as $uid) {
-				$sqlite3->exec('UPDATE user_status SET ruid = uid, status = '.$statuses[$uid].' WHERE uid = '.$uid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			foreach ($ruids as $ruid) {
+				$sqlite3->exec('UPDATE uid_details SET status = '.$statuses[$ruid].' WHERE uid = '.$ruid) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-				if (!empty($aliases[$uid])) {
-					$sqlite3->exec('UPDATE user_status SET ruid = '.$uid.', status = 2 WHERE uid IN ('.implode(',', $aliases[$uid]).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				if (!empty($aliases[$ruid])) {
+					$sqlite3->exec('UPDATE uid_details SET ruid = '.$ruid.', status = 2 WHERE uid IN ('.implode(',', $aliases[$ruid]).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				}
 			}
 
 			$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$this->output('notice', 'import_nicks(): import completed, don\'t forget to run "php sss.php -m"');
 		}
 	}
 
+	/**
+	 * This function tries to link unlinked nicks to any other nick that is identical after stripping them both from
+	 * any non-alphanumeric characters (at any position in the nick) and trailing numerics. The results are compared
+	 * in a case insensitive manner.
+	 */
 	private function link_nicks($sqlite3)
 	{
-		/**
-		 * This function tries to link unlinked nicks to any other nick that is identical after stripping them from non-alphanumeric characters (at any
-		 * position in the nick) and numerics (only at the end of the nick). The results are compared in a case insensitive manner.
-		 *
-		 * Example before:
-		 *
-		 * | nick	| uid		| ruid		| status	| description
-		 * +------------+---------------+---------------+---------------+----------------------------------
-		 * | Jack	| 80		| 80		| 1		| registered nick (linked manually)
-		 * | Jack|away	| 120		| 80		| 2		| alias (linked manually)
-		 * | Jack-away	| 550		| 550		| 0		| unlinked nick
-		 * | Jack|4w4y	| 551		| 551		| 0		| unlinked nick
-		 * | ^jack^	| 552		| 552		| 0		| unlinked nick
-		 * | Jack|brb	| 553		| 553		| 0		| unlinked nick
-		 * | Jack[brb]	| 554		| 554		| 0		| unlinked nick
-		 * | Jack^1337^	| 555		| 555		| 0		| unlinked nick
-		 *
-		 *
-		 * Example after:
-		 *
-		 * | nick	| uid		| ruid		| status	| description
-		 * +------------+---------------+---------------+---------------+--------------------------------------------
-		 * | Jack	| 80		| 80		| 1		| registered nick
-		 * | Jack|away	| 120		| 80		| 2		| existing alias
-		 * | Jack-away	| 550		| 80		| 2		| new alias pointing to the ruid of its match
-		 * | Jack|4w4y	| 551		| 551		| 0		| remains unlinked
-		 * | ^jack^	| 552		| 80		| 2		| new alias
-		 * | Jack|brb	| 553		| 553		| 1		| new registered nick
-		 * | Jack[brb]	| 554		| 553		| 2		| new alias
-		 * | Jack^1337^ | 555		| 80		| 2		| new alias
-		 *
-		 * This method has very little false positives and is therefore enabled by default.
-		 */
 		$this->output('notice', 'link_nicks(): looking for possible aliases');
-		$query = $sqlite3->query('SELECT user_details.uid AS uid, ruid, csnick, status FROM user_details JOIN user_status ON user_details.uid = user_status.uid') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
-
-		if ($result === false) {
-			$this->output('warning', 'link_nicks(): database is empty, nothing to do');
-			return false;
-		}
-
+		$query = $sqlite3->query('SELECT uid, csnick, ruid, status FROM uid_details') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$strippednicks = array();
-		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$nicks[$result['uid']] = array(
 				'nick' => $result['csnick'],
 				'ruid' => $result['ruid'],
 				'status' => $result['status']);
-
-			/**
-			 * We keep an array with uids for each stripped nick. If we encounter a linked nick we put its uid at the start of the array, otherwise
-			 * just append the uid.
-			 */
 			$strippednick = preg_replace(array('/[^a-z0-9]/', '/[0-9]+$/'), '', strtolower($result['csnick']));
 
 			/**
-			 * Only proceed if the stripped nick consists of more than one character.
+			 * The stripped nick must consist of at least one character.
 			 */
 			if (strlen($strippednick) > 1) {
+				/**
+				 * Maintain an array for each stripped nick, containing the uids of every nick that
+				 * matches it. Put the uid of the matching nick at the start of the array if the nick is
+				 * already linked (status != 0), otherwise put it at the end.
+			 	 */
 				if ($result['status'] != 0 && !empty($strippednicks[$strippednick])) {
 					array_unshift($strippednicks[$strippednick], $result['uid']);
 				} else {
@@ -407,44 +370,39 @@ final class sss extends base
 		}
 
 		$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$nickslinked = 0;
 
 		foreach ($strippednicks as $uids) {
 			/**
-			 * If there is only one uid for the stripped nick we don't have anything to link.
+			 * If there is only one match for the stripped nick, there is nothing to link.
 			 */
 			if (count($uids) == 1) {
 				continue;
 			}
 
-			/**
-			 * Use the ruid that belongs to the first uid in the array to link all succeeding unlinked uids to. If the first uid is unlinked
-			 * (status = 0) we update its record to become a registered nick (status = 1) when there is at least one new alias found for it
-			 * (any succeeding uid with status = 0).
-			 */
-			$aliasfound = false;
+			$newalias = false;
 
 			for ($i = 1, $j = count($uids); $i < $j; $i++) {
+				/**
+				 * Use the ruid that belongs to the first uid in the array to link all succeeding
+				 * _unlinked_ nicks to.
+				 */
 				if ($nicks[$uids[$i]]['status'] == 0) {
-					$sqlite3->exec('UPDATE user_status SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+					$sqlite3->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 					$this->output('debug', 'link_nicks(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
-					$nickslinked++;
-					$aliasfound = true;
+					$newalias = true;
 				}
 			}
 
-			if ($aliasfound && $nicks[$uids[0]]['status'] == 0) {
-				$sqlite3->exec('UPDATE user_status SET status = 1 WHERE uid = '.$uids[0]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			/**
+			 * If there are aliases found, and the first nick in the array is unlinked (status = 0), make it
+			 * a registered nick (status = 1).
+			 */
+			if ($newalias && $nicks[$uids[0]]['status'] == 0) {
+				$sqlite3->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 
 		$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-		if ($nickslinked == 0) {
-			$this->output('notice', 'link_nicks(): no new aliases found');
-		}
-
-		return true;
 	}
 
 	private function make_html($sqlite3, $file)
@@ -482,7 +440,7 @@ final class sss extends base
 
 		foreach ($files as $file) {
 			/**
-			 * If the filename doesn't match the pattern provided by $logfile_dateformat this condition will not be met.
+			 * The filenames should match the pattern provided by $logfile_dateformat.
 			 */
 			if (($datetime = date_create_from_format($this->logfile_dateformat, basename($file))) !== false) {
 				$logfiles[date_format($datetime, 'Y-m-d')] = $file;
@@ -499,20 +457,12 @@ final class sss extends base
 		ksort($logfiles);
 
 		/**
-		 * Get the date of the last log that has been parsed.
+		 * Get the date of the last log parsed.
 		 */
 		if (($date_lastlogparsed = $sqlite3->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		/**
-		 * $logsparsed increases after each log parsed.
-		 */
-		$logsparsed = 0;
-
-		/**
-		 * $needmaintenance becomes true when there are actual lines parsed. Maintenance routines are only run once after all logs are parsed.
-		 */
 		$needmaintenance = false;
 
 		foreach ($logfiles as $date => $logfile) {
@@ -524,8 +474,7 @@ final class sss extends base
 			$parser->set_value('date', $date);
 
 			/**
-			 * Get the streak history. This will assume logs are parsed in chronological order with no gaps. If this is not the case the correctness
-			 * of the streak stats might be affected.
+			 * Get the streak history. This will assume logs are parsed in chronological order with no gaps.
 			 */
 			if (($result = $sqlite3->querySingle('SELECT prevnick, streak FROM streak_history', true)) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -548,16 +497,16 @@ final class sss extends base
 			}
 
 			/**
-			 * Check if we are dealing with a gzipped log.
+			 * Check if the log is gzipped and call the appropriate parser.
 			 */
 			if (preg_match('/\.gz$/', $logfile)) {
 				if (!extension_loaded('zlib')) {
 					$this->output('critical', 'parse_log(): zlib extension isn\'t loaded: can\'t parse gzipped logs'."\n");
 				}
 
-				$parser->gzparse_log($logfile, $firstline);
+				$parser->gzparse_log($sqlite3, $logfile, $firstline);
 			} else {
-				$parser->parse_log($logfile, $firstline);
+				$parser->parse_log($sqlite3, $logfile, $firstline);
 			}
 
 			$logsparsed++;
@@ -568,28 +517,18 @@ final class sss extends base
 			if ($parser->get_value('linenum_lastnonempty') >= $firstline) {
 				$sqlite3->exec('INSERT OR IGNORE INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_value('linenum_lastnonempty').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				$sqlite3->exec('UPDATE parse_history SET lines_parsed = '.$parser->get_value('linenum_lastnonempty').' WHERE CHANGES() = 0 AND date = \''.$date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
 
-			/**
-			 * When new data is found write it to the database and set $needmaintenance to true.
-			 */
-			if ($parser->get_value('newdata')) {
-				$parser->write_data($sqlite3);
-				$needmaintenance = true;
-			} else {
-				$this->output('notice', 'parse_log(): no new data to write to database');
+				/**
+				 * Write data to database and set $needmaintenance to true if there was any data stored.
+				 */
+				if ($parser->write_data($sqlite3)) {
+					$needmaintenance = true;
+				}
 			}
 		}
 
 		/**
-		 * If there are no logs parsed, output the reason.
-		 */
-		if ($logsparsed == 0) {
-			$this->output('notice', 'parse_log(): skipped all logs predating latest parse progress');
-		}
-
-		/**
-		 * Finally run maintenance routines if needed.
+		 * Finally, call maintenance if needed.
 		 */
 		if ($needmaintenance) {
 			$this->do_maintenance($sqlite3);
@@ -605,7 +544,8 @@ final class sss extends base
 	}
 
 	/**
-	 * Read settings from the config file and put them into $settings[] so we can pass them along to other classes.
+	 * Read the settings from the configuration file and put them into $settings[] so they can be passed along to
+	 * other classes.
 	 */
 	private function read_config($file)
 	{
@@ -629,7 +569,7 @@ final class sss extends base
 		fclose($fp);
 
 		/**
-		 * Exit if any crucial settings aren't present in the config file.
+		 * Exit if any crucial settings aren't present.
 		 */
 		foreach ($this->settings_list_required as $key) {
 			if (!array_key_exists($key, $this->settings)) {
@@ -638,7 +578,7 @@ final class sss extends base
 		}
 
 		/**
-		 * The variables that are listed in $settings_list will have their values overridden by those found in the config file.
+		 * If set, override variables listed in $settings_list[].
 		 */
 		foreach ($this->settings_list as $key => $type) {
 			if (!array_key_exists($key, $this->settings)) {
