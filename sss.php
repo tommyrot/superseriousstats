@@ -509,8 +509,6 @@ final class sss extends base
 				$parser->parse_log($sqlite3, $logfile, $firstline);
 			}
 
-			$logsparsed++;
-
 			/**
 			 * Update the parse history when there are actual (non empty) lines parsed.
 			 */
