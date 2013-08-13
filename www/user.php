@@ -323,7 +323,7 @@ final class user
 			}
 
 			$head = 'Activity by Year';
-			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid) or $this->output($sqlite3->lastErrorCode(), 'mysqli: '.mysqli_error($this->mysqli));
+			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		$result = $query->fetchArray(SQLITE3_ASSOC);
