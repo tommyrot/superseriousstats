@@ -129,7 +129,7 @@ final class history
 
 	private function get_activity($sqlite3)
 	{
-		$query = $sqlite3->query('SELECT CAST(SUBSTR(date, 1, 4) AS INTEGER) AS year, CAST(SUBSTR(date, 6, 2) AS INTEGER) AS month, SUM(l_total) AS l_total FROM channel_activity GROUP BY year, month ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT SUBSTR(date, 1, 4) AS year, CAST(SUBSTR(date, 6, 2) AS INTEGER) AS month, SUM(l_total) AS l_total FROM channel_activity GROUP BY year, month ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$this->activity[$result['year']][$result['month']] = $result['l_total'];
