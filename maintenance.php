@@ -88,6 +88,71 @@ final class maintenance extends base
 		}
 	}
 
+	/**
+	 * Cumulate monthly channel and user activity.
+	 */
+	public function cumulate_activity($sqlite3)
+	{
+		if (($date_firstactivity = $sqlite3->querySingle('SELECT MIN(SUBSTR(date, 1, 7)) AS date FROM channel_activity')) === false) {
+			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		if (is_null($date_firstactivity)) {
+			return null;
+		}
+
+		/**
+		 * Create an array filled with all the dates since first activity. This will be the default array for ruids.
+		 */
+		$defaultarray = array();
+
+		while ($date_firstactivity != date('Y-m', mktime(0, 0, 0, (int) date('n') + 1, 1, (int) date('Y')))) {
+			$defaultarray[$date_firstactivity] = 0;
+			$date_firstactivity = date('Y-m', mktime(0, 0, 0, (int) substr($date_firstactivity, 5, 2) + 1, 1, (int) substr($date_firstactivity, 0, 4)));
+		}
+
+		$query = $sqlite3->query('SELECT ruid, date, l_total FROM ruid_activity_by_month ORDER BY ruid ASC, date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$result = $query->fetchArray(SQLITE3_ASSOC);
+
+		if ($result === false) {
+			return null;
+		}
+
+		$query->reset();
+		$ruid_activity_by_month = array();
+
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			if (!array_key_exists($result['ruid'], $ruid_activity_by_month)) {
+				$ruid_activity_by_month[$result['ruid']] = $defaultarray;
+			}
+
+			$ruid_activity_by_month[$result['ruid']][$result['date']] = $result['l_total'];
+		}
+
+		foreach ($ruid_activity_by_month as $ruid => $dates) {
+			$prev_l_total = 0;
+
+			foreach ($dates as $date => $l_total) {
+				$cumulative_l_total = $prev_l_total + $l_total;
+
+				if ($cumulative_l_total != 0) {
+					$values[] = '('.$ruid.', \''.$date.'\', '.$cumulative_l_total.')';
+				}
+
+				$prev_l_total = $cumulative_l_total;
+			}
+		}
+
+		$sqlite3->exec('DELETE FROM ruid_activity_by_month_cumulative') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+		foreach ($values as $value) {
+			$sqlite3->exec('INSERT INTO ruid_activity_by_month_cumulative (ruid, date, l_total) VALUES '.$value) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		$sqlite3->exec('DELETE FROM channel_activity_by_month_cumulative') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('INSERT INTO channel_activity_by_month_cumulative SELECT date, SUM(l_total) FROM ruid_activity_by_month_cumulative GROUP BY date') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+	}
+
 	public function do_maintenance($sqlite3)
 	{
 		$this->output('notice', 'do_maintenance(): performing database maintenance routines');
@@ -95,6 +160,7 @@ final class maintenance extends base
 		$this->register_most_active_alias($sqlite3);
 		$this->make_materialized_views($sqlite3);
 		$this->calculate_milestones($sqlite3);
+		//$this->cumulate_activity($sqlite3); --disabled until fully complete
 		$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 	}
 
