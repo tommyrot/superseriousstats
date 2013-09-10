@@ -35,11 +35,6 @@ l_evening INT NOT NULL DEFAULT 0,
 l_total INT NOT NULL --must be >0
 );
 
-CREATE TABLE channel_activity_by_month_cumulative (
-date TEXT PRIMARY KEY NOT NULL,
-l_total INT NOT NULL
-);
-
 CREATE TABLE fqdns (
 fid INTEGER PRIMARY KEY AUTOINCREMENT,
 fqdn TEXT UNIQUE NOT NULL
@@ -206,14 +201,6 @@ l_total INT NOT NULL
 CREATE INDEX ruid_activity_by_month_ruid ON ruid_activity_by_month (ruid);
 CREATE INDEX ruid_activity_by_month_date ON ruid_activity_by_month (date);
 
-CREATE TABLE ruid_activity_by_month_cumulative (
-ruid INT NOT NULL,
-date TEXT NOT NULL, --unique for ruid
-l_total INT NOT NULL
-);
-CREATE INDEX ruid_activity_by_month_cumulative_ruid ON ruid_activity_by_month_cumulative (ruid);
-CREATE INDEX ruid_activity_by_month_cumulative_date ON ruid_activity_by_month_cumulative (date);
-
 CREATE TABLE ruid_activity_by_year (
 ruid INT NOT NULL,
 date TEXT NOT NULL, --unique for ruid
@@ -334,6 +321,16 @@ date TEXT NOT NULL
 CREATE INDEX ruid_milestones_ruid ON ruid_milestones (ruid);
 CREATE INDEX ruid_milestones_milestone ON ruid_milestones (milestone);
 CREATE INDEX ruid_milestones_date ON ruid_milestones (date);
+
+CREATE TABLE ruid_rankings (
+ruid INT NOT NULL,
+date TEXT NOT NULL, --unique for ruid
+rank INT NOT NULL,
+l_total INT NOT NULL,
+percentage REAL NOT NULL
+);
+CREATE INDEX ruid_rankings_ruid ON ruid_rankings (ruid);
+CREATE INDEX ruid_rankings_date ON ruid_rankings (date);
 
 CREATE TABLE ruid_smileys (
 ruid INT PRIMARY KEY NOT NULL,
