@@ -564,7 +564,7 @@ final class user
 	/**
 	 * For compatibility reasons this function has the same name as the original version in the base class and
 	 * accepts the same arguments. Its functionality is slightly different in that it exits on any type of message
-	 * passed to it.
+	 * passed to it. SQLite3 result code 5 = SQLITE_BUSY, result code 6 = SQLITE_LOCKED.
 	 */
 	private function output($code, $msg)
 	{

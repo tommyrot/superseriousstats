@@ -353,7 +353,7 @@ final class sss extends base
 			$strippednick = preg_replace(array('/[^a-z0-9]/', '/[0-9]+$/'), '', strtolower($result['csnick']));
 
 			/**
-			 * The stripped nick must consist of at least one character.
+			 * The stripped nick must consist of at least two characters.
 			 */
 			if (strlen($strippednick) > 1) {
 				/**
