@@ -279,6 +279,12 @@ final class user
 		$output .= $this->make_table_activity($sqlite3, 'year');
 
 		/**
+		 * Rankings section.
+		 */
+		$output .= '<div class="section">Rankings</div>'."\n";
+		$output .= $this->make_table_rankings($sqlite3);
+
+		/**
 		 * HTML Foot.
 		 */
 		$output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
@@ -559,6 +565,49 @@ final class user
 		}
 
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
+	private function make_table_rankings($sqlite3)
+	{
+		$query = $sqlite3->query('SELECT * FROM ruid_rankings WHERE ruid = '.$this->ruid.' ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$result = $query->fetchArray(SQLITE3_ASSOC);
+
+		if ($result === false) {
+			return null;
+		}
+
+		$query->reset();
+		$rankings = array();
+
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$prevdate = date('Y-m', mktime(0, 0, 0, (int) substr($result['date'], 5, 2) - 1, 1, (int) substr($result['date'], 0, 4)));
+
+			if (!array_key_exists($prevdate, $rankings)) {
+				$rankings[$result['date']]['rank_delta'] = 0;
+				$rankings[$result['date']]['l_total_delta'] = 0;
+				$rankings[$result['date']]['percentage_delta'] = 0;
+			} else {
+				$rankings[$result['date']]['rank_delta'] = $rankings[$prevdate]['rank'] - $result['rank'];
+				$rankings[$result['date']]['l_total_delta'] = $result['l_total'] - $rankings[$prevdate]['l_total'];
+				$rankings[$result['date']]['percentage_delta'] = number_format($result['percentage'] - $rankings[$prevdate]['percentage'], 2);
+			}
+
+			$rankings[$result['date']]['rank'] = $result['rank'];
+			$rankings[$result['date']]['l_total'] = $result['l_total'];
+			$rankings[$result['date']]['percentage'] = number_format($result['percentage'], 2);
+		}
+
+		krsort($rankings);
+		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7">';
+		$tr1 = '<tr><th colspan="7">Rankings';
+		$tr2 = '<tr><td class="k1">Rank<td class="k2"><td class="k3">Date<td class="k4">Lines<td class="k5"><td class="k6">Percentage<td class="k7">';
+		$trx = '';
+
+		foreach ($rankings as $date => $values) {
+			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.($values['rank_delta'] == 0 ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.($values['l_total_delta'] == 0 ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.($values['percentage_delta'] == 0 ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>'));
+		}
+		
+		return '<table class="rank">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
 	/**

@@ -100,7 +100,7 @@ final class maintenance extends base
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		if (is_null($date_firstactivity)) {
+		if (is_null($date)) {
 			return null;
 		}
 
@@ -182,7 +182,7 @@ final class maintenance extends base
 		/**
 		 * Calculate user rankings and store them on disk.
 		 */
-		$query = $sqlite3temp->query('SELECT ruid, ruid_ca.date AS date, ruid_ca.l_total AS l_total, (CAST(ruid_ca.l_total AS REAL) / channel_ca.l_total) * 100 AS percentage FROM ruid_ca JOIN channel_ca ON ruid_ca.date = channel_ca.date ORDER BY date ASC, ruid_ca.l_total DESC, ruid ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3temp->lastErrorMsg());
+		$query = $sqlite3temp->query('SELECT ruid, ruid_ca.date AS date, ruid_ca.l_total AS l_total, ROUND((CAST(ruid_ca.l_total AS REAL) / channel_ca.l_total) * 100, 2) AS percentage FROM ruid_ca JOIN channel_ca ON ruid_ca.date = channel_ca.date ORDER BY date ASC, ruid_ca.l_total DESC, ruid ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3temp->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {

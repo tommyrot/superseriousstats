@@ -31,6 +31,9 @@ body {
 	text-align:center;
 	width:416px;
 }
+.green {
+	color:#70A35E;
+}
 .grey {
 	color:#999;
 }
@@ -45,6 +48,9 @@ body {
 }
 .info {
 	width:818px;
+}
+.red {
+	color:#C74243;
 }
 .section {
 	background-color:#F9F9F9;
@@ -424,4 +430,55 @@ th {
 	overflow:hidden;
 	text-overflow:ellipsis;
 	white-space:nowrap;
+}
+/**
+ * Specific table styling: rankings
+ */
+.rank {
+	width:438px;
+}
+.rank col.c1,
+.rank col.c2 {
+	width:39px;
+}
+.rank col.c3,
+.rank col.c4,
+.rank col.c6 {
+	width:80px;
+}
+.rank col.c5,
+.rank col.c7 {
+	width:60px;
+}
+.rank td.k1,
+.rank td.k2,
+.rank td.k3,
+.rank td.k4,
+.rank td.k5,
+.rank td.k6,
+.rank td.k7,
+.rank td.v3 {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.rank td.k1,
+.rank td.k3,
+.rank td.k4,
+.rank td.k6,
+.rank td.v1,
+.rank td.v3,
+.rank td.v4,
+.rank td.v6 {
+	padding-right:2px;
+	text-align:right;
+}
+.rank td.v2,
+.rank td.v5,
+.rank td.v7 {
+	padding-left:2px;
+}
+.rank td.k3,
+.rank td.v3 {
+	text-align:center;
 }
