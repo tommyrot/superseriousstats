@@ -439,9 +439,11 @@ th {
 }
 .rank col.c1,
 .rank col.c2 {
-	width:39px;
+	width:44px;
 }
-.rank col.c3,
+.rank col.c3 {
+	width:70px;
+}
 .rank col.c4,
 .rank col.c6 {
 	width:80px;
@@ -454,20 +456,12 @@ th {
 .rank td.k2,
 .rank td.k3,
 .rank td.k4,
-.rank td.k5,
-.rank td.k6,
-.rank td.k7,
 .rank td.v3 {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.rank td.k1,
-.rank td.k3,
-.rank td.k4,
-.rank td.k6,
 .rank td.v1,
-.rank td.v3,
 .rank td.v4,
 .rank td.v6 {
 	padding-right:2px;
@@ -478,7 +472,10 @@ th {
 .rank td.v7 {
 	padding-left:2px;
 }
+.rank td.k1,
+.rank td.k2,
 .rank td.k3,
+.rank td.k4,
 .rank td.v3 {
 	text-align:center;
 }
