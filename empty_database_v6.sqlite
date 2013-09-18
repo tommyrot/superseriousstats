@@ -320,7 +320,6 @@ date TEXT NOT NULL
 );
 CREATE INDEX ruid_milestones_ruid ON ruid_milestones (ruid);
 CREATE INDEX ruid_milestones_milestone ON ruid_milestones (milestone);
-CREATE INDEX ruid_milestones_date ON ruid_milestones (date);
 
 CREATE TABLE ruid_rankings (
 ruid INT NOT NULL,
