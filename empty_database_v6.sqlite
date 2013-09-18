@@ -326,10 +326,9 @@ ruid INT NOT NULL,
 date TEXT NOT NULL, --unique for ruid
 rank INT NOT NULL,
 l_total INT NOT NULL,
-percentage REAL NOT NULL
+percentage REAL NOT NULL,
+PRIMARY KEY (ruid, date)
 );
-CREATE INDEX ruid_rankings_ruid ON ruid_rankings (ruid);
-CREATE INDEX ruid_rankings_date ON ruid_rankings (date);
 
 CREATE TABLE ruid_smileys (
 ruid INT PRIMARY KEY NOT NULL,

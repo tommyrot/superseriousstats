@@ -94,24 +94,24 @@ final class maintenance extends base
 	public function calculate_rankings($sqlite3)
 	{
 		/**
-		 * Create an array with all dates since first user activity. This will serve as the default scope for ruids.
+		 * Create an array with all dates since first channel activity. This helps define the scope for ruids.
 		 */
-		if (($date = $sqlite3->querySingle('SELECT MIN(SUBSTR(date, 1, 7)) AS date FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
+		if (($date_firstactivity = $sqlite3->querySingle('SELECT MIN(date) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		if (is_null($date)) {
+		if (is_null($date_firstactivity)) {
 			return null;
 		}
 
-		$defaultscope = array();
-
-		while ($date != date('Y-m', mktime(0, 0, 0, (int) date('n') + 1, 1, (int) date('Y')))) {
-			$defaultscope[$date] = 0;
-			$date = date('Y-m', mktime(0, 0, 0, (int) substr($date, 5, 2) + 1, 1, (int) substr($date, 0, 4)));
+		for ($i = $date_firstactivity, $j = date('Y-m', mktime(0, 0, 0, (int) date('n') + 1, 1, (int) date('Y'))); $i < $j; $i = date('Y-m', mktime(0, 0, 0, (int) substr($i, 5, 2) + 1, 1, (int) substr($i, 0, 4)))) {
+			$scope[] = $i;
 		}
 
-		$query = $sqlite3->query('SELECT ruid_activity_by_month.ruid AS ruid, date, l_total FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		/**
+		 * Retrieve all user activity.
+		 */
+		$query = $sqlite3->query('SELECT ruid_activity_by_month.ruid AS ruid, date, l_total FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
@@ -119,96 +119,61 @@ final class maintenance extends base
 		}
 
 		$query->reset();
+		$channel_activity_by_month = array_fill_keys($scope, 0);
 		$ruid_activity_by_month = array();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if (!array_key_exists($result['ruid'], $ruid_activity_by_month)) {
-				$ruid_activity_by_month[$result['ruid']] = $defaultscope;
+				$ruid_activity_by_month[$result['ruid']] = array_fill_keys(array_slice($scope, array_search($result['date'], $scope)), 0);
 			}
 
+			$channel_activity_by_month[$result['date']] += $result['l_total'];
 			$ruid_activity_by_month[$result['ruid']][$result['date']] = $result['l_total'];
 		}
 
+		/**
+		 * Calculate cumulative channel activity.
+		 */
+		$cumulative_l_total = 0;
+
+		foreach ($channel_activity_by_month as $date => $l_total) {
+			$cumulative_l_total += $l_total;
+			$channel_activity_by_month_cumulative[$date] = $cumulative_l_total;
+		}
+
+		/**
+		 * Calculate cumulative user activity.
+		 */
 		foreach ($ruid_activity_by_month as $ruid => $dates) {
-			$prev_l_total = 0;
+			$cumulative_l_total = 0;
 
 			foreach ($dates as $date => $l_total) {
-				$cumulative_l_total = $prev_l_total + $l_total;
-
-				/**
-				 * Don't insert any records until the ruid was first active.
-				 */
-				if ($cumulative_l_total != 0) {
-					$values[] = '('.$ruid.', \''.$date.'\', '.$cumulative_l_total.')';
-				}
-
-				$prev_l_total = $cumulative_l_total;
+				$cumulative_l_total += $l_total;
+				$ruid_activity_by_month_cumulative[] = array(
+					'ruid' => $ruid,
+					'date' => $date,
+					'l_total' => $cumulative_l_total);
+				$sort_dates[] = $date;
+				$sort_l_total[] = $cumulative_l_total;
+				$sort_ruids[] = $ruid;
 			}
 		}
 
 		/**
-		 * Create a temporary "in-memory" database for the cumulated activity data. PRAGMAs as described in sss.php.
+		 * Sort data and store on disk.
 		 */
-		try {
-			$sqlite3temp = new SQLite3(':memory:');
-		} catch (Exception $e) {
-			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
-		}
+		array_multisort($sort_dates, SORT_ASC, $sort_l_total, SORT_DESC, $sort_ruids, SORT_ASC, $ruid_activity_by_month_cumulative);
+		$sqlite3->exec('DELETE FROM ruid_rankings') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-		$pragmas = array(
-			'journal_mode' => 'OFF',
-			'synchronous' => 'OFF',
-			'temp_store' => 'MEMORY');
-
-		foreach ($pragmas as $key => $value) {
-			$sqlite3temp->exec('PRAGMA '.$key.' = '.$value);
-		}
-
-		$queries = array(
-			'CREATE TABLE ruid_ca (ruid INT NOT NULL, date TEXT NOT NULL, l_total INT NOT NULL)',
-			'CREATE INDEX ruid_ca_date ON ruid_ca (date)',
-			'CREATE TABLE channel_ca (date TEXT PRIMARY KEY NOT NULL, l_total INT NOT NULL)');
-
-		foreach ($queries as $query) {
-			$sqlite3temp->exec($query) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3temp->lastErrorMsg());
-		}
-
-		foreach ($values as $value) {
-			$sqlite3temp->exec('INSERT INTO ruid_ca (ruid, date, l_total) VALUES '.$value) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3temp->lastErrorMsg());
-		}
-
-		$sqlite3temp->exec('INSERT INTO channel_ca SELECT date, SUM(l_total) AS l_total FROM ruid_ca GROUP BY date') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3temp->lastErrorMsg());
-
-		/**
-		 * Calculate user rankings and store them on disk.
-		 */
-		$query = $sqlite3temp->query('SELECT ruid, ruid_ca.date AS date, ruid_ca.l_total AS l_total, ROUND((CAST(ruid_ca.l_total AS REAL) / channel_ca.l_total) * 100, 2) AS percentage FROM ruid_ca JOIN channel_ca ON ruid_ca.date = channel_ca.date ORDER BY date ASC, ruid_ca.l_total DESC, ruid ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3temp->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
-
-		if ($result === false) {
-			return null;
-		}
-
-		$query->reset();
-		unset($values);
-
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			if (empty($prevdate) || $result['date'] != $prevdate) {
+		foreach ($ruid_activity_by_month_cumulative as $key => $values) {
+			if (empty($prevdate) || $values['date'] != $prevdate) {
 				$rank = 1;
 			}
 
-			$values[] = '('.$result['ruid'].', \''.$result['date'].'\', '.$rank.', '.$result['l_total'].', '.$result['percentage'].')';
-			$prevdate = $result['date'];
+			$sqlite3->exec('INSERT INTO ruid_rankings (ruid, date, rank, l_total, percentage) VALUES ('.$values['ruid'].', \''.$values['date'].'\', '.$rank.', '.$values['l_total'].', '.round(($values['l_total'] / $channel_activity_by_month_cumulative[$values['date']]) * 100, 2).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$prevdate = $values['date'];
 			$rank++;
 		}
-
-		$sqlite3->exec('DELETE FROM ruid_rankings') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-		foreach ($values as $value) {
-			$sqlite3->exec('INSERT INTO ruid_rankings (ruid, date, rank, l_total, percentage) VALUES '.$value) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		$sqlite3temp->close();
 	}
 
 	public function do_maintenance($sqlite3)
