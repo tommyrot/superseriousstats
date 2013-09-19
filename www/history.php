@@ -29,7 +29,7 @@ final class history
 {
 	/**
 	 * Default settings for this script, which can be overridden in the config file. These variables should all
-	 * appear in $settings_list[] along with their type.
+	 * appear in $settings_whitelist[] along with their type.
 	 */
 	private $channel = '';
 	private $database = 'sss.db3';
