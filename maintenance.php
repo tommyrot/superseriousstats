@@ -185,6 +185,7 @@ final class maintenance extends base
 		$this->calculate_milestones($sqlite3);
 		$this->calculate_rankings($sqlite3);
 		$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('ANALYZE') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 	}
 
 	/**
