@@ -446,7 +446,6 @@ uid INT NOT NULL,
 tid INT NOT NULL,
 datetime TEXT NOT NULL
 );
-CREATE INDEX uid_topics_uid ON uid_topics (uid);
 CREATE INDEX uid_topics_tid ON uid_topics (tid);
 
 CREATE TABLE uid_urls (
@@ -454,7 +453,6 @@ uid INT NOT NULL,
 lid INT NOT NULL,
 datetime TEXT NOT NULL
 );
-CREATE INDEX uid_urls_uid ON uid_urls (uid);
 CREATE INDEX uid_urls_lid ON uid_urls (lid);
 
 CREATE TABLE urls (
