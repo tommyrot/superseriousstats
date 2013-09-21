@@ -37,8 +37,10 @@ l_total INT NOT NULL --must be >0
 
 CREATE TABLE fqdns (
 fid INTEGER PRIMARY KEY AUTOINCREMENT,
-fqdn TEXT UNIQUE NOT NULL
+fqdn TEXT UNIQUE NOT NULL,
+tld TEXT NOT NULL
 );
+CREATE INDEX fqdns_tld ON fqdns (tld);
 
 CREATE TABLE parse_history (
 date TEXT PRIMARY KEY NOT NULL,
@@ -47,38 +49,37 @@ lines_parsed INT NOT NULL --must be >0
 
 CREATE TABLE ruid_activity_by_day (
 ruid INT NOT NULL,
-date TEXT NOT NULL, --unique for ruid
+date TEXT NOT NULL,
 l_night INT NOT NULL,
 l_morning INT NOT NULL,
 l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
-l_total INT NOT NULL
+l_total INT NOT NULL,
+PRIMARY KEY (ruid, date)
 );
-CREATE INDEX ruid_activity_by_day_ruid ON ruid_activity_by_day (ruid);
-CREATE INDEX ruid_activity_by_day_date ON ruid_activity_by_day (date);
 
 CREATE TABLE ruid_activity_by_month (
 ruid INT NOT NULL,
-date TEXT NOT NULL, --unique for ruid
+date TEXT NOT NULL,
 l_night INT NOT NULL,
 l_morning INT NOT NULL,
 l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
-l_total INT NOT NULL
+l_total INT NOT NULL,
+PRIMARY KEY (ruid, date)
 );
-CREATE INDEX ruid_activity_by_month_ruid ON ruid_activity_by_month (ruid);
 CREATE INDEX ruid_activity_by_month_date ON ruid_activity_by_month (date);
 
 CREATE TABLE ruid_activity_by_year (
 ruid INT NOT NULL,
-date TEXT NOT NULL, --unique for ruid
+date TEXT NOT NULL,
 l_night INT NOT NULL,
 l_morning INT NOT NULL,
 l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
-l_total INT NOT NULL
+l_total INT NOT NULL,
+PRIMARY KEY (ruid, date)
 );
-CREATE INDEX ruid_activity_by_year_ruid ON ruid_activity_by_year (ruid);
 CREATE INDEX ruid_activity_by_year_date ON ruid_activity_by_year (date);
 
 CREATE TABLE ruid_events (
@@ -183,15 +184,15 @@ lasttalked TEXT NOT NULL
 
 CREATE TABLE ruid_milestones (
 ruid INT NOT NULL,
-milestone INT NOT NULL, --unique for ruid
-date TEXT NOT NULL
+milestone INT NOT NULL,
+date TEXT NOT NULL,
+PRIMARY KEY (ruid, milestone)
 );
-CREATE INDEX ruid_milestones_ruid ON ruid_milestones (ruid);
 CREATE INDEX ruid_milestones_milestone ON ruid_milestones (milestone);
 
 CREATE TABLE ruid_rankings (
 ruid INT NOT NULL,
-date TEXT NOT NULL, --unique for ruid
+date TEXT NOT NULL,
 rank INT NOT NULL,
 l_total INT NOT NULL,
 percentage REAL NOT NULL,
@@ -458,11 +459,9 @@ CREATE INDEX uid_urls_lid ON uid_urls (lid);
 CREATE TABLE urls (
 lid INTEGER PRIMARY KEY AUTOINCREMENT,
 url TEXT UNIQUE NOT NULL,
-fid INT,
-tld TEXT
+fid INT
 );
 CREATE INDEX urls_fid ON urls (fid);
-CREATE INDEX urls_tld ON urls (tld);
 
 CREATE TABLE words (
 word TEXT PRIMARY KEY NOT NULL,

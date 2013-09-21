@@ -369,7 +369,7 @@ final class url extends base
 			}
 
 			if (is_null($fid)) {
-				$sqlite3->exec('INSERT INTO fqdns (fid, fqdn) VALUES (NULL, \''.$this->fqdn.'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				$sqlite3->exec('INSERT INTO fqdns (fid, fqdn, tld) VALUES (NULL, \''.$this->fqdn.'\', \''.$this->tld.'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				$fid = $sqlite3->lastInsertRowID();
 			}
 		}
@@ -382,7 +382,7 @@ final class url extends base
 		}
 
 		if (is_null($lid)) {
-			$sqlite3->exec('INSERT INTO urls (lid, url'.($this->fqdn != '' ? ', fid, tld' : '').') VALUES (NULL, \''.$sqlite3->escapeString($this->url).'\''.($this->fqdn != '' ? ', '.$fid.', \''.$this->tld.'\'' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO urls (lid, url'.($this->fqdn != '' ? ', fid' : '').') VALUES (NULL, \''.$sqlite3->escapeString($this->url).'\''.($this->fqdn != '' ? ', '.$fid : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$lid = $sqlite3->lastInsertRowID();
 		}
 
