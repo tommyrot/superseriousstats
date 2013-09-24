@@ -600,7 +600,7 @@ final class user
 		krsort($rankings);
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7">';
 		$tr1 = '<tr><th colspan="7">Rankings';
-		$tr2 = '<tr><td class="k1" colspan="2">Rank<td class="k2"><td class="k3" colspan="2">Lines<td class="k4" colspan="2">Percentage';
+		$tr2 = '<tr><td class="k12" colspan="2">Rank<td class="k3"><td class="k45" colspan="2">Lines<td class="k67" colspan="2">Percentage';
 		$trx = '';
 
 		foreach ($rankings as $date => $values) {

@@ -37,6 +37,9 @@ body {
 .grey {
 	color:#999;
 }
+.info {
+	width:818px;
+}
 .info,
 .section {
 	color:#666;
@@ -45,9 +48,6 @@ body {
 	font-size:12px;
 	font-weight:bold;
 	margin:15px 22px 7px 0;
-}
-.info {
-	width:818px;
 }
 .red {
 	color:#C74243;
@@ -96,15 +96,15 @@ table {
 	margin:15px 22px 7px 0;
 	table-layout:fixed;
 }
-td,
-th {
-	font-family:verdana,sans-serif;
-	font-size:10px;
-}
 td {
 	color:#333;
 	padding:1px 0;
 	vertical-align:top;
+}
+td,
+th {
+	font-family:verdana,sans-serif;
+	font-size:10px;
 }
 th {
 	color:#666;
@@ -452,14 +452,15 @@ th {
 .rank col.c7 {
 	width:60px;
 }
-.rank td.k1,
-.rank td.k2,
+.rank td.k12,
 .rank td.k3,
-.rank td.k4,
+.rank td.k45,
+.rank td.k67,
 .rank td.v3 {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
+	text-align:center;
 }
 .rank td.v1,
 .rank td.v4,
@@ -471,11 +472,4 @@ th {
 .rank td.v5,
 .rank td.v7 {
 	padding-left:2px;
-}
-.rank td.k1,
-.rank td.k2,
-.rank td.k3,
-.rank td.k4,
-.rank td.v3 {
-	text-align:center;
 }
