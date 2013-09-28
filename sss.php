@@ -19,8 +19,8 @@
 /**
  * Suppress any error output.
  */
-ini_set('display_errors', '0');
-ini_set('error_reporting', 0);
+ini_set('display_errors', '0'); // To enable set to 1.
+ini_set('error_reporting', 0);  // To enable for ALL errors set to -1.
 
 /**
  * Check if all required extension are loaded.
@@ -53,12 +53,6 @@ final class sss extends base
 	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
 	private $parser = '';
-	private $timezone = 'UTC';
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $settings = array();
 	private $settings_list = array(
 		'autolinknicks' => 'bool',
 		'database' => 'string',
@@ -66,6 +60,12 @@ final class sss extends base
 		'outputbits' => 'int',
 		'parser' => 'string',
 		'timezone' => 'string');
+	private $timezone = 'UTC';
+
+	/**
+	 * Variables that shouldn't be tampered with.
+	 */
+	private $settings = array();
 	private $settings_list_required = array();
 
 	public function __construct()
@@ -217,17 +217,17 @@ final class sss extends base
 			}
 		}
 
-		$output = '';
 		$i = 0;
+		$output = '';
 
 		if (!empty($registerednicks)) {
 			foreach ($registerednicks as $ruid => $nick) {
-				$output .= $statuses[$ruid].','.$nick;
 				$i++;
+				$output .= $statuses[$ruid].','.$nick;
 
 				if (!empty($aliases[$ruid])) {
-					$output .= ','.implode(',', $aliases[$ruid]);
 					$i += count($aliases[$ruid]);
+					$output .= ','.implode(',', $aliases[$ruid]);
 				}
 
 				$output .= "\n";
@@ -235,8 +235,8 @@ final class sss extends base
 		}
 
 		if (!empty($unlinked)) {
-			$output .= '*,'.implode(',', $unlinked)."\n";
 			$i += count($unlinked);
+			$output .= '*,'.implode(',', $unlinked)."\n";
 		}
 
 		if (($fp = fopen($file, 'wb')) === false) {
@@ -250,19 +250,46 @@ final class sss extends base
 
 	private function export_settings()
 	{
-		if (!empty($this->settings['cid'])) {
-			$vars = '$settings[\''.$this->settings['cid'].'\'] = array(';
-		} elseif (!empty($this->settings['channel'])) {
-			$vars = '$settings[\''.$this->settings['channel'].'\'] = array(';
-		} else {
+		if (empty($this->settings['cid']) && empty($this->settings['channel'])) {
 			$this->output('critical', 'export_settings(): both \'cid\' and \'channel\' are empty');
 		}
 
-		foreach ($this->settings as $key => $value) {
-			$vars .= "\n\t".'\''.$key.'\' => \''.$value.'\',';
+		$vars = '$settings[\''.(!empty($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = array(';
+
+		/**
+		 * The following is a list of settings accepted by history.php and/or user.php along with their type.
+		 */
+		$settings_list = array(
+			'channel' => 'string',
+			'database' => 'string',
+			'mainpage' => 'string',
+			'maxrows_people_month' => 'int',
+			'maxrows_people_timeofday' => 'int',
+			'maxrows_people_year' => 'int',
+			'rankings' => 'bool',
+			'stylesheet' => 'string',
+			'timezone' => 'string',
+			'userstats' => 'bool');
+
+		foreach ($settings_list as $key => $type) {
+			if (!array_key_exists($key, $this->settings)) {
+				continue;
+			}
+
+			if ($type == 'string') {
+				$vars .= "\n\t".'\''.$key.'\' => \''.$this->settings[$key].'\',';
+			} elseif ($type == 'int') {
+				$vars .= "\n\t".'\''.$key.'\' => '.(int) $this->settings[$key].',';
+			} elseif ($type == 'bool') {
+				if (strtolower($this->settings[$key]) == 'true') {
+					$vars .= "\n\t".'\''.$key.'\' => true,';
+				} elseif (strtolower($this->settings[$key]) == 'false') {
+					$vars .= "\n\t".'\''.$key.'\' => false,';
+				}
+			}
 		}
 
-		exit(rtrim($vars, ',')."\n".');'."\n");
+		exit(rtrim($vars, ',').');'."\n");
 	}
 
 	private function import_nicks($sqlite3, $file)
@@ -290,8 +317,7 @@ final class sss extends base
 		}
 
 		while (!feof($fp)) {
-			$line = fgets($fp);
-			$line = preg_replace('/\s/', '', $line);
+			$line = preg_replace('/\s/', '', fgets($fp));
 			$lineparts = explode(',', strtolower($line));
 			$status = (int) $lineparts[0];
 
@@ -387,9 +413,9 @@ final class sss extends base
 				 * _unlinked_ nicks to.
 				 */
 				if ($nicks[$uids[$i]]['status'] == 0) {
+					$newalias = true;
 					$sqlite3->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 					$this->output('debug', 'link_nicks(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
-					$newalias = true;
 				}
 			}
 
@@ -556,8 +582,7 @@ final class sss extends base
 		}
 
 		while (!feof($fp)) {
-			$line = fgets($fp);
-			$line = trim($line);
+			$line = trim(fgets($fp));
 
 			if (preg_match('/^(\w+)\s*=\s*"(.*?)"(\s*#.*)?$/', $line, $matches)) {
 				$this->settings[$matches[1]] = $matches[2];
