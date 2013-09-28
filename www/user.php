@@ -138,12 +138,10 @@ final class user
 			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		if (!is_null($result)) {
-			foreach ($result as $key => $value) {
-				$smileys_totals[$key] = $value;
-			}
-
-			arsort($smileys_totals);
+		if (empty($result)) {
+			$mood = '';
+		} else {
+			arsort($result);
 			$smileys = array(
 				's_01' => ':)',
 				's_02' => ';)',
@@ -196,9 +194,9 @@ final class user
 				's_49' => '>:(',
 				's_50' => ';o');
 
-			foreach ($smileys_totals as $key => $value) {
+			foreach ($result as $key => $value) {
 				if ($key != 'ruid') {
-					$mood = htmlspecialchars($smileys[$key]);
+					$mood = $smileys[$key];
 					break;
 				}
 			}
@@ -263,7 +261,7 @@ final class user
 			. '</style>'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
-			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood != '' ? ' '.$mood : '.').'<br><br>'
+			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood != '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
 			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
 			. htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
