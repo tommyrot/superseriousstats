@@ -19,8 +19,8 @@
 /**
  * Suppress any error output.
  */
-ini_set('display_errors', '0');
-ini_set('error_reporting', 0);
+ini_set('display_errors', '0');		// To enable set to 1.
+ini_set('error_reporting', 0);		// To enable for ALL errors set to -1.
 
 /**
  * Class for creating user stats.
@@ -589,12 +589,12 @@ final class user
 			} else {
 				$rankings[$result['date']]['rank_delta'] = $rankings[$prevdate]['rank'] - $result['rank'];
 				$rankings[$result['date']]['l_total_delta'] = $result['l_total'] - $rankings[$prevdate]['l_total'];
-				$rankings[$result['date']]['percentage_delta'] = number_format($result['percentage'] - $rankings[$prevdate]['percentage'], 2);
+				$rankings[$result['date']]['percentage_delta'] = round($result['percentage'], 2) - $rankings[$prevdate]['percentage'];
 			}
 
 			$rankings[$result['date']]['rank'] = $result['rank'];
 			$rankings[$result['date']]['l_total'] = $result['l_total'];
-			$rankings[$result['date']]['percentage'] = number_format($result['percentage'], 2);
+			$rankings[$result['date']]['percentage'] = round($result['percentage'], 2);
 		}
 
 		krsort($rankings);
@@ -606,7 +606,7 @@ final class user
 		foreach ($rankings as $date => $values) {
 			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.($values['rank_delta'] == 0 ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.($values['l_total_delta'] == 0 ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.($values['percentage_delta'] == 0 ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>'));
 		}
-		
+
 		return '<table class="rank">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
