@@ -127,11 +127,11 @@ final class user
 			$this->output('error', 'This user does not have any activity logged.');
 		}
 
+		$firstseen = $result['firstseen'];
+		$l_avg = $result['l_avg'];
+		$lastseen = $result['lastseen'];
 		$this->csnick = $result['csnick'];
 		$this->l_total = $result['l_total'];
-		$firstseen = $result['firstseen'];
-		$lastseen = $result['lastseen'];
-		$l_avg = $result['l_avg'];
 
 		/**
 		 * Fetch the users mood.
@@ -212,12 +212,12 @@ final class user
 		 * Date and time variables used throughout the script. These are based on the date of the last logfile
 		 * parsed, and are used to define our scope.
 		 */
+		$this->datetime['currentyear'] = (int) date('Y');
 		$this->datetime['dayofmonth'] = (int) date('j', strtotime($date_lastlogparsed));
 		$this->datetime['month'] = (int) date('n', strtotime($date_lastlogparsed));
 		$this->datetime['year'] = (int) date('Y', strtotime($date_lastlogparsed));
 		$this->datetime['years'] = $this->datetime['year'] - (int) date('Y', strtotime($firstseen)) + 1;
 		$this->datetime['daysleft'] = (int) date('z', strtotime('last day of December '.$this->datetime['year'])) - (int) date('z', strtotime($date_lastlogparsed));
-		$this->datetime['currentyear'] = (int) date('Y');
 
 		/**
 		 * Show a minimum of 3 columns in the Activity by Year table.
@@ -320,7 +320,6 @@ final class user
 
 			$head = 'Activity by Month';
 			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_month WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 24, 1, $this->datetime['year'])).'\'') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
 		} elseif ($type == 'year') {
 			$class = 'act-year';
 			$columns = $this->datetime['years'];
@@ -349,10 +348,10 @@ final class user
 		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$l_night[$result['date']] = $result['l_night'];
-			$l_morning[$result['date']] = $result['l_morning'];
 			$l_afternoon[$result['date']] = $result['l_afternoon'];
 			$l_evening[$result['date']] = $result['l_evening'];
+			$l_morning[$result['date']] = $result['l_morning'];
+			$l_night[$result['date']] = $result['l_night'];
 			$l_total[$result['date']] = $result['l_total'];
 
 			if ($l_total[$result['date']] > $high_value) {
@@ -366,10 +365,10 @@ final class user
 				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			$l_night['estimate'] = $l_night[$this->datetime['currentyear']] + round($result['l_night_avg'] * $this->datetime['daysleft']);
-			$l_morning['estimate'] = $l_morning[$this->datetime['currentyear']] + round($result['l_morning_avg'] * $this->datetime['daysleft']);
 			$l_afternoon['estimate'] = $l_afternoon[$this->datetime['currentyear']] + round($result['l_afternoon_avg'] * $this->datetime['daysleft']);
 			$l_evening['estimate'] = $l_evening[$this->datetime['currentyear']] + round($result['l_evening_avg'] * $this->datetime['daysleft']);
+			$l_morning['estimate'] = $l_morning[$this->datetime['currentyear']] + round($result['l_morning_avg'] * $this->datetime['daysleft']);
+			$l_night['estimate'] = $l_night[$this->datetime['currentyear']] + round($result['l_night_avg'] * $this->datetime['daysleft']);
 			$l_total['estimate'] = $l_total[$this->datetime['currentyear']] + round($result['l_total_avg'] * $this->datetime['daysleft']);
 
 			if ($l_total['estimate'] > $high_value) {
@@ -378,6 +377,7 @@ final class user
 			}
 		}
 
+		$times = array('evening', 'afternoon', 'morning', 'night');
 		$tr1 = '<tr><th colspan="'.$columns.'">'.$head;
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
@@ -393,8 +393,6 @@ final class user
 				} else {
 					$total = $l_total[$date];
 				}
-
-				$times = array('evening', 'afternoon', 'morning', 'night');
 
 				foreach ($times as $time) {
 					if (${'l_'.$time}[$date] != 0) {
@@ -443,15 +441,15 @@ final class user
 			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
+		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
 		$high_day = '';
 		$high_value = 0;
-		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
 
 		foreach ($days as $day) {
-			$l_night[$day] = $result['l_'.$day.'_night'];
-			$l_morning[$day] = $result['l_'.$day.'_morning'];
 			$l_afternoon[$day] = $result['l_'.$day.'_afternoon'];
 			$l_evening[$day] = $result['l_'.$day.'_evening'];
+			$l_morning[$day] = $result['l_'.$day.'_morning'];
+			$l_night[$day] = $result['l_'.$day.'_night'];
 			$l_total[$day] = $l_night[$day] + $l_morning[$day] + $l_afternoon[$day] + $l_evening[$day];
 
 			if ($l_total[$day] > $high_value) {
@@ -460,6 +458,7 @@ final class user
 			}
 		}
 
+		$times = array('evening', 'afternoon', 'morning', 'night');
 		$tr1 = '<tr><th colspan="7">Activity Distribution by Day';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
@@ -475,8 +474,6 @@ final class user
 				} else {
 					$percentage = number_format($percentage, 1).'%';
 				}
-
-				$times = array('evening', 'afternoon', 'morning', 'night');
 
 				foreach ($times as $time) {
 					if (${'l_'.$time}[$day] != 0) {
@@ -589,25 +586,25 @@ final class user
 			$prevdate = date('Y-m', mktime(0, 0, 0, (int) substr($result['date'], 5, 2) - 1, 1, (int) substr($result['date'], 0, 4)));
 
 			if (!array_key_exists($prevdate, $rankings)) {
-				$rankings[$result['date']]['rank_delta'] = 0;
 				$rankings[$result['date']]['l_total_delta'] = 0;
 				$rankings[$result['date']]['percentage_delta'] = 0;
+				$rankings[$result['date']]['rank_delta'] = 0;
 			} else {
-				$rankings[$result['date']]['rank_delta'] = $rankings[$prevdate]['rank'] - $result['rank'];
 				$rankings[$result['date']]['l_total_delta'] = $result['l_total'] - $rankings[$prevdate]['l_total'];
 				$rankings[$result['date']]['percentage_delta'] = round($result['percentage'], 2) - $rankings[$prevdate]['percentage'];
+				$rankings[$result['date']]['rank_delta'] = $rankings[$prevdate]['rank'] - $result['rank'];
 			}
 
-			$rankings[$result['date']]['rank'] = $result['rank'];
 			$rankings[$result['date']]['l_total'] = $result['l_total'];
 			$rankings[$result['date']]['percentage'] = round($result['percentage'], 2);
+			$rankings[$result['date']]['rank'] = $result['rank'];
 		}
 
-		krsort($rankings);
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7">';
 		$tr1 = '<tr><th colspan="7">Rankings';
 		$tr2 = '<tr><td class="k12" colspan="2">Rank<td class="k3"><td class="k45" colspan="2">Lines<td class="k67" colspan="2">Percentage';
 		$trx = '';
+		krsort($rankings);
 
 		foreach ($rankings as $date => $values) {
 			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.($values['rank_delta'] == 0 ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.($values['l_total_delta'] == 0 ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.($values['percentage_delta'] == 0 ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>'));
@@ -641,9 +638,9 @@ if (!isset($_GET['cid']) || !preg_match('/^\S{1,32}$/', $_GET['cid'])) {
 $cid = $_GET['cid'];
 
 /**
- * Exit if the nick is not set, zero, or has an erroneous value.
+ * Exit if the nick is not set or has an erroneous value.
  */
-if (!isset($_GET['nick']) || $_GET['nick'] == '0' || !preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $_GET['nick'])) {
+if (empty($_GET['nick']) || !preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $_GET['nick'])) {
 	exit;
 }
 
