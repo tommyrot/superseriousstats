@@ -19,8 +19,8 @@
 /**
  * Suppress any error output.
  */
-ini_set('display_errors', '0');
-ini_set('error_reporting', 0);
+ini_set('display_errors', '0');		// To enable set to 1.
+ini_set('error_reporting', 0);		// To enable for ALL errors set to -1.
 
 /**
  * Class for creating historical stats.
@@ -53,13 +53,14 @@ final class history
 		'evening' => 'r');
 	private $datetime = array();
 	private $l_total = 0;
+	private $output = '';
 	private $settings_whitelist = array('channel', 'database', 'mainpage', 'maxrows_people_month', 'maxrows_people_timeofday', 'maxrows_people_year', 'stylesheet', 'timezone', 'userstats');
 
 	public function __construct($cid, $year, $month)
 	{
 		$this->cid = $cid;
-		$this->datetime['year'] = $year;
 		$this->datetime['month'] = $month;
+		$this->datetime['year'] = $year;
 
 		/**
 		 * Load settings from vars.php.
@@ -173,23 +174,23 @@ final class history
 		/**
 		 * HTML Head.
 		 */
-		$output = '<!DOCTYPE html>'."\n\n"
-			. '<html>'."\n\n"
-			. '<head>'."\n"
-			. '<meta charset="utf-8">'."\n"
-			. '<title>'.htmlspecialchars($this->channel).', historically.</title>'."\n"
-			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
-			. '</head>'."\n\n"
-			. '<body><div id="container">'."\n"
-			. '<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br><br>'
-			. (is_null($this->datetime['year']) ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.(!is_null($this->datetime['month']) ? $this->datetime['monthname'].' '.$this->datetime['year'] : 'the year '.$this->datetime['year']).'.').'</div>'."\n";
+		$this->output = '<!DOCTYPE html>'."\n\n"
+			      . '<html>'."\n\n"
+			      . '<head>'."\n"
+			      . '<meta charset="utf-8">'."\n"
+			      . '<title>'.htmlspecialchars($this->channel).', historically.</title>'."\n"
+			      . '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
+			      . '</head>'."\n\n"
+			      . '<body><div id="container">'."\n"
+			      . '<div class="info"><a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a>, historically.<br><br>'
+			      . (is_null($this->datetime['year']) ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.(!is_null($this->datetime['month']) ? $this->datetime['monthname'].' '.$this->datetime['year'] : 'the year '.$this->datetime['year']).'.').'</div>'."\n";
 
 		/**
 		 * Activity section.
 		 */
 		$this->get_activity($sqlite3);
-		$output .= '<div class="section">Activity</div>'."\n";
-		$output .= $this->make_index();
+		$this->output .= '<div class="section">Activity</div>'."\n";
+		$this->output .= $this->make_index();
 
 		/**
 		 * Only call make_table_* functions for times in which there was activity. This activity includes bots
@@ -206,23 +207,23 @@ final class history
 				$this->l_total = $this->activity[$this->datetime['year']][$this->datetime['month']];
 			}
 
-			$output .= $this->make_table_activity_distribution_hour($sqlite3);
+			$this->output .= $this->make_table_activity_distribution_hour($sqlite3);
 
 			if (is_null($this->datetime['month'])) {
-				$output .= $this->make_table_people($sqlite3, 'year');
+				$this->output .= $this->make_table_people($sqlite3, 'year');
 			} else {
-				$output .= $this->make_table_people($sqlite3, 'month');
+				$this->output .= $this->make_table_people($sqlite3, 'month');
 			}
 
-			$output .= $this->make_table_people_timeofday($sqlite3);
+			$this->output .= $this->make_table_people_timeofday($sqlite3);
 		}
 
 		/**
 		 * HTML Foot.
 		 */
-		$output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
-		$output .= '</div></body>'."\n\n".'</html>'."\n";
-		return $output;
+		$this->output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
+		$this->output .= '</div></body>'."\n\n".'</html>'."\n";
+		return $this->output;
 	}
 
 	private function make_index()
@@ -338,42 +339,41 @@ final class history
 
 		if ($type == 'year') {
 			$head = 'Most Talkative People &ndash; '.$this->datetime['year'];
-			$query = $sqlite3->query('SELECT csnick, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening, (SELECT quote FROM ruid_lines WHERE ruid = ruid_activity_by_year.ruid) AS quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_year.ruid) AS lastseen FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\' GROUP BY ruid_activity_by_year.ruid ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_year) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT csnick, ruid_activity_by_year.l_total AS l_total, ruid_activity_by_year.l_night AS l_night, ruid_activity_by_year.l_morning AS l_morning, ruid_activity_by_year.l_afternoon AS l_afternoon, ruid_activity_by_year.l_evening AS l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_year.ruid) AS lastseen FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_year.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\' ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_year) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'];
-			$query = $sqlite3->query('SELECT csnick, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening, (SELECT quote FROM ruid_lines WHERE ruid = ruid_activity_by_month.ruid) AS quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_month.ruid) AS lastseen FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\' GROUP BY ruid_activity_by_month.ruid ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_month) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT csnick, ruid_activity_by_month.l_total AS l_total, ruid_activity_by_month.l_night AS l_night, ruid_activity_by_month.l_morning AS l_morning, ruid_activity_by_month.l_afternoon AS l_afternoon, ruid_activity_by_month.l_evening AS l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_month.ruid) AS lastseen FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_month.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\' ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_month) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
+		$i = 0;
+		$times = array('night', 'morning', 'afternoon', 'evening');
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
 		$tr1 = '<tr><th colspan="7">'.$head;
 		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">When?<td class="k5">Last Seen<td class="k6">Quote';
 		$trx = '';
-		$i = 0;
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$i++;
 			$width = 50;
-			unset($width_float, $width_int, $width_remainders);
-			$times = array('night', 'morning', 'afternoon', 'evening');
 
 			foreach ($times as $time) {
 				if ($result['l_'.$time] != 0) {
 					$width_float[$time] = ($result['l_'.$time] / $result['l_total']) * 50;
 					$width_int[$time] = floor($width_float[$time]);
-					$width -= $width_int[$time];
 					$width_remainders[$time] = $width_float[$time] - $width_int[$time];
+					$width -= $width_int[$time];
 				}
 			}
 
-			if (!empty($width_remainders) && $width != 0) {
+			if ($width != 0) {
 				arsort($width_remainders);
 
 				foreach ($width_remainders as $time => $remainder) {
+					$width--;
+					$width_int[$time]++;
+
 					if ($width == 0) {
 						break;
-					} else {
-						$width_int[$time]++;
-						$width--;
 					}
 				}
 			}
@@ -387,6 +387,7 @@ final class history
 			}
 
 			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$i.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.htmlspecialchars($result['csnick']).'</a>' : htmlspecialchars($result['csnick'])).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->daysago($result['lastseen']).'<td class="v6">'.htmlspecialchars($result['quote']);
+			unset($width_float, $width_int, $width_remainders);
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
@@ -425,8 +426,8 @@ final class history
 
 			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 				$i++;
-				${$time}[$i]['user'] = $result['csnick'];
 				${$time}[$i]['lines'] = $result['l_'.$time];
+				${$time}[$i]['user'] = $result['csnick'];
 
 				if (${$time}[$i]['lines'] > $high_value) {
 					$high_value = ${$time}[$i]['lines'];
@@ -500,8 +501,8 @@ if (isset($_GET['year']) && preg_match('/^[12][0-9]{3}$/', $_GET['year'])) {
 		$month = null;
 	}
 } else {
-	$year = null;
 	$month = null;
+	$year = null;
 }
 
 /**
