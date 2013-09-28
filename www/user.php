@@ -34,6 +34,7 @@ final class user
 	private $channel = '';
 	private $database = 'sss.db3';
 	private $mainpage = './';
+	private $rankings = false;
 	private $stylesheet = 'sss.css';
 	private $timezone = 'UTC';
 
@@ -51,8 +52,9 @@ final class user
 	private $estimate = false;
 	private $l_total = 0;
 	private $nick = '';
+	private $output = '';
 	private $ruid = 0;
-	private $settings_whitelist = array('channel', 'database', 'mainpage', 'stylesheet', 'timezone');
+	private $settings_whitelist = array('channel', 'database', 'mainpage', 'rankings', 'stylesheet', 'timezone');
 
 	public function __construct($cid, $nick)
 	{
@@ -250,44 +252,50 @@ final class user
 
 		$date_max = $result['date'];
 		$l_max = $result['l_total'];
-		$output = '<!DOCTYPE html>'."\n\n"
-			. '<html>'."\n\n"
-			. '<head>'."\n"
-			. '<meta charset="utf-8">'."\n"
-			. '<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
-			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
-			. '<style type="text/css">'."\n"
-			. '  .act-year { width:'.(2 + (($this->datetime['years'] + ($this->estimate ? 1 : 0)) * 34)).'px }'."\n"
-			. '</style>'."\n"
-			. '</head>'."\n\n"
-			. '<body><div id="container">'."\n"
-			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood != '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
-			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
-			. htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
-			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
+		$this->output = '<!DOCTYPE html>'."\n\n"
+			      . '<html>'."\n\n"
+			      . '<head>'."\n"
+			      . '<meta charset="utf-8">'."\n"
+			      . '<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
+			      . '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
+			      . '<style type="text/css">'."\n"
+			      . '  .act-year { width:'.(2 + (($this->datetime['years'] + ($this->estimate ? 1 : 0)) * 34)).'px }'."\n"
+			      . '</style>'."\n"
+			      . '</head>'."\n\n"
+			      . '<body><div id="container">'."\n"
+			      . '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood != '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
+			      . 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
+			      . htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
+			      . 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * Activity section.
 		 */
-		$output .= '<div class="section">Activity</div>'."\n";
-		$output .= $this->make_table_activity_distribution_hour($sqlite3);
-		$output .= $this->make_table_activity($sqlite3, 'day');
-		$output .= $this->make_table_activity($sqlite3, 'month');
-		$output .= $this->make_table_activity_distribution_day($sqlite3);
-		$output .= $this->make_table_activity($sqlite3, 'year');
+		$this->output .= '<div class="section">Activity</div>'."\n";
+		$this->output .= $this->make_table_activity_distribution_hour($sqlite3);
+		$this->output .= $this->make_table_activity($sqlite3, 'day');
+		$this->output .= $this->make_table_activity($sqlite3, 'month');
+		$this->output .= $this->make_table_activity_distribution_day($sqlite3);
+		$this->output .= $this->make_table_activity($sqlite3, 'year');
 
 		/**
 		 * Rankings section.
 		 */
-		$output .= '<div class="section">Rankings</div>'."\n";
-		$output .= $this->make_table_rankings($sqlite3);
+		if ($this->rankings) {
+			$output = '';
+			$output .= $this->make_table_rankings($sqlite3);
+
+			if ($output != '') {
+				$this->output .= '<div class="section">Rankings</div>'."\n".$output;
+			}
+		}
 
 		/**
 		 * HTML Foot.
 		 */
-		$output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
-		$output .= '</div></body>'."\n\n".'</html>'."\n";
-		return $output;
+		$this->output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
+		$this->output .= '</div></body>'."\n\n".'</html>'."\n";
+		return $this->output;
 	}
 
 	private function make_table_activity($sqlite3, $type)

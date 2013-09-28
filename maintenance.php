@@ -22,9 +22,17 @@
 final class maintenance extends base
 {
 	/**
+	 * Default settings for this script, which can be overridden in the configuration file. These variables should
+	 * all appear in $settings_list[] along with their type.
+	 */
+	private $rankings = false;
+
+	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $settings_list = array('outputbits' => 'int');
+	private $settings_list = array(
+		'outputbits' => 'int',
+		'rankings' => 'bool');
 
 	public function __construct($settings)
 	{
@@ -183,7 +191,11 @@ final class maintenance extends base
 		$this->register_most_active_alias($sqlite3);
 		$this->make_materialized_views($sqlite3);
 		$this->calculate_milestones($sqlite3);
-		$this->calculate_rankings($sqlite3);
+
+		if ($this->rankings) {
+			$this->calculate_rankings($sqlite3);
+		}
+
 		$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$sqlite3->exec('ANALYZE') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 	}
