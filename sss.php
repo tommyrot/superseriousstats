@@ -103,6 +103,10 @@ final class sss extends base
 			$this->settings_list_required[] = 'channel';
 		}
 
+		if (strpos($options_keys, 's') !== false) {
+			$this->settings_list_required[] = 'channel';
+		}
+
 		/**
 		 * Read the configuration file.
 		 */
@@ -250,10 +254,6 @@ final class sss extends base
 
 	private function export_settings()
 	{
-		if (empty($this->settings['cid']) && empty($this->settings['channel'])) {
-			$this->output('critical', 'export_settings(): both \'cid\' and \'channel\' are empty');
-		}
-
 		$vars = '$settings[\''.(!empty($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = array(';
 
 		/**
@@ -592,10 +592,10 @@ final class sss extends base
 		fclose($fp);
 
 		/**
-		 * Exit if any crucial settings aren't present.
+		 * Exit if any crucial settings are missing or empty.
 		 */
 		foreach ($this->settings_list_required as $key) {
-			if (!array_key_exists($key, $this->settings)) {
+			if (empty($this->settings[$key])) {
 				$this->output('critical', 'read_config(): missing setting: \''.$key.'\'');
 			}
 		}
