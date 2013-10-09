@@ -28,8 +28,7 @@ ini_set('error_reporting', 0);  // To enable for ALL errors set to -1.
 final class user
 {
 	/**
-	 * Default settings for this script, which can be overridden in the config file. These variables should all
-	 * appear in $settings_whitelist[] along with their type.
+	 * Default settings for this script, which can be overridden in the configuration file.
 	 */
 	private $channel = '';
 	private $database = 'sss.db3';
@@ -54,7 +53,6 @@ final class user
 	private $nick = '';
 	private $output = '';
 	private $ruid = 0;
-	private $settings_whitelist = array('channel', 'database', 'mainpage', 'rankings', 'stylesheet', 'timezone');
 
 	public function __construct($cid, $nick)
 	{
@@ -62,24 +60,22 @@ final class user
 		$this->nick = $nick;
 
 		/**
-		 * Load settings from vars.php.
+		 * Load settings from vars.php (contained in $settings[]).
 		 */
 		if ((include 'vars.php') === false) {
 			$this->output('error', 'The configuration file could not be read.');
-		}
-
-		if (empty($settings[$this->cid])) {
-			$this->output('error', 'This channel has not been configured.');
 		}
 
 		/**
 		 * $cid is the channel ID used in vars.php and is passed along in the URL so that channel specific
 		 * settings can be identified and loaded.
 		 */
+		if (empty($settings[$this->cid])) {
+			$this->output('error', 'This channel has not been configured.');
+		}
+
 		foreach ($settings[$this->cid] as $key => $value) {
-			if (in_array($key, $this->settings_whitelist)) {
-				$this->$key = $value;
-			}
+			$this->$key = $value;
 		}
 
 		date_default_timezone_set($this->timezone);
@@ -91,7 +87,7 @@ final class user
 			$sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READONLY);
 			$sqlite3->busyTimeout(0);
 		} catch (Exception $e) {
-			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
+			$this->output(null, basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
 		}
 
 		$sqlite3->exec('PRAGMA temp_store = MEMORY');
@@ -265,14 +261,14 @@ final class user
 			      . '<body><div id="container">'."\n"
 			      . '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood != '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
 			      . 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
-			      . htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->mainpage.'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
+			      . htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
 			      . 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * Activity section.
 		 */
 		$this->output .= '<div class="section">Activity</div>'."\n";
-		$this->output .= $this->make_table_activity_distribution_hour($sqlite3);
+		$this->output .= $this->make_table_activity_distribution_hour($sqlite3, null);
 		$this->output .= $this->make_table_activity($sqlite3, 'day');
 		$this->output .= $this->make_table_activity($sqlite3, 'month');
 		$this->output .= $this->make_table_activity_distribution_day($sqlite3);
@@ -304,7 +300,7 @@ final class user
 			$class = 'act';
 			$columns = 24;
 
-			for ($i = 23; $i >= 0; $i--) {
+			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - $i, $this->datetime['year']));
 			}
 
@@ -314,7 +310,7 @@ final class user
 			$class = 'act';
 			$columns = 24;
 
-			for ($i = 23; $i >= 0; $i--) {
+			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
 			}
 
@@ -324,7 +320,7 @@ final class user
 			$class = 'act-year';
 			$columns = $this->datetime['years'];
 
-			for ($i = $this->datetime['years'] - 1; $i >= 0; $i--) {
+			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = $this->datetime['year'] - $i;
 			}
 
@@ -372,7 +368,10 @@ final class user
 			$l_total['estimate'] = $l_total[$this->datetime['currentyear']] + round($result['l_total_avg'] * $this->datetime['daysleft']);
 
 			if ($l_total['estimate'] > $high_value) {
-				$high_date = 'estimate';
+				/**
+				 * Don't set $high_date because we don't want "Est." to be bold. The previous highest
+				 * date will be bold instead. $high_value must be set in order to calculate bar heights.
+				 */
 				$high_value = $l_total['estimate'];
 			}
 		}
@@ -383,7 +382,7 @@ final class user
 		$tr3 = '<tr class="sub">';
 
 		foreach ($dates as $date) {
-			if (!array_key_exists($date, $l_total) || $l_total[$date] == 0) {
+			if (!array_key_exists($date, $l_total)) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				if ($l_total[$date] >= 999500) {
@@ -405,17 +404,17 @@ final class user
 				$tr2 .= '<td'.($date == 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total;
 
 				foreach ($times as $time) {
-					if ($time == 'evening') {
-						$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
-					} elseif ($time == 'afternoon') {
-						$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
-					} elseif ($time == 'morning') {
-						$height_li = $height['night'] + $height['morning'];
-					} elseif ($time == 'night') {
-						$height_li = $height['night'];
-					}
-
 					if ($height[$time] != 0) {
+						if ($time == 'evening') {
+							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
+						} elseif ($time == 'afternoon') {
+							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
+						} elseif ($time == 'morning') {
+							$height_li = $height['night'] + $height['morning'];
+						} elseif ($time == 'night') {
+							$height_li = $height['night'];
+						}
+
 						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px">';
 					}
 				}
@@ -424,11 +423,11 @@ final class user
 			}
 
 			if ($type == 'day') {
-				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
+				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
 			} elseif ($type == 'month') {
-				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
+				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
 			} elseif ($type == 'year') {
-				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.($date == 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
+				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.($date == 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
 			}
 		}
 
@@ -486,17 +485,17 @@ final class user
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage;
 
 				foreach ($times as $time) {
-					if ($time == 'evening') {
-						$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
-					} elseif ($time == 'afternoon') {
-						$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
-					} elseif ($time == 'morning') {
-						$height_li = $height['night'] + $height['morning'];
-					} elseif ($time == 'night') {
-						$height_li = $height['night'];
-					}
-
 					if ($height[$time] != 0) {
+						if ($time == 'evening') {
+							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
+						} elseif ($time == 'afternoon') {
+							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
+						} elseif ($time == 'morning') {
+							$height_li = $height['night'] + $height['morning'];
+						} elseif ($time == 'night') {
+							$height_li = $height['night'];
+						}
+
 						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'">';
 					}
 				}
@@ -504,13 +503,13 @@ final class user
 				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($high_day == $day ? ' class="bold"' : '').'>'.ucfirst($day);
+			$tr3 .= '<td'.($day == $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
 		}
 
 		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function make_table_activity_distribution_hour($sqlite3)
+	private function make_table_activity_distribution_hour($sqlite3, $type)
 	{
 		if (($result = $sqlite3->querySingle('SELECT l_00, l_01, l_02, l_03, l_04, l_05, l_06, l_07, l_08, l_09, l_10, l_11, l_12, l_13, l_14, l_15, l_16, l_17, l_18, l_19, l_20, l_21, l_22, l_23 FROM ruid_lines WHERE ruid = '.$this->ruid, true)) === false) {
 			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -564,7 +563,7 @@ final class user
 				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($high_key == $key ? ' class="bold"' : '').'>'.$hour.'h';
+			$tr3 .= '<td'.($key == $high_key ? ' class="bold"' : '').'>'.$hour.'h';
 		}
 
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
@@ -585,18 +584,14 @@ final class user
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$prevdate = date('Y-m', mktime(0, 0, 0, (int) substr($result['date'], 5, 2) - 1, 1, (int) substr($result['date'], 0, 4)));
 
-			if (!array_key_exists($prevdate, $rankings)) {
-				$rankings[$result['date']]['l_total_delta'] = 0;
-				$rankings[$result['date']]['percentage_delta'] = 0;
-				$rankings[$result['date']]['rank_delta'] = 0;
-			} else {
+			if (array_key_exists($prevdate, $rankings)) {
 				$rankings[$result['date']]['l_total_delta'] = $result['l_total'] - $rankings[$prevdate]['l_total'];
-				$rankings[$result['date']]['percentage_delta'] = round($result['percentage'], 2) - $rankings[$prevdate]['percentage'];
+				$rankings[$result['date']]['percentage_delta'] = $result['percentage'] - $rankings[$prevdate]['percentage'];
 				$rankings[$result['date']]['rank_delta'] = $rankings[$prevdate]['rank'] - $result['rank'];
 			}
 
 			$rankings[$result['date']]['l_total'] = $result['l_total'];
-			$rankings[$result['date']]['percentage'] = round($result['percentage'], 2);
+			$rankings[$result['date']]['percentage'] = $result['percentage'];
 			$rankings[$result['date']]['rank'] = $result['rank'];
 		}
 
@@ -607,7 +602,7 @@ final class user
 		krsort($rankings);
 
 		foreach ($rankings as $date => $values) {
-			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.($values['rank_delta'] == 0 ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.($values['l_total_delta'] == 0 ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.($values['percentage_delta'] == 0 ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>'));
+			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.(empty($values['rank_delta']) ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.(empty($values['l_total_delta']) ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.(empty($values['percentage_delta']) ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>'));
 		}
 
 		return '<table class="rank">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
@@ -629,9 +624,9 @@ final class user
 }
 
 /**
- * The channel ID must be set and cannot be of excessive length.
+ * The channel ID must be set, cannot be empty and cannot be of excessive length.
  */
-if (!isset($_GET['cid']) || !preg_match('/^\S{1,32}$/', $_GET['cid'])) {
+if (empty($_GET['cid']) || !preg_match('/^\S{1,32}$/', $_GET['cid'])) {
 	exit;
 }
 
