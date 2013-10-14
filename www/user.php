@@ -268,7 +268,7 @@ final class user
 		 * Activity section.
 		 */
 		$this->output .= '<div class="section">Activity</div>'."\n";
-		$this->output .= $this->make_table_activity_distribution_hour($sqlite3, null);
+		$this->output .= $this->make_table_activity_distribution_hour($sqlite3);
 		$this->output .= $this->make_table_activity($sqlite3, 'day');
 		$this->output .= $this->make_table_activity($sqlite3, 'month');
 		$this->output .= $this->make_table_activity_distribution_day($sqlite3);
@@ -509,7 +509,7 @@ final class user
 		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function make_table_activity_distribution_hour($sqlite3, $type)
+	private function make_table_activity_distribution_hour($sqlite3)
 	{
 		if (($result = $sqlite3->querySingle('SELECT l_00, l_01, l_02, l_03, l_04, l_05, l_06, l_07, l_08, l_09, l_10, l_11, l_12, l_13, l_14, l_15, l_16, l_17, l_18, l_19, l_20, l_21, l_22, l_23 FROM ruid_lines WHERE ruid = '.$this->ruid, true)) === false) {
 			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());

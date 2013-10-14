@@ -22,8 +22,8 @@
 final class html extends base
 {
 	/**
-	 * Default settings for this script, which can be overridden in the config file. These variables should all
-	 * appear in $settings_list[] along with their type.
+	 * Default settings for this script, which can be overridden in the configuration file. These variables should
+	 * all appear in $settings_list[] along with their type.
 	 */
 	private $addhtml_foot = '';
 	private $addhtml_head = '';
@@ -41,21 +41,6 @@ final class html extends base
 	private $recenturls_type = 1;
 	private $rows_domains_tlds = 10;
 	private $sectionbits = 255;
-	private $stylesheet = 'sss.css';
-	private $userstats = false;
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $color = array(
-		'night' => 'b',
-		'morning' => 'g',
-		'afternoon' => 'y',
-		'evening' => 'r');
-	private $datetime = array();
-	private $estimate = false;
-	private $l_total = 0;
-	private $output = '';
 	private $settings_list = array(
 		'addhtml_foot' => 'string',
 		'addhtml_head' => 'string',
@@ -76,6 +61,21 @@ final class html extends base
 		'sectionbits' => 'int',
 		'stylesheet' => 'string',
 		'userstats' => 'bool');
+	private $stylesheet = 'sss.css';
+	private $userstats = false;
+
+	/**
+	 * Variables that shouldn't be tampered with.
+	 */
+	private $color = array(
+		'night' => 'b',
+		'morning' => 'g',
+		'afternoon' => 'y',
+		'evening' => 'r');
+	private $datetime = array();
+	private $estimate = false;
+	private $l_total = 0;
+	private $output = '';
 
 	public function __construct($settings)
 	{
@@ -170,13 +170,13 @@ final class html extends base
 		 * Date and time variables used throughout the script. These are based on the date of the last logfile
 		 * parsed, and are used to define our scope.
 		 */
+		$this->datetime['currentyear'] = (int) date('Y');
 		$this->datetime['dayofmonth'] = (int) date('j', strtotime($date_lastlogparsed));
 		$this->datetime['month'] = (int) date('n', strtotime($date_lastlogparsed));
 		$this->datetime['monthname'] = date('F', strtotime($date_lastlogparsed));
 		$this->datetime['year'] = (int) date('Y', strtotime($date_lastlogparsed));
 		$this->datetime['years'] = $this->datetime['year'] - (int) date('Y', strtotime($date_first)) + 1;
 		$this->datetime['daysleft'] = (int) date('z', strtotime('last day of December '.$this->datetime['year'])) - (int) date('z', strtotime($date_lastlogparsed));
-		$this->datetime['currentyear'] = (int) date('Y');
 
 		/**
 		 * Show a minimum of 3 columns in the Activity by Year table.
@@ -306,34 +306,34 @@ final class html extends base
 
 			$t = new table('Most Active Chatters &ndash; Alltime', $this->minrows, $this->maxrows);
 			$t->set_value('decimals', 2);
-			$t->set_value('percentage', true);
 			$t->set_value('keys', array(
 				'k1' => 'Activity',
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
+			$t->set_value('percentage', true);
 			$t->set_value('queries', array('main' => 'SELECT (CAST(activedays AS REAL) / '.$dayslogged.') * 100 AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Active Chatters &ndash; '.$this->datetime['year'], $this->minrows, $this->maxrows);
 			$t->set_value('decimals', 2);
-			$t->set_value('percentage', true);
 			$t->set_value('keys', array(
 				'k1' => 'Activity',
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
+			$t->set_value('percentage', true);
 			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.$this->datetime['year'].'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.$this->datetime['year'].'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Active Chatters &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'], $this->minrows, $this->maxrows);
 			$t->set_value('decimals', 2);
-			$t->set_value('percentage', true);
 			$t->set_value('keys', array(
 				'k1' => 'Activity',
 				'k2' => 'User',
 				'v1' => 'float',
 				'v2' => 'string'));
+			$t->set_value('percentage', true);
 			$t->set_value('queries', array('main' => 'SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.date('Y-m', strtotime($date_lastlogparsed)).'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.date('Y-m', strtotime($date_lastlogparsed)).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT '.$this->maxrows));
 			$output .= $t->make_table($sqlite3);
 
@@ -592,7 +592,6 @@ final class html extends base
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Recent Topics', $this->minrows, $this->maxrows);
-			$t->set_value('v3a', true);
 			$t->set_value('keys', array(
 				'k1' => 'Date',
 				'k2' => 'User',
@@ -601,6 +600,7 @@ final class html extends base
 				'v2' => 'string',
 				'v3' => 'string-url'));
 			$t->set_value('queries', array('main' => 'SELECT datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE uid = uid_topics.uid)) AS v2, topic AS v3 FROM uid_topics JOIN topics ON uid_topics.tid = topics.tid WHERE uid NOT IN (SELECT uid FROM uid_details WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 4)) ORDER BY v1 DESC LIMIT '.$this->maxrows));
+			$t->set_value('v3a', true);
 			$output .= $t->make_table($sqlite3);
 
 			if ($output != '') {
@@ -615,78 +615,68 @@ final class html extends base
 			$output = '';
 
 			/**
-			 * All the smileys and their info text.
-			 */
-			$smileys = array(
-				's_01' => array(':)', 'Happy'),
-				's_02' => array(';)', 'Wink'),
-				's_03' => array(':(', 'Sad'),
-				's_04' => array(':P', 'Tongue Sticking Out'),
-				's_05' => array(':D', 'Laugh'),
-				's_06' => array(';(', 'Cry'),
-				's_07' => array(':/', 'Skeptical'),
-				's_08' => array('\\o/', 'Cheer'),
-				's_09' => array(':))', 'Super Happy'),
-				's_10' => array('<3', 'Love'),
-				's_11' => array(':o', 'Surprised'),
-				's_12' => array('=)', 'Cheerful Smile'),
-				's_13' => array(':-)', 'Classic Happy'),
-				's_14' => array(':x', 'Kiss'),
-				's_15' => array(':\\', 'Skeptical'),
-				's_16' => array('D:', 'Shocked'),
-				's_17' => array(':|', 'Straight Face'),
-				's_18' => array(';-)', 'Classic Wink'),
-				's_19' => array(';P', 'Silly'),
-				's_20' => array('=]', 'Big Cheerful Smile'),
-				's_21' => array(':3', 'Kitty'),
-				's_22' => array('8)', 'Cool Smile'),
-				's_23' => array(':<', 'Sad'),
-				's_24' => array(':>', 'Happy Smile'),
-				's_25' => array('=P', 'Funny Face'),
-				's_26' => array(';x', 'Lovely Kiss'),
-				's_27' => array(':-D', 'Classic Laugh'),
-				's_28' => array(';))', 'Extreme Wink'),
-				's_29' => array(':]', 'Big Smile'),
-				's_30' => array(';D', 'Winking Laugh'),
-				's_31' => array('-_-', 'Not Amused'),
-				's_32' => array(':S', 'Confused'),
-				's_33' => array('=/', 'Skeptical'),
-				's_34' => array('=\\', 'Skeptical'),
-				's_35' => array(':((', 'Super Sad'),
-				's_36' => array('=D', 'Cheerful Laugh'),
-				's_37' => array(':-/', 'Classic Skeptical'),
-				's_38' => array(':-P', 'Classic Tongue Sticking Out'),
-				's_39' => array(';_;', 'Crying'),
-				's_40' => array(';/', '...'),
-				's_41' => array(';]', 'Big Wink'),
-				's_42' => array(':-(', 'Classic Sad'),
-				's_43' => array(':\'(', 'Tear'),
-				's_44' => array('=(', 'Sad'),
-				's_45' => array('-.-', 'Not Amused'),
-				's_46' => array(';((', 'Crying'),
-				's_47' => array('=X', 'Kiss'),
-				's_48' => array(':[', 'Sad'),
-				's_49' => array('>:(', 'Angry'),
-				's_50' => array(';o', 'Joking'));
-
-			/**
 			 * Display the top 9 smiley tables ordered by totals.
 			 */
 			if (($result = $sqlite3->querySingle('SELECT SUM(s_01) AS s_01, SUM(s_02) AS s_02, SUM(s_03) AS s_03, SUM(s_04) AS s_04, SUM(s_05) AS s_05, SUM(s_06) AS s_06, SUM(s_07) AS s_07, SUM(s_08) AS s_08, SUM(s_09) AS s_09, SUM(s_10) AS s_10, SUM(s_11) AS s_11, SUM(s_12) AS s_12, SUM(s_13) AS s_13, SUM(s_14) AS s_14, SUM(s_15) AS s_15, SUM(s_16) AS s_16, SUM(s_17) AS s_17, SUM(s_18) AS s_18, SUM(s_19) AS s_19, SUM(s_20) AS s_20, SUM(s_21) AS s_21, SUM(s_22) AS s_22, SUM(s_23) AS s_23, SUM(s_24) AS s_24, SUM(s_25) AS s_25, SUM(s_26) AS s_26, SUM(s_27) AS s_27, SUM(s_28) AS s_28, SUM(s_29) AS s_29, SUM(s_30) AS s_30, SUM(s_31) AS s_31, SUM(s_32) AS s_32, SUM(s_33) AS s_33, SUM(s_34) AS s_34, SUM(s_35) AS s_35, SUM(s_36) AS s_36, SUM(s_37) AS s_37, SUM(s_38) AS s_38, SUM(s_39) AS s_39, SUM(s_40) AS s_40, SUM(s_41) AS s_41, SUM(s_42) AS s_42, SUM(s_43) AS s_43, SUM(s_44) AS s_44, SUM(s_45) AS s_45, SUM(s_46) AS s_46, SUM(s_47) AS s_47, SUM(s_48) AS s_48, SUM(s_49) AS s_49, SUM(s_50) AS s_50 FROM ruid_smileys', true)) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			foreach ($result as $key => $value) {
-				if (!empty($value)) {
-					$smileys_totals[$key] = $value;
-				}
-			}
+			if (!empty($result)) {
+				arsort($result);
+				array_splice($result, 9);
+				$smileys = array(
+					's_01' => array(':)', 'Happy'),
+					's_02' => array(';)', 'Wink'),
+					's_03' => array(':(', 'Sad'),
+					's_04' => array(':P', 'Tongue Sticking Out'),
+					's_05' => array(':D', 'Laugh'),
+					's_06' => array(';(', 'Cry'),
+					's_07' => array(':/', 'Skeptical'),
+					's_08' => array('\\o/', 'Cheer'),
+					's_09' => array(':))', 'Super Happy'),
+					's_10' => array('<3', 'Love'),
+					's_11' => array(':o', 'Surprised'),
+					's_12' => array('=)', 'Cheerful Smile'),
+					's_13' => array(':-)', 'Classic Happy'),
+					's_14' => array(':x', 'Kiss'),
+					's_15' => array(':\\', 'Skeptical'),
+					's_16' => array('D:', 'Shocked'),
+					's_17' => array(':|', 'Straight Face'),
+					's_18' => array(';-)', 'Classic Wink'),
+					's_19' => array(';P', 'Silly'),
+					's_20' => array('=]', 'Big Cheerful Smile'),
+					's_21' => array(':3', 'Kitty'),
+					's_22' => array('8)', 'Cool Smile'),
+					's_23' => array(':<', 'Sad'),
+					's_24' => array(':>', 'Happy Smile'),
+					's_25' => array('=P', 'Funny Face'),
+					's_26' => array(';x', 'Lovely Kiss'),
+					's_27' => array(':-D', 'Classic Laugh'),
+					's_28' => array(';))', 'Extreme Wink'),
+					's_29' => array(':]', 'Big Smile'),
+					's_30' => array(';D', 'Winking Laugh'),
+					's_31' => array('-_-', 'Not Amused'),
+					's_32' => array(':S', 'Confused'),
+					's_33' => array('=/', 'Skeptical'),
+					's_34' => array('=\\', 'Skeptical'),
+					's_35' => array(':((', 'Super Sad'),
+					's_36' => array('=D', 'Cheerful Laugh'),
+					's_37' => array(':-/', 'Classic Skeptical'),
+					's_38' => array(':-P', 'Classic Tongue Sticking Out'),
+					's_39' => array(';_;', 'Crying'),
+					's_40' => array(';/', '...'),
+					's_41' => array(';]', 'Big Wink'),
+					's_42' => array(':-(', 'Classic Sad'),
+					's_43' => array(':\'(', 'Tear'),
+					's_44' => array('=(', 'Sad'),
+					's_45' => array('-.-', 'Not Amused'),
+					's_46' => array(';((', 'Crying'),
+					's_47' => array('=X', 'Kiss'),
+					's_48' => array(':[', 'Sad'),
+					's_49' => array('>:(', 'Angry'),
+					's_50' => array(';o', 'Joking'));
 
-			if (!empty($smileys_totals)) {
-				arsort($smileys_totals);
-				array_splice($smileys_totals, 9);
-
-				foreach ($smileys_totals as $key => $value) {
+				foreach ($result as $key => $value) {
 					$t = new table($smileys[$key][1], $this->minrows, $this->maxrows);
 					$t->set_value('keys', array(
 						'k1' => htmlspecialchars($smileys[$key][0]),
@@ -718,8 +708,8 @@ final class html extends base
 				'v1' => 'int',
 				'v2' => 'url',
 				'v3' => 'date'));
-			$t->set_value('queries', array('main' => 'SELECT COUNT(*) AS v1, \'http://\' || fqdn AS v2, MIN(datetime) AS v3 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY urls.fid ORDER BY v1 DESC, v3 ASC LIMIT '.$this->rows_domains_tlds));
 			$t->set_value('medium', true);
+			$t->set_value('queries', array('main' => 'SELECT COUNT(*) AS v1, \'http://\' || fqdn AS v2, MIN(datetime) AS v3 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY urls.fid ORDER BY v1 DESC, v3 ASC LIMIT '.$this->rows_domains_tlds));
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Referenced TLDs', $this->rows_domains_tlds, $this->rows_domains_tlds);
@@ -843,7 +833,7 @@ final class html extends base
 			$class = 'act';
 			$columns = 24;
 
-			for ($i = 23; $i >= 0; $i--) {
+			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - $i, $this->datetime['year']));
 			}
 
@@ -853,7 +843,7 @@ final class html extends base
 			$class = 'act';
 			$columns = 24;
 
-			for ($i = 23; $i >= 0; $i--) {
+			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
 			}
 
@@ -863,7 +853,7 @@ final class html extends base
 			$class = 'act-year';
 			$columns = $this->datetime['years'];
 
-			for ($i = $this->datetime['years'] - 1; $i >= 0; $i--) {
+			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = $this->datetime['year'] - $i;
 			}
 
@@ -887,10 +877,10 @@ final class html extends base
 		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$l_night[$result['date']] = $result['l_night'];
-			$l_morning[$result['date']] = $result['l_morning'];
 			$l_afternoon[$result['date']] = $result['l_afternoon'];
 			$l_evening[$result['date']] = $result['l_evening'];
+			$l_morning[$result['date']] = $result['l_morning'];
+			$l_night[$result['date']] = $result['l_night'];
 			$l_total[$result['date']] = $result['l_total'];
 
 			if ($l_total[$result['date']] > $high_value) {
@@ -904,24 +894,28 @@ final class html extends base
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			$l_night['estimate'] = $l_night[$this->datetime['currentyear']] + round($result['l_night_avg'] * $this->datetime['daysleft']);
-			$l_morning['estimate'] = $l_morning[$this->datetime['currentyear']] + round($result['l_morning_avg'] * $this->datetime['daysleft']);
 			$l_afternoon['estimate'] = $l_afternoon[$this->datetime['currentyear']] + round($result['l_afternoon_avg'] * $this->datetime['daysleft']);
 			$l_evening['estimate'] = $l_evening[$this->datetime['currentyear']] + round($result['l_evening_avg'] * $this->datetime['daysleft']);
+			$l_morning['estimate'] = $l_morning[$this->datetime['currentyear']] + round($result['l_morning_avg'] * $this->datetime['daysleft']);
+			$l_night['estimate'] = $l_night[$this->datetime['currentyear']] + round($result['l_night_avg'] * $this->datetime['daysleft']);
 			$l_total['estimate'] = $l_total[$this->datetime['currentyear']] + round($result['l_total_avg'] * $this->datetime['daysleft']);
 
 			if ($l_total['estimate'] > $high_value) {
-				$high_date = 'estimate';
+				/**
+				 * Don't set $high_date because we don't want "Est." to be bold. The previous highest
+				 * date will be bold instead. $high_value must be set in order to calculate bar heights.
+				 */
 				$high_value = $l_total['estimate'];
 			}
 		}
 
+		$times = array('evening', 'afternoon', 'morning', 'night');
 		$tr1 = '<tr><th colspan="'.$columns.'">'.$head;
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
 		foreach ($dates as $date) {
-			if (!array_key_exists($date, $l_total) || $l_total[$date] == 0) {
+			if (!array_key_exists($date, $l_total)) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				if ($l_total[$date] >= 999500) {
@@ -931,8 +925,6 @@ final class html extends base
 				} else {
 					$total = $l_total[$date];
 				}
-
-				$times = array('evening', 'afternoon', 'morning', 'night');
 
 				foreach ($times as $time) {
 					if (${'l_'.$time}[$date] != 0) {
@@ -945,17 +937,17 @@ final class html extends base
 				$tr2 .= '<td'.($date == 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total;
 
 				foreach ($times as $time) {
-					if ($time == 'evening') {
-						$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
-					} elseif ($time == 'afternoon') {
-						$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
-					} elseif ($time == 'morning') {
-						$height_li = $height['night'] + $height['morning'];
-					} elseif ($time == 'night') {
-						$height_li = $height['night'];
-					}
-
 					if ($height[$time] != 0) {
+						if ($time == 'evening') {
+							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
+						} elseif ($time == 'afternoon') {
+							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
+						} elseif ($time == 'morning') {
+							$height_li = $height['night'] + $height['morning'];
+						} elseif ($time == 'night') {
+							$height_li = $height['night'];
+						}
+
 						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px">';
 					}
 				}
@@ -964,11 +956,11 @@ final class html extends base
 			}
 
 			if ($type == 'day') {
-				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
+				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
 			} elseif ($type == 'month') {
-				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
+				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
 			} elseif ($type == 'year') {
-				$tr3 .= '<td'.($high_date == $date ? ' class="bold"' : '').'>'.($date == 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
+				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.($date == 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
 			}
 		}
 
@@ -981,15 +973,15 @@ final class html extends base
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
+		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
 		$high_day = '';
 		$high_value = 0;
-		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
 
 		foreach ($days as $day) {
-			$l_night[$day] = $result['l_'.$day.'_night'];
-			$l_morning[$day] = $result['l_'.$day.'_morning'];
 			$l_afternoon[$day] = $result['l_'.$day.'_afternoon'];
 			$l_evening[$day] = $result['l_'.$day.'_evening'];
+			$l_morning[$day] = $result['l_'.$day.'_morning'];
+			$l_night[$day] = $result['l_'.$day.'_night'];
 			$l_total[$day] = $l_night[$day] + $l_morning[$day] + $l_afternoon[$day] + $l_evening[$day];
 
 			if ($l_total[$day] > $high_value) {
@@ -998,6 +990,7 @@ final class html extends base
 			}
 		}
 
+		$times = array('evening', 'afternoon', 'morning', 'night');
 		$tr1 = '<tr><th colspan="7">Activity Distribution by Day';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
@@ -1014,8 +1007,6 @@ final class html extends base
 					$percentage = number_format($percentage, 1).'%';
 				}
 
-				$times = array('evening', 'afternoon', 'morning', 'night');
-
 				foreach ($times as $time) {
 					if (${'l_'.$time}[$day] != 0) {
 						$height[$time] = round((${'l_'.$time}[$day] / $high_value) * 100);
@@ -1027,17 +1018,17 @@ final class html extends base
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage;
 
 				foreach ($times as $time) {
-					if ($time == 'evening') {
-						$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
-					} elseif ($time == 'afternoon') {
-						$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
-					} elseif ($time == 'morning') {
-						$height_li = $height['night'] + $height['morning'];
-					} elseif ($time == 'night') {
-						$height_li = $height['night'];
-					}
-
 					if ($height[$time] != 0) {
+						if ($time == 'evening') {
+							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
+						} elseif ($time == 'afternoon') {
+							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
+						} elseif ($time == 'morning') {
+							$height_li = $height['night'] + $height['morning'];
+						} elseif ($time == 'night') {
+							$height_li = $height['night'];
+						}
+
 						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'">';
 					}
 				}
@@ -1045,7 +1036,7 @@ final class html extends base
 				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($high_day == $day ? ' class="bold"' : '').'>'.ucfirst($day);
+			$tr3 .= '<td'.($day == $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
 		}
 
 		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
@@ -1105,7 +1096,7 @@ final class html extends base
 				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($high_key == $key ? ' class="bold"' : '').'>'.$hour.'h';
+			$tr3 .= '<td'.($key == $high_key ? ' class="bold"' : '').'>'.$hour.'h';
 		}
 
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
@@ -1114,18 +1105,18 @@ final class html extends base
 	private function make_table_people($sqlite3, $type)
 	{
 		/**
-		 * Only create the table if there is activity from users other than bots and nubcakes.
+		 * Only create the table if there is activity from users other than bots and excluded users.
 		 */
 		if ($type == 'alltime') {
 			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
-		} elseif ($type == 'year') {
-			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\'')) === false) {
-				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
 		} elseif ($type == 'month') {
 			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\'')) === false) {
+				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
+		} elseif ($type == 'year') {
+			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\'')) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
@@ -1138,46 +1129,45 @@ final class html extends base
 			$head = 'Most Talkative People &ndash; Alltime';
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
 			$query = $sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_lines.ruid) AS lastseen FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		} elseif ($type == 'year') {
-			$head = 'Most Talkative People &ndash; '.$this->datetime['year'];
-			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->datetime['year'].'">History</a>';
-			$query = $sqlite3->query('SELECT csnick, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening, (SELECT quote FROM ruid_lines WHERE ruid = ruid_activity_by_year.ruid) AS quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_year.ruid) AS lastseen FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\' GROUP BY ruid_activity_by_year.ruid ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_year) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'];
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->datetime['year'].'&amp;month='.$this->datetime['month'].'">History</a>';
-			$query = $sqlite3->query('SELECT csnick, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening, (SELECT quote FROM ruid_lines WHERE ruid = ruid_activity_by_month.ruid) AS quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_month.ruid) AS lastseen FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\' GROUP BY ruid_activity_by_month.ruid ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_month) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT csnick, ruid_activity_by_month.l_total AS l_total, ruid_activity_by_month.l_night AS l_night, ruid_activity_by_month.l_morning AS l_morning, ruid_activity_by_month.l_afternoon AS l_afternoon, ruid_activity_by_month.l_evening AS l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_month.ruid) AS lastseen FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_month.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\' ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_month) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		} elseif ($type == 'year') {
+			$head = 'Most Talkative People &ndash; '.$this->datetime['year'];
+			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->datetime['year'].'">History</a>';
+			$query = $sqlite3->query('SELECT csnick, ruid_activity_by_year.l_total AS l_total, ruid_activity_by_year.l_night AS l_night, ruid_activity_by_year.l_morning AS l_morning, ruid_activity_by_year.l_afternoon AS l_afternoon, ruid_activity_by_year.l_evening AS l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_year.ruid) AS lastseen FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_year.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\' ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_year) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
+		$i = 0;
+		$times = array('night', 'morning', 'afternoon', 'evening');
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
 		$tr1 = '<tr><th colspan="7">'.($this->history ? '<span class="title">'.$head.'</span><span class="total">'.$historylink.'</span>' : $head);
 		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">When?<td class="k5">Last Seen<td class="k6">Quote';
 		$trx = '';
-		$i = 0;
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$i++;
 			$width = 50;
-			unset($width_float, $width_int, $width_remainders);
-			$times = array('night', 'morning', 'afternoon', 'evening');
 
 			foreach ($times as $time) {
 				if ($result['l_'.$time] != 0) {
 					$width_float[$time] = ($result['l_'.$time] / $result['l_total']) * 50;
 					$width_int[$time] = floor($width_float[$time]);
-					$width -= $width_int[$time];
 					$width_remainders[$time] = $width_float[$time] - $width_int[$time];
+					$width -= $width_int[$time];
 				}
 			}
 
-			if (!empty($width_remainders) && $width != 0) {
+			if ($width != 0) {
 				arsort($width_remainders);
 
 				foreach ($width_remainders as $time => $remainder) {
+					$width--;
+					$width_int[$time]++;
+
 					if ($width == 0) {
 						break;
-					} else {
-						$width_int[$time]++;
-						$width--;
 					}
 				}
 			}
@@ -1191,6 +1181,7 @@ final class html extends base
 			}
 
 			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$i.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.htmlspecialchars($result['csnick']).'</a>' : htmlspecialchars($result['csnick'])).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->daysago($result['lastseen']).'<td class="v6">'.htmlspecialchars($result['quote']);
+			unset($width_float, $width_int, $width_remainders);
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
@@ -1198,9 +1189,9 @@ final class html extends base
 
 	private function make_table_people2($sqlite3)
 	{
-		$query = $sqlite3->query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$current_column = 1;
 		$current_row = 1;
+		$query = $sqlite3->query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if ($current_row > $this->maxrows_people2) {
@@ -1240,7 +1231,7 @@ final class html extends base
 	private function make_table_people_timeofday($sqlite3)
 	{
 		/**
-		 * Only create the table if there is activity from users other than bots and nubcakes.
+		 * Only create the table if there is activity from users other than bots and excluded users.
 		 */
 		if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
 			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -1259,8 +1250,8 @@ final class html extends base
 
 			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 				$i++;
-				${$time}[$i]['user'] = $result['csnick'];
 				${$time}[$i]['lines'] = $result['l_'.$time];
+				${$time}[$i]['user'] = $result['csnick'];
 
 				if (${$time}[$i]['lines'] > $high_value) {
 					$high_value = ${$time}[$i]['lines'];
@@ -1319,8 +1310,8 @@ final class table extends base
 	public function __construct($head, $minrows, $maxrows)
 	{
 		$this->head = $head;
-		$this->minrows = $minrows;
 		$this->maxrows = $maxrows;
+		$this->minrows = $minrows;
 	}
 
 	/**
@@ -1332,8 +1323,8 @@ final class table extends base
 			$urltools = new urltools();
 		}
 
-		$words = explode(' ', $string);
 		$newstring = '';
+		$words = explode(' ', $string);
 
 		foreach ($words as $word) {
 			if (preg_match('/^(www\.|https?:\/\/)/i', $word) && ($urldata = $urltools->get_elements($word)) !== false) {
@@ -1386,8 +1377,8 @@ final class table extends base
 		/**
 		 * Run the "main" query and structure the table contents.
 		 */
-		$query = $sqlite3->query($this->queries['main']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$i = 0;
+		$query = $sqlite3->query($this->queries['main']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$i++;
