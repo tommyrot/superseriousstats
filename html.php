@@ -172,6 +172,7 @@ final class html extends base
 		 */
 		$this->datetime['currentyear'] = (int) date('Y');
 		$this->datetime['dayofmonth'] = (int) date('j', strtotime($date_lastlogparsed));
+		$this->datetime['firstyearmonth'] = substr($date_first, 0, 7);
 		$this->datetime['month'] = (int) date('n', strtotime($date_lastlogparsed));
 		$this->datetime['monthname'] = date('F', strtotime($date_lastlogparsed));
 		$this->datetime['year'] = (int) date('Y', strtotime($date_lastlogparsed));
@@ -1128,7 +1129,7 @@ final class html extends base
 		if ($type == 'alltime') {
 			$head = 'Most Talkative People &ndash; Alltime';
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
-			$query = $sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_lines.ruid) AS lastseen FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_lines.ruid) AS lastseen, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 1, 1, $this->datetime['year'])).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'];
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->datetime['year'].'&amp;month='.$this->datetime['month'].'">History</a>';
@@ -1180,7 +1181,21 @@ final class html extends base
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$i.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.htmlspecialchars($result['csnick']).'</a>' : htmlspecialchars($result['csnick'])).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->daysago($result['lastseen']).'<td class="v6">'.htmlspecialchars($result['quote']);
+			if ($type == 'alltime') {
+				if (date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) == $this->datetime['firstyearmonth']) {
+					$pos = $i;
+				} elseif (is_null($result['prevrank']) || $i < $result['prevrank']) {
+					$pos = '<span class="green">&#x25B2;'.$i.'</span>';
+				} elseif ($i > $result['prevrank']) {
+					$pos = '<span class="red">&#x25BC;'.$i.'</span>';
+				} else {
+					$pos = $i;
+				}
+			} else {
+				$pos = $i;
+			}
+
+			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$pos.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.htmlspecialchars($result['csnick']).'</a>' : htmlspecialchars($result['csnick'])).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->daysago($result['lastseen']).'<td class="v6">'.htmlspecialchars($result['quote']);
 			unset($width_float, $width_int, $width_remainders);
 		}
 
