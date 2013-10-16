@@ -26,10 +26,6 @@ final class maintenance extends base
 	 * all appear in $settings_list[] along with their type.
 	 */
 	private $rankings = false;
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
 	private $settings_list = array(
 		'outputbits' => 'int',
 		'rankings' => 'bool');
@@ -59,7 +55,7 @@ final class maintenance extends base
 	}
 
 	/**
-	 * Calculate on which dates a user reached certain milestones.
+	 * Calculate on which date a user reached certain milestone.
 	 */
 	public function calculate_milestones($sqlite3)
 	{
@@ -126,8 +122,8 @@ final class maintenance extends base
 			return null;
 		}
 
-		$query->reset();
 		$channel_activity_by_month = array_fill_keys($scope, 0);
+		$query->reset();
 		$ruid_activity_by_month = array();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -178,8 +174,8 @@ final class maintenance extends base
 				$rank = 1;
 			}
 
-			$sqlite3->exec('INSERT INTO ruid_rankings (ruid, date, rank, l_total, percentage) VALUES ('.$values['ruid'].', \''.$values['date'].'\', '.$rank.', '.$values['l_total'].', '.round(($values['l_total'] / $channel_activity_by_month_cumulative[$values['date']]) * 100, 2).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$prevdate = $values['date'];
+			$sqlite3->exec('INSERT INTO ruid_rankings (ruid, date, rank, l_total, percentage) VALUES ('.$values['ruid'].', \''.$values['date'].'\', '.$rank.', '.$values['l_total'].', '.round(($values['l_total'] / $channel_activity_by_month_cumulative[$values['date']]) * 100, 2).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$rank++;
 		}
 	}

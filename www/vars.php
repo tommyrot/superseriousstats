@@ -12,7 +12,7 @@
  *        _as_your_Web_server_sees_it_.
  *
  * TIP 2: Use a cid like "test" if the channel name is "#test". The number sign
- *        will be percent-encoded in the URL which looks crap. Remember to have
+ *        will be percent-encoded in the URL which looks bad. Remember to have
  *        the same cid in sss.conf and this file.
  */
 

@@ -19,26 +19,28 @@
 /**
  * Parse instructions for the ZNC logfile format.
  *
- * +------------+-------------------------------------------------------+->
- * | Line	| Format						| Notes
- * +------------+-------------------------------------------------------+->
- * | Normal	| <NICK> MSG						| Skip empty lines.
- * | Action	| * NICK MSG						| Skip empty actions.
- * | Slap	| * NICK slaps MSG					| Slaps may lack a (valid) target.
- * | Nickchange	| NICK is now known as NICK				|
- * | Join	| *** Joins: NICK (HOST)				|
- * | Part	| *** Parts: NICK (HOST) (MSG)				| Part message may be absent, or empty due to normalization.
- * | Quit	| *** Quits: NICK (HOST) (MSG)				| Quit message may be empty due to normalization.
- * | Mode	| *** NICK sets mode: +o-v NICK NICK			| Only check for combinations of ops (+o) and voices (+v).
- * | Topic	| *** NICK changes topic to 'MSG'			| Skip empty topics.
- * | Kick	| *** NICK was kicked by NICK (MSG)			| Kick message may be empty due to normalization.
- * +------------+-------------------------------------------------------+->
+ * Line         Format                                                  Notes
+ * ---------------------------------------------------------------------------------------------------------------------
+ * Normal       <NICK> MSG                                              Skip empty lines.
+ * Action       * NICK MSG                                              Skip empty actions.
+ * Slap         * NICK slaps MSG                                        Slaps may lack a (valid) target.
+ * Nickchange   NICK is now known as NICK
+ * Join         *** Joins: NICK (HOST)
+ * Part         *** Parts: NICK (HOST) (MSG)                            Part message may be absent, or empty due to
+ *                                                                      normalization.
+ * Quit         *** Quits: NICK (HOST) (MSG)                            Quit message may be empty due to normalization.
+ * Mode         *** NICK sets mode: +o-v NICK NICK                      Only check for combinations of ops (+o) and
+ *                                                                      voices (+v).
+ * Topic        *** NICK changes topic to 'MSG'                         Skip empty topics.
+ * Kick         *** NICK was kicked by NICK (MSG)                       Kick message may be empty due to normalization.
+ * ---------------------------------------------------------------------------------------------------------------------
  *
  * Notes:
  * - normalize_line() scrubs all lines before passing them on to parse_line().
- * - Given that nicks can't contain ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
- * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index item is
- *   both set and has a value.
+ * - Given that nicks can't contain ":" the order of the regular expressions below is irrelevant (current order aims for
+ *   best performance).
+ * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use
+ *   empty() to check whether an index item is both set and has a value.
  */
 final class parser_znc extends parser
 {
@@ -69,8 +71,8 @@ final class parser_znc extends parser
 		 * "Mode" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\*\* (?<nick_performing>\S+) sets mode: (?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)$/', $line, $matches)) {
-			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 			$modenum = 0;
+			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 
 			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
 				$mode = substr($matches['modes'], $i, 1);

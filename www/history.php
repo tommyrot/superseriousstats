@@ -173,15 +173,15 @@ final class history
 		 * HTML Head.
 		 */
 		$this->output = '<!DOCTYPE html>'."\n\n"
-			      . '<html>'."\n\n"
-			      . '<head>'."\n"
-			      . '<meta charset="utf-8">'."\n"
-			      . '<title>'.htmlspecialchars($this->channel).', historically.</title>'."\n"
-			      . '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
-			      . '</head>'."\n\n"
-			      . '<body><div id="container">'."\n"
-			      . '<div class="info"><a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a>, historically.<br><br>'
-			      . (is_null($this->datetime['year']) ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.(!is_null($this->datetime['month']) ? $this->datetime['monthname'].' '.$this->datetime['year'] : 'the year '.$this->datetime['year']).'.').'</div>'."\n";
+			. '<html>'."\n\n"
+			. '<head>'."\n"
+			. '<meta charset="utf-8">'."\n"
+			. '<title>'.htmlspecialchars($this->channel).', historically.</title>'."\n"
+			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
+			. '</head>'."\n\n"
+			. '<body><div id="container">'."\n"
+			. '<div class="info"><a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a>, historically.<br><br>'
+			. (is_null($this->datetime['year']) ? '<i>Select a year and/or month in the matrix below</i>.' : 'Displaying statistics for '.(!is_null($this->datetime['month']) ? $this->datetime['monthname'].' '.$this->datetime['year'] : 'the year '.$this->datetime['year']).'.').'</div>'."\n";
 
 		/**
 		 * Activity section.

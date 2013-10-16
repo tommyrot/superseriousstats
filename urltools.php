@@ -49,13 +49,13 @@ final class urltools
 
 	public function __construct()
 	{
-		$this->reserved = '('.$this->gen_delims.'|'.$this->sub_delims.')';
-		$this->pchar = '('.$this->unreserved.'|'.$this->pct_encoded.'|'.$this->sub_delims.'|[:@])';
 		$this->fqdn = '(?<fqdn>'.$this->domain.$this->tld.')\.?';
 		$this->authority = '(?<authority>('.$this->ipv4address.'|'.$this->fqdn.')(:'.$this->port.')?)';
+		$this->pchar = '('.$this->unreserved.'|'.$this->pct_encoded.'|'.$this->sub_delims.'|[:@])';
 		$this->fragment = '(?<fragment>(#('.$this->pchar.'|[\/?])*)?)';
 		$this->path = '(?<path>(\/\/?('.$this->pchar.'+\/?)*)?)';
 		$this->query = '(?<query>(\?('.$this->pchar.'|[\/?])*)?)';
+		$this->reserved = '('.$this->gen_delims.'|'.$this->sub_delims.')';
 	}
 
 	/**
@@ -83,8 +83,8 @@ final class urltools
 			 * If the URL has no scheme, http:// is assumed. Update the elements.
 			 */
 			if (empty($matches['scheme'])) {
-				$matches['url'] = 'http://'.$matches['url'];
 				$matches['scheme'] = 'http://';
+				$matches['url'] = 'http://'.$matches['url'];
 			}
 
 			/**

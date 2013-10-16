@@ -19,8 +19,8 @@
 /**
  * Suppress any error output.
  */
-ini_set('display_errors', '0'); // To enable set to 1.
-ini_set('error_reporting', 0);  // To enable for ALL errors set to -1.
+ini_set('display_errors', '1'); // To disable set to 0.
+ini_set('error_reporting', -1); // To disable for ALL errors set to 0.
 
 /**
  * Check if all required extension are loaded.
@@ -99,11 +99,7 @@ final class sss extends base
 			array_push($this->settings_list_required, 'parser', 'logfile_dateformat');
 		}
 
-		if (strpos($options_keys, 'o') !== false) {
-			$this->settings_list_required[] = 'channel';
-		}
-
-		if (strpos($options_keys, 's') !== false) {
+		if (strpos($options_keys, 'o') !== false || strpos($options_keys, 's') !== false) {
 			$this->settings_list_required[] = 'channel';
 		}
 
@@ -254,8 +250,6 @@ final class sss extends base
 
 	private function export_settings()
 	{
-		$vars = '$settings[\''.(!empty($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = array(';
-
 		/**
 		 * The following is a list of settings accepted by history.php and/or user.php along with their type.
 		 */
@@ -270,6 +264,7 @@ final class sss extends base
 			'stylesheet' => 'string',
 			'timezone' => 'string',
 			'userstats' => 'bool');
+		$vars = '$settings[\''.(!empty($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = array(';
 
 		foreach ($settings_list as $key => $type) {
 			if (!array_key_exists($key, $this->settings)) {
@@ -386,7 +381,7 @@ final class sss extends base
 				 * Maintain an array for each stripped nick, containing the uids of every nick that
 				 * matches it. Put the uid of the matching nick at the start of the array if the nick is
 				 * already linked (status != 0), otherwise put it at the end.
-			 	 */
+				 */
 				if ($result['status'] != 0 && !empty($strippednicks[$strippednick])) {
 					array_unshift($strippednicks[$strippednick], $result['uid']);
 				} else {
@@ -561,9 +556,9 @@ final class sss extends base
 
 	private function print_manual()
 	{
-		$man = 'usage:	php sss.php [-c <file>] [-i <file|directory>]'."\n"
-		     . '		    [-o <file> [-b <numbits>]]'."\n\n"
-		     . 'See the MANUAL file for an overview of all available options.'."\n";
+		$man = 'usage:  php sss.php [-c <file>] [-i <file|directory>]'."\n"
+			. '                    [-o <file> [-b <numbits>]]'."\n\n"
+			. 'See the MANUAL file for an overview of all available options.'."\n";
 		exit($man);
 	}
 

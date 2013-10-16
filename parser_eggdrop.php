@@ -19,29 +19,31 @@
 /**
  * Parse instructions for the Eggdrop logfile format.
  *
- * +------------+-------------------------------------------------------+->
- * | Line	| Format						| Notes
- * +------------+-------------------------------------------------------+->
- * | Normal	| <NICK> MSG						| Skip empty lines.
- * | Action	| Action: NICK MSG					| Skip empty actions.
- * | Slap	| Action: NICK slaps MSG				| Slaps may lack a (valid) target.
- * | Nickchange	| Nick change: NICK -> NICK				|
- * | Join	| NICK (HOST) joined CHAN.				|
- * | Part	| NICK (HOST) left CHAN (MSG).				| Part message may be absent, or empty due to normalization.
- * | Quit	| NICK (HOST) left irc: MSG				| Quit message may be empty due to normalization.
- * | Mode	| CHAN: mode change '+o-v NICK NICK' by NICK!HOST	| Only check for combinations of ops (+o) and voices (+v). Host may be absent.
- * | Topic	| Topic changed on CHAN by NICK!HOST: MSG		| Skip empty topics. Host may be absent.
- * | Kick	| NICK kicked from CHAN by NICK: MSG			| Kick message may be empty due to normalization.
- * | Repeat	| Last message repeated NUM time(s).			|
- * +------------+-------------------------------------------------------+->
+ * Line         Format                                                  Notes
+ * ---------------------------------------------------------------------------------------------------------------------
+ * Normal       <NICK> MSG                                              Skip empty lines.
+ * Action       Action: NICK MSG                                        Skip empty actions.
+ * Slap         Action: NICK slaps MSG                                  Slaps may lack a (valid) target.
+ * Nickchange   Nick change: NICK -> NICK
+ * Join         NICK (HOST) joined CHAN.
+ * Part         NICK (HOST) left CHAN (MSG).                            Part message may be absent, or empty due to
+ *                                                                      normalization.
+ * Quit         NICK (HOST) left irc: MSG                               Quit message may be empty due to normalization.
+ * Mode         CHAN: mode change '+o-v NICK NICK' by NICK!HOST         Only check for combinations of ops (+o) and
+ *                                                                      voices (+v). Host may be absent.
+ * Topic        Topic changed on CHAN by NICK!HOST: MSG                 Skip empty topics. Host may be absent.
+ * Kick         NICK kicked from CHAN by NICK: MSG                      Kick message may be empty due to normalization.
+ * Repeat       Last message repeated NUM time(s).
+ * ---------------------------------------------------------------------------------------------------------------------
  *
  * Notes:
  * - normalize_line() scrubs all lines before passing them on to parse_line().
- * - Given that nicks can't contain "<", ">" or ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
+ * - Given that nicks can't contain "<", ">" or ":" the order of the regular expressions below is irrelevant (current
+ *   order aims for best performance).
  * - The most common channel prefixes are "#&!+".
  * - Some converted mIRC logs do include "!" in "mode" and "topic" lines while there is no host. Legacy feature.
- * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use empty() to check whether an index item is
- *   both set and has a value.
+ * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use
+ *   empty() to check whether an index item is both set and has a value.
  */
 final class parser_eggdrop extends parser
 {
@@ -77,8 +79,8 @@ final class parser_eggdrop extends parser
 		 * "Mode" lines.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] [#&!+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)\' by (?<nick_performing>\S+?)(!(\S+)?)?$/', $line, $matches)) {
-			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 			$modenum = 0;
+			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 
 			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
 				$mode = substr($matches['modes'], $i, 1);
@@ -126,20 +128,20 @@ final class parser_eggdrop extends parser
 			$this->set_kick($this->date.' '.$matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line']);
 
 		/**
-		 * Eggdrop logs repeated lines (case insensitive matches) in the format: "Last message repeated NUM time(s).". We process the previous line NUM
-		 * times.
+		 * Eggdrop logs repeated lines (case insensitive matches) in the format: "Last message repeated NUM
+		 * time(s).". We process the previous line NUM times.
 		 */
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Last message repeated (?<num>\d+) time\(s\)\.$/', $line, $matches)) {
 			/**
-			 * Prevent the parser from repeating a preceding repeat line. Also, skip processing if we find a repeat line on the first line of the
-			 * logfile. We can't look back across files.
+			 * Prevent the parser from repeating a preceding repeat line. Also, skip processing if we find a
+			 * repeat line on the first line of the logfile. We can't look back across files.
 			 */
 			if ($this->linenum == 1 || $this->repeatlock) {
 				return null;
 			}
 
-			$this->repeatlock = true;
 			$this->linenum--;
+			$this->repeatlock = true;
 			$this->output('debug', 'parse_line(): repeating line '.$this->linenum.': '.$matches['num'].' time'.(($matches['num'] != '1') ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; $i++) {

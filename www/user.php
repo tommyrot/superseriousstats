@@ -249,20 +249,20 @@ final class user
 		$date_max = $result['date'];
 		$l_max = $result['l_total'];
 		$this->output = '<!DOCTYPE html>'."\n\n"
-			      . '<html>'."\n\n"
-			      . '<head>'."\n"
-			      . '<meta charset="utf-8">'."\n"
-			      . '<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
-			      . '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
-			      . '<style type="text/css">'."\n"
-			      . '  .act-year { width:'.(2 + (($this->datetime['years'] + ($this->estimate ? 1 : 0)) * 34)).'px }'."\n"
-			      . '</style>'."\n"
-			      . '</head>'."\n\n"
-			      . '<body><div id="container">'."\n"
-			      . '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood != '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
-			      . 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
-			      . htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
-			      . 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
+			. '<html>'."\n\n"
+			. '<head>'."\n"
+			. '<meta charset="utf-8">'."\n"
+			. '<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
+			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
+			. '<style type="text/css">'."\n"
+			. '  .act-year { width:'.(2 + (($this->datetime['years'] + ($this->estimate ? 1 : 0)) * 34)).'px }'."\n"
+			. '</style>'."\n"
+			. '</head>'."\n\n"
+			. '<body><div id="container">'."\n"
+			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood != '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
+			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
+			. htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
+			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * Activity section.

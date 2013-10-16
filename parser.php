@@ -22,9 +22,12 @@
 abstract class parser extends base
 {
 	/**
-	 * Default settings for this script, which can be overridden in the config file. These variables should all
-	 * appear in $settings_list[] along with their type.
+	 * Default settings for this script, which can be overridden in the configuration file. These variables should
+	 * all appear in $settings_list[] along with their type.
 	 */
+	private $settings_list = array(
+		'outputbits' => 'int',
+		'wordtracking' => 'bool');
 	private $wordtracking = true;
 
 	/**
@@ -34,9 +37,6 @@ abstract class parser extends base
 	private $hex_validutf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private $newline = '';
 	private $nicks_objs = array();
-	private $settings_list = array(
-		'outputbits' => 'int',
-		'wordtracking' => 'bool');
 	private $smileys = array(
 		':)' => 's_01',
 		';)' => 's_02',
@@ -227,9 +227,9 @@ abstract class parser extends base
 			 * Empty lines are ignored. Remember the line number of the last non empty line.
 			 */
 			if (!empty($line)) {
+				$this->linenum_lastnonempty = $this->linenum;
 				$this->parse_line($line);
 				$this->prevline = $line;
-				$this->linenum_lastnonempty = $this->linenum;
 			}
 		}
 
@@ -298,9 +298,9 @@ abstract class parser extends base
 			 * Empty lines are ignored. Remember the line number of the last non empty line.
 			 */
 			if (!empty($line)) {
+				$this->linenum_lastnonempty = $this->linenum;
 				$this->parse_line($line);
 				$this->prevline = $line;
-				$this->linenum_lastnonempty = $this->linenum;
 			}
 		}
 
@@ -343,9 +343,9 @@ abstract class parser extends base
 		if (!$this->validate_nick($csnick)) {
 			$this->output('debug', 'set_action(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
+			$line_length = mb_strlen($line, 'UTF-8');
 			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('actions', 1);
-			$line_length = mb_strlen($line, 'UTF-8');
 
 			/**
 			 * Track quotes/example lines of up to a sensible limit of 255 characters in length.
@@ -438,8 +438,8 @@ abstract class parser extends base
 		if (!$this->validate_nick($csnick)) {
 			$this->output('debug', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 		} else {
-			$nick = $this->add_nick($csnick, $datetime);
 			$line_length = mb_strlen($line, 'UTF-8');
+			$nick = $this->add_nick($csnick, $datetime);
 			$this->nicks_objs[$nick]->add_value('characters', $line_length);
 			$this->nicks_objs[$nick]->set_value('lasttalked', $datetime);
 
@@ -472,8 +472,8 @@ abstract class parser extends base
 					}
 				}
 
-				$this->streak = 1;
 				$this->prevnick = $nick;
+				$this->streak = 1;
 			}
 
 			$day = strtolower(date('D', strtotime($this->date)));
@@ -481,33 +481,33 @@ abstract class parser extends base
 
 			if ($hour >= 0 && $hour <= 5) {
 				$this->l_night++;
-				$this->nicks_objs[$nick]->add_value('l_night', 1);
 				$this->nicks_objs[$nick]->add_value('l_'.$day.'_night', 1);
+				$this->nicks_objs[$nick]->add_value('l_night', 1);
 			} elseif ($hour >= 6 && $hour <= 11) {
 				$this->l_morning++;
-				$this->nicks_objs[$nick]->add_value('l_morning', 1);
 				$this->nicks_objs[$nick]->add_value('l_'.$day.'_morning', 1);
+				$this->nicks_objs[$nick]->add_value('l_morning', 1);
 			} elseif ($hour >= 12 && $hour <= 17) {
 				$this->l_afternoon++;
-				$this->nicks_objs[$nick]->add_value('l_afternoon', 1);
 				$this->nicks_objs[$nick]->add_value('l_'.$day.'_afternoon', 1);
+				$this->nicks_objs[$nick]->add_value('l_afternoon', 1);
 			} elseif ($hour >= 18 && $hour <= 23) {
 				$this->l_evening++;
-				$this->nicks_objs[$nick]->add_value('l_evening', 1);
 				$this->nicks_objs[$nick]->add_value('l_'.$day.'_evening', 1);
+				$this->nicks_objs[$nick]->add_value('l_evening', 1);
 			}
 
-			$this->{'l_'.($hour < 10 ? '0'.$hour : $hour)}++;
 			$this->l_total++;
 			$this->nicks_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
 			$this->nicks_objs[$nick]->add_value('l_total', 1);
+			$this->{'l_'.($hour < 10 ? '0'.$hour : $hour)}++;
 
 			/**
 			 * Words are simply character groups separated by whitespace.
 			 */
+			$skipquote = false;
 			$words = explode(' ', $line);
 			$this->nicks_objs[$nick]->add_value('words', count($words));
-			$skipquote = false;
 
 			foreach ($words as $csword) {
 				/**

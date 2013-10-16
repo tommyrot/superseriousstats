@@ -19,17 +19,17 @@
 /**
  * Parse instructions for the nodelog logfile format.
  *
- * +------------+-------------------------------------------------------+->
- * | Line	| Format						| Notes
- * +------------+-------------------------------------------------------+->
- * | Normal	| NICK: MSG						| Skip empty lines.
- * | Join	| NICK has joined the channel				|
- * | Part	| NICK has left the channel				|
- * +------------+-------------------------------------------------------+->
+ * Line         Format                                                  Notes
+ * ---------------------------------------------------------------------------------------------------------------------
+ * Normal       NICK: MSG                                               Skip empty lines.
+ * Join         NICK has joined the channel
+ * Part         NICK has left the channel
+ * ---------------------------------------------------------------------------------------------------------------------
  *
  * Notes:
  * - normalize_line() scrubs all lines before passing them on to parse_line().
- * - Given that nicks can't contain ":" the order of the regular expressions below is irrelevant (current order aims for best performance).
+ * - Given that nicks can't contain ":" the order of the regular expressions below is irrelevant (current order aims for
+ *   best performance).
  * - Booooring...
  */
 final class parser_nodelog extends parser

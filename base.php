@@ -47,13 +47,13 @@ abstract class base
 		foreach ($columns as $key) {
 			if (is_int($this->$key) && $this->$key != 0) {
 				$queryparts['columnlist'][] = $key;
-				$queryparts['values'][] = $this->$key;
 				$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
+				$queryparts['values'][] = $this->$key;
 			} elseif (is_string($this->$key) && $this->$key != '') {
 				$value = '\''.$sqlite3->escapeString($this->$key).'\'';
 				$queryparts['columnlist'][] = $key;
-				$queryparts['values'][] = $value;
 				$queryparts['update-assignments'][] = $key.' = '.$value;
+				$queryparts['values'][] = $value;
 			}
 		}
 
@@ -77,8 +77,8 @@ abstract class base
 			return null;
 		}
 
-		$this->prevoutput[] = $msg;
 		$datetime = date('M d H:i:s');
+		$this->prevoutput[] = $msg;
 
 		if (substr($datetime, 4, 1) === '0') {
 			$datetime = substr_replace($datetime, ' ', 4, 1);
