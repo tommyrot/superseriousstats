@@ -435,27 +435,33 @@ th {
  * Specific table styling: rankings
  */
 .rank {
-	width:438px;
+	width:818px;
 }
 .rank col.c1,
 .rank col.c2 {
-	width:44px;
+	width:45px;
 }
 .rank col.c3 {
-	width:70px;
+	width:78px;
 }
 .rank col.c4,
-.rank col.c6 {
-	width:80px;
-}
 .rank col.c5,
-.rank col.c7 {
-	width:60px;
+.rank col.c6,
+.rank col.c7,
+.rank col.c8,
+.rank col.c9,
+.rank col.c10,
+.rank col.c11,
+.rank col.c12 {
+	width:72px;
 }
-.rank td.k12,
+.rank td.k1-2,
 .rank td.k3,
-.rank td.k45,
-.rank td.k67,
+.rank td.k4-5,
+.rank td.k6-7,
+.rank td.k8-9,
+.rank td.k10-11,
+.rank td.k12,
 .rank td.v3 {
 	background-color:#E0E0E0;
 	color:#999;
@@ -464,12 +470,17 @@ th {
 }
 .rank td.v1,
 .rank td.v4,
-.rank td.v6 {
+.rank td.v6,
+.rank td.v8,
+.rank td.v10,
+.rank td.v12 {
 	padding-right:2px;
 	text-align:right;
 }
 .rank td.v2,
 .rank td.v5,
-.rank td.v7 {
+.rank td.v7,
+.rank td.v9,
+.rank td.v11 {
 	padding-left:2px;
 }

@@ -139,7 +139,6 @@ final class user
 		if (empty($result)) {
 			$mood = '';
 		} else {
-			arsort($result);
 			$smileys = array(
 				's_01' => ':)',
 				's_02' => ';)',
@@ -191,6 +190,7 @@ final class user
 				's_48' => ':[',
 				's_49' => '>:(',
 				's_50' => ';o');
+			arsort($result);
 
 			foreach ($result as $key => $value) {
 				if ($key != 'ruid') {
@@ -299,26 +299,26 @@ final class user
 		if ($type == 'day') {
 			$class = 'act';
 			$columns = 24;
+			$head = 'Activity by Day';
+			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 24, $this->datetime['year'])).'\'') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - $i, $this->datetime['year']));
 			}
-
-			$head = 'Activity by Day';
-			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 24, $this->datetime['year'])).'\'') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'month') {
 			$class = 'act';
 			$columns = 24;
+			$head = 'Activity by Month';
+			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_month WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 24, 1, $this->datetime['year'])).'\'') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
 			}
-
-			$head = 'Activity by Month';
-			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_month WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 24, 1, $this->datetime['year'])).'\'') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} elseif ($type == 'year') {
 			$class = 'act-year';
 			$columns = $this->datetime['years'];
+			$head = 'Activity by Year';
+			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = $this->datetime['year'] - $i;
@@ -328,9 +328,6 @@ final class user
 				$columns++;
 				$dates[] = 'estimate';
 			}
-
-			$head = 'Activity by Year';
-			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		$result = $query->fetchArray(SQLITE3_ASSOC);
@@ -571,7 +568,11 @@ final class user
 
 	private function make_table_rankings($sqlite3)
 	{
-		$query = $sqlite3->query('SELECT * FROM ruid_rankings WHERE ruid = '.$this->ruid.' ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if (($dayslogged = $sqlite3->querySingle('SELECT COUNT(*) FROM parse_history')) === false) {
+			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
+		$query = $sqlite3->query('SELECT date, rank, l_total, percentage, l_avg, activity, l_max FROM ruid_rankings WHERE ruid = '.$this->ruid.' ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
@@ -585,24 +586,29 @@ final class user
 			$prevdate = date('Y-m', mktime(0, 0, 0, (int) substr($result['date'], 5, 2) - 1, 1, (int) substr($result['date'], 0, 4)));
 
 			if (array_key_exists($prevdate, $rankings)) {
+				$rankings[$result['date']]['activity_delta'] = $result['activity'] - $rankings[$prevdate]['activity'];
+				$rankings[$result['date']]['l_avg_delta'] = $result['l_avg'] - $rankings[$prevdate]['l_avg'];
 				$rankings[$result['date']]['l_total_delta'] = $result['l_total'] - $rankings[$prevdate]['l_total'];
 				$rankings[$result['date']]['percentage_delta'] = $result['percentage'] - $rankings[$prevdate]['percentage'];
 				$rankings[$result['date']]['rank_delta'] = $rankings[$prevdate]['rank'] - $result['rank'];
 			}
 
+			$rankings[$result['date']]['activity'] = $result['activity'];
+			$rankings[$result['date']]['l_avg'] = $result['l_avg'];
+			$rankings[$result['date']]['l_max'] = $result['l_max'];
 			$rankings[$result['date']]['l_total'] = $result['l_total'];
 			$rankings[$result['date']]['percentage'] = $result['percentage'];
 			$rankings[$result['date']]['rank'] = $result['rank'];
 		}
 
-		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7">';
+		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"><col class="c8"><col class="c9"><col class="c10"><col class="c11"><col class="c12">';
 		$tr1 = '<tr><th colspan="7">Rankings';
-		$tr2 = '<tr><td class="k12" colspan="2">Rank<td class="k3"><td class="k45" colspan="2">Lines<td class="k67" colspan="2">Percentage';
+		$tr2 = '<tr><td class="k1-2" colspan="2">Rank<td class="k3"><td class="k4-5" colspan="2">Lines<td class="k6-7" colspan="2">Percentage<td class="k8-9" colspan="2">Lines/Day<td class="k10-11" colspan="2">Activity<td class="k12" colspan="2">Top Day';
 		$trx = '';
 		krsort($rankings);
 
 		foreach ($rankings as $date => $values) {
-			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.(empty($values['rank_delta']) ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.(empty($values['l_total_delta']) ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.(empty($values['percentage_delta']) ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>'));
+			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.(empty($values['rank_delta']) ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.(empty($values['l_total_delta']) ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.(empty($values['percentage_delta']) ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>')).'<td class="v8">'.number_format($values['l_avg'], 1).'<td class="v9">'.(empty($values['l_avg_delta']) ? '' : ($values['l_avg_delta'] < 0 ? '<span class="red">'.number_format($values['l_avg_delta'], 1).'</span>' : '<span class="green">+'.number_format($values['l_avg_delta'], 1).'</span>')).'<td class="v10">'.number_format($values['activity'], 2).'%<td class="v11">'.(empty($values['activity_delta']) ? '' : ($values['activity_delta'] < 0 ? '<span class="red">'.number_format($values['activity_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['activity_delta'], 2).'</span>')).'<td class="v12">'.($values['l_max'] == 0 ? '<span class="grey">n/a</span>' : number_format($values['l_max']));
 		}
 
 		return '<table class="rank">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";

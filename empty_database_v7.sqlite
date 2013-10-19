@@ -196,6 +196,9 @@ date TEXT NOT NULL,
 rank INT NOT NULL,
 l_total INT NOT NULL,
 percentage REAL NOT NULL,
+l_avg REAL NOT NULL,
+activity REAL NOT NULL,
+l_max INT NOT NULL,
 PRIMARY KEY (ruid, date)
 );
 

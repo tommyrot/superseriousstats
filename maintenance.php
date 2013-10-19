@@ -113,26 +113,46 @@ final class maintenance extends base
 		}
 
 		/**
-		 * Retrieve all user activity.
+		 * Retrieve and calculate the cumulative amount of days logged, by month.
 		 */
-		$query = $sqlite3->query('SELECT ruid_activity_by_month.ruid AS ruid, date, l_total FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
+		$dayslogged_by_month = array_fill_keys($scope, 0);
+		$query = $sqlite3->query('SELECT SUBSTR(date, 1, 7) AS date, COUNT(*) AS dayslogged FROM parse_history GROUP BY SUBSTR(date, 1, 7)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-		if ($result === false) {
-			return null;
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$dayslogged_by_month[$result['date']] = $result['dayslogged'];
 		}
 
+		/**
+		 * We don't have to worry about the possible gap between the date of first activity (as per $scope) and
+		 * the date of first days logged. All dates prior to actual activity won't be used in calculations.
+		 */
+		$cumulative_dayslogged = 0;
+		ksort($dayslogged_by_month);
+
+		foreach ($dayslogged_by_month as $date => $dayslogged) {
+			$cumulative_dayslogged += $dayslogged;
+			$dayslogged_by_month_cumulative[$date] = $cumulative_dayslogged;
+		}
+
+		/**
+		 * Retrieve all user activity.
+		 */
 		$channel_activity_by_month = array_fill_keys($scope, 0);
-		$query->reset();
+		$query = $sqlite3->query('SELECT ruid, SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, COUNT(DISTINCT date) AS activedays, MAX(l_total) AS l_max FROM uid_activity JOIN uid_details ON uid_activity.uid = uid_details.uid WHERE ruid NOT IN (SELECT ruid FROM uid_details WHERE status IN (3,4)) GROUP BY ruid, SUBSTR(date, 1, 7)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$ruid_activity_by_month = array();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if (!array_key_exists($result['ruid'], $ruid_activity_by_month)) {
-				$ruid_activity_by_month[$result['ruid']] = array_fill_keys(array_slice($scope, array_search($result['date'], $scope)), 0);
+				$zeroed_scope = array_fill_keys(array_slice($scope, array_search($result['date'], $scope)), 0);
+				$ruid_activedays_by_month[$result['ruid']] = $zeroed_scope;
+				$ruid_activity_by_month[$result['ruid']] = $zeroed_scope;
+				$ruid_l_max_by_month[$result['ruid']] = $zeroed_scope;
 			}
 
 			$channel_activity_by_month[$result['date']] += $result['l_total'];
+			$ruid_activedays_by_month[$result['ruid']][$result['date']] = $result['activedays'];
 			$ruid_activity_by_month[$result['ruid']][$result['date']] = $result['l_total'];
+			$ruid_l_max_by_month[$result['ruid']][$result['date']] = $result['l_max'];
 		}
 
 		/**
@@ -149,14 +169,18 @@ final class maintenance extends base
 		 * Calculate cumulative user activity.
 		 */
 		foreach ($ruid_activity_by_month as $ruid => $dates) {
+			$cumulative_activedays = 0;
 			$cumulative_l_total = 0;
 
 			foreach ($dates as $date => $l_total) {
+				$cumulative_activedays += $ruid_activedays_by_month[$ruid][$date];
 				$cumulative_l_total += $l_total;
 				$ruid_activity_by_month_cumulative[] = array(
 					'ruid' => $ruid,
 					'date' => $date,
-					'l_total' => $cumulative_l_total);
+					'l_total' => $cumulative_l_total,
+					'activedays' => $cumulative_activedays,
+					'l_max' => $ruid_l_max_by_month[$ruid][$date]);
 				$sort_dates[] = $date;
 				$sort_l_total[] = $cumulative_l_total;
 				$sort_ruids[] = $ruid;
@@ -175,7 +199,7 @@ final class maintenance extends base
 			}
 
 			$prevdate = $values['date'];
-			$sqlite3->exec('INSERT INTO ruid_rankings (ruid, date, rank, l_total, percentage) VALUES ('.$values['ruid'].', \''.$values['date'].'\', '.$rank.', '.$values['l_total'].', '.round(($values['l_total'] / $channel_activity_by_month_cumulative[$values['date']]) * 100, 2).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO ruid_rankings (ruid, date, rank, l_total, percentage, l_avg, activity, l_max) VALUES ('.$values['ruid'].', \''.$values['date'].'\', '.$rank.', '.$values['l_total'].', '.round(($values['l_total'] / $channel_activity_by_month_cumulative[$values['date']]) * 100, 2).', '.round($values['l_total'] / $values['activedays'], 1).', '.round(($values['activedays'] / $dayslogged_by_month_cumulative[$values['date']]) * 100, 2).', '.$values['l_max'].')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$rank++;
 		}
 	}
