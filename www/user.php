@@ -193,7 +193,7 @@ final class user
 			arsort($result);
 
 			foreach ($result as $key => $value) {
-				if ($key != 'ruid') {
+				if ($key !== 'ruid') {
 					$mood = $smileys[$key];
 					break;
 				}
@@ -226,7 +226,7 @@ final class user
 		 * If there are one or more days to come until the end of the year, display an additional column in the
 		 * Activity by Year table with an estimated line count for the current year.
 		 */
-		if ($this->datetime['daysleft'] != 0 && $this->datetime['year'] == $this->datetime['currentyear']) {
+		if ($this->datetime['daysleft'] !== 0 && $this->datetime['year'] === $this->datetime['currentyear']) {
 			/**
 			 * Base the estimation on the activity in the last 90 days logged, if there is any.
 			 */
@@ -234,7 +234,7 @@ final class user
 				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			if ($activity != 0) {
+			if ($activity !== 0) {
 				$this->estimate = true;
 			}
 		}
@@ -259,7 +259,7 @@ final class user
 			. '</style>'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
-			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood != '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
+			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood !== '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
 			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
 			. htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
@@ -281,7 +281,7 @@ final class user
 			$output = '';
 			$output .= $this->make_table_rankings($sqlite3);
 
-			if ($output != '') {
+			if ($output !== '') {
 				$this->output .= '<div class="section">Rankings</div>'."\n".$output;
 			}
 		}
@@ -296,7 +296,7 @@ final class user
 
 	private function make_table_activity($sqlite3, $type)
 	{
-		if ($type == 'day') {
+		if ($type === 'day') {
 			$class = 'act';
 			$columns = 24;
 			$head = 'Activity by Day';
@@ -305,7 +305,7 @@ final class user
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - $i, $this->datetime['year']));
 			}
-		} elseif ($type == 'month') {
+		} elseif ($type === 'month') {
 			$class = 'act';
 			$columns = 24;
 			$head = 'Activity by Month';
@@ -314,7 +314,7 @@ final class user
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
 			}
-		} elseif ($type == 'year') {
+		} elseif ($type === 'year') {
 			$class = 'act-year';
 			$columns = $this->datetime['years'];
 			$head = 'Activity by Year';
@@ -347,13 +347,13 @@ final class user
 			$l_night[$result['date']] = $result['l_night'];
 			$l_total[$result['date']] = $result['l_total'];
 
-			if ($l_total[$result['date']] > $high_value) {
+			if ($result['l_total'] > $high_value) {
 				$high_date = $result['date'];
-				$high_value = $l_total[$result['date']];
+				$high_value = $result['l_total'];
 			}
 		}
 
-		if ($this->estimate && $type == 'year' && !empty($l_total[$this->datetime['currentyear']])) {
+		if ($this->estimate && $type === 'year' && !empty($l_total[$this->datetime['currentyear']])) {
 			if (($result = $sqlite3->querySingle('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg, CAST(SUM(l_total) AS REAL) / 90 AS l_total_avg FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'', true)) === false) {
 				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
@@ -391,24 +391,24 @@ final class user
 				}
 
 				foreach ($times as $time) {
-					if (${'l_'.$time}[$date] != 0) {
+					if (${'l_'.$time}[$date] !== 0) {
 						$height[$time] = round((${'l_'.$time}[$date] / $high_value) * 100);
 					} else {
-						$height[$time] = 0;
+						$height[$time] = (float) 0;
 					}
 				}
 
-				$tr2 .= '<td'.($date == 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total;
+				$tr2 .= '<td'.($date === 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total;
 
 				foreach ($times as $time) {
-					if ($height[$time] != 0) {
-						if ($time == 'evening') {
+					if ($height[$time] !== (float) 0) {
+						if ($time === 'evening') {
 							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
-						} elseif ($time == 'afternoon') {
+						} elseif ($time === 'afternoon') {
 							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
-						} elseif ($time == 'morning') {
+						} elseif ($time === 'morning') {
 							$height_li = $height['night'] + $height['morning'];
-						} elseif ($time == 'night') {
+						} elseif ($time === 'night') {
 							$height_li = $height['night'];
 						}
 
@@ -419,12 +419,12 @@ final class user
 				$tr2 .= '</ul>';
 			}
 
-			if ($type == 'day') {
-				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
-			} elseif ($type == 'month') {
-				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
-			} elseif ($type == 'year') {
-				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.($date == 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
+			if ($type === 'day') {
+				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
+			} elseif ($type === 'month') {
+				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
+			} elseif ($type === 'year') {
+				$tr3 .= '<td'.($date === (int) $high_date ? ' class="bold"' : '').'>'.($date === 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
 			}
 		}
 
@@ -460,7 +460,7 @@ final class user
 		$tr3 = '<tr class="sub">';
 
 		foreach ($days as $day) {
-			if ($l_total[$day] == 0) {
+			if ($l_total[$day] === 0) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				$percentage = ($l_total[$day] / $this->l_total) * 100;
@@ -472,24 +472,24 @@ final class user
 				}
 
 				foreach ($times as $time) {
-					if (${'l_'.$time}[$day] != 0) {
+					if (${'l_'.$time}[$day] !== 0) {
 						$height[$time] = round((${'l_'.$time}[$day] / $high_value) * 100);
 					} else {
-						$height[$time] = 0;
+						$height[$time] = (float) 0;
 					}
 				}
 
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage;
 
 				foreach ($times as $time) {
-					if ($height[$time] != 0) {
-						if ($time == 'evening') {
+					if ($height[$time] !== (float) 0) {
+						if ($time === 'evening') {
 							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
-						} elseif ($time == 'afternoon') {
+						} elseif ($time === 'afternoon') {
 							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
-						} elseif ($time == 'morning') {
+						} elseif ($time === 'morning') {
 							$height_li = $height['night'] + $height['morning'];
-						} elseif ($time == 'night') {
+						} elseif ($time === 'night') {
 							$height_li = $height['night'];
 						}
 
@@ -500,7 +500,7 @@ final class user
 				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($day == $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
+			$tr3 .= '<td'.($day === $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
 		}
 
 		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
@@ -529,7 +529,7 @@ final class user
 		foreach ($result as $key => $value) {
 			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
-			if ($value == 0) {
+			if ($value === 0) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				$percentage = ($value / $this->l_total) * 100;
@@ -543,7 +543,7 @@ final class user
 				$height = round(($value / $high_value) * 100);
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage;
 
-				if ($height != 0) {
+				if ($height !== 0) {
 					if ($hour >= 0 && $hour <= 5) {
 						$time = 'night';
 					} elseif ($hour >= 6 && $hour <= 11) {
@@ -560,7 +560,7 @@ final class user
 				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($key == $high_key ? ' class="bold"' : '').'>'.$hour.'h';
+			$tr3 .= '<td'.($key === $high_key ? ' class="bold"' : '').'>'.$hour.'h';
 		}
 
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
@@ -608,7 +608,7 @@ final class user
 		krsort($rankings);
 
 		foreach ($rankings as $date => $values) {
-			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.(empty($values['rank_delta']) ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.(empty($values['l_total_delta']) ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.(empty($values['percentage_delta']) ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>')).'<td class="v8">'.number_format($values['l_avg'], 1).'<td class="v9">'.(empty($values['l_avg_delta']) ? '' : ($values['l_avg_delta'] < 0 ? '<span class="red">'.number_format($values['l_avg_delta'], 1).'</span>' : '<span class="green">+'.number_format($values['l_avg_delta'], 1).'</span>')).'<td class="v10">'.number_format($values['activity'], 2).'%<td class="v11">'.(empty($values['activity_delta']) ? '' : ($values['activity_delta'] < 0 ? '<span class="red">'.number_format($values['activity_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['activity_delta'], 2).'</span>')).'<td class="v12">'.($values['l_max'] == 0 ? '<span class="grey">n/a</span>' : number_format($values['l_max']));
+			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.(empty($values['rank_delta']) ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.(empty($values['l_total_delta']) ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.(empty($values['percentage_delta']) ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>')).'<td class="v8">'.number_format($values['l_avg'], 1).'<td class="v9">'.(empty($values['l_avg_delta']) ? '' : ($values['l_avg_delta'] < 0 ? '<span class="red">'.number_format($values['l_avg_delta'], 1).'</span>' : '<span class="green">+'.number_format($values['l_avg_delta'], 1).'</span>')).'<td class="v10">'.number_format($values['activity'], 2).'%<td class="v11">'.(empty($values['activity_delta']) ? '' : ($values['activity_delta'] < 0 ? '<span class="red">'.number_format($values['activity_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['activity_delta'], 2).'</span>')).'<td class="v12">'.($values['l_max'] === 0 ? '<span class="grey">n/a</span>' : number_format($values['l_max']));
 		}
 
 		return '<table class="rank">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
@@ -621,7 +621,7 @@ final class user
 	 */
 	private function output($code, $msg)
 	{
-		if ($code == 5 || $code == 6) {
+		if ($code === 5 || $code === 6) {
 			$msg = 'Statistics are currently being updated, this may take a minute.';
 		}
 
