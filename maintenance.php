@@ -57,7 +57,7 @@ final class maintenance extends base
 	/**
 	 * Calculate on which date a user reached certain milestone.
 	 */
-	public function calculate_milestones($sqlite3)
+	private function calculate_milestones($sqlite3)
 	{
 		$query = $sqlite3->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
@@ -95,7 +95,7 @@ final class maintenance extends base
 	/**
 	 * Calculate user rankings by month.
 	 */
-	public function calculate_rankings($sqlite3)
+	private function calculate_rankings($sqlite3)
 	{
 		/**
 		 * Create an array with all dates since first channel activity. This helps define the scope for ruids.

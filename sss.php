@@ -525,9 +525,9 @@ final class sss extends base
 					$this->output('critical', 'parse_log(): zlib extension isn\'t loaded: can\'t parse gzipped logs'."\n");
 				}
 
-				$parser->gzparse_log($sqlite3, $logfile, $firstline);
+				$parser->gzparse_log($logfile, $firstline);
 			} else {
-				$parser->parse_log($sqlite3, $logfile, $firstline);
+				$parser->parse_log($logfile, $firstline);
 			}
 
 			/**

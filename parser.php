@@ -204,7 +204,7 @@ abstract class parser extends base
 	/**
 	 * Parser function for gzipped logs. This function requires the zlib extension.
 	 */
-	final public function gzparse_log($sqlite3, $logfile, $firstline)
+	final public function gzparse_log($logfile, $firstline)
 	{
 		if (($zp = gzopen($logfile, 'rb')) === false) {
 			$this->output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
@@ -275,7 +275,7 @@ abstract class parser extends base
 	/**
 	 * Parser function for normal logs.
 	 */
-	final public function parse_log($sqlite3, $logfile, $firstline)
+	final public function parse_log($logfile, $firstline)
 	{
 		if (($fp = fopen($logfile, 'rb')) === false) {
 			$this->output('critical', 'parse_log(): failed to open file: \''.$logfile.'\'');
