@@ -87,14 +87,14 @@ final class html extends base
 				continue;
 			}
 
-			if ($type == 'string') {
+			if ($type === 'string') {
 				$this->$key = $settings[$key];
-			} elseif ($type == 'int') {
+			} elseif ($type === 'int') {
 				$this->$key = (int) $settings[$key];
-			} elseif ($type == 'bool') {
-				if (strtolower($settings[$key]) == 'true') {
+			} elseif ($type === 'bool') {
+				if (strtolower($settings[$key]) === 'true') {
 					$this->$key = true;
-				} elseif (strtolower($settings[$key]) == 'false') {
+				} elseif (strtolower($settings[$key]) === 'false') {
 					$this->$key = false;
 				}
 			}
@@ -103,7 +103,7 @@ final class html extends base
 		/**
 		 * If $cid has no value set it to $channel.
 		 */
-		if ($this->cid == '') {
+		if ($this->cid === '') {
 			$this->cid = $this->channel;
 		}
 	}
@@ -123,9 +123,9 @@ final class html extends base
 			$daysago .= ' Month'.((float) $daysago > 1 ? 's' : '').' Ago';
 		} elseif ($daysago > 1) {
 			$daysago .= ' Days Ago';
-		} elseif ($daysago == 1) {
+		} elseif ($daysago === (float) 1) {
 			$daysago = 'Yesterday';
-		} elseif ($daysago == 0) {
+		} elseif ($daysago === (float) 0) {
 			$daysago = 'Today';
 		}
 
@@ -190,7 +190,7 @@ final class html extends base
 		 * If there are one or more days to come until the end of the year, display an additional column in the
 		 * Activity by Year table with an estimated line count for the current year.
 		 */
-		if ($this->datetime['daysleft'] != 0 && $this->datetime['year'] == $this->datetime['currentyear']) {
+		if ($this->datetime['daysleft'] !== 0 && $this->datetime['year'] === $this->datetime['currentyear']) {
 			/**
 			 * Base the estimation on the activity in the last 90 days logged, if there is any.
 			 */
@@ -198,7 +198,7 @@ final class html extends base
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			if ($activity != 0) {
+			if ($activity !== 0) {
 				$this->estimate = true;
 			}
 		}
@@ -226,7 +226,7 @@ final class html extends base
 			. '<div class="info">'.htmlspecialchars($this->channel).', seriously.<br><br>'
 			. number_format($dayslogged).' day'.($dayslogged > 1 ? 's logged from '.date('M j, Y', strtotime($date_first)).' to '.date('M j, Y', strtotime($date_last)) : ' logged on '.date('M j, Y', strtotime($date_first))).'.<br><br>'
 			. 'Logs contain '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
-			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.'.($this->addhtml_head != '' ? '<br><br>'.trim(file_get_contents($this->addhtml_head)) : '').'</div>'."\n";
+			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.'.($this->addhtml_head !== '' ? '<br><br>'.trim(file_get_contents($this->addhtml_head)) : '').'</div>'."\n";
 
 		/**
 		 * Activity section.
@@ -452,7 +452,7 @@ final class html extends base
 				'total' => 'SELECT SUM(actions) FROM ruid_lines'));
 			$output .= $t->make_table($sqlite3);
 
-			if ($output != '') {
+			if ($output !== '') {
 				$this->output .= '<div class="section">General Chat</div>'."\n".$output;
 			}
 		}
@@ -489,7 +489,7 @@ final class html extends base
 				$output .= $t->make_table($sqlite3);
 			}
 
-			if ($output != '') {
+			if ($output !== '') {
 				$this->output .= '<div class="section">Modes</div>'."\n".$output;
 			}
 		}
@@ -604,7 +604,7 @@ final class html extends base
 			$t->set_value('v3a', true);
 			$output .= $t->make_table($sqlite3);
 
-			if ($output != '') {
+			if ($output !== '') {
 				$this->output .= '<div class="section">Events</div>'."\n".$output;
 			}
 		}
@@ -690,7 +690,7 @@ final class html extends base
 				}
 			}
 
-			if ($output != '') {
+			if ($output !== '') {
 				$this->output .= '<div class="section">Smileys</div>'."\n".$output;
 			}
 		}
@@ -722,7 +722,7 @@ final class html extends base
 			$t->set_value('queries', array('main' => 'SELECT COUNT(*) AS v1, tld AS v2 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY tld ORDER BY v1 DESC, v2 ASC LIMIT '.$this->rows_domains_tlds));
 			$output .= $t->make_table($sqlite3);
 
-			if ($this->recenturls_type != 0) {
+			if ($this->recenturls_type !== 0) {
 				$t = new table('Most Recent URLs', $this->minrows, $this->maxrows_recenturls);
 				$t->set_value('keys', array(
 					'k1' => 'Date',
@@ -732,9 +732,9 @@ final class html extends base
 					'v2' => 'string',
 					'v3' => 'url'));
 
-				if ($this->recenturls_type == 1) {
+				if ($this->recenturls_type === 1) {
 					$t->set_value('queries', array('main' => 'SELECT datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE uid = uid_urls.uid)) AS v2, url AS v3 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid WHERE uid NOT IN (SELECT uid FROM uid_details WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 4)) ORDER BY v1 DESC LIMIT '.$this->maxrows_recenturls));
-				} elseif ($this->recenturls_type == 2) {
+				} elseif ($this->recenturls_type === 2) {
 					$t->set_value('queries', array('main' => 'SELECT datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE uid = uid_urls.uid)) AS v2, url AS v3 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid WHERE uid NOT IN (SELECT uid FROM uid_details WHERE ruid IN (SELECT ruid FROM uid_details WHERE status IN (3,4))) ORDER BY v1 DESC LIMIT '.$this->maxrows_recenturls));
 				}
 
@@ -763,7 +763,7 @@ final class html extends base
 				'total' => 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3'));
 			$output .= $t->make_table($sqlite3);
 
-			if ($output != '') {
+			if ($output !== '') {
 				$this->output .= '<div class="section">URLs</div>'."\n".$output;
 			}
 		}
@@ -791,7 +791,7 @@ final class html extends base
 				$output .= $t->make_table($sqlite3);
 			}
 
-			if ($output != '') {
+			if ($output !== '') {
 				$this->output .= '<div class="section">Words</div>'."\n".$output;
 			}
 		}
@@ -815,7 +815,7 @@ final class html extends base
 				$output .= $t->make_table($sqlite3);
 			}
 
-			if ($output != '') {
+			if ($output !== '') {
 				$this->output .= '<div class="section">Milestones</div>'."\n".$output;
 			}
 		}
@@ -823,14 +823,14 @@ final class html extends base
 		/**
 		 * HTML Foot.
 		 */
-		$this->output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot != '' ? '<br>'.trim(file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
+		$this->output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot !== '' ? '<br>'.trim(file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
 		$this->output .= '</div></body>'."\n\n".'</html>'."\n";
 		return $this->output;
 	}
 
 	private function make_table_activity($sqlite3, $type)
 	{
-		if ($type == 'day') {
+		if ($type === 'day') {
 			$class = 'act';
 			$columns = 24;
 			$head = 'Activity by Day';
@@ -839,7 +839,7 @@ final class html extends base
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - $i, $this->datetime['year']));
 			}
-		} elseif ($type == 'month') {
+		} elseif ($type === 'month') {
 			$class = 'act';
 			$columns = 24;
 			$head = 'Activity by Month';
@@ -848,7 +848,7 @@ final class html extends base
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
 			}
-		} elseif ($type == 'year') {
+		} elseif ($type === 'year') {
 			$class = 'act-year';
 			$columns = $this->datetime['years'];
 			$head = 'Activity by Year';
@@ -881,13 +881,13 @@ final class html extends base
 			$l_night[$result['date']] = $result['l_night'];
 			$l_total[$result['date']] = $result['l_total'];
 
-			if ($l_total[$result['date']] > $high_value) {
+			if ($result['l_total'] > $high_value) {
 				$high_date = $result['date'];
-				$high_value = $l_total[$result['date']];
+				$high_value = $result['l_total'];
 			}
 		}
 
-		if ($this->estimate && $type == 'year' && !empty($l_total[$this->datetime['currentyear']])) {
+		if ($this->estimate && $type === 'year' && !empty($l_total[$this->datetime['currentyear']])) {
 			if (($result = $sqlite3->querySingle('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg, CAST(SUM(l_total) AS REAL) / 90 AS l_total_avg FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'', true)) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
@@ -925,24 +925,24 @@ final class html extends base
 				}
 
 				foreach ($times as $time) {
-					if (${'l_'.$time}[$date] != 0) {
+					if (${'l_'.$time}[$date] !== 0) {
 						$height[$time] = round((${'l_'.$time}[$date] / $high_value) * 100);
 					} else {
-						$height[$time] = 0;
+						$height[$time] = (float) 0;
 					}
 				}
 
-				$tr2 .= '<td'.($date == 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total;
+				$tr2 .= '<td'.($date === 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$total;
 
 				foreach ($times as $time) {
-					if ($height[$time] != 0) {
-						if ($time == 'evening') {
+					if ($height[$time] !== (float) 0) {
+						if ($time === 'evening') {
 							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
-						} elseif ($time == 'afternoon') {
+						} elseif ($time === 'afternoon') {
 							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
-						} elseif ($time == 'morning') {
+						} elseif ($time === 'morning') {
 							$height_li = $height['night'] + $height['morning'];
-						} elseif ($time == 'night') {
+						} elseif ($time === 'night') {
 							$height_li = $height['night'];
 						}
 
@@ -953,12 +953,12 @@ final class html extends base
 				$tr2 .= '</ul>';
 			}
 
-			if ($type == 'day') {
-				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
-			} elseif ($type == 'month') {
-				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
-			} elseif ($type == 'year') {
-				$tr3 .= '<td'.($date == $high_date ? ' class="bold"' : '').'>'.($date == 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
+			if ($type === 'day') {
+				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
+			} elseif ($type === 'month') {
+				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
+			} elseif ($type === 'year') {
+				$tr3 .= '<td'.($date === (int) $high_date ? ' class="bold"' : '').'>'.($date === 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
 			}
 		}
 
@@ -994,7 +994,7 @@ final class html extends base
 		$tr3 = '<tr class="sub">';
 
 		foreach ($days as $day) {
-			if ($l_total[$day] == 0) {
+			if ($l_total[$day] === 0) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				$percentage = ($l_total[$day] / $this->l_total) * 100;
@@ -1006,24 +1006,24 @@ final class html extends base
 				}
 
 				foreach ($times as $time) {
-					if (${'l_'.$time}[$day] != 0) {
+					if (${'l_'.$time}[$day] !== 0) {
 						$height[$time] = round((${'l_'.$time}[$day] / $high_value) * 100);
 					} else {
-						$height[$time] = 0;
+						$height[$time] = (float) 0;
 					}
 				}
 
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage;
 
 				foreach ($times as $time) {
-					if ($height[$time] != 0) {
-						if ($time == 'evening') {
+					if ($height[$time] !== (float) 0) {
+						if ($time === 'evening') {
 							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
-						} elseif ($time == 'afternoon') {
+						} elseif ($time === 'afternoon') {
 							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
-						} elseif ($time == 'morning') {
+						} elseif ($time === 'morning') {
 							$height_li = $height['night'] + $height['morning'];
-						} elseif ($time == 'night') {
+						} elseif ($time === 'night') {
 							$height_li = $height['night'];
 						}
 
@@ -1034,7 +1034,7 @@ final class html extends base
 				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($day == $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
+			$tr3 .= '<td'.($day === $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
 		}
 
 		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
@@ -1063,7 +1063,7 @@ final class html extends base
 		foreach ($result as $key => $value) {
 			$hour = (int) preg_replace('/^l_0?/', '', $key);
 
-			if ($value == 0) {
+			if ($value === 0) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				$percentage = ($value / $this->l_total) * 100;
@@ -1077,7 +1077,7 @@ final class html extends base
 				$height = round(($value / $high_value) * 100);
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage;
 
-				if ($height != 0) {
+				if ($height !== (float) 0) {
 					if ($hour >= 0 && $hour <= 5) {
 						$time = 'night';
 					} elseif ($hour >= 6 && $hour <= 11) {
@@ -1094,7 +1094,7 @@ final class html extends base
 				$tr2 .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($key == $high_key ? ' class="bold"' : '').'>'.$hour.'h';
+			$tr3 .= '<td'.($key === $high_key ? ' class="bold"' : '').'>'.$hour.'h';
 		}
 
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
@@ -1105,15 +1105,15 @@ final class html extends base
 		/**
 		 * Only create the table if there is activity from users other than bots and excluded users.
 		 */
-		if ($type == 'alltime') {
+		if ($type === 'alltime') {
 			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
-		} elseif ($type == 'month') {
+		} elseif ($type === 'month') {
 			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\'')) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
-		} elseif ($type == 'year') {
+		} elseif ($type === 'year') {
 			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\'')) === false) {
 				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
@@ -1125,24 +1125,24 @@ final class html extends base
 
 		$rankings = false;
 
-		if ($type == 'alltime') {
+		if ($type === 'alltime') {
 			$head = 'Most Talkative People &ndash; Alltime';
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
 
 			/**
 			 * Don't try to calculate changes in rankings if we're dealing with the first month of activity.
 			 */
-			if (date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) == $this->datetime['firstyearmonth']) {
+			if (date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
 				$query = $sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_lines.ruid) AS lastseen FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			} else {
 				$query = $sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_lines.ruid) AS lastseen, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 1, 1, $this->datetime['year'])).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				$rankings = true;
 			}
-		} elseif ($type == 'month') {
+		} elseif ($type === 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'];
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->datetime['year'].'&amp;month='.$this->datetime['month'].'">History</a>';
 			$query = $sqlite3->query('SELECT csnick, ruid_activity_by_month.l_total AS l_total, ruid_activity_by_month.l_night AS l_night, ruid_activity_by_month.l_morning AS l_morning, ruid_activity_by_month.l_afternoon AS l_afternoon, ruid_activity_by_month.l_evening AS l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_month.ruid) AS lastseen FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_month.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\' ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_month) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		} elseif ($type == 'year') {
+		} elseif ($type === 'year') {
 			$head = 'Most Talkative People &ndash; '.$this->datetime['year'];
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->datetime['year'].'">History</a>';
 			$query = $sqlite3->query('SELECT csnick, ruid_activity_by_year.l_total AS l_total, ruid_activity_by_year.l_night AS l_night, ruid_activity_by_year.l_morning AS l_morning, ruid_activity_by_year.l_afternoon AS l_afternoon, ruid_activity_by_year.l_evening AS l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_year.ruid) AS lastseen FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_year.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\' ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_year) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -1160,7 +1160,7 @@ final class html extends base
 			$width = 50;
 
 			foreach ($times as $time) {
-				if ($result['l_'.$time] != 0) {
+				if ($result['l_'.$time] !== 0) {
 					$width_float[$time] = ($result['l_'.$time] / $result['l_total']) * 50;
 					$width_int[$time] = floor($width_float[$time]);
 					$width_remainders[$time] = $width_float[$time] - $width_int[$time];
@@ -1168,14 +1168,14 @@ final class html extends base
 				}
 			}
 
-			if ($width != 0) {
+			if ($width !== 0) {
 				arsort($width_remainders);
 
 				foreach ($width_remainders as $time => $remainder) {
 					$width--;
 					$width_int[$time]++;
 
-					if ($width == 0) {
+					if ($width === 0) {
 						break;
 					}
 				}
@@ -1230,7 +1230,7 @@ final class html extends base
 
 		$total -= $this->maxrows_people_alltime + ($this->maxrows_people2 * 4);
 		$tr0 = '<colgroup><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2">';
-		$tr1 = '<tr><th colspan="12">'.($total != 0 ? '<span class="title">Less Talkative People &ndash; Alltime</span><span class="total">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; Alltime');
+		$tr1 = '<tr><th colspan="12">'.($total !== 0 ? '<span class="title">Less Talkative People &ndash; Alltime</span><span class="total">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; Alltime');
 		$tr2 = '<tr><td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User';
 		$trx = '';
 
@@ -1293,7 +1293,7 @@ final class html extends base
 					} else {
 						$width = round((${$time}[$i]['lines'] / $high_value) * 190);
 
-						if ($width != 0) {
+						if ($width !== (float) 0) {
 							$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div>';
 						} else {
 							$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']);
@@ -1379,7 +1379,7 @@ final class table extends base
 		/**
 		 * Create the table head.
 		 */
-		if ($class == 'small') {
+		if ($class === 'small') {
 			$tr0 = '<colgroup><col class="c1"><col class="pos"><col class="c2">';
 			$tr1 = '<tr><th colspan="3">'.(!empty($this->total) ? '<span class="title">'.$this->head.'</span><span class="total">'.number_format($this->total).' Total</span>' : $this->head);
 			$tr2 = '<tr><td class="k1">'.$this->keys['k1'].'<td class="pos"><td class="k2">'.$this->keys['k2'];
@@ -1424,7 +1424,7 @@ final class table extends base
 					case 'date-norepeat':
 						${$key} = date('j M \'y', strtotime($result[$key]));
 
-						if (!empty($prevdate) && ${$key} == $prevdate) {
+						if (!empty($prevdate) && ${$key} === $prevdate) {
 							${$key} = '';
 						} else {
 							$prevdate = ${$key};
@@ -1440,7 +1440,7 @@ final class table extends base
 				}
 			}
 
-			if ($class == 'small') {
+			if ($class === 'small') {
 				$trx .= '<tr><td class="v1">'.$v1.'<td class="pos">'.$i.'<td class="v2">'.$v2;
 			} else {
 				/**
@@ -1455,7 +1455,7 @@ final class table extends base
 		}
 
 		for ($i; $i < $this->maxrows; $i++) {
-			if ($class == 'small') {
+			if ($class === 'small') {
 				$trx .= '<tr><td class="v1"><td class="pos">&nbsp;<td class="v2">';
 			} else {
 				$trx .= '<tr><td class="v1"><td class="pos">&nbsp;<td class="v2"><td class="v3">';

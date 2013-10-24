@@ -543,7 +543,7 @@ final class user
 				$height = round(($value / $high_value) * 100);
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage;
 
-				if ($height !== 0) {
+				if ($height !== (float) 0) {
 					if ($hour >= 0 && $hour <= 5) {
 						$time = 'night';
 					} elseif ($hour >= 6 && $hour <= 11) {
