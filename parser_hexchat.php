@@ -72,13 +72,13 @@ final class parser_hexchat extends parser
 		} elseif (preg_match('/^\S{3} \d{2} (?<time>\d{2}:\d{2}(:\d{2})?) \* (?<nick_performing>\S+) (?<modesign>gives|removes) (?<mode>channel operator status|voice) (to|from) (?<nicks_undergoing>\S+( \S+)*)$/', $line, $matches)) {
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 
-			if ($matches['modesign'] == 'gives') {
+			if ($matches['modesign'] === 'gives') {
 				$modesign = '+';
 			} else {
 				$modesign = '-';
 			}
 
-			if ($matches['mode'] == 'channel operator status') {
+			if ($matches['mode'] === 'channel operator status') {
 				$mode = 'o';
 			} else {
 				$mode = 'v';
@@ -115,7 +115,7 @@ final class parser_hexchat extends parser
 		/**
 		 * Skip everything else.
 		 */
-		} elseif ($line != '') {
+		} elseif ($line !== '') {
 			$this->output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}

@@ -85,7 +85,7 @@ final class parser_eggdrop extends parser
 			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
 				$mode = substr($matches['modes'], $i, 1);
 
-				if ($mode == '-' || $mode == '+') {
+				if ($mode === '-' || $mode === '+') {
 					$modesign = $mode;
 				} else {
 					$this->set_mode($this->date.' '.$matches['time'], $matches['nick_performing'], $nicks_undergoing[$modenum], $modesign.$mode);
@@ -136,13 +136,13 @@ final class parser_eggdrop extends parser
 			 * Prevent the parser from repeating a preceding repeat line. Also, skip processing if we find a
 			 * repeat line on the first line of the logfile. We can't look back across files.
 			 */
-			if ($this->linenum == 1 || $this->repeatlock) {
+			if ($this->linenum === 1 || $this->repeatlock) {
 				return null;
 			}
 
 			$this->linenum--;
 			$this->repeatlock = true;
-			$this->output('debug', 'parse_line(): repeating line '.$this->linenum.': '.$matches['num'].' time'.(($matches['num'] != '1') ? 's' : ''));
+			$this->output('debug', 'parse_line(): repeating line '.$this->linenum.': '.$matches['num'].' time'.(($matches['num'] !== '1') ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; $i++) {
 				$this->parse_line($this->prevline);
@@ -154,7 +154,7 @@ final class parser_eggdrop extends parser
 		/**
 		 * Skip everything else.
 		 */
-		} elseif ($line != '') {
+		} elseif ($line !== '') {
 			$this->output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}

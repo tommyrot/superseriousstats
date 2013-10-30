@@ -138,14 +138,14 @@ abstract class parser extends base
 				continue;
 			}
 
-			if ($type == 'string') {
+			if ($type === 'string') {
 				$this->$key = $settings[$key];
-			} elseif ($type == 'int') {
+			} elseif ($type === 'int') {
 				$this->$key = (int) $settings[$key];
-			} elseif ($type == 'bool') {
-				if (strtolower($settings[$key]) == 'true') {
+			} elseif ($type === 'bool') {
+				if (strtolower($settings[$key]) === 'true') {
 					$this->$key = true;
-				} elseif (strtolower($settings[$key]) == 'false') {
+				} elseif (strtolower($settings[$key]) === 'false') {
 					$this->$key = false;
 				}
 			}
@@ -168,7 +168,7 @@ abstract class parser extends base
 		}
 
 		if (!is_null($datetime)) {
-			if ($this->nicks_objs[$nick]->get_value('firstseen') == '') {
+			if ($this->nicks_objs[$nick]->get_value('firstseen') === '') {
 				$this->nicks_objs[$nick]->set_value('firstseen', $datetime);
 			}
 
@@ -244,7 +244,7 @@ abstract class parser extends base
 		if (!preg_match('/^'.$this->hex_validutf8.'+$/', $line)) {
 			$this->newline = '';
 
-			while ($line != '') {
+			while ($line !== '') {
 				/**
 				 * 1. Match the first valid multibyte character or otherwise a single byte.
 				 * 2. Pass it on to rebuild_line() and replace the character with an empty string
@@ -446,7 +446,7 @@ abstract class parser extends base
 			/**
 			 * Keep track of monologues.
 			 */
-			if ($nick == $this->prevnick) {
+			if ($nick === $this->prevnick) {
 				$this->streak++;
 			} else {
 				/**
@@ -461,7 +461,7 @@ abstract class parser extends base
 					 * data can be added. It doesn't matter if $prevnick is lowercase since it won't
 					 * be updated before it is actually seen (ie. on any other activity).
 					 */
-					if ($this->l_total == 0) {
+					if ($this->l_total === 0) {
 						$this->add_nick($this->prevnick, null);
 					}
 
@@ -573,7 +573,7 @@ abstract class parser extends base
 			 * less than 50% non letter characters from the Basic Latin and Latin-1 Supplement character
 			 * sets in them.
 			 */
-			if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') == $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length) {
+			if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length) {
 				$this->nicks_objs[$nick]->add_value('uppercased', 1);
 
 				if (!$skipquote && $line_length <= 255) {
@@ -671,7 +671,7 @@ abstract class parser extends base
 	 */
 	final private function validate_nick($csnick)
 	{
-		if ($csnick != '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $csnick)) {
+		if ($csnick !== '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $csnick)) {
 			return true;
 		} else {
 			return false;
@@ -693,7 +693,7 @@ abstract class parser extends base
 		/**
 		 * Write channel totals to database.
 		 */
-		if ($this->l_total != 0) {
+		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts($sqlite3, array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
 			$sqlite3->exec('INSERT OR IGNORE INTO channel_activity (date, '.implode(', ', $queryparts['columnlist']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$sqlite3->exec('UPDATE channel_activity SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -716,7 +716,7 @@ abstract class parser extends base
 		/**
 		 * Write streak data (history) to database.
 		 */
-		if ($this->l_total != 0) {
+		if ($this->l_total !== 0) {
 			$sqlite3->exec('DELETE FROM streak_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$sqlite3->exec('INSERT INTO streak_history (prevnick, streak) VALUES (\''.$sqlite3->escapeString($this->prevnick).'\', '.$this->streak.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}

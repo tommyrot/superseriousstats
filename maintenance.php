@@ -40,14 +40,14 @@ final class maintenance extends base
 				continue;
 			}
 
-			if ($type == 'string') {
+			if ($type === 'string') {
 				$this->$key = $settings[$key];
-			} elseif ($type == 'int') {
+			} elseif ($type === 'int') {
 				$this->$key = (int) $settings[$key];
-			} elseif ($type == 'bool') {
-				if (strtolower($settings[$key]) == 'true') {
+			} elseif ($type === 'bool') {
+				if (strtolower($settings[$key]) === 'true') {
 					$this->$key = true;
-				} elseif (strtolower($settings[$key]) == 'false') {
+				} elseif (strtolower($settings[$key]) === 'false') {
 					$this->$key = false;
 				}
 			}
@@ -194,7 +194,7 @@ final class maintenance extends base
 		$sqlite3->exec('DELETE FROM ruid_rankings') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		foreach ($ruid_activity_by_month_cumulative as $key => $values) {
-			if (empty($prevdate) || $values['date'] != $prevdate) {
+			if (empty($prevdate) || $values['date'] !== $prevdate) {
 				$rank = 1;
 			}
 

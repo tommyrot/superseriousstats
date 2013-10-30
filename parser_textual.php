@@ -80,7 +80,7 @@ final class parser_textual extends parser
 			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
 				$mode = substr($matches['modes'], $i, 1);
 
-				if ($mode == '-' || $mode == '+') {
+				if ($mode === '-' || $mode === '+') {
 					$modesign = $mode;
 				} else {
 					$this->set_mode($this->date.' '.$matches['time'], $matches['nick_performing'], $nicks_undergoing[$modenum], $modesign.$mode);
@@ -115,7 +115,7 @@ final class parser_textual extends parser
 		/**
 		 * Skip everything else.
 		 */
-		} elseif ($line != '') {
+		} elseif ($line !== '') {
 			$this->output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}

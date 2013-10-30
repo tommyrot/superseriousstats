@@ -60,7 +60,7 @@ final class parser_nodelog extends parser
 		/**
 		 * Skip everything else.
 		 */
-		} elseif ($line != '') {
+		} elseif ($line !== '') {
 			$this->output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}

@@ -76,7 +76,7 @@ final class parser_supybot extends parser
 			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
 				$mode = substr($matches['modes'], $i, 1);
 
-				if ($mode == '-' || $mode == '+') {
+				if ($mode === '-' || $mode === '+') {
 					$modesign = $mode;
 				} else {
 					$this->set_mode($this->date.' '.$matches['time'], $matches['nick_performing'], $nicks_undergoing[$modenum], $modesign.$mode);
@@ -110,7 +110,7 @@ final class parser_supybot extends parser
 		 * "Topic" lines.
 		 */
 		} elseif (preg_match('/^\d{4}-\d{2}-\d{2}T(?<time>\d{2}:\d{2}:\d{2}) \*\*\* (?<nick>\S+) changes topic to "(?<line>.+)"$/', $line, $matches)) {
-			if ($matches['line'] != ' ') {
+			if ($matches['line'] !== ' ') {
 				$this->set_topic($this->date.' '.$matches['time'], $matches['nick'], $matches['line']);
 			}
 
@@ -123,7 +123,7 @@ final class parser_supybot extends parser
 		/**
 		 * Skip everything else.
 		 */
-		} elseif ($line != '') {
+		} elseif ($line !== '') {
 			$this->output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}

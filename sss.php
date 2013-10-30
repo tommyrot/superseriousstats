@@ -207,10 +207,10 @@ final class sss extends base
 		$query->reset();
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			if ($result['status'] == 1 || $result['status'] == 3 || $result['status'] == 4) {
+			if ($result['status'] === 1 || $result['status'] === 3 || $result['status'] === 4) {
 				$registerednicks[$result['ruid']] = strtolower($result['csnick']);
 				$statuses[$result['ruid']] = $result['status'];
-			} elseif ($result['status'] == 2) {
+			} elseif ($result['status'] === 2) {
 				$aliases[$result['ruid']][] = strtolower($result['csnick']);
 			} else {
 				$unlinked[] = strtolower($result['csnick']);
@@ -271,14 +271,14 @@ final class sss extends base
 				continue;
 			}
 
-			if ($type == 'string') {
+			if ($type === 'string') {
 				$vars .= "\n\t".'\''.$key.'\' => \''.$this->settings[$key].'\',';
-			} elseif ($type == 'int') {
+			} elseif ($type === 'int') {
 				$vars .= "\n\t".'\''.$key.'\' => '.(int) $this->settings[$key].',';
-			} elseif ($type == 'bool') {
-				if (strtolower($this->settings[$key]) == 'true') {
+			} elseif ($type === 'bool') {
+				if (strtolower($this->settings[$key]) === 'true') {
 					$vars .= "\n\t".'\''.$key.'\' => true,';
-				} elseif (strtolower($this->settings[$key]) == 'false') {
+				} elseif (strtolower($this->settings[$key]) === 'false') {
 					$vars .= "\n\t".'\''.$key.'\' => false,';
 				}
 			}
@@ -319,7 +319,7 @@ final class sss extends base
 			/**
 			 * The first nick on each line will be the initial registered nick which aliases are linked to.
 			 */
-			if (($status == 1 || $status == 3 || $status == 4) && !empty($lineparts[1]) && array_key_exists($lineparts[1], $uids)) {
+			if (($status === 1 || $status === 3 || $status === 4) && !empty($lineparts[1]) && array_key_exists($lineparts[1], $uids)) {
 				$ruid = $uids[$lineparts[1]];
 				$ruids[] = $ruid;
 				$statuses[$ruid] = $status;
@@ -382,7 +382,7 @@ final class sss extends base
 				 * matches it. Put the uid of the matching nick at the start of the array if the nick is
 				 * already linked (status != 0), otherwise put it at the end.
 				 */
-				if ($result['status'] != 0 && !empty($strippednicks[$strippednick])) {
+				if ($result['status'] !== 0 && !empty($strippednicks[$strippednick])) {
 					array_unshift($strippednicks[$strippednick], $result['uid']);
 				} else {
 					$strippednicks[$strippednick][] = $result['uid'];
@@ -396,7 +396,7 @@ final class sss extends base
 			/**
 			 * If there is only one match for the stripped nick, there is nothing to link.
 			 */
-			if (count($uids) == 1) {
+			if (count($uids) === 1) {
 				continue;
 			}
 
@@ -407,7 +407,7 @@ final class sss extends base
 				 * Use the ruid that belongs to the first uid in the array to link all succeeding
 				 * _unlinked_ nicks to.
 				 */
-				if ($nicks[$uids[$i]]['status'] == 0) {
+				if ($nicks[$uids[$i]]['status'] === 0) {
 					$newalias = true;
 					$sqlite3->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 					$this->output('debug', 'link_nicks(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
@@ -418,7 +418,7 @@ final class sss extends base
 			 * If there are aliases found, and the first nick in the array is unlinked (status = 0), make it
 			 * a registered nick (status = 1).
 			 */
-			if ($newalias && $nicks[$uids[0]]['status'] == 0) {
+			if ($newalias && $nicks[$uids[0]]['status'] === 0) {
 				$sqlite3->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
@@ -603,14 +603,14 @@ final class sss extends base
 				continue;
 			}
 
-			if ($type == 'string') {
+			if ($type === 'string') {
 				$this->$key = $this->settings[$key];
-			} elseif ($type == 'int') {
+			} elseif ($type === 'int') {
 				$this->$key = (int) $this->settings[$key];
-			} elseif ($type == 'bool') {
-				if (strtolower($this->settings[$key]) == 'true') {
+			} elseif ($type === 'bool') {
+				if (strtolower($this->settings[$key]) === 'true') {
 					$this->$key = true;
-				} elseif (strtolower($this->settings[$key]) == 'false') {
+				} elseif (strtolower($this->settings[$key]) === 'false') {
 					$this->$key = false;
 				}
 			}
