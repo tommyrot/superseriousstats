@@ -16,11 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/**
- * Suppress any error output.
- */
-ini_set('display_errors', '1'); // To disable set to 0.
-ini_set('error_reporting', -1); // To disable for ALL errors set to 0.
+ini_set('display_errors', 'stdout');
+ini_set('error_reporting', -1);
 
 /**
  * Check if all required extension are loaded.

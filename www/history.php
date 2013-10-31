@@ -17,12 +17,6 @@
  */
 
 /**
- * Suppress any error output.
- */
-ini_set('display_errors', '0'); // To enable set to 1.
-ini_set('error_reporting', 0);  // To enable for ALL errors set to -1.
-
-/**
  * Class for creating historical stats.
  */
 final class history
