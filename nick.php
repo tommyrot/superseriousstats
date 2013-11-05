@@ -183,7 +183,7 @@ final class nick extends base
 	}
 
 	/**
-	 * Keep a stack of the 100 most recent quotes of each type along with their lengths.
+	 * Keep a stack of the 10 most recent quotes of each type along with their length.
 	 */
 	public function add_quote($type, $line, $length)
 	{
@@ -191,7 +191,7 @@ final class nick extends base
 			'length' => $length,
 			'line' => $line);
 
-		if (count($this->{$type.'_stack'}) > 100) {
+		if (count($this->{$type.'_stack'}) > 10) {
 			/**
 			 * Shift the first (oldest) entry off the stack.
 			 */
@@ -273,15 +273,22 @@ final class nick extends base
 		}
 
 		/**
-		 * Pick a random line from each of the quote stacks. Longer quotes are preferred.
+		 * Pick the longest line from each of the quote stacks.
 		 */
 		$types = array('ex_actions', 'ex_exclamations', 'ex_questions', 'ex_uppercased', 'quote');
 
 		foreach ($types as $type) {
 			if (!empty($this->{$type.'_stack'})) {
 				rsort($this->{$type.'_stack'});
-				$this->$type = $this->{$type.'_stack'}[mt_rand(0, ceil(count($this->{$type.'_stack'}) / 2) - 1)]['line'];
+				$this->$type = $this->{$type.'_stack'}[0]['line'];
 			}
+		}
+
+		/**
+		 * If possible, change $quote when it equals $ex_exclamations.
+		 */
+		if (isset($this->quote_stack[1]) && $this->quote === $this->ex_exclamations) {
+			$this->quote = $this->quote_stack[1]['line'];
 		}
 
 		/**
