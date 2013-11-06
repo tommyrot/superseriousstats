@@ -326,7 +326,9 @@ abstract class parser extends base
 		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
 			$this->newline .= $char;
 		} elseif (preg_match('/^'.$this->hex_latin1supplement.'$/', $char)) {
-			$char = preg_replace_callback('/^'.$this->hex_latin1supplement.'$/', create_function('$matches', 'return pack(\'C*\', (ord($matches[0]) >> 6) | 0xC0, (ord($matches[0]) & 0x3F) | 0x80);'), $char);
+			$char = preg_replace_callback('/^'.$this->hex_latin1supplement.'$/', function ($matches) {
+				return pack('C*', (ord($matches[0]) >> 6) | 0xC0, (ord($matches[0]) & 0x3F) | 0x80);
+			}, $char);
 			$this->newline .= $char;
 		} else {
 			$this->newline .= "\xEF\xBF\xBD";
