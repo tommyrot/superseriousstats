@@ -273,22 +273,31 @@ final class nick extends base
 		}
 
 		/**
-		 * Pick the longest line from each of the quote stacks.
+		 * Try to pick the longest unique line from each of the quote stacks.
 		 */
-		$types = array('ex_actions', 'ex_exclamations', 'ex_questions', 'ex_uppercased', 'quote');
+		$types = array('ex_actions', 'ex_uppercased', 'ex_exclamations', 'ex_questions', 'quote');
 
 		foreach ($types as $type) {
 			if (!empty($this->{$type.'_stack'})) {
 				rsort($this->{$type.'_stack'});
 				$this->$type = $this->{$type.'_stack'}[0]['line'];
-			}
-		}
 
-		/**
-		 * If possible, change $quote when it equals $ex_exclamations.
-		 */
-		if (isset($this->quote_stack[1]) && $this->quote === $this->ex_exclamations) {
-			$this->quote = $this->quote_stack[1]['line'];
+				if (($type === 'ex_questions' || $type === 'ex_exclamations') && $this->$type === $this->ex_uppercased && count($this->{$type.'_stack'}) > 1) {
+					for ($i = 1, $j = count($this->{$type.'_stack'}); $i < $j; $i++) {
+						if ($this->{$type.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
+							$this->$type = $this->{$type.'_stack'}[$i]['line'];
+							break;
+						}
+					}
+				} elseif ($type === 'quote' && ($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions) && count($this->quote_stack) > 1) {
+					for ($i = 1, $j = count($this->quote_stack); $i < $j; $i++) {
+						if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
+							$this->quote = $this->quote_stack[$i]['line'];
+							break;
+						}
+					}
+				}
+			}
 		}
 
 		/**
