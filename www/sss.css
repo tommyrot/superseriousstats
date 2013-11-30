@@ -49,6 +49,11 @@ body {
 	font-weight:bold;
 	margin:15px 22px 7px 0;
 }
+.ralign {
+	float:right;
+	font-style:italic;
+	font-weight:normal;
+}
 .red {
 	color:#C74243;
 }
@@ -61,11 +66,6 @@ body {
 }
 .title {
 	float:left;
-}
-.total {
-	float:right;
-	font-style:italic;
-	font-weight:normal;
 }
 .userpic {
 	float:right;
