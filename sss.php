@@ -260,7 +260,9 @@ final class sss extends base
 			'rankings' => 'bool',
 			'stylesheet' => 'string',
 			'timezone' => 'string',
-			'userstats' => 'bool');
+			'userstats' => 'bool',
+			'userpics' => 'bool',
+			'userpics_dir' => 'string');
 		$vars = '$settings[\''.(!empty($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = array(';
 
 		foreach ($settings_list as $key => $type) {

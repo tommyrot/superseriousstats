@@ -30,6 +30,8 @@ final class user
 	private $rankings = false;
 	private $stylesheet = 'sss.css';
 	private $timezone = 'UTC';
+	private $userpics = false;
+	private $userpics_dir = './userpics/';
 
 	/**
 	 * Variables that shouldn't be tampered with.
@@ -91,6 +93,53 @@ final class user
 		 */
 		echo $this->make_html($sqlite3);
 		$sqlite3->close();
+	}
+
+	/**
+	 * Look for an image in $userpics_dir that has an identical name to one of this user's aliases and return it.
+	 */
+	private function get_userpic($sqlite3)
+	{
+		/**
+		 * Try to open and read from $userpics_dir.
+		 */
+		if (is_dir($this->userpics_dir)) {
+			if (($dh = opendir($this->userpics_dir)) === false) {
+				return null;
+			}
+
+			while (($file = readdir($dh)) !== false) {
+				if (preg_match('/^(?<name>\S+)\.(jpe?g|png|gif)$/i', $file, $matches)) {
+					$files[strtolower($matches['name'])] = $file;
+				}
+			}
+
+			closedir($dh);
+		}
+
+		if (empty($files)) {
+			return null;
+		}
+
+		/**
+		 * Fetch this user's aliases.
+		 */
+		$query = $sqlite3->query('SELECT csnick FROM uid_details WHERE ruid = '.$this->ruid) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$aliases[] = strtolower($result['csnick']);
+		}
+
+		/**
+		 * Return the first image that matches any of this user's aliases.
+		 */
+		foreach ($files as $name => $file) {
+			if (in_array($name, $aliases)) {
+				return '<img src="'.htmlspecialchars(rtrim($this->userpics_dir, '/').'/'.$file).'" alt="" class="userpic">';
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -253,7 +302,7 @@ final class user
 			. '</style>'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
-			. '<div class="info">'.htmlspecialchars($this->csnick).', seriously'.($mood !== '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
+			. '<div class="info">'.($this->userpics ? $this->get_userpic($sqlite3) : '').htmlspecialchars($this->csnick).', seriously'.($mood !== '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
 			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
 			. htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";

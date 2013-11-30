@@ -67,6 +67,12 @@ body {
 	font-style:italic;
 	font-weight:normal;
 }
+.userpic {
+	float:right;
+	height:80px;
+	margin-top:4px;
+	width:80px;
+}
 /**
  * Graph colors
  */
