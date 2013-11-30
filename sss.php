@@ -444,6 +444,8 @@ final class sss extends base
 			$this->output('critical', 'parse_log(): no such file or directory: \''.$filedir.'\'');
 		}
 
+		$files = array();
+
 		if (is_dir($rp)) {
 			if (($dh = opendir($rp)) === false) {
 				$this->output('critical', 'parse_log(): failed to open directory: \''.$rp.'\'');
