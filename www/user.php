@@ -109,7 +109,7 @@ final class user
 			}
 
 			while (($file = readdir($dh)) !== false) {
-				if (preg_match('/^(?<name>\S+)\.(jpe?g|png|gif)$/i', $file, $matches)) {
+				if (preg_match('/^(?<name>\S+)\.(bmp|gif|jpe?g|png)$/i', $file, $matches)) {
 					$files[strtolower($matches['name'])] = $file;
 				}
 			}
