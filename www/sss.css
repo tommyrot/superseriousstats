@@ -68,9 +68,11 @@ body {
 	float:left;
 }
 .userpic {
+	border:1px solid #E0E0E0;
 	float:right;
 	height:80px;
-	margin-top:4px;
+	margin-top:1px;
+	padding:2px;
 	width:80px;
 }
 /**
