@@ -1207,17 +1207,18 @@ final class html extends base
 	private function make_table_people2($sqlite3)
 	{
 		$current_column = 1;
-		$current_row = 1;
+		$current_row = 0;
 		$query = $sqlite3->query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$current_row++;
+
 			if ($current_row > $this->maxrows_people2) {
 				$current_column++;
 				$current_row = 1;
 			}
 
 			$columns[$current_column][$current_row] = array($result['csnick'], $result['l_total']);
-			$current_row++;
 		}
 
 		if ($current_row < $this->maxrows_people2) {
