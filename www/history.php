@@ -344,8 +344,8 @@ final class history
 
 			foreach ($times as $time) {
 				if ($result['l_'.$time] !== 0) {
-					$width_float[$time] = ($result['l_'.$time] / $result['l_total']) * 50;
-					$width_int[$time] = floor($width_float[$time]);
+					$width_float[$time] = (float) ($result['l_'.$time] / $result['l_total']) * 50;
+					$width_int[$time] = (int) floor($width_float[$time]);
 					$width_remainders[$time] = $width_float[$time] - $width_int[$time];
 					$width -= $width_int[$time];
 				}
