@@ -1221,7 +1221,7 @@ final class html extends base
 			$columns[$current_column][$current_row] = array($result['csnick'], $result['l_total']);
 		}
 
-		if ($current_row < $this->maxrows_people2) {
+		if ($current_column < 4 || $current_row < $this->maxrows_people2) {
 			return null;
 		}
 
