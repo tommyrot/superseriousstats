@@ -262,7 +262,8 @@ final class sss extends base
 			'timezone' => 'string',
 			'userstats' => 'bool',
 			'userpics' => 'bool',
-			'userpics_dir' => 'string');
+			'userpics_dir' => 'string',
+			'userpics_default' => 'string');
 		$vars = '$settings[\''.(!empty($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = array(';
 
 		foreach ($settings_list as $key => $type) {

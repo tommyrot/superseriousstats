@@ -31,6 +31,7 @@ final class user
 	private $stylesheet = 'sss.css';
 	private $timezone = 'UTC';
 	private $userpics = false;
+	private $userpics_default = '';
 	private $userpics_dir = './userpics/';
 
 	/**
@@ -101,6 +102,16 @@ final class user
 	private function get_userpic($sqlite3)
 	{
 		/**
+		 * If a default image is provided in the configuration file it will be returned if no specific image is
+		 * found for the user. If omitted, null will be returned in said case.
+		 */
+		if (preg_match('/^\S+\.(bmp|gif|jpe?g|png)$/i', $this->userpics_default)) {
+			$userpics_default = '<img src="'.htmlspecialchars(rtrim($this->userpics_dir, '/').'/'.$this->userpics_default).'" alt="" class="userpic">';
+		} else {
+			$userpics_default = null;
+		}
+
+		/**
 		 * Try to open and read from $userpics_dir.
 		 */
 		if (is_dir($this->userpics_dir)) {
@@ -118,7 +129,7 @@ final class user
 		}
 
 		if (empty($files)) {
-			return null;
+			return $userpics_default;
 		}
 
 		/**
@@ -139,7 +150,7 @@ final class user
 			}
 		}
 
-		return null;
+		return $userpics_default;
 	}
 
 	/**
