@@ -92,7 +92,7 @@ final class urltools
 			/**
 			 * Create and return an array with all the elements of this URL.
 			 */
-			$elements = array('url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment');
+			$elements = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
 
 			foreach ($elements as $element) {
 				if (empty($matches[$element])) {

@@ -50,20 +50,20 @@ final class sss extends base
 	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
 	private $parser = '';
-	private $settings_list = array(
+	private $settings_list = [
 		'autolinknicks' => 'bool',
 		'database' => 'string',
 		'logfile_dateformat' => 'string',
 		'outputbits' => 'int',
 		'parser' => 'string',
-		'timezone' => 'string');
+		'timezone' => 'string'];
 	private $timezone = 'UTC';
 
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $settings = array();
-	private $settings_list_required = array();
+	private $settings = [];
+	private $settings_list_required = [];
 
 	public function __construct()
 	{
@@ -132,10 +132,10 @@ final class sss extends base
 		 *  synchronous = OFF - Continue without syncing as soon as data is handed off to the operating system.
 		 *  temp_store = MEMORY - Temporary tables and indices are kept in memory.
 		 */
-		$pragmas = array(
+		$pragmas = [
 			'journal_mode' => 'OFF',
 			'synchronous' => 'OFF',
-			'temp_store' => 'MEMORY');
+			'temp_store' => 'MEMORY'];
 
 		foreach ($pragmas as $key => $value) {
 			$sqlite3->exec('PRAGMA '.$key.' = '.$value);
@@ -250,7 +250,7 @@ final class sss extends base
 		/**
 		 * The following is a list of settings accepted by history.php and/or user.php along with their type.
 		 */
-		$settings_list = array(
+		$settings_list = [
 			'channel' => 'string',
 			'database' => 'string',
 			'mainpage' => 'string',
@@ -263,8 +263,8 @@ final class sss extends base
 			'userstats' => 'bool',
 			'userpics' => 'bool',
 			'userpics_dir' => 'string',
-			'userpics_default' => 'string');
-		$vars = '$settings[\''.(!empty($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = array(';
+			'userpics_default' => 'string'];
+		$vars = '$settings[\''.(!empty($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = [';
 
 		foreach ($settings_list as $key => $type) {
 			if (!array_key_exists($key, $this->settings)) {
@@ -284,7 +284,7 @@ final class sss extends base
 			}
 		}
 
-		exit(rtrim($vars, ',').');'."\n");
+		exit(rtrim($vars, ',').'];'."\n");
 	}
 
 	private function import_nicks($sqlite3, $file)
@@ -364,14 +364,14 @@ final class sss extends base
 	{
 		$this->output('notice', 'link_nicks(): looking for possible aliases');
 		$query = $sqlite3->query('SELECT uid, csnick, ruid, status FROM uid_details') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$strippednicks = array();
+		$strippednicks = [];
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$nicks[$result['uid']] = array(
+			$nicks[$result['uid']] = [
 				'nick' => $result['csnick'],
 				'ruid' => $result['ruid'],
-				'status' => $result['status']);
-			$strippednick = preg_replace(array('/[^a-z0-9]/', '/[0-9]+$/'), '', strtolower($result['csnick']));
+				'status' => $result['status']];
+			$strippednick = preg_replace(['/[^a-z0-9]/', '/[0-9]+$/'], '', strtolower($result['csnick']));
 
 			/**
 			 * The stripped nick must consist of at least two characters.
@@ -445,7 +445,7 @@ final class sss extends base
 			$this->output('critical', 'parse_log(): no such file or directory: \''.$filedir.'\'');
 		}
 
-		$files = array();
+		$files = [];
 
 		if (is_dir($rp)) {
 			if (($dh = opendir($rp)) === false) {

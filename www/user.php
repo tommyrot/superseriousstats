@@ -38,13 +38,13 @@ final class user
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $cid = '';
-	private $color = array(
+	private $color = [
 		'night' => 'b',
 		'morning' => 'g',
 		'afternoon' => 'y',
-		'evening' => 'r');
+		'evening' => 'r'];
 	private $csnick = '';
-	private $datetime = array();
+	private $datetime = [];
 	private $estimate = false;
 	private $l_total = 0;
 	private $nick = '';
@@ -193,7 +193,7 @@ final class user
 		if (empty($result)) {
 			$mood = '';
 		} else {
-			$smileys = array(
+			$smileys = [
 				's_01' => ':)',
 				's_02' => ';)',
 				's_03' => ':(',
@@ -243,7 +243,7 @@ final class user
 				's_47' => '=X',
 				's_48' => ':[',
 				's_49' => '>:(',
-				's_50' => ';o');
+				's_50' => ';o'];
 			arsort($result);
 
 			foreach ($result as $key => $value) {
@@ -427,7 +427,7 @@ final class user
 			}
 		}
 
-		$times = array('evening', 'afternoon', 'morning', 'night');
+		$times = ['evening', 'afternoon', 'morning', 'night'];
 		$tr1 = '<tr><th colspan="'.$columns.'">'.$head;
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
@@ -491,7 +491,7 @@ final class user
 			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		$days = array('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun');
+		$days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 		$high_day = '';
 		$high_value = 0;
 
@@ -508,7 +508,7 @@ final class user
 			}
 		}
 
-		$times = array('evening', 'afternoon', 'morning', 'night');
+		$times = ['evening', 'afternoon', 'morning', 'night'];
 		$tr1 = '<tr><th colspan="7">Activity Distribution by Day';
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
@@ -634,7 +634,7 @@ final class user
 		}
 
 		$query->reset();
-		$rankings = array();
+		$rankings = [];
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$prevdate = date('Y-m', mktime(0, 0, 0, (int) substr($result['date'], 5, 2) - 1, 1, (int) substr($result['date'], 0, 4)));

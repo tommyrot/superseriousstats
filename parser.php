@@ -25,9 +25,9 @@ abstract class parser extends base
 	 * Default settings for this script, which can be overridden in the configuration file. These variables should
 	 * all appear in $settings_list[] along with their type.
 	 */
-	private $settings_list = array(
+	private $settings_list = [
 		'outputbits' => 'int',
-		'wordtracking' => 'bool');
+		'wordtracking' => 'bool'];
 	private $wordtracking = true;
 
 	/**
@@ -36,8 +36,8 @@ abstract class parser extends base
 	private $hex_latin1supplement = '[\x80-\xFF]';
 	private $hex_validutf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private $newline = '';
-	private $nicks_objs = array();
-	private $smileys = array(
+	private $nicks_objs = [];
+	private $smileys = [
 		':)' => 's_01',
 		';)' => 's_02',
 		':(' => 's_03',
@@ -87,9 +87,9 @@ abstract class parser extends base
 		'=x' => 's_47',
 		':[' => 's_48',
 		'>:(' => 's_49',
-		';o' => 's_50');
+		';o' => 's_50'];
 	private $urltools;
-	private $words_objs = array();
+	private $words_objs = [];
 	protected $date = '';
 	protected $l_00 = 0;
 	protected $l_01 = 0;
@@ -251,7 +251,7 @@ abstract class parser extends base
 				 *    effectively making $line shorter.
 				 * 3. Continue until $line is zero bytes in length.
 				 */
-				$line = preg_replace_callback('/^('.$this->hex_validutf8.'|.)/s', array($this, 'rebuild_line'), $line);
+				$line = preg_replace_callback('/^('.$this->hex_validutf8.'|.)/s', [$this, 'rebuild_line'], $line);
 			}
 
 			/*
@@ -268,7 +268,7 @@ abstract class parser extends base
 		 *    space) with a single space.
 		 * 3. Remove whitespace characters at the beginning and end of a line.
 		 */
-		$line = preg_replace(array('/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'), array('', ' ', ''), $line);
+		$line = preg_replace(['/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'], ['', ' ', ''], $line);
 		return $line;
 	}
 
@@ -696,7 +696,7 @@ abstract class parser extends base
 		 * Write channel totals to database.
 		 */
 		if ($this->l_total !== 0) {
-			$queryparts = $this->get_queryparts($sqlite3, array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
+			$queryparts = $this->get_queryparts($sqlite3, ['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
 			$sqlite3->exec('INSERT OR IGNORE INTO channel_activity (date, '.implode(', ', $queryparts['columnlist']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$sqlite3->exec('UPDATE channel_activity SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}

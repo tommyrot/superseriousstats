@@ -26,9 +26,9 @@ final class maintenance extends base
 	 * all appear in $settings_list[] along with their type.
 	 */
 	private $rankings = false;
-	private $settings_list = array(
+	private $settings_list = [
 		'outputbits' => 'int',
-		'rankings' => 'bool');
+		'rankings' => 'bool'];
 
 	public function __construct($settings)
 	{
@@ -71,7 +71,7 @@ final class maintenance extends base
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if (!isset($l_total[$result['ruid']])) {
 				$l_total[$result['ruid']] = $result['l_total'];
-				$milestones = array(1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000);
+				$milestones = [1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000];
 				$nextmilestone = array_shift($milestones);
 			} else {
 				$l_total[$result['ruid']] += $result['l_total'];
@@ -139,7 +139,7 @@ final class maintenance extends base
 		 */
 		$channel_activity_by_month = array_fill_keys($scope, 0);
 		$query = $sqlite3->query('SELECT ruid, SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, COUNT(DISTINCT date) AS activedays, MAX(l_total) AS l_max FROM uid_activity JOIN uid_details ON uid_activity.uid = uid_details.uid WHERE ruid NOT IN (SELECT ruid FROM uid_details WHERE status IN (3,4)) GROUP BY ruid, SUBSTR(date, 1, 7)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$ruid_activity_by_month = array();
+		$ruid_activity_by_month = [];
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if (!array_key_exists($result['ruid'], $ruid_activity_by_month)) {
@@ -175,12 +175,12 @@ final class maintenance extends base
 			foreach ($dates as $date => $l_total) {
 				$cumulative_activedays += $ruid_activedays_by_month[$ruid][$date];
 				$cumulative_l_total += $l_total;
-				$ruid_activity_by_month_cumulative[] = array(
+				$ruid_activity_by_month_cumulative[] = [
 					'ruid' => $ruid,
 					'date' => $date,
 					'l_total' => $cumulative_l_total,
 					'activedays' => $cumulative_activedays,
-					'l_max' => $ruid_l_max_by_month[$ruid][$date]);
+					'l_max' => $ruid_l_max_by_month[$ruid][$date]];
 				$sort_dates[] = $date;
 				$sort_l_total[] = $cumulative_l_total;
 				$sort_ruids[] = $ruid;
@@ -230,13 +230,13 @@ final class maintenance extends base
 		 * column. The order in which they are listed is important, as some views depend on materialized views
 		 * created before them.
 		 */
-		$views = array(
+		$views = [
 			'v_ruid_activity_by_day' => 'ruid_activity_by_day',
 			'v_ruid_activity_by_month' => 'ruid_activity_by_month',
 			'v_ruid_activity_by_year' => 'ruid_activity_by_year',
 			'v_ruid_smileys' => 'ruid_smileys',
 			'v_ruid_events' => 'ruid_events',
-			'v_ruid_lines' => 'ruid_lines');
+			'v_ruid_lines' => 'ruid_lines'];
 
 		foreach ($views as $view => $table) {
 			$sqlite3->exec('DELETE FROM '.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());

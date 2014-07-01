@@ -37,14 +37,14 @@ final class history
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $activity = array();
+	private $activity = [];
 	private $cid = '';
-	private $color = array(
+	private $color = [
 		'afternoon' => 'y',
 		'evening' => 'r',
 		'morning' => 'g',
-		'night' => 'b');
-	private $datetime = array();
+		'night' => 'b'];
+	private $datetime = [];
 	private $l_total = 0;
 	private $output = '';
 
@@ -332,7 +332,7 @@ final class history
 		}
 
 		$i = 0;
-		$times = array('night', 'morning', 'afternoon', 'evening');
+		$times = ['night', 'morning', 'afternoon', 'evening'];
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
 		$tr1 = '<tr><th colspan="7">'.$head;
 		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">When?<td class="k5">Last Seen<td class="k6">Quote';
@@ -399,7 +399,7 @@ final class history
 		}
 
 		$high_value = 0;
-		$times = array('night', 'morning', 'afternoon', 'evening');
+		$times = ['night', 'morning', 'afternoon', 'evening'];
 
 		foreach ($times as $time) {
 			if ($type === 'month') {

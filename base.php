@@ -30,7 +30,7 @@ abstract class base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $prevoutput = array();
+	private $prevoutput = [];
 
 	final public function add_value($var, $value)
 	{
@@ -42,7 +42,7 @@ abstract class base
 	 */
 	final protected function get_queryparts($sqlite3, $columns)
 	{
-		$queryparts = array();
+		$queryparts = [];
 
 		foreach ($columns as $key) {
 			if (is_int($this->$key) && $this->$key !== 0) {

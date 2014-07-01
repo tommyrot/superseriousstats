@@ -24,13 +24,13 @@ final class nick extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $ex_actions_stack = array();
-	private $ex_exclamations_stack = array();
-	private $ex_questions_stack = array();
-	private $ex_uppercased_stack = array();
-	private $quote_stack = array();
-	private $topics_objs = array();
-	private $urls_objs = array();
+	private $ex_actions_stack = [];
+	private $ex_exclamations_stack = [];
+	private $ex_questions_stack = [];
+	private $ex_uppercased_stack = [];
+	private $quote_stack = [];
+	private $topics_objs = [];
+	private $urls_objs = [];
 	protected $actions = 0;
 	protected $characters = 0;
 	protected $csnick = '';
@@ -187,9 +187,9 @@ final class nick extends base
 	 */
 	public function add_quote($type, $line, $length)
 	{
-		$this->{$type.'_stack'}[] = array(
+		$this->{$type.'_stack'}[] = [
 			'length' => $length,
-			'line' => $line);
+			'line' => $line];
 
 		if (count($this->{$type.'_stack'}) > 10) {
 			/**
@@ -257,7 +257,7 @@ final class nick extends base
 		 * Write data to database table "uid_activity".
 		 */
 		if ($this->l_total !== 0) {
-			$queryparts = $this->get_queryparts($sqlite3, array('l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total'));
+			$queryparts = $this->get_queryparts($sqlite3, ['l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
 			$sqlite3->exec('INSERT OR IGNORE INTO uid_activity (uid, date, '.implode(', ', $queryparts['columnlist']).') VALUES ('.$uid.', \''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$sqlite3->exec('UPDATE uid_activity SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND uid = '.$uid.' AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
@@ -265,7 +265,7 @@ final class nick extends base
 		/**
 		 * Write data to database table "uid_events".
 		 */
-		$queryparts = $this->get_queryparts($sqlite3, array('m_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deop', 'm_deopped', 'm_devoice', 'm_devoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked'));
+		$queryparts = $this->get_queryparts($sqlite3, ['m_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deop', 'm_deopped', 'm_devoice', 'm_devoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked']);
 
 		if (!empty($queryparts)) {
 			$sqlite3->exec('INSERT OR IGNORE INTO uid_events (uid, '.implode(', ', $queryparts['columnlist']).') VALUES ('.$uid.', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -275,7 +275,7 @@ final class nick extends base
 		/**
 		 * Try to pick the longest unique line from each of the quote stacks.
 		 */
-		$types = array('ex_actions', 'ex_uppercased', 'ex_exclamations', 'ex_questions', 'quote');
+		$types = ['ex_actions', 'ex_uppercased', 'ex_exclamations', 'ex_questions', 'quote'];
 
 		foreach ($types as $type) {
 			if (!empty($this->{$type.'_stack'})) {
@@ -303,7 +303,7 @@ final class nick extends base
 		/**
 		 * Write data to database table "uid_lines".
 		 */
-		$queryparts = $this->get_queryparts($sqlite3, array('l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'urls', 'words', 'characters', 'monologues', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased'));
+		$queryparts = $this->get_queryparts($sqlite3, ['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'urls', 'words', 'characters', 'monologues', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased']);
 
 		if (!empty($queryparts)) {
 			$sqlite3->exec('INSERT OR IGNORE INTO uid_lines (uid, '.implode(', ', $queryparts['columnlist']).($this->lasttalked !== '' ? ', lasttalked' : '').') VALUES ('.$uid.', '.implode(', ', $queryparts['values']).($this->lasttalked !== '' ? ', DATETIME(\''.$this->lasttalked.'\')' : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -326,7 +326,7 @@ final class nick extends base
 		/**
 		 * Write data to database table "uid_smileys".
 		 */
-		$queryparts = $this->get_queryparts($sqlite3, array('s_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19', 's_20', 's_21', 's_22', 's_23', 's_24', 's_25', 's_26', 's_27', 's_28', 's_29', 's_30', 's_31', 's_32', 's_33', 's_34', 's_35', 's_36', 's_37', 's_38', 's_39', 's_40', 's_41', 's_42', 's_43', 's_44', 's_45', 's_46', 's_47', 's_48', 's_49', 's_50'));
+		$queryparts = $this->get_queryparts($sqlite3, ['s_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19', 's_20', 's_21', 's_22', 's_23', 's_24', 's_25', 's_26', 's_27', 's_28', 's_29', 's_30', 's_31', 's_32', 's_33', 's_34', 's_35', 's_36', 's_37', 's_38', 's_39', 's_40', 's_41', 's_42', 's_43', 's_44', 's_45', 's_46', 's_47', 's_48', 's_49', 's_50']);
 
 		if (!empty($queryparts)) {
 			$sqlite3->exec('INSERT OR IGNORE INTO uid_smileys (uid, '.implode(', ', $queryparts['columnlist']).') VALUES ('.$uid.', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -357,7 +357,7 @@ final class url extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $datetime = array();
+	private $datetime = [];
 	private $fqdn = '';
 	private $tld = '';
 	private $url = '';
@@ -416,7 +416,7 @@ final class topic extends base
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
-	private $datetime = array();
+	private $datetime = [];
 	private $topic = '';
 
 	public function __construct($topic)
