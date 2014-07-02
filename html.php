@@ -431,11 +431,12 @@ final class html extends base
 			$output .= $t->make_table($sqlite3);
 
 			$t = new table('Most Lively Bots', $this->minrows, $this->maxrows);
+			$t->set_value('cid', $this->cid);
 			$t->set_value('keys', [
 				'k1' => 'Lines',
 				'k2' => 'Bot',
 				'v1' => 'int',
-				'v2' => 'string']);
+				'v2' => ($this->userstats ? 'userstats' : 'string')]);
 			$t->set_value('queries', ['main' => 'SELECT l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3 AND l_total != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows]);
 			$output .= $t->make_table($sqlite3);
 
@@ -1317,6 +1318,7 @@ final class table extends base
 	private $maxrows = 0;
 	private $minrows = 0;
 	private $urltools;
+	protected $cid = '';
 	protected $decimals = 1;
 	protected $keys = [];
 	protected $medium = false;
@@ -1437,6 +1439,9 @@ final class table extends base
 						break;
 					case 'string-url':
 						${$key} = $this->find_urls($result[$key]);
+						break;
+					case 'userstats':
+						${$key} = '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result[$key]).'">'.htmlspecialchars($result[$key]).'</a>';
 						break;
 				}
 			}
