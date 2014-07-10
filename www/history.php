@@ -143,7 +143,7 @@ final class history
 		}
 
 		/**
-		 * All queries from this point forward require a non empty database.
+		 * All queries from this point forward require a non-empty database.
 		 */
 		if ($daycount === 0) {
 			$this->output('error', 'There is not enough data to create statistics, yet.');

@@ -171,7 +171,7 @@ final class user
 		}
 
 		/**
-		 * All queries from this point forward require a non empty database.
+		 * All queries from this point forward require a non-empty database.
 		 */
 		if (empty($result['l_total'])) {
 			$this->output('error', 'This user does not have any activity logged.');

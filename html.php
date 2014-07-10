@@ -144,7 +144,7 @@ final class html extends base
 		}
 
 		/**
-		 * All queries from this point forward require a non empty database.
+		 * All queries from this point forward require a non-empty database.
 		 */
 		if (is_null($this->l_total)) {
 			$this->output('warning', 'make_html(): database is empty');

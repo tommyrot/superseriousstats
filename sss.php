@@ -533,7 +533,7 @@ final class sss extends base
 			}
 
 			/**
-			 * Update the parse history when there are actual (non empty) lines parsed.
+			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
 			if ($parser->get_value('linenum_lastnonempty') >= $firstline) {
 				$sqlite3->exec('INSERT OR IGNORE INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_value('linenum_lastnonempty').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());

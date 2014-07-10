@@ -239,7 +239,7 @@ abstract class parser extends base
 	}
 
 	/**
-	 * Checks if a line is valid UTF-8 and convert all non valid bytes into valid multibyte UTF-8.
+	 * Checks if a line is valid UTF-8 and convert all non-valid bytes into valid multibyte UTF-8.
 	 */
 	final private function normalize_line($line)
 	{
@@ -473,7 +473,7 @@ abstract class parser extends base
 				 * previous parse run). It's safe to assume that $prevnick is a valid nick since it was
 				 * set by set_normal(). Create an object for it here so the monologue data can be added.
 				 * It doesn't matter if $prevnick is lowercase since it won't be updated before it is
-				 * actually seen (ie. on any other activity).
+				 * actually seen (i.e. on any other activity).
 				 */
 				if ($this->l_total === 0) {
 					$this->add_nick($this->prevnick, null);
@@ -589,7 +589,7 @@ abstract class parser extends base
 
 		/**
 		 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than
-		 * 50% non letter characters from the Basic Latin and Latin-1 Supplement character sets in them.
+		 * 50% non-letter characters from the Basic Latin and Latin-1 Supplement character sets in them.
 		 */
 		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length) {
 			$this->nicks_objs[$nick]->add_value('uppercased', 1);
