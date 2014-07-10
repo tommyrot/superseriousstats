@@ -222,15 +222,17 @@ abstract class parser extends base
 
 			$line = $this->normalize_line($line);
 
-			/**
-			 * Pass on the normalized line to the logfile format specific parser class extending this class.
-			 * Empty lines are ignored. Remember the line number of the last non empty line.
-			 */
-			if (!empty($line)) {
-				$this->linenum_lastnonempty = $this->linenum;
-				$this->parse_line($line);
-				$this->prevline = $line;
+			if (empty($line)) {
+				continue;
 			}
+
+			/**
+			 * Pass on the non-empty normalized line to the logfile format specific parser class extending
+			 * this class. Remember the number of said line.
+			 */
+			$this->linenum_lastnonempty = $this->linenum;
+			$this->parse_line($line);
+			$this->prevline = $line;
 		}
 
 		gzclose($zp);
@@ -293,15 +295,17 @@ abstract class parser extends base
 
 			$line = $this->normalize_line($line);
 
-			/**
-			 * Pass on the normalized line to the logfile format specific parser class extending this class.
-			 * Empty lines are ignored. Remember the line number of the last non empty line.
-			 */
-			if (!empty($line)) {
-				$this->linenum_lastnonempty = $this->linenum;
-				$this->parse_line($line);
-				$this->prevline = $line;
+			if (empty($line)) {
+				continue;
 			}
+
+			/**
+			 * Pass on the non-empty normalized line to the logfile format specific parser class extending
+			 * this class. Remember the number of said line.
+			 */
+			$this->linenum_lastnonempty = $this->linenum;
+			$this->parse_line($line);
+			$this->prevline = $line;
 		}
 
 		fclose($fp);
@@ -344,17 +348,18 @@ abstract class parser extends base
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('debug', 'set_action(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-		} else {
-			$line_length = mb_strlen($line, 'UTF-8');
-			$nick = $this->add_nick($csnick, $datetime);
-			$this->nicks_objs[$nick]->add_value('actions', 1);
+			return null;
+		}
 
-			/**
-			 * Track quotes/example lines of up to a sensible limit of 255 characters in length.
-			 */
-			if ($line_length <= 255) {
-				$this->nicks_objs[$nick]->add_quote('ex_actions', $line, $line_length);
-			}
+		$line_length = mb_strlen($line, 'UTF-8');
+		$nick = $this->add_nick($csnick, $datetime);
+		$this->nicks_objs[$nick]->add_value('actions', 1);
+
+		/**
+		 * Track quotes/example lines of up to a sensible limit of 255 characters in length.
+		 */
+		if ($line_length <= 255) {
+			$this->nicks_objs[$nick]->add_quote('ex_actions', $line, $line_length);
 		}
 	}
 
@@ -362,32 +367,35 @@ abstract class parser extends base
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('debug', 'set_join(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-		} else {
-			$nick = $this->add_nick($csnick, $datetime);
-			$this->nicks_objs[$nick]->add_value('joins', 1);
+			return null;
 		}
+
+		$nick = $this->add_nick($csnick, $datetime);
+		$this->nicks_objs[$nick]->add_value('joins', 1);
 	}
 
 	final protected function set_kick($datetime, $csnick_performing, $csnick_undergoing, $line)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			$this->output('debug', 'set_kick(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			return null;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
 			$this->output('debug', 'set_kick(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-		} else {
-			$nick_performing = $this->add_nick($csnick_performing, $datetime);
-			$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
-			$this->nicks_objs[$nick_performing]->add_value('kicks', 1);
-			$this->nicks_objs[$nick_undergoing]->add_value('kicked', 1);
+			return null;
+		}
 
-			/**
-			 * Track kick messages of up to a limit of 307 characters in length. The majority of IRC servers
-			 * are within this limit.
-			 */
-			if (mb_strlen($line, 'UTF-8') <= 307) {
-				$this->nicks_objs[$nick_performing]->set_value('ex_kicks', $line);
-				$this->nicks_objs[$nick_undergoing]->set_value('ex_kicked', $line);
-			}
+		$nick_performing = $this->add_nick($csnick_performing, $datetime);
+		$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
+		$this->nicks_objs[$nick_performing]->add_value('kicks', 1);
+		$this->nicks_objs[$nick_undergoing]->add_value('kicked', 1);
+
+		/**
+		 * Track kick messages of up to a limit of 307 characters in length. The majority of IRC servers are
+		 * within this limit.
+		 */
+		if (mb_strlen($line, 'UTF-8') <= 307) {
+			$this->nicks_objs[$nick_performing]->set_value('ex_kicks', $line);
+			$this->nicks_objs[$nick_undergoing]->set_value('ex_kicked', $line);
 		}
 	}
 
@@ -395,30 +403,32 @@ abstract class parser extends base
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			$this->output('debug', 'set_mode(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			return null;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
 			$this->output('debug', 'set_mode(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-		} else {
-			$nick_performing = $this->add_nick($csnick_performing, $datetime);
-			$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
+			return null;
+		}
 
-			switch ($mode) {
-				case '+o':
-					$this->nicks_objs[$nick_performing]->add_value('m_op', 1);
-					$this->nicks_objs[$nick_undergoing]->add_value('m_opped', 1);
-					break;
-				case '+v':
-					$this->nicks_objs[$nick_performing]->add_value('m_voice', 1);
-					$this->nicks_objs[$nick_undergoing]->add_value('m_voiced', 1);
-					break;
-				case '-o':
-					$this->nicks_objs[$nick_performing]->add_value('m_deop', 1);
-					$this->nicks_objs[$nick_undergoing]->add_value('m_deopped', 1);
-					break;
-				case '-v':
-					$this->nicks_objs[$nick_performing]->add_value('m_devoice', 1);
-					$this->nicks_objs[$nick_undergoing]->add_value('m_devoiced', 1);
-					break;
-			}
+		$nick_performing = $this->add_nick($csnick_performing, $datetime);
+		$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
+
+		switch ($mode) {
+			case '+o':
+				$this->nicks_objs[$nick_performing]->add_value('m_op', 1);
+				$this->nicks_objs[$nick_undergoing]->add_value('m_opped', 1);
+				break;
+			case '+v':
+				$this->nicks_objs[$nick_performing]->add_value('m_voice', 1);
+				$this->nicks_objs[$nick_undergoing]->add_value('m_voiced', 1);
+				break;
+			case '-o':
+				$this->nicks_objs[$nick_performing]->add_value('m_deop', 1);
+				$this->nicks_objs[$nick_undergoing]->add_value('m_deopped', 1);
+				break;
+			case '-v':
+				$this->nicks_objs[$nick_performing]->add_value('m_devoice', 1);
+				$this->nicks_objs[$nick_undergoing]->add_value('m_devoiced', 1);
+				break;
 		}
 	}
 
@@ -426,175 +436,180 @@ abstract class parser extends base
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			$this->output('debug', 'set_nickchange(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			return null;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
 			$this->output('debug', 'set_nickchange(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-		} else {
-			$nick_performing = $this->add_nick($csnick_performing, $datetime);
-			$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
-			$this->nicks_objs[$nick_performing]->add_value('nickchanges', 1);
+			return null;
 		}
+
+		$nick_performing = $this->add_nick($csnick_performing, $datetime);
+		$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
+		$this->nicks_objs[$nick_performing]->add_value('nickchanges', 1);
 	}
 
 	final protected function set_normal($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('debug', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-		} else {
-			$line_length = mb_strlen($line, 'UTF-8');
-			$nick = $this->add_nick($csnick, $datetime);
-			$this->nicks_objs[$nick]->add_value('characters', $line_length);
-			$this->nicks_objs[$nick]->set_value('lasttalked', $datetime);
+			return null;
+		}
 
+		$line_length = mb_strlen($line, 'UTF-8');
+		$nick = $this->add_nick($csnick, $datetime);
+		$this->nicks_objs[$nick]->add_value('characters', $line_length);
+		$this->nicks_objs[$nick]->set_value('lasttalked', $datetime);
+
+		/**
+		 * Keep track of monologues.
+		 */
+		if ($nick !== $this->prevnick) {
 			/**
-			 * Keep track of monologues.
+			 * Someone else typed a line and the previous streak is interrupted. Check if the streak
+			 * qualifies as a monologue and store it.
 			 */
-			if ($nick === $this->prevnick) {
-				$this->streak++;
-			} else {
+			if ($this->streak >= 5) {
 				/**
-				 * Someone else typed a line and the previous streak is interrupted. Check if the streak
-				 * qualifies as a monologue and store it.
+				 * If the current line count is 0 then $prevnick is not known yet (only seen in
+				 * previous parse run). It's safe to assume that $prevnick is a valid nick since it was
+				 * set by set_normal(). Create an object for it here so the monologue data can be added.
+				 * It doesn't matter if $prevnick is lowercase since it won't be updated before it is
+				 * actually seen (ie. on any other activity).
 				 */
-				if ($this->streak >= 5) {
-					/**
-					 * If the current line count is 0 then $prevnick is not known yet (only seen in
-					 * previous parse run). It's safe to assume that $prevnick is a valid nick since
-					 * it was set by set_normal(). Create an object for it here so the monologue
-					 * data can be added. It doesn't matter if $prevnick is lowercase since it won't
-					 * be updated before it is actually seen (ie. on any other activity).
-					 */
-					if ($this->l_total === 0) {
-						$this->add_nick($this->prevnick, null);
-					}
-
-					$this->nicks_objs[$this->prevnick]->add_value('monologues', 1);
-
-					if ($this->streak > $this->nicks_objs[$this->prevnick]->get_value('topmonologue')) {
-						$this->nicks_objs[$this->prevnick]->set_value('topmonologue', $this->streak);
-					}
+				if ($this->l_total === 0) {
+					$this->add_nick($this->prevnick, null);
 				}
 
-				$this->prevnick = $nick;
-				$this->streak = 1;
-			}
+				$this->nicks_objs[$this->prevnick]->add_value('monologues', 1);
 
-			$day = strtolower(date('D', strtotime($this->date)));
-			$hour = (int) substr($datetime, 11, 2);
-
-			if ($hour >= 0 && $hour <= 5) {
-				$this->l_night++;
-				$this->nicks_objs[$nick]->add_value('l_'.$day.'_night', 1);
-				$this->nicks_objs[$nick]->add_value('l_night', 1);
-			} elseif ($hour >= 6 && $hour <= 11) {
-				$this->l_morning++;
-				$this->nicks_objs[$nick]->add_value('l_'.$day.'_morning', 1);
-				$this->nicks_objs[$nick]->add_value('l_morning', 1);
-			} elseif ($hour >= 12 && $hour <= 17) {
-				$this->l_afternoon++;
-				$this->nicks_objs[$nick]->add_value('l_'.$day.'_afternoon', 1);
-				$this->nicks_objs[$nick]->add_value('l_afternoon', 1);
-			} elseif ($hour >= 18 && $hour <= 23) {
-				$this->l_evening++;
-				$this->nicks_objs[$nick]->add_value('l_'.$day.'_evening', 1);
-				$this->nicks_objs[$nick]->add_value('l_evening', 1);
-			}
-
-			$this->l_total++;
-			$this->nicks_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
-			$this->nicks_objs[$nick]->add_value('l_total', 1);
-			$this->{'l_'.($hour < 10 ? '0'.$hour : $hour)}++;
-
-			/**
-			 * Words are simply character groups separated by whitespace.
-			 */
-			$skipquote = false;
-			$words = explode(' ', $line);
-			$this->nicks_objs[$nick]->add_value('words', count($words));
-
-			foreach ($words as $csword) {
-				/**
-				 * Behold the amazing smileys regexp.
-				 */
-				if (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(]|\'\()|;([])(pxd\/o]|-\)|_;)|[:;](\)\)|\(\()|\\\o\/|<3|=[])p\/\\\d(x]|d:|8\)|-[_.]-|>:\()$/i', $csword)) {
-					$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
-
-				/**
-				 * Only catch URLs which were intended to be clicked on. Most clients can handle URLs
-				 * that begin with "www." or a scheme like "http://".
-				 */
-				} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
-					/**
-					 * Regardless of it being a valid URL or not, set $skipquote to true, which
-					 * ensures that lines which contain a URL are not used as a quote. Quotes with
-					 * URLs in them often look messy/confusing on the stats page.
-					 */
-					$skipquote = true;
-
-					if (($urldata = $this->urltools->get_elements($csword)) !== false) {
-						/**
-						 * Track URLs of up to a sensible limit of 1024 characters in length.
-						 */
-						if (strlen($urldata['url']) <= 1024) {
-							$this->nicks_objs[$nick]->add_url($urldata, $datetime);
-							$this->nicks_objs[$nick]->add_value('urls', 1);
-						}
-					} else {
-						$this->output('debug', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
-					}
-
-				/**
-				 * Keep track of all character groups composed of the letters found in the Basic Latin
-				 * and Latin-1 Supplement character sets, the Hyphen (used properly), and any multibyte
-				 * characters beyond those two sets (found in UTF-8) regardless of their meaning. The
-				 * regexp checks for any characters not wanted in the word - from the aforementioned
-				 * Latin sets. Note that normalize_line() already took all the dirt out. This method of
-				 * finding words is not 100% accurate, but it serves its purpose.
-				 */
-				} elseif ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
-					$word_length = mb_strlen($csword, 'UTF-8');
-
-					/**
-					 * Words consisting of 30+ characters are most likely not real words.
-					 */
-					if ($word_length <= 30) {
-						$this->add_word($csword, $word_length);
-					}
+				if ($this->streak > $this->nicks_objs[$this->prevnick]->get_value('topmonologue')) {
+					$this->nicks_objs[$this->prevnick]->set_value('topmonologue', $this->streak);
 				}
 			}
 
+			$this->prevnick = $nick;
+			$this->streak = 0;
+		}
+
+		$this->streak++;
+
+		/**
+		 * Increase line counts for relevant day, part of day, and hour.
+		 */
+		$day = strtolower(date('D', strtotime($this->date)));
+		$hour = (int) substr($datetime, 11, 2);
+
+		if ($hour >= 0 && $hour <= 5) {
+			$this->l_night++;
+			$this->nicks_objs[$nick]->add_value('l_'.$day.'_night', 1);
+			$this->nicks_objs[$nick]->add_value('l_night', 1);
+		} elseif ($hour >= 6 && $hour <= 11) {
+			$this->l_morning++;
+			$this->nicks_objs[$nick]->add_value('l_'.$day.'_morning', 1);
+			$this->nicks_objs[$nick]->add_value('l_morning', 1);
+		} elseif ($hour >= 12 && $hour <= 17) {
+			$this->l_afternoon++;
+			$this->nicks_objs[$nick]->add_value('l_'.$day.'_afternoon', 1);
+			$this->nicks_objs[$nick]->add_value('l_afternoon', 1);
+		} elseif ($hour >= 18 && $hour <= 23) {
+			$this->l_evening++;
+			$this->nicks_objs[$nick]->add_value('l_'.$day.'_evening', 1);
+			$this->nicks_objs[$nick]->add_value('l_evening', 1);
+		}
+
+		$this->l_total++;
+		$this->nicks_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
+		$this->nicks_objs[$nick]->add_value('l_total', 1);
+		$this->{'l_'.($hour < 10 ? '0'.$hour : $hour)}++;
+
+		/**
+		 * Words are simply considered character groups separated by whitespace.
+		 */
+		$skipquote = false;
+		$words = explode(' ', $line);
+		$this->nicks_objs[$nick]->add_value('words', count($words));
+
+		foreach ($words as $csword) {
 			/**
-			 * Track quotes/example lines of up to a sensible limit of 255 characters in length. This
-			 * applies to all of the types seen below.
+			 * Behold the amazing smileys regexp.
 			 */
+			if (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(]|\'\()|;([])(pxd\/o]|-\)|_;)|[:;](\)\)|\(\()|\\\o\/|<3|=[])p\/\\\d(x]|d:|8\)|-[_.]-|>:\()$/i', $csword)) {
+				$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
+
+			/**
+			 * Only catch URLs which were intended to be clicked on. Most clients can handle URLs that begin
+			 * with "www." or a scheme like "http://".
+			 */
+			} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
+				/**
+				 * Regardless of it being a valid URL or not, set $skipquote to true, which ensures that
+				 * lines which contain a URL are not used as a quote. Quotes with URLs in them often
+				 * look messy/confusing on the stats page.
+				 */
+				$skipquote = true;
+
+				if (($urldata = $this->urltools->get_elements($csword)) !== false) {
+					/**
+					 * Track URLs of up to a sensible limit of 1024 characters in length.
+					 */
+					if (strlen($urldata['url']) <= 1024) {
+						$this->nicks_objs[$nick]->add_url($urldata, $datetime);
+						$this->nicks_objs[$nick]->add_value('urls', 1);
+					}
+				} else {
+					$this->output('debug', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
+				}
+
+			/**
+			 * Keep track of all character groups composed of the letters found in the Basic Latin and
+			 * Latin-1 Supplement character sets, the Hyphen (used properly), and any multibyte characters
+			 * beyond those two sets (found in UTF-8) regardless of their meaning. The regexp checks for any
+			 * characters not wanted in the word - from the aforementioned Latin sets.
+			 * Note that normalize_line() already took all the dirt out. This method of finding words is not
+			 * 100% accurate, but it serves its purpose.
+			 */
+			} elseif ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
+				$word_length = mb_strlen($csword, 'UTF-8');
+
+				/**
+				 * Words consisting of 30+ characters are most likely not real words.
+				 */
+				if ($word_length <= 30) {
+					$this->add_word($csword, $word_length);
+				}
+			}
+		}
+
+		/**
+		 * Track quotes/example lines of up to a sensible limit of 255 characters in length. This applies to all
+		 * of the types seen below.
+		 */
+		if (!$skipquote && $line_length <= 255) {
+			$this->nicks_objs[$nick]->add_quote('quote', $line, $line_length);
+		}
+
+		/**
+		 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than
+		 * 50% non letter characters from the Basic Latin and Latin-1 Supplement character sets in them.
+		 */
+		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length) {
+			$this->nicks_objs[$nick]->add_value('uppercased', 1);
+
 			if (!$skipquote && $line_length <= 255) {
-				$this->nicks_objs[$nick]->add_quote('quote', $line, $line_length);
+				$this->nicks_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
 			}
+		}
 
-			/**
-			 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have
-			 * less than 50% non letter characters from the Basic Latin and Latin-1 Supplement character
-			 * sets in them.
-			 */
-			if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length) {
-				$this->nicks_objs[$nick]->add_value('uppercased', 1);
+		if (preg_match('/!$/', $line)) {
+			$this->nicks_objs[$nick]->add_value('exclamations', 1);
 
-				if (!$skipquote && $line_length <= 255) {
-					$this->nicks_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
-				}
+			if (!$skipquote && $line_length <= 255) {
+				$this->nicks_objs[$nick]->add_quote('ex_exclamations', $line, $line_length);
 			}
+		} elseif (preg_match('/\?$/', $line)) {
+			$this->nicks_objs[$nick]->add_value('questions', 1);
 
-			if (preg_match('/!$/', $line)) {
-				$this->nicks_objs[$nick]->add_value('exclamations', 1);
-
-				if (!$skipquote && $line_length <= 255) {
-					$this->nicks_objs[$nick]->add_quote('ex_exclamations', $line, $line_length);
-				}
-			} elseif (preg_match('/\?$/', $line)) {
-				$this->nicks_objs[$nick]->add_value('questions', 1);
-
-				if (!$skipquote && $line_length <= 255) {
-					$this->nicks_objs[$nick]->add_quote('ex_questions', $line, $line_length);
-				}
+			if (!$skipquote && $line_length <= 255) {
+				$this->nicks_objs[$nick]->add_quote('ex_questions', $line, $line_length);
 			}
 		}
 	}
@@ -603,68 +618,75 @@ abstract class parser extends base
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('debug', 'set_part(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-		} else {
-			$nick = $this->add_nick($csnick, $datetime);
-			$this->nicks_objs[$nick]->add_value('parts', 1);
+			return null;
 		}
+
+		$nick = $this->add_nick($csnick, $datetime);
+		$this->nicks_objs[$nick]->add_value('parts', 1);
 	}
 
 	final protected function set_quit($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('debug', 'set_quit(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-		} else {
-			$nick = $this->add_nick($csnick, $datetime);
-			$this->nicks_objs[$nick]->add_value('quits', 1);
+			return null;
 		}
+
+		$nick = $this->add_nick($csnick, $datetime);
+		$this->nicks_objs[$nick]->add_value('quits', 1);
 	}
 
 	final protected function set_slap($datetime, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			$this->output('debug', 'set_slap(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
-		} else {
-			$nick_performing = $this->add_nick($csnick_performing, $datetime);
-			$this->nicks_objs[$nick_performing]->add_value('slaps', 1);
-
-			if (!is_null($csnick_undergoing)) {
-				/**
-				 * Clean possible network prefix (psyBNC) from the "undergoing" nick.
-				 */
-				if (preg_match('/^.*?[~\'](?<nick>.+)$/', $csnick_undergoing, $matches)) {
-					$this->output('debug', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-					$csnick_undergoing = $matches['nick'];
-				}
-
-				if (!$this->validate_nick($csnick_undergoing)) {
-					$this->output('debug', 'set_slap(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-				} else {
-					/**
-					 * Don't pass a time when adding the "undergoing" nick while it may only be
-					 * referred to instead of being seen for real.
-					 */
-					$nick_undergoing = $this->add_nick($csnick_undergoing, null);
-					$this->nicks_objs[$nick_undergoing]->add_value('slapped', 1);
-				}
-			}
+			return null;
 		}
+
+		$nick_performing = $this->add_nick($csnick_performing, $datetime);
+		$this->nicks_objs[$nick_performing]->add_value('slaps', 1);
+
+		if (is_null($csnick_undergoing)) {
+			return null;
+		}
+
+		/**
+		 * Clean possible network prefix (psyBNC) from the "undergoing" nick.
+		 */
+		if (preg_match('/^.*?[~\'](?<nick>.+)$/', $csnick_undergoing, $matches)) {
+			$this->output('debug', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			$csnick_undergoing = $matches['nick'];
+		}
+
+		if (!$this->validate_nick($csnick_undergoing)) {
+			$this->output('debug', 'set_slap(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			return null;
+		}
+
+		/**
+		 * Don't pass a time when adding the "undergoing" nick while it may only be referred to instead of being
+		 * seen for real.
+		 */
+		$nick_undergoing = $this->add_nick($csnick_undergoing, null);
+		$this->nicks_objs[$nick_undergoing]->add_value('slapped', 1);
 	}
 
 	final protected function set_topic($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
 			$this->output('debug', 'set_topic(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-		} else {
-			$nick = $this->add_nick($csnick, $datetime);
-			$this->nicks_objs[$nick]->add_value('topics', 1);
+			return null;
+		}
 
-			/**
-			 * Track topics of up to a limit of 390 characters in length. The majority of IRC servers are
-			 * within this limit.
-			 */
-			if (mb_strlen($line, 'UTF-8') <= 390) {
-				$this->nicks_objs[$nick]->add_topic($line, $datetime);
-			}
+		$nick = $this->add_nick($csnick, $datetime);
+		$this->nicks_objs[$nick]->add_value('topics', 1);
+
+		/**
+		 * Track topics of up to a limit of 390 characters in length. The majority of IRC servers are within
+		 * this limit.
+		 */
+		if (mb_strlen($line, 'UTF-8') <= 390) {
+			$this->nicks_objs[$nick]->add_topic($line, $datetime);
 		}
 	}
 
