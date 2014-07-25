@@ -85,7 +85,18 @@ final class history
 			$this->output(null, basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
 		}
 
-		$sqlite3->exec('PRAGMA temp_store = MEMORY');
+		/**
+		 * Set SQLite3 PRAGMAs:
+		 *  query_only = ON - Disable all changes to database files.
+		 *  temp_store = MEMORY - Temporary tables and indices are kept in memory.
+		 */
+		$pragmas = [
+			'query_only' => 'ON',
+			'temp_store' => 'MEMORY'];
+
+		foreach ($pragmas as $key => $value) {
+			$sqlite3->exec('PRAGMA '.$key.' = '.$value);
+		}
 
 		/**
 		 * Make stats!
