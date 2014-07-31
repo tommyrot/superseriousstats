@@ -278,7 +278,7 @@ final class html extends base
 			$t->set_value('queries', ['main' => 'SELECT CAST(characters AS REAL) / l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 30, $this->datetime['year'])).'\' ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows]);
 			$output .= $t->make_table($sqlite3);
 
-			$t = new table('Individual Top Days &ndash; Alltime', $this->minrows, $this->maxrows);
+			$t = new table('Individual Top Days &ndash; All-Time', $this->minrows, $this->maxrows);
 			$t->set_value('keys', [
 				'k1' => 'Lines',
 				'k2' => 'User',
@@ -305,7 +305,7 @@ final class html extends base
 			$t->set_value('queries', ['main' => 'SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.date('Y-m', strtotime($date_lastlogparsed)).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT '.$this->maxrows]);
 			$output .= $t->make_table($sqlite3);
 
-			$t = new table('Most Active Chatters &ndash; Alltime', $this->minrows, $this->maxrows);
+			$t = new table('Most Active Chatters &ndash; All-Time', $this->minrows, $this->maxrows);
 			$t->set_value('decimals', 2);
 			$t->set_value('keys', [
 				'k1' => 'Activity',
@@ -1127,7 +1127,7 @@ final class html extends base
 		$rankings = false;
 
 		if ($type === 'alltime') {
-			$head = 'Most Talkative People &ndash; Alltime';
+			$head = 'Most Talkative People &ndash; All-Time';
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
 
 			/**
@@ -1232,7 +1232,7 @@ final class html extends base
 
 		$total -= $this->maxrows_people_alltime + ($this->maxrows_people2 * 4);
 		$tr0 = '<colgroup><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2">';
-		$tr1 = '<tr><th colspan="12">'.($total !== 0 ? '<span class="title">Less Talkative People &ndash; Alltime</span><span class="ralign">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; Alltime');
+		$tr1 = '<tr><th colspan="12">'.($total !== 0 ? '<span class="title">Less Talkative People &ndash; All-Time</span><span class="ralign">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; All-Time');
 		$tr2 = '<tr><td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User';
 		$trx = '';
 
