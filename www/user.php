@@ -667,7 +667,7 @@ final class user
 		}
 
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"><col class="c8"><col class="c9"><col class="c10"><col class="c11"><col class="c12">';
-		$tr1 = '<tr><th colspan="12">Rankings';
+		$tr1 = '<tr><th colspan="12">Rankings and Cumulative Numbers';
 		$tr2 = '<tr><td class="k1-2" colspan="2">Rank<td class="k3"><td class="k4-5" colspan="2">Lines<td class="k6-7" colspan="2">Percentage<td class="k8-9" colspan="2">Lines/Day<td class="k10-11" colspan="2">Activity<td class="k12">Top Day';
 		$trx = '';
 		krsort($rankings);
