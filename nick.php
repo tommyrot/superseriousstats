@@ -448,5 +448,3 @@ final class topic extends base
 		}
 	}
 }
-
-?>

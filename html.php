@@ -1471,5 +1471,3 @@ final class table extends base
 		return '<table class="'.$class.'">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 }
-
-?>

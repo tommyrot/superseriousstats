@@ -114,5 +114,3 @@ final class parser_limechat extends parser
 		}
 	}
 }
-
-?>

@@ -506,5 +506,3 @@ if (isset($_GET['year']) && preg_match('/^[12][0-9]{3}$/', $_GET['year'])) {
  * Make stats!
  */
 $history = new history($cid, $year, $month);
-
-?>

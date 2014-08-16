@@ -115,5 +115,3 @@ final class parser_textual extends parser
 		}
 	}
 }
-
-?>

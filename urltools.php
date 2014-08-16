@@ -120,5 +120,3 @@ final class urltools
 		}
 	}
 }
-
-?>

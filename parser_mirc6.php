@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009-2012, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2014, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -136,5 +136,3 @@ final class parser_mirc6 extends parser
 		}
 	}
 }
-
-?>

@@ -716,5 +716,3 @@ $nick = $_GET['nick'];
  * Make stats!
  */
 $user = new user($cid, $nick);
-
-?>

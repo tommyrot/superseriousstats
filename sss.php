@@ -628,5 +628,3 @@ final class sss extends base
  * Get ready for the launch.
  */
 $sss = new sss();
-
-?>

@@ -15,7 +15,3 @@
  *        will be percent-encoded in the URL which looks bad. Remember to have
  *        the same cid in sss.conf and this file.
  */
-
-
-
-?>

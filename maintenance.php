@@ -271,5 +271,3 @@ final class maintenance extends base
 		}
 	}
 }
-
-?>

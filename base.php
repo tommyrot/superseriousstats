@@ -111,5 +111,3 @@ abstract class base
 		$this->$var = $value;
 	}
 }
-
-?>
