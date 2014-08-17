@@ -920,7 +920,7 @@ final class html extends base
 				if ($l_total[$date] >= 999500) {
 					$total = number_format($l_total[$date] / 1000000, 1).'M';
 				} elseif ($l_total[$date] >= 10000) {
-					$total = round($l_total[$date] / 1000).'K';
+					$total = round($l_total[$date] / 1000).'k';
 				} else {
 					$total = $l_total[$date];
 				}
