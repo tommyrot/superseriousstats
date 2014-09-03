@@ -118,10 +118,10 @@ final class user
 		 * will be returned in said case.
 		 */
 		if (preg_match('/^\S+\.(bmp|gif|jpe?g|png)(,\S+\.(bmp|gif|jpe?g|png))*$/i', $this->userpics_default)) {
-			$this->userpics_default = explode(',', $this->userpics_default);
-			$userpics_default = '<img src="'.htmlspecialchars(rtrim($this->userpics_dir, '/').'/'.$this->userpics_default[mt_rand(0, count($this->userpics_default) - 1)]).'" alt="" class="userpic">';
+			$userpics_default = explode(',', $this->userpics_default);
+			$userpic = '<img src="'.htmlspecialchars(rtrim($this->userpics_dir, '/').'/'.$userpics_default[mt_rand(0, count($userpics_default) - 1)]).'" alt="" class="userpic">';
 		} else {
-			$userpics_default = null;
+			$userpic = null;
 		}
 
 		/**
@@ -142,7 +142,7 @@ final class user
 		}
 
 		if (empty($files)) {
-			return $userpics_default;
+			return $userpic;
 		}
 
 		/**
@@ -163,7 +163,7 @@ final class user
 			}
 		}
 
-		return $userpics_default;
+		return $userpic;
 	}
 
 	/**
