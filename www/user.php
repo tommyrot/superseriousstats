@@ -113,8 +113,8 @@ final class user
 	private function get_userpic($sqlite3)
 	{
 		/**
-		 * If a default image (or comma separated list thereof) is provided in the configuration file it (or a 
-		 * randomly selected one) will be returned if no specific image is found for the user. If omitted, null 
+		 * If a default image (or comma separated list thereof) is provided in the configuration file it (or a
+		 * randomly selected one) will be returned if no specific image is found for the user. If omitted, null
 		 * will be returned in said case.
 		 */
 		if (preg_match('/^\S+\.(bmp|gif|jpe?g|png)(,\S+\.(bmp|gif|jpe?g|png))*$/i', $this->userpics_default)) {

@@ -1209,7 +1209,17 @@ final class html extends base
 	{
 		$current_column = 1;
 		$current_row = 0;
-		$query = $sqlite3->query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$rankings = false;
+
+		/**
+		 * Don't try to calculate changes in rankings if we're dealing with the first month of activity.
+		 */
+		if (date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
+			$query = $sqlite3->query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		} else {
+			$query = $sqlite3->query('SELECT csnick, l_total, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 1, 1, $this->datetime['year'])).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$rankings = true;
+		}
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$current_row++;
@@ -1219,7 +1229,17 @@ final class html extends base
 				$current_row = 1;
 			}
 
-			$columns[$current_column][$current_row] = [$result['csnick'], $result['l_total']];
+			$i = $this->maxrows_people_alltime + ($current_column > 1 ? ($current_column - 1) * $this->maxrows_people2 : 0) + $current_row;
+
+			if ($rankings && (is_null($result['prevrank']) || $i < $result['prevrank'])) {
+				$pos = '<span class="green">'.$i.'</span>';
+			} elseif ($rankings && $i > $result['prevrank']) {
+				$pos = '<span class="red">'.$i.'</span>';
+			} else {
+				$pos = $i;
+			}
+
+			$columns[$current_column][$current_row] = [$pos, $result['csnick'], $result['l_total']];
 		}
 
 		if ($current_column < 4 || $current_row < $this->maxrows_people2) {
@@ -1240,7 +1260,7 @@ final class html extends base
 			$trx .= '<tr>';
 
 			for ($j = 1; $j <= 4; $j++) {
-				$trx .= '<td class="v1">'.number_format($columns[$j][$i][1]).'<td class="pos">'.($this->maxrows_people_alltime + ($j > 1 ? ($j - 1) * $this->maxrows_people2 : 0) + $i).'<td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i][0]).'">'.htmlspecialchars($columns[$j][$i][0]).'</a>' : htmlspecialchars($columns[$j][$i][0]));
+				$trx .= '<td class="v1">'.number_format($columns[$j][$i][2]).'<td class="pos">'.$columns[$j][$i][0].'<td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i][1]).'">'.htmlspecialchars($columns[$j][$i][1]).'</a>' : htmlspecialchars($columns[$j][$i][1]));
 			}
 		}
 
