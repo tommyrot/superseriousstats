@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2010-2014, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2015, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -481,7 +481,7 @@ final class history
  * The channel ID must be set, cannot be empty and cannot be of excessive length.
  */
 if (empty($_GET['cid']) || !preg_match('/^\S{1,32}$/', $_GET['cid'])) {
-	exit;
+	exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">Invalid channel ID.</div></div></body></html>'."\n");
 }
 
 $cid = $_GET['cid'];
