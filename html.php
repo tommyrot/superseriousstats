@@ -40,6 +40,7 @@ final class html extends base
 	private $minrows = 3;
 	private $recenturls_type = 1;
 	private $rows_domains_tlds = 10;
+	private $search_user = false;
 	private $sectionbits = 255;
 	private $settings_list = [
 		'addhtml_foot' => 'string',
@@ -58,6 +59,7 @@ final class html extends base
 		'outputbits' => 'int',
 		'recenturls_type' => 'int',
 		'rows_domains_tlds' => 'int',
+		'search_user' => 'bool',
 		'sectionbits' => 'int',
 		'stylesheet' => 'string',
 		'userstats' => 'bool'];
@@ -223,7 +225,7 @@ final class html extends base
 			. '</style>'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
-			. '<div class="info">'.htmlspecialchars($this->channel).', seriously.<br><br>'
+			. '<div class="info">'.($this->search_user ? '<form action="user.php"><input type="hidden" name="cid" value="'.urlencode($this->cid).'"><input type="text" name="nick" placeholder="Search User.."></form>' : '').htmlspecialchars($this->channel).', seriously.<br><br>'
 			. number_format($dayslogged).' day'.($dayslogged > 1 ? 's logged from '.date('M j, Y', strtotime($date_first)).' to '.date('M j, Y', strtotime($date_last)) : ' logged on '.date('M j, Y', strtotime($date_first))).'.<br><br>'
 			. 'Logs contain '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.'.($this->addhtml_head !== '' ? '<br><br>'.trim(file_get_contents($this->addhtml_head)) : '').'</div>'."\n";

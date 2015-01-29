@@ -31,6 +31,9 @@ body {
 	text-align:center;
 	width:416px;
 }
+form {
+	float:right;
+}
 .green {
 	color:#70A35E;
 }
@@ -48,6 +51,17 @@ body {
 	font-size:12px;
 	font-weight:bold;
 	margin:15px 22px 7px 0;
+}
+input {
+	background-color:#F9F9F9;
+	border:1px solid #E0E0E0;
+	color:#333;
+	font-family:verdana,sans-serif;
+	font-size:10px;
+	font-style:italic;
+	margin-left:3px;
+	padding:1px;
+	width:120px;
 }
 .ralign {
 	float:right;
