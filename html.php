@@ -1154,7 +1154,7 @@ final class html extends base
 		$i = 0;
 		$times = ['night', 'morning', 'afternoon', 'evening'];
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
-		$tr1 = '<tr><th colspan="7">'.($this->history ? '<span class="title">'.$head.'</span><span class="ralign">'.$historylink.'</span>' : $head);
+		$tr1 = '<tr><th colspan="7">'.($this->history ? '<span class="title">'.$head.'</span><span class="title-right">'.$historylink.'</span>' : $head);
 		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">When?<td class="k5">Last Seen<td class="k6">Quote';
 		$trx = '';
 
@@ -1254,7 +1254,7 @@ final class html extends base
 
 		$total -= $this->maxrows_people_alltime + ($this->maxrows_people2 * 4);
 		$tr0 = '<colgroup><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2">';
-		$tr1 = '<tr><th colspan="12">'.($total !== 0 ? '<span class="title">Less Talkative People &ndash; All-Time</span><span class="ralign">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; All-Time');
+		$tr1 = '<tr><th colspan="12">'.($total !== 0 ? '<span class="title">Less Talkative People &ndash; All-Time</span><span class="title-right">'.number_format($total).' People had even less to say..</span>' : 'Less Talkative People &ndash; All-Time');
 		$tr2 = '<tr><td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User';
 		$trx = '';
 
@@ -1406,12 +1406,12 @@ final class table extends base
 		 */
 		if ($class === 'small') {
 			$tr0 = '<colgroup><col class="c1"><col class="pos"><col class="c2">';
-			$tr1 = '<tr><th colspan="3">'.(!empty($this->total) ? '<span class="title">'.$this->head.'</span><span class="ralign">'.number_format($this->total).' Total</span>' : $this->head);
+			$tr1 = '<tr><th colspan="3">'.(!empty($this->total) ? '<span class="title">'.$this->head.'</span><span class="title-right">'.number_format($this->total).' Total</span>' : $this->head);
 			$tr2 = '<tr><td class="k1">'.$this->keys['k1'].'<td class="pos"><td class="k2">'.$this->keys['k2'];
 			$trx = '';
 		} else {
 			$tr0 = '<colgroup><col class="c1"><col class="pos"><col class="c2"><col class="c3">';
-			$tr1 = '<tr><th colspan="4">'.(!empty($this->total) ? '<span class="title">'.$this->head.'</span><span class="ralign">'.number_format($this->total).' Total</span>' : $this->head);
+			$tr1 = '<tr><th colspan="4">'.(!empty($this->total) ? '<span class="title">'.$this->head.'</span><span class="title-right">'.number_format($this->total).' Total</span>' : $this->head);
 			$tr2 = '<tr><td class="k1">'.$this->keys['k1'].'<td class="pos"><td class="k2">'.$this->keys['k2'].'<td class="k3">'.$this->keys['k3'];
 			$trx = '';
 		}

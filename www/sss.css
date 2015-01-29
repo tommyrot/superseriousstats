@@ -63,16 +63,10 @@ input {
 	padding:1px;
 	width:120px;
 }
-.ralign {
-	float:right;
-	font-style:italic;
-	font-weight:normal;
-}
 .red {
 	color:#C74243;
 }
 .section {
-	background-color:#F9F9F9;
 	border:1px solid #E0E0E0;
 	padding:1px 0;
 	text-align:center;
@@ -80,6 +74,11 @@ input {
 }
 .title {
 	float:left;
+}
+.title-right {
+	float:right;
+	font-style:italic;
+	font-weight:normal;
 }
 .userpic {
 	float:right;
