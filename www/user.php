@@ -700,7 +700,7 @@ final class user
  * The channel ID must be set, cannot be empty and cannot be of excessive length.
  */
 if (empty($_GET['cid']) || !preg_match('/^\S{1,32}$/', $_GET['cid'])) {
-	exit;
+	exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">Invalid channel ID.</div></div></body></html>'."\n");
 }
 
 $cid = $_GET['cid'];
@@ -709,7 +709,7 @@ $cid = $_GET['cid'];
  * Exit if the nick is not set or has an erroneous value.
  */
 if (empty($_GET['nick']) || !preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $_GET['nick'])) {
-	exit;
+	exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">Erroneous Nickname</div></div></body></html>'."\n");
 }
 
 $nick = $_GET['nick'];
