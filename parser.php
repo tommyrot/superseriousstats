@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2014, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -270,7 +270,7 @@ abstract class parser extends base
 		 *    space) with a single space.
 		 * 3. Remove whitespace characters at the beginning and end of a line.
 		 */
-		$line = preg_replace(['/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'], ['', ' ', ''], $line);
+		$line = preg_replace(['/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/S', '/([\x09\x20]|\xC2\xA0)+/S', '/^\x20|\x20$/'], ['', ' ', ''], $line);
 		return $line;
 	}
 
@@ -591,7 +591,7 @@ abstract class parser extends base
 		 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than
 		 * 50% non-letter characters from the Basic Latin and Latin-1 Supplement character sets in them.
 		 */
-		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', '', $line), 'UTF-8') * 2 > $line_length) {
+		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/S', '', $line), 'UTF-8') * 2 > $line_length) {
 			$this->nicks_objs[$nick]->add_value('uppercased', 1);
 
 			if (!$skipquote && $line_length <= 255) {
