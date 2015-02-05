@@ -21,16 +21,16 @@
  *
  * Line         Format                                                  Notes
  * ---------------------------------------------------------------------------------------------------------------------
- * | Normal     NICK: MSG                                               Skip empty lines.
- * | Nickchange NICK is now known as NICK
- * | Join       NICK has joined (HOST)
- * | Part       NICK has left (MSG)                                     Part message may be empty due to normalization.
- * | Quit       NICK has left IRC (MSG)                                 Quit message may be empty due to normalization.
+ * Normal       NICK: MSG                                               Skip empty lines.
+ * Nickchange   NICK is now known as NICK
+ * Join         NICK has joined (HOST)
+ * Part         NICK has left (MSG)                                     Part message may be empty due to normalization.
+ * Quit         NICK has left IRC (MSG)                                 Quit message may be empty due to normalization.
  *                                                                      IRC is literal.
- * | Mode       NICK has changed mode: +o-v NICK NICK                   Only check for combinations of ops (+o) and
+ * Mode         NICK has changed mode: +o-v NICK NICK                   Only check for combinations of ops (+o) and
  *                                                                      voices (+v).
- * | Topic      NICK has set topic: MSG                                 Skip empty topics.
- * | Kick       NICK has kicked NICK (MSG)                              Kick message may be empty due to normalization.
+ * Topic        NICK has set topic: MSG                                 Skip empty topics.
+ * Kick         NICK has kicked NICK (MSG)                              Kick message may be empty due to normalization.
  * ---------------------------------------------------------------------------------------------------------------------
  *
  * Notes:
