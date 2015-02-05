@@ -24,7 +24,7 @@ class output
 	/**
 	 * By default all but debug messages will be displayed. This can be changed in the configuration file.
 	 */
-	public static $outputbits = 3;
+	private static $outputbits = 3;
 
 	private function __construct()
 	{
@@ -46,23 +46,31 @@ class output
 
 		switch ($type) {
 			case 'critical':
-				if (self::outputbits & 1) {
+				if (self::$outputbits & 1) {
 					echo $datetime.' [C] '.$msg."\n";
 				}
 
 				exit;
 			case 'notice':
-				if (self::outputbits & 2) {
+				if (self::$outputbits & 2) {
 					echo $datetime.' [ ] '.$msg."\n";
 				}
 
 				break;
 			case 'debug':
-				if (self::outputbits & 4) {
+				if (self::$outputbits & 4) {
 					echo $datetime.' [D] '.$msg."\n";
 				}
 
 				break;
 		}
+	}
+
+	/**
+	 * Used to set the amount of bits corresponding to the level of output messages displayed.
+	 */
+	public static function set_outputbits($outputbits)
+	{
+		self::$outputbits = $outputbits;
 	}
 }
