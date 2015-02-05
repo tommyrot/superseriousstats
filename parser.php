@@ -749,30 +749,3 @@ abstract class parser extends base
 		return true;
 	}
 }
-
-/**
- * Class for handling word data.
- */
-final class word extends base
-{
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $word = '';
-	protected $length = 0;
-	protected $total = 0;
-
-	public function __construct($word)
-	{
-		$this->word = $word;
-	}
-
-	public function write_data($sqlite3)
-	{
-		/**
-		 * Write data to database table "words".
-		 */
-		$sqlite3->exec('INSERT OR IGNORE INTO words (word, length, total) VALUES (\''.$sqlite3->escapeString($this->word).'\', '.$this->length.', '.$this->total.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$sqlite3->exec('UPDATE words SET total = total + '.$this->total.' WHERE CHANGES() = 0 AND word = \''.$sqlite3->escapeString($this->word).'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-	}
-}

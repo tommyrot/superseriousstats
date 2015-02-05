@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2014, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -345,106 +345,6 @@ final class nick extends base
 		 */
 		foreach ($this->urls_objs as $url) {
 			$url->write_data($sqlite3, $uid);
-		}
-	}
-}
-
-/**
- * Class for handling URL data.
- */
-final class url extends base
-{
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $datetime = [];
-	private $fqdn = '';
-	private $tld = '';
-	private $url = '';
-
-	public function __construct($urldata)
-	{
-		$this->fqdn = $urldata['fqdn'];
-		$this->tld = $urldata['tld'];
-		$this->url = $urldata['url'];
-	}
-
-	public function add_datetime($datetime)
-	{
-		$this->datetime[] = $datetime;
-	}
-
-	public function write_data($sqlite3, $uid)
-	{
-		/**
-		 * Write data to database table "fqdns".
-		 */
-		if ($this->fqdn !== '') {
-			if (($fid = $sqlite3->querySingle('SELECT fid FROM fqdns WHERE fqdn = \''.$this->fqdn.'\'')) === false) {
-				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-
-			if (is_null($fid)) {
-				$sqlite3->exec('INSERT INTO fqdns (fid, fqdn, tld) VALUES (NULL, \''.$this->fqdn.'\', \''.$this->tld.'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				$fid = $sqlite3->lastInsertRowID();
-			}
-		}
-
-		/**
-		 * Write data to database tables "urls" and "uid_urls".
-		 */
-		if (($lid = $sqlite3->querySingle('SELECT lid FROM urls WHERE url = \''.$sqlite3->escapeString($this->url).'\'')) === false) {
-			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		if (is_null($lid)) {
-			$sqlite3->exec('INSERT INTO urls (lid, url'.($this->fqdn !== '' ? ', fid' : '').') VALUES (NULL, \''.$sqlite3->escapeString($this->url).'\''.($this->fqdn !== '' ? ', '.$fid : '').')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$lid = $sqlite3->lastInsertRowID();
-		}
-
-		foreach ($this->datetime as $datetime) {
-			$sqlite3->exec('INSERT INTO uid_urls (uid, lid, datetime) VALUES ('.$uid.', '.$lid.', DATETIME(\''.$datetime.'\'))') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-	}
-}
-
-/**
- * Class for handling topic data.
- */
-final class topic extends base
-{
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $datetime = [];
-	private $topic = '';
-
-	public function __construct($topic)
-	{
-		$this->topic = $topic;
-	}
-
-	public function add_datetime($datetime)
-	{
-		$this->datetime[] = $datetime;
-	}
-
-	/**
-	 * Write data to database tables "topics" and "uid_topics".
-	 */
-	public function write_data($sqlite3, $uid)
-	{
-		if (($tid = $sqlite3->querySingle('SELECT tid FROM topics WHERE topic = \''.$sqlite3->escapeString($this->topic).'\'')) === false) {
-			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		if (is_null($tid)) {
-			$sqlite3->exec('INSERT INTO topics (tid, topic) VALUES (NULL, \''.$sqlite3->escapeString($this->topic).'\')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$tid = $sqlite3->lastInsertRowID();
-		}
-
-		foreach ($this->datetime as $datetime) {
-			$sqlite3->exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ('.$uid.', '.$tid.', DATETIME(\''.$datetime.'\'))') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 }
