@@ -82,7 +82,7 @@ final class table extends base
 		 */
 		if (!empty($this->queries['total'])) {
 			if (($this->total = $sqlite3->querySingle($this->queries['total'])) === false) {
-				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 
@@ -105,7 +105,7 @@ final class table extends base
 		 * Run the "main" query and structure the table contents.
 		 */
 		$i = 0;
-		$query = $sqlite3->query($this->queries['main']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query($this->queries['main']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$i++;
