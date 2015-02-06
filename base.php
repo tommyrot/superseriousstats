@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2010-2014, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2015, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,12 +21,6 @@
  */
 abstract class base
 {
-	/**
-	 * Default settings for this script, which can be overridden in the configuration file. These variables should
-	 * all appear in $settings_list[] along with their type.
-	 */
-	protected $outputbits = 3;
-
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
@@ -63,47 +57,6 @@ abstract class base
 	final public function get_value($var)
 	{
 		return $this->$var;
-	}
-
-	/**
-	 * Output given messages to the console.
-	 */
-	final protected function output($type, $msg)
-	{
-		/**
-		 * Don't output the same thing twice, like mode errors and repeated lines.
-		 */
-		if (in_array($msg, $this->prevoutput)) {
-			return null;
-		}
-
-		$datetime = date('M d H:i:s');
-		$this->prevoutput[] = $msg;
-
-		if (substr($datetime, 4, 1) === '0') {
-			$datetime = substr_replace($datetime, ' ', 4, 1);
-		}
-
-		switch ($type) {
-			case 'critical':
-				if ($this->outputbits & 1) {
-					echo $datetime.' [C] '.$msg."\n";
-				}
-
-				exit;
-			case 'notice':
-				if ($this->outputbits & 2) {
-					echo $datetime.' [ ] '.$msg."\n";
-				}
-
-				break;
-			case 'debug':
-				if ($this->outputbits & 4) {
-					echo $datetime.' [D] '.$msg."\n";
-				}
-
-				break;
-		}
 	}
 
 	final public function set_value($var, $value)
