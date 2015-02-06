@@ -26,14 +26,14 @@ class table
 	private $maxrows = 0;
 	private $minrows = 0;
 	private $urltools;
-	protected $cid = '';
-	protected $decimals = 1;
-	protected $keys = [];
-	protected $medium = false;
-	protected $percentage = false;
-	protected $queries = [];
-	protected $total = 0;
-	protected $v3a = false;
+	private $cid = '';
+	private $decimals = 1;
+	private $keys = [];
+	private $medium = false;
+	private $percentage = false;
+	private $queries = [];
+	private $total = 0;
+	private $v3a = false;
 
 	public function __construct($head, $minrows, $maxrows)
 	{
