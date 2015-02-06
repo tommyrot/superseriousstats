@@ -25,9 +25,7 @@ abstract class parser extends base
 	 * Default settings for this script, which can be overridden in the configuration file. These variables should
 	 * all appear in $settings_list[] along with their type.
 	 */
-	private $settings_list = [
-		'outputbits' => 'int',
-		'wordtracking' => 'bool'];
+	private $settings_list = ['wordtracking' => 'bool'];
 	private $wordtracking = true;
 
 	/**
@@ -207,10 +205,10 @@ abstract class parser extends base
 	final public function gzparse_log($logfile, $firstline)
 	{
 		if (($zp = gzopen($logfile, 'rb')) === false) {
-			$this->output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
+			output::output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
 		}
 
-		$this->output('notice', 'gzparse_log(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
+		output::output('notice', 'gzparse_log(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
 
 		while (!gzeof($zp)) {
 			$line = gzgets($zp);
@@ -280,10 +278,10 @@ abstract class parser extends base
 	final public function parse_log($logfile, $firstline)
 	{
 		if (($fp = fopen($logfile, 'rb')) === false) {
-			$this->output('critical', 'parse_log(): failed to open file: \''.$logfile.'\'');
+			output::output('critical', 'parse_log(): failed to open file: \''.$logfile.'\'');
 		}
 
-		$this->output('notice', 'parse_log(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
+		output::output('notice', 'parse_log(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
 
 		while (!feof($fp)) {
 			$line = fgets($fp);
@@ -347,7 +345,7 @@ abstract class parser extends base
 	final protected function set_action($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('debug', 'set_action(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', 'set_action(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -366,7 +364,7 @@ abstract class parser extends base
 	final protected function set_join($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('debug', 'set_join(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', 'set_join(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -377,10 +375,10 @@ abstract class parser extends base
 	final protected function set_kick($datetime, $csnick_performing, $csnick_undergoing, $line)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			$this->output('debug', 'set_kick(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			output::output('debug', 'set_kick(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return null;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			$this->output('debug', 'set_kick(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', 'set_kick(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -402,10 +400,10 @@ abstract class parser extends base
 	final protected function set_mode($datetime, $csnick_performing, $csnick_undergoing, $mode)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			$this->output('debug', 'set_mode(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			output::output('debug', 'set_mode(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return null;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			$this->output('debug', 'set_mode(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', 'set_mode(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -435,10 +433,10 @@ abstract class parser extends base
 	final protected function set_nickchange($datetime, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			$this->output('debug', 'set_nickchange(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			output::output('debug', 'set_nickchange(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return null;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			$this->output('debug', 'set_nickchange(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', 'set_nickchange(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -450,7 +448,7 @@ abstract class parser extends base
 	final protected function set_normal($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('debug', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -556,7 +554,7 @@ abstract class parser extends base
 						$this->nicks_objs[$nick]->add_value('urls', 1);
 					}
 				} else {
-					$this->output('debug', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
+					output::output('debug', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
 				}
 
 			/**
@@ -617,7 +615,7 @@ abstract class parser extends base
 	final protected function set_part($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('debug', 'set_part(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', 'set_part(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -628,7 +626,7 @@ abstract class parser extends base
 	final protected function set_quit($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('debug', 'set_quit(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', 'set_quit(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -639,7 +637,7 @@ abstract class parser extends base
 	final protected function set_slap($datetime, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			$this->output('debug', 'set_slap(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			output::output('debug', 'set_slap(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -654,12 +652,12 @@ abstract class parser extends base
 		 * Clean possible network prefix (psyBNC) from the "undergoing" nick.
 		 */
 		if (preg_match('/^.*?[~\'](?<nick>.+)$/', $csnick_undergoing, $matches)) {
-			$this->output('debug', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			$csnick_undergoing = $matches['nick'];
 		}
 
 		if (!$this->validate_nick($csnick_undergoing)) {
-			$this->output('debug', 'set_slap(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', 'set_slap(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -674,7 +672,7 @@ abstract class parser extends base
 	final protected function set_topic($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
-			$this->output('debug', 'set_topic(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', 'set_topic(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -711,16 +709,16 @@ abstract class parser extends base
 			return false;
 		}
 
-		$this->output('notice', 'write_data(): writing data to database');
-		$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		output::output('notice', 'write_data(): writing data to database');
+		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		/**
 		 * Write channel totals to database.
 		 */
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts($sqlite3, ['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
-			$sqlite3->exec('INSERT OR IGNORE INTO channel_activity (date, '.implode(', ', $queryparts['columnlist']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('UPDATE channel_activity SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND date = \''.$this->date.'\'') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT OR IGNORE INTO channel_activity (date, '.implode(', ', $queryparts['columnlist']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('UPDATE channel_activity SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND date = \''.$this->date.'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
@@ -741,11 +739,11 @@ abstract class parser extends base
 		 * Write streak data (history) to database.
 		 */
 		if ($this->l_total !== 0) {
-			$sqlite3->exec('DELETE FROM streak_history') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('INSERT INTO streak_history (prevnick, streak) VALUES (\''.$sqlite3->escapeString($this->prevnick).'\', '.$this->streak.')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('DELETE FROM streak_history') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO streak_history (prevnick, streak) VALUES (\''.$sqlite3->escapeString($this->prevnick).'\', '.$this->streak.')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		return true;
 	}
 }
