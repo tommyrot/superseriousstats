@@ -24,7 +24,7 @@ class output
 	/**
 	 * By default all but debug messages will be displayed. This can be changed in the configuration file.
 	 */
-	private static $outputbits = 2;
+	private static $outputbits = 1;
 
 	private function __construct()
 	{

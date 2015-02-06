@@ -49,7 +49,7 @@ class sss
 	private $autolinknicks = true;
 	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
-	private $outputbits = 2;
+	private $outputbits = 1;
 	private $parser = '';
 	private $settings_list = [
 		'autolinknicks' => 'bool',
