@@ -504,6 +504,9 @@ class sss
 		$needmaintenance = false;
 
 		foreach ($logfiles as $date => $logfile) {
+			/**
+			 * Skip logs that have already been processed.
+			 */
 			if (!is_null($date_lastlogparsed) && strtotime($date) < strtotime($date_lastlogparsed)) {
 				continue;
 			}
