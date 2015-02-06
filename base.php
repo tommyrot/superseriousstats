@@ -17,9 +17,9 @@
  */
 
 /**
- * Class with common functions.
+ * Trait with common functions.
  */
-abstract class base
+trait base
 {
 	final public function add_value($var, $value)
 	{
