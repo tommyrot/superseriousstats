@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009-2014, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2015, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -47,7 +47,7 @@
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use
  *   empty() to check whether an index item is both set and has a value.
  */
-final class parser_irssi extends parser
+class parser_irssi extends parser
 {
 	/**
 	 * Parse a line for various chat data.
@@ -128,7 +128,7 @@ final class parser_irssi extends parser
 		 * Skip everything else.
 		 */
 		} elseif ($line !== '') {
-			$this->output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
+			output::output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}
 }

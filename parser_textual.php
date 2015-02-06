@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2012-2014, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2012-2015, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -40,7 +40,7 @@
  * - Given that nicks can't contain ":" the order of the regular expressions below is irrelevant (current order aims for
  *   best performance).
  */
-final class parser_textual extends parser
+class parser_textual extends parser
 {
 	/**
 	 * Parse a line for various chat data.
@@ -111,7 +111,7 @@ final class parser_textual extends parser
 		 * Skip everything else.
 		 */
 		} elseif ($line !== '') {
-			$this->output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
+			output::output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}
 }

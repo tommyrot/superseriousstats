@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2012-2014, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2012-2015, Jos de Ruijter <jos@dutnie.nl>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,7 +32,7 @@
  *   best performance).
  * - Booooring...
  */
-final class parser_nodelog extends parser
+class parser_nodelog extends parser
 {
 	/**
 	 * Parse a line for various chat data.
@@ -61,7 +61,7 @@ final class parser_nodelog extends parser
 		 * Skip everything else.
 		 */
 		} elseif ($line !== '') {
-			$this->output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
+			output::output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}
 }
