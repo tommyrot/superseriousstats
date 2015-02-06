@@ -49,6 +49,7 @@ final class sss extends base
 	private $autolinknicks = true;
 	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
+	private $outputbits = 2;
 	private $parser = '';
 	private $settings_list = [
 		'autolinknicks' => 'bool',
@@ -74,9 +75,9 @@ final class sss extends base
 		setlocale(LC_ALL, 'C');
 
 		/**
-		 * Use UTC until the default, or user specified, timezone is loaded.
+		 * Use the default value until a user specified timezone is loaded.
 		 */
-		date_default_timezone_set('UTC');
+		date_default_timezone_set($this->timezone);
 
 		/**
 		 * Read options from the command line. Print the manual on invalid input.
@@ -108,6 +109,20 @@ final class sss extends base
 		} else {
 			$this->read_config(dirname(__FILE__).'/sss.conf');
 		}
+
+		/**
+		 * After the configuration file has been read we can update the used timezone and the level of console
+		 * output messages with user specified values.
+		 */
+		if (!date_default_timezone_set($this->timezone)) {
+			output::output('critical', 'sss(): invalid timezone: \''.$this->timezone.'\'');
+		}
+
+		/**
+		 * Prior to having the updated value of $outputbits take effect there were no message types other than
+		 * critical events, which cannot be suppressed.
+		 */
+		output::set_outputbits($this->outputbits);
 
 		/**
 		 * Export settings from the configuration file in the format vars.php accepts them.
@@ -616,10 +631,6 @@ final class sss extends base
 					$this->$key = false;
 				}
 			}
-		}
-
-		if (!date_default_timezone_set($this->timezone)) {
-			output::output('critical', 'read_config(): invalid timezone: \''.$this->timezone.'\'');
 		}
 	}
 }
