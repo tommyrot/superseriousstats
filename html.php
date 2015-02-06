@@ -19,7 +19,7 @@
 /**
  * Class for creating the main stats page.
  */
-final class html extends base
+class html
 {
 	/**
 	 * Default settings for this script, which can be overridden in the configuration file. These variables should
@@ -56,7 +56,6 @@ final class html extends base
 		'maxrows_people_year' => 'int',
 		'maxrows_recenturls' => 'int',
 		'minrows' => 'int',
-		'outputbits' => 'int',
 		'recenturls_type' => 'int',
 		'rows_domains_tlds' => 'int',
 		'search_user' => 'bool',
