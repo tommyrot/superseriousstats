@@ -21,11 +21,6 @@
  */
 abstract class base
 {
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $prevoutput = [];
-
 	final public function add_value($var, $value)
 	{
 		$this->$var += $value;
