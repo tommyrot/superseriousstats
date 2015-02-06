@@ -40,7 +40,7 @@ spl_autoload_register(function ($class) {
 /**
  * Class for controlling all main features of the program.
  */
-final class sss extends base
+class sss
 {
 	/**
 	 * Default settings for this script, which can be overridden in the configuration file. These variables should
