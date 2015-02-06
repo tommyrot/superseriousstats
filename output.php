@@ -36,7 +36,7 @@ class output
 	/**
 	 * Output given messages to the console.
 	 */
-	public static function output($type, $msg)
+	public static function output($type, $message)
 	{
 		$datetime = date('n d H:i:s');
 
@@ -47,19 +47,22 @@ class output
 		switch ($type) {
 			case 'critical':
 				if (self::$outputbits & 1) {
-					echo $datetime.' [C] '.$msg."\n";
+					echo $datetime.' [C] '.$message."\n";
 				}
 
+				/**
+				 * This type of message is followed up by the termination of the program.
+				 */
 				exit;
 			case 'notice':
 				if (self::$outputbits & 2) {
-					echo $datetime.' [ ] '.$msg."\n";
+					echo $datetime.' [ ] '.$message."\n";
 				}
 
 				break;
 			case 'debug':
 				if (self::$outputbits & 4) {
-					echo $datetime.' [D] '.$msg."\n";
+					echo $datetime.' [D] '.$message."\n";
 				}
 
 				break;
