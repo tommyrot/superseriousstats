@@ -19,8 +19,10 @@
 /**
  * General parse instructions. This class will be extended by a class with logfile format specific parse instructions.
  */
-abstract class parser extends base
+class parser
 {
+	use base;
+
 	/**
 	 * Default settings for this script, which can be overridden in the configuration file. These variables should
 	 * all appear in $settings_list[] along with their type.

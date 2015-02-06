@@ -19,8 +19,10 @@
  /**
  * Class for handling topic data.
  */
-final class topic extends base
+class topic
 {
+	use base;
+
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */

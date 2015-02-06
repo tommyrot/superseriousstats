@@ -19,8 +19,10 @@
 /**
  * Class for handling user data.
  */
-final class nick extends base
+class nick
 {
+	use base;
+
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */

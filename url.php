@@ -19,8 +19,10 @@
 /**
  * Class for handling URL data.
  */
-final class url extends base
+class url
 {
+	use base;
+
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */

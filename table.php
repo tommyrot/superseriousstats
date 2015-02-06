@@ -19,8 +19,9 @@
 /**
  * Class for creating small, medium and large generic tables.
  */
-final class table extends base
+class table
 {
+	use base;
 	private $head = '';
 	private $maxrows = 0;
 	private $minrows = 0;

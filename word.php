@@ -19,8 +19,10 @@
 /**
  * Class for handling word data.
  */
-final class word extends base
+class word
 {
+	use base;
+
 	/**
 	 * Variables that shouldn't be tampered with.
 	 */
