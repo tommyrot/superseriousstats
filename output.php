@@ -46,13 +46,11 @@ class output
 
 		switch ($type) {
 			case 'critical':
-				if (self::$outputbits & 1) {
-					echo $datetime.' [C] '.$message."\n";
-				}
-
 				/**
-				 * This type of message is followed up by the termination of the program.
+				 * This type of message will always display and is followed up by the termination of the
+				 * program.
 				 */
+				echo $datetime.' [C] '.$message."\n";
 				exit;
 			case 'notice':
 				if (self::$outputbits & 2) {
@@ -70,7 +68,7 @@ class output
 	}
 
 	/**
-	 * Used to set the amount of bits corresponding to the type of output messages displayed. 0 disables output.
+	 * Used to set the amount of bits corresponding to the type of output messages displayed.
 	 *  1  Critical events
 	 *  2  Notices
 	 *  3  Debug messages
