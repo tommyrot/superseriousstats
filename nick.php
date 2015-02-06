@@ -225,6 +225,29 @@ final class nick extends base
 		$this->urls_objs[$url]->add_datetime($datetime);
 	}
 
+	/**
+	 * Create parts of the SQLite3 query.
+	 */
+	final protected function get_queryparts($sqlite3, $columns)
+	{
+		$queryparts = [];
+
+		foreach ($columns as $key) {
+			if (is_int($this->$key) && $this->$key !== 0) {
+				$queryparts['columnlist'][] = $key;
+				$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
+				$queryparts['values'][] = $this->$key;
+			} elseif (is_string($this->$key) && $this->$key !== '') {
+				$value = '\''.$sqlite3->escapeString($this->$key).'\'';
+				$queryparts['columnlist'][] = $key;
+				$queryparts['update-assignments'][] = $key.' = '.$value;
+				$queryparts['values'][] = $value;
+			}
+		}
+
+		return $queryparts;
+	}
+
 	public function write_data($sqlite3)
 	{
 		/**
