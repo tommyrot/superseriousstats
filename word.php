@@ -27,8 +27,8 @@ class word
 	 * Variables that shouldn't be tampered with.
 	 */
 	private $word = '';
-	protected $length = 0;
-	protected $total = 0;
+	private $length = 0;
+	private $total = 0;
 
 	public function __construct($word)
 	{
