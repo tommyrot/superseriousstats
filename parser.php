@@ -90,43 +90,43 @@ class parser
 		';o' => 's_50'];
 	private $urltools;
 	private $words_objs = [];
-	protected $date = '';
-	protected $l_00 = 0;
-	protected $l_01 = 0;
-	protected $l_02 = 0;
-	protected $l_03 = 0;
-	protected $l_04 = 0;
-	protected $l_05 = 0;
-	protected $l_06 = 0;
-	protected $l_07 = 0;
-	protected $l_08 = 0;
-	protected $l_09 = 0;
-	protected $l_10 = 0;
-	protected $l_11 = 0;
-	protected $l_12 = 0;
-	protected $l_13 = 0;
-	protected $l_14 = 0;
-	protected $l_15 = 0;
-	protected $l_16 = 0;
-	protected $l_17 = 0;
-	protected $l_18 = 0;
-	protected $l_19 = 0;
-	protected $l_20 = 0;
-	protected $l_21 = 0;
-	protected $l_22 = 0;
-	protected $l_23 = 0;
-	protected $l_afternoon = 0;
-	protected $l_evening = 0;
-	protected $l_morning = 0;
-	protected $l_night = 0;
-	protected $l_total = 0;
+	private $date = '';
+	private $l_00 = 0;
+	private $l_01 = 0;
+	private $l_02 = 0;
+	private $l_03 = 0;
+	private $l_04 = 0;
+	private $l_05 = 0;
+	private $l_06 = 0;
+	private $l_07 = 0;
+	private $l_08 = 0;
+	private $l_09 = 0;
+	private $l_10 = 0;
+	private $l_11 = 0;
+	private $l_12 = 0;
+	private $l_13 = 0;
+	private $l_14 = 0;
+	private $l_15 = 0;
+	private $l_16 = 0;
+	private $l_17 = 0;
+	private $l_18 = 0;
+	private $l_19 = 0;
+	private $l_20 = 0;
+	private $l_21 = 0;
+	private $l_22 = 0;
+	private $l_23 = 0;
+	private $l_afternoon = 0;
+	private $l_evening = 0;
+	private $l_morning = 0;
+	private $l_night = 0;
+	private $l_total = 0;
 	protected $linenum = 0;
-	protected $linenum_lastnonempty = 0;
-	protected $prevline = '';
-	protected $prevnick = '';
-	protected $streak = 0;
+	private $linenum_lastnonempty = 0;
+	private $prevline = '';
+	private $prevnick = '';
+	private $streak = 0;
 
-	final public function __construct($settings)
+	public function __construct($settings)
 	{
 		$this->urltools = new urltools();
 
@@ -156,7 +156,7 @@ class parser
 	 * Create an object of the nick if it doesn't already exist, otherwise update $csnick. Return the lowercase nick
 	 * for further referencing by the calling function.
 	 */
-	final private function add_nick($csnick, $datetime)
+	private function add_nick($csnick, $datetime)
 	{
 		$nick = strtolower($csnick);
 
@@ -181,7 +181,7 @@ class parser
 	/**
 	 * Words are stored in lower case. Handle UTF-8 conversion appropriately.
 	 */
-	final private function add_word($csword, $length)
+	private function add_word($csword, $length)
 	{
 		/**
 		 * The multibyte strtolower function is significantly slower than its single-byte counterpart. Only use
@@ -204,7 +204,7 @@ class parser
 	/**
 	 * Create parts of the SQLite3 query.
 	 */
-	final protected function get_queryparts($sqlite3, $columns)
+	private function get_queryparts($sqlite3, $columns)
 	{
 		$queryparts = [];
 
@@ -227,7 +227,7 @@ class parser
 	/**
 	 * Parser function for gzipped logs. This function requires the zlib extension.
 	 */
-	final public function gzparse_log($logfile, $firstline)
+	public function gzparse_log($logfile, $firstline)
 	{
 		if (($zp = gzopen($logfile, 'rb')) === false) {
 			output::output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
@@ -264,7 +264,7 @@ class parser
 	/**
 	 * Checks if a line is valid UTF-8 and convert all non-valid bytes into valid multibyte UTF-8.
 	 */
-	final private function normalize_line($line)
+	private function normalize_line($line)
 	{
 		if (!preg_match('/^'.$this->hex_validutf8.'+$/', $line)) {
 			$this->newline = '';
@@ -300,7 +300,7 @@ class parser
 	/**
 	 * Parser function for normal logs.
 	 */
-	final public function parse_log($logfile, $firstline)
+	public function parse_log($logfile, $firstline)
 	{
 		if (($fp = fopen($logfile, 'rb')) === false) {
 			output::output('critical', 'parse_log(): failed to open file: \''.$logfile.'\'');
@@ -337,7 +337,7 @@ class parser
 	/**
 	 * Build a new line consisting of valid UTF-8 from the characters passed along in $char.
 	 */
-	final private function rebuild_line($matches)
+	private function rebuild_line($matches)
 	{
 		/**
 		 * $char is passed along as the first element of the array $matches (see preg_replace_callback).
@@ -367,7 +367,7 @@ class parser
 		return '';
 	}
 
-	final protected function set_action($datetime, $csnick, $line)
+	protected function set_action($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_action(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -386,7 +386,7 @@ class parser
 		}
 	}
 
-	final protected function set_join($datetime, $csnick)
+	protected function set_join($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_join(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -397,7 +397,7 @@ class parser
 		$this->nicks_objs[$nick]->add_value('joins', 1);
 	}
 
-	final protected function set_kick($datetime, $csnick_performing, $csnick_undergoing, $line)
+	protected function set_kick($datetime, $csnick_performing, $csnick_undergoing, $line)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', 'set_kick(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -422,7 +422,7 @@ class parser
 		}
 	}
 
-	final protected function set_mode($datetime, $csnick_performing, $csnick_undergoing, $mode)
+	protected function set_mode($datetime, $csnick_performing, $csnick_undergoing, $mode)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', 'set_mode(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -455,7 +455,7 @@ class parser
 		}
 	}
 
-	final protected function set_nickchange($datetime, $csnick_performing, $csnick_undergoing)
+	protected function set_nickchange($datetime, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', 'set_nickchange(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -470,7 +470,7 @@ class parser
 		$this->nicks_objs[$nick_performing]->add_value('nickchanges', 1);
 	}
 
-	final protected function set_normal($datetime, $csnick, $line)
+	protected function set_normal($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -637,7 +637,7 @@ class parser
 		}
 	}
 
-	final protected function set_part($datetime, $csnick)
+	protected function set_part($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_part(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -648,7 +648,7 @@ class parser
 		$this->nicks_objs[$nick]->add_value('parts', 1);
 	}
 
-	final protected function set_quit($datetime, $csnick)
+	protected function set_quit($datetime, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_quit(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -659,7 +659,7 @@ class parser
 		$this->nicks_objs[$nick]->add_value('quits', 1);
 	}
 
-	final protected function set_slap($datetime, $csnick_performing, $csnick_undergoing)
+	protected function set_slap($datetime, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', 'set_slap(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -694,7 +694,7 @@ class parser
 		$this->nicks_objs[$nick_undergoing]->add_value('slapped', 1);
 	}
 
-	final protected function set_topic($datetime, $csnick, $line)
+	protected function set_topic($datetime, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_topic(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -716,7 +716,7 @@ class parser
 	/**
 	 * Check a nick on syntax and defined lengths. Again, the majority of IRC servers are within this limit.
 	 */
-	final private function validate_nick($csnick)
+	private function validate_nick($csnick)
 	{
 		if ($csnick !== '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $csnick)) {
 			return true;
@@ -725,7 +725,7 @@ class parser
 		}
 	}
 
-	final public function write_data($sqlite3)
+	public function write_data($sqlite3)
 	{
 		/**
 		 * If there are no nicks there is no data.
