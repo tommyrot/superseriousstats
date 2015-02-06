@@ -26,9 +26,7 @@ final class maintenance extends base
 	 * all appear in $settings_list[] along with their type.
 	 */
 	private $rankings = false;
-	private $settings_list = [
-		'outputbits' => 'int',
-		'rankings' => 'bool'];
+	private $settings_list = ['rankings' => 'bool'];
 
 	public function __construct($settings)
 	{
@@ -59,7 +57,7 @@ final class maintenance extends base
 	 */
 	private function calculate_milestones($sqlite3)
 	{
-		$query = $sqlite3->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
@@ -84,10 +82,10 @@ final class maintenance extends base
 		}
 
 		if (!empty($values)) {
-			$sqlite3->exec('DELETE FROM ruid_milestones') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('DELETE FROM ruid_milestones') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			foreach ($values as $value) {
-				$sqlite3->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES '.$value) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				$sqlite3->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES '.$value) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 	}
@@ -101,7 +99,7 @@ final class maintenance extends base
 		 * Create an array with all dates since first channel activity. This helps define the scope for ruids.
 		 */
 		if (($date_firstactivity = $sqlite3->querySingle('SELECT MIN(date) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
-			$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		if (is_null($date_firstactivity)) {
@@ -116,7 +114,7 @@ final class maintenance extends base
 		 * Retrieve and calculate the cumulative amount of days logged, by month.
 		 */
 		$dayslogged_by_month = array_fill_keys($scope, 0);
-		$query = $sqlite3->query('SELECT SUBSTR(date, 1, 7) AS date, COUNT(*) AS dayslogged FROM parse_history GROUP BY SUBSTR(date, 1, 7)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT SUBSTR(date, 1, 7) AS date, COUNT(*) AS dayslogged FROM parse_history GROUP BY SUBSTR(date, 1, 7)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$dayslogged_by_month[$result['date']] = $result['dayslogged'];
@@ -138,7 +136,7 @@ final class maintenance extends base
 		 * Retrieve all user activity.
 		 */
 		$channel_activity_by_month = array_fill_keys($scope, 0);
-		$query = $sqlite3->query('SELECT ruid, SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, COUNT(DISTINCT date) AS activedays, MAX(l_total) AS l_max FROM uid_activity JOIN uid_details ON uid_activity.uid = uid_details.uid WHERE ruid NOT IN (SELECT ruid FROM uid_details WHERE status IN (3,4)) GROUP BY ruid, SUBSTR(date, 1, 7)') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT ruid, SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, COUNT(DISTINCT date) AS activedays, MAX(l_total) AS l_max FROM uid_activity JOIN uid_details ON uid_activity.uid = uid_details.uid WHERE ruid NOT IN (SELECT ruid FROM uid_details WHERE status IN (3,4)) GROUP BY ruid, SUBSTR(date, 1, 7)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$ruid_activity_by_month = [];
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -191,7 +189,7 @@ final class maintenance extends base
 		 * Sort data and store on disk.
 		 */
 		array_multisort($sort_dates, SORT_ASC, $sort_l_total, SORT_DESC, $sort_ruids, SORT_ASC, $ruid_activity_by_month_cumulative);
-		$sqlite3->exec('DELETE FROM ruid_rankings') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('DELETE FROM ruid_rankings') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		foreach ($ruid_activity_by_month_cumulative as $key => $values) {
 			if (empty($prevdate) || $values['date'] !== $prevdate) {
@@ -199,15 +197,15 @@ final class maintenance extends base
 			}
 
 			$prevdate = $values['date'];
-			$sqlite3->exec('INSERT INTO ruid_rankings (ruid, date, rank, l_total, percentage, l_avg, activity, l_max) VALUES ('.$values['ruid'].', \''.$values['date'].'\', '.$rank.', '.$values['l_total'].', '.round(($values['l_total'] / $channel_activity_by_month_cumulative[$values['date']]) * 100, 2).', '.round($values['l_total'] / $values['activedays'], 1).', '.round(($values['activedays'] / $dayslogged_by_month_cumulative[$values['date']]) * 100, 2).', '.$values['l_max'].')') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO ruid_rankings (ruid, date, rank, l_total, percentage, l_avg, activity, l_max) VALUES ('.$values['ruid'].', \''.$values['date'].'\', '.$rank.', '.$values['l_total'].', '.round(($values['l_total'] / $channel_activity_by_month_cumulative[$values['date']]) * 100, 2).', '.round($values['l_total'] / $values['activedays'], 1).', '.round(($values['activedays'] / $dayslogged_by_month_cumulative[$values['date']]) * 100, 2).', '.$values['l_max'].')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$rank++;
 		}
 	}
 
 	public function do_maintenance($sqlite3)
 	{
-		$this->output('notice', 'do_maintenance(): performing database maintenance routines');
-		$sqlite3->exec('BEGIN TRANSACTION') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		output::output('notice', 'do_maintenance(): performing database maintenance routines');
+		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$this->register_most_active_alias($sqlite3);
 		$this->make_materialized_views($sqlite3);
 		$this->calculate_milestones($sqlite3);
@@ -216,8 +214,8 @@ final class maintenance extends base
 			$this->calculate_rankings($sqlite3);
 		}
 
-		$sqlite3->exec('COMMIT') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$sqlite3->exec('ANALYZE') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('ANALYZE') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 	}
 
 	/**
@@ -239,8 +237,8 @@ final class maintenance extends base
 			'v_ruid_lines' => 'ruid_lines'];
 
 		foreach ($views as $view => $table) {
-			$sqlite3->exec('DELETE FROM '.$table) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('INSERT INTO '.$table.' SELECT * FROM '.$view) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('DELETE FROM '.$table) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO '.$table.' SELECT * FROM '.$view) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 
@@ -249,7 +247,7 @@ final class maintenance extends base
 	 */
 	private function register_most_active_alias($sqlite3)
 	{
-		$query = $sqlite3->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS newruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND newruid IS NOT NULL AND ruid != newruid') or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$query = $sqlite3->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS newruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND newruid IS NOT NULL AND ruid != newruid') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
@@ -262,12 +260,12 @@ final class maintenance extends base
 			$registered = $result['csnick'];
 
 			if (($alias = $sqlite3->querySingle('SELECT csnick FROM uid_details WHERE uid = '.$result['newruid'])) === false) {
-				$this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			$sqlite3->exec('UPDATE uid_details SET ruid = '.$result['newruid'].', status = '.$result['status'].' WHERE uid = '.$result['newruid']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('UPDATE uid_details SET ruid = '.$result['newruid'].', status = 2 WHERE ruid = '.$result['ruid']) or $this->output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$this->output('debug', 'register_most_active_alias(): \''.$alias.'\' set to new registered for \''.$registered.'\'');
+			$sqlite3->exec('UPDATE uid_details SET ruid = '.$result['newruid'].', status = '.$result['status'].' WHERE uid = '.$result['newruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('UPDATE uid_details SET ruid = '.$result['newruid'].', status = 2 WHERE ruid = '.$result['ruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			output::output('debug', 'register_most_active_alias(): \''.$alias.'\' set to new registered for \''.$registered.'\'');
 		}
 	}
 }
