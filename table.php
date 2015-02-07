@@ -20,7 +20,6 @@ class table
 	private $percentage = false;
 	private $queries = [];
 	private $total = 0;
-	private $urltools;
 	private $v3a = false;
 
 	public function __construct($head, $minrows, $maxrows)
@@ -35,15 +34,11 @@ class table
 	 */
 	private function find_urls($string)
 	{
-		if (empty($this->urltools)) {
-			$urltools = new urltools();
-		}
-
 		$newstring = '';
 		$words = explode(' ', $string);
 
 		foreach ($words as $word) {
-			if (preg_match('/^(www\.|https?:\/\/)/i', $word) && ($urldata = $urltools->get_elements($word)) !== false) {
+			if (preg_match('/^(www\.|https?:\/\/)/i', $word) && ($urldata = urltools::get_elements($word)) !== false) {
 				$newstring .= '<a href="'.htmlspecialchars($urldata['url']).'">'.htmlspecialchars($urldata['url']).'</a> ';
 			} else {
 				$newstring .= htmlspecialchars($word).' ';
