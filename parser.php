@@ -103,7 +103,6 @@ class parser
 		'>:(' => 's_49',
 		';o' => 's_50'];
 	private $streak = 0;
-	private $urltools;
 	private $words_objs = [];
 	private $wordtracking = true;
 	protected $date = '';
@@ -111,8 +110,6 @@ class parser
 
 	public function __construct($settings)
 	{
-		$this->urltools = new urltools();
-
 		/**
 		 * If set, override variables listed in $settings_list[].
 		 */
@@ -553,7 +550,7 @@ class parser
 				 */
 				$skipquote = true;
 
-				if (($urldata = $this->urltools->get_elements($csword)) !== false) {
+				if (($urldata = urltools::get_elements($csword)) !== false) {
 					/**
 					 * Track URLs of up to a sensible limit of 1024 characters in length.
 					 */
