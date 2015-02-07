@@ -9,7 +9,6 @@
  */
 class url
 {
-	use base;
 	private $fqdn = '';
 	private $tld = '';
 	private $url = '';
