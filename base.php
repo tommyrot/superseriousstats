@@ -21,17 +21,17 @@
  */
 trait base
 {
-	final public function add_value($var, $value)
+	public function add_value($var, $value)
 	{
 		$this->$var += $value;
 	}
 
-	final public function get_value($var)
+	public function get_value($var)
 	{
 		return $this->$var;
 	}
 
-	final public function set_value($var, $value)
+	public function set_value($var, $value)
 	{
 		$this->$var = $value;
 	}
