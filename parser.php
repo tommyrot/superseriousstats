@@ -90,7 +90,7 @@ class parser
 		';o' => 's_50'];
 	private $urltools;
 	private $words_objs = [];
-	private $date = '';
+	protected $date = '';
 	private $l_00 = 0;
 	private $l_01 = 0;
 	private $l_02 = 0;
