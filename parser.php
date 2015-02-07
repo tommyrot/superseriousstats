@@ -103,6 +103,7 @@ class parser
 		'>:(' => 's_49',
 		';o' => 's_50'];
 	private $streak = 0;
+	private $urls_objs = [];
 	private $words_objs = [];
 	private $wordtracking = true;
 	protected $date = '';
@@ -156,6 +157,20 @@ class parser
 		}
 
 		return $nick;
+	}
+
+	/**
+	 * Keep track of every URL. These are handled (and stored) while preserving case.
+	 */
+	private function add_url($urldata, $datetime, $nick)
+	{
+		$url = $urldata['url'];
+
+		if (!array_key_exists($url, $this->urls_objs)) {
+			$this->urls_objs[$url] = new url($urldata);
+		}
+
+		$this->urls_objs[$url]->add_uses($datetime, $nick);
 	}
 
 	/**
@@ -555,7 +570,7 @@ class parser
 					 * Track URLs of up to a sensible limit of 1024 characters in length.
 					 */
 					if (strlen($urldata['url']) <= 1024) {
-						$this->nicks_objs[$nick]->add_url($urldata, $datetime);
+						$this->add_url($urldata, $datetime, $nick);
 						$this->nicks_objs[$nick]->add_value('urls', 1);
 					}
 				} else {
@@ -727,10 +742,17 @@ class parser
 		}
 
 		/**
-		 * Write user data to database.
+		 * Write user data to database. User data should be written prior to URL data.
 		 */
 		foreach ($this->nicks_objs as $nick) {
 			$nick->write_data($sqlite3);
+		}
+
+		/**
+		 * Write URL data to database.
+		 */
+		foreach ($this->urls_objs as $url) {
+			$url->write_data($sqlite3);
 		}
 
 		/**

@@ -160,7 +160,6 @@ class nick
 	private $topmonologue = 0;
 	private $uppercased = 0;
 	private $urls = 0;
-	private $urls_objs = [];
 	private $words = 0;
 
 	public function __construct($csnick)
@@ -195,20 +194,6 @@ class nick
 		}
 
 		$this->topics_objs[$topic]->add_datetime($datetime);
-	}
-
-	/**
-	 * Keep track of every URL. These are handled (and stored) while preserving case.
-	 */
-	public function add_url($urldata, $datetime)
-	{
-		$url = $urldata['url'];
-
-		if (!array_key_exists($url, $this->urls_objs)) {
-			$this->urls_objs[$url] = new url($urldata);
-		}
-
-		$this->urls_objs[$url]->add_datetime($datetime);
 	}
 
 	/**
@@ -347,13 +332,6 @@ class nick
 		 */
 		foreach ($this->topics_objs as $topic) {
 			$topic->write_data($sqlite3, $uid);
-		}
-
-		/**
-		 * Write URL data to database.
-		 */
-		foreach ($this->urls_objs as $url) {
-			$url->write_data($sqlite3, $uid);
 		}
 	}
 }
