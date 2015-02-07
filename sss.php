@@ -38,19 +38,19 @@ spl_autoload_register(function ($class) {
 });
 
 /**
- * Class for controlling all main features of the program.
+ * Class for controlling all features of the program.
  */
 class sss
 {
 	/**
-	 * Default settings for this script, which can be overridden in the configuration file. These variables should
-	 * all appear in $settings_list[] along with their type.
+	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
 	 */
 	private $autolinknicks = true;
 	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
 	private $outputbits = 1;
 	private $parser = '';
+	private $settings = [];
 	private $settings_list = [
 		'autolinknicks' => 'bool',
 		'database' => 'string',
@@ -58,13 +58,8 @@ class sss
 		'outputbits' => 'int',
 		'parser' => 'string',
 		'timezone' => 'string'];
-	private $timezone = 'UTC';
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $settings = [];
 	private $settings_list_required = [];
+	private $timezone = 'UTC';
 
 	public function __construct()
 	{

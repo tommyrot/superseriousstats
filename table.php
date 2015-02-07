@@ -22,17 +22,17 @@
 class table
 {
 	use base;
-	private $head = '';
-	private $maxrows = 0;
-	private $minrows = 0;
-	private $urltools;
 	private $cid = '';
 	private $decimals = 1;
+	private $head = '';
 	private $keys = [];
+	private $maxrows = 0;
 	private $medium = false;
+	private $minrows = 0;
 	private $percentage = false;
 	private $queries = [];
 	private $total = 0;
+	private $urltools;
 	private $v3a = false;
 
 	public function __construct($head, $minrows, $maxrows)

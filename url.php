@@ -22,10 +22,6 @@
 class url
 {
 	use base;
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
 	private $datetime = [];
 	private $fqdn = '';
 	private $tld = '';

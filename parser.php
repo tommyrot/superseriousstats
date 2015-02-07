@@ -24,19 +24,45 @@ class parser
 	use base;
 
 	/**
-	 * Default settings for this script, which can be overridden in the configuration file. These variables should
-	 * all appear in $settings_list[] along with their type.
-	 */
-	private $settings_list = ['wordtracking' => 'bool'];
-	private $wordtracking = true;
-
-	/**
-	 * Variables that shouldn't be tampered with.
+	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
 	 */
 	private $hex_latin1supplement = '[\x80-\xFF]';
 	private $hex_validutf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
+	private $l_00 = 0;
+	private $l_01 = 0;
+	private $l_02 = 0;
+	private $l_03 = 0;
+	private $l_04 = 0;
+	private $l_05 = 0;
+	private $l_06 = 0;
+	private $l_07 = 0;
+	private $l_08 = 0;
+	private $l_09 = 0;
+	private $l_10 = 0;
+	private $l_11 = 0;
+	private $l_12 = 0;
+	private $l_13 = 0;
+	private $l_14 = 0;
+	private $l_15 = 0;
+	private $l_16 = 0;
+	private $l_17 = 0;
+	private $l_18 = 0;
+	private $l_19 = 0;
+	private $l_20 = 0;
+	private $l_21 = 0;
+	private $l_22 = 0;
+	private $l_23 = 0;
+	private $l_afternoon = 0;
+	private $l_evening = 0;
+	private $l_morning = 0;
+	private $l_night = 0;
+	private $l_total = 0;
+	private $linenum_lastnonempty = 0;
 	private $newline = '';
 	private $nicks_objs = [];
+	private $prevline = '';
+	private $prevnick = '';
+	private $settings_list = ['wordtracking' => 'bool'];
 	private $smileys = [
 		':)' => 's_01',
 		';)' => 's_02',
@@ -88,43 +114,12 @@ class parser
 		':[' => 's_48',
 		'>:(' => 's_49',
 		';o' => 's_50'];
+	private $streak = 0;
 	private $urltools;
 	private $words_objs = [];
+	private $wordtracking = true;
 	protected $date = '';
-	private $l_00 = 0;
-	private $l_01 = 0;
-	private $l_02 = 0;
-	private $l_03 = 0;
-	private $l_04 = 0;
-	private $l_05 = 0;
-	private $l_06 = 0;
-	private $l_07 = 0;
-	private $l_08 = 0;
-	private $l_09 = 0;
-	private $l_10 = 0;
-	private $l_11 = 0;
-	private $l_12 = 0;
-	private $l_13 = 0;
-	private $l_14 = 0;
-	private $l_15 = 0;
-	private $l_16 = 0;
-	private $l_17 = 0;
-	private $l_18 = 0;
-	private $l_19 = 0;
-	private $l_20 = 0;
-	private $l_21 = 0;
-	private $l_22 = 0;
-	private $l_23 = 0;
-	private $l_afternoon = 0;
-	private $l_evening = 0;
-	private $l_morning = 0;
-	private $l_night = 0;
-	private $l_total = 0;
 	protected $linenum = 0;
-	private $linenum_lastnonempty = 0;
-	private $prevline = '';
-	private $prevnick = '';
-	private $streak = 0;
 
 	public function __construct($settings)
 	{

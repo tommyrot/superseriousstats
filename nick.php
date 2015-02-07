@@ -22,27 +22,20 @@
 class nick
 {
 	use base;
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $ex_actions_stack = [];
-	private $ex_exclamations_stack = [];
-	private $ex_questions_stack = [];
-	private $ex_uppercased_stack = [];
-	private $quote_stack = [];
-	private $topics_objs = [];
-	private $urls_objs = [];
 	private $actions = 0;
 	private $characters = 0;
 	private $csnick = '';
 	private $date = '';
 	private $ex_actions = '';
+	private $ex_actions_stack = [];
 	private $ex_exclamations = '';
+	private $ex_exclamations_stack = [];
 	private $ex_kicked = '';
 	private $ex_kicks = '';
 	private $ex_questions = '';
+	private $ex_questions_stack = [];
 	private $ex_uppercased = '';
+	private $ex_uppercased_stack = [];
 	private $exclamations = 0;
 	private $firstseen = '';
 	private $joins = 0;
@@ -121,6 +114,7 @@ class nick
 	private $questions = 0;
 	private $quits = 0;
 	private $quote = '';
+	private $quote_stack = [];
 	private $s_01 = 0;
 	private $s_02 = 0;
 	private $s_03 = 0;
@@ -174,9 +168,11 @@ class nick
 	private $slapped = 0;
 	private $slaps = 0;
 	private $topics = 0;
+	private $topics_objs = [];
 	private $topmonologue = 0;
 	private $uppercased = 0;
 	private $urls = 0;
+	private $urls_objs = [];
 	private $words = 0;
 
 	public function __construct($csnick)

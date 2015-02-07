@@ -22,14 +22,21 @@
 class html
 {
 	/**
-	 * Default settings for this script, which can be overridden in the configuration file. These variables should
-	 * all appear in $settings_list[] along with their type.
+	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
 	 */
 	private $addhtml_foot = '';
 	private $addhtml_head = '';
 	private $channel = '';
 	private $cid = '';
+	private $color = [
+		'night' => 'b',
+		'morning' => 'g',
+		'afternoon' => 'y',
+		'evening' => 'r'];
+	private $datetime = [];
+	private $estimate = false;
 	private $history = false;
+	private $l_total = 0;
 	private $maxrows = 5;
 	private $maxrows_people2 = 10;
 	private $maxrows_people_alltime = 30;
@@ -38,6 +45,7 @@ class html
 	private $maxrows_people_year = 10;
 	private $maxrows_recenturls = 25;
 	private $minrows = 3;
+	private $output = '';
 	private $recenturls_type = 1;
 	private $rows_domains_tlds = 10;
 	private $search_user = false;
@@ -64,19 +72,6 @@ class html
 		'userstats' => 'bool'];
 	private $stylesheet = 'sss.css';
 	private $userstats = false;
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $color = [
-		'night' => 'b',
-		'morning' => 'g',
-		'afternoon' => 'y',
-		'evening' => 'r'];
-	private $datetime = [];
-	private $estimate = false;
-	private $l_total = 0;
-	private $output = '';
 
 	public function __construct($settings)
 	{

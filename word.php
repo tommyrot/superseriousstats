@@ -22,10 +22,6 @@
 class word
 {
 	use base;
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
 	private $word = '';
 	private $length = 0;
 	private $total = 0;

@@ -24,8 +24,7 @@ class maintenance
 	use base;
 
 	/**
-	 * Default settings for this script, which can be overridden in the configuration file. These variables should
-	 * all appear in $settings_list[] along with their type.
+	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
 	 */
 	private $rankings = false;
 	private $settings_list = ['rankings' => 'bool'];

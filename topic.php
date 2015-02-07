@@ -22,10 +22,6 @@
 class topic
 {
 	use base;
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
 	private $datetime = [];
 	private $topic = '';
 
