@@ -48,7 +48,7 @@ class parser
 	private $l_total = 0;
 	private $linenum_lastnonempty = 0;
 	private $newline = '';
-	private $nicks_objs = [];
+	private $nick_objs = [];
 	private $prevline = '';
 	private $prevnick = '';
 	private $settings_list = ['wordtracking' => 'bool'];
@@ -104,9 +104,9 @@ class parser
 		'>:(' => 's_49',
 		';o' => 's_50'];
 	private $streak = 0;
-	private $topics_objs = [];
-	private $urls_objs = [];
-	private $words_objs = [];
+	private $topic_objs = [];
+	private $url_objs = [];
+	private $word_objs = [];
 	private $wordtracking = true;
 	protected $linenum = 0;
 
@@ -142,18 +142,18 @@ class parser
 	{
 		$nick = strtolower($csnick);
 
-		if (!array_key_exists($nick, $this->nicks_objs)) {
-			$this->nicks_objs[$nick] = new nick($csnick);
+		if (!array_key_exists($nick, $this->nick_objs)) {
+			$this->nick_objs[$nick] = new nick($csnick);
 		} else {
-			$this->nicks_objs[$nick]->set_value('csnick', $csnick);
+			$this->nick_objs[$nick]->set_value('csnick', $csnick);
 		}
 
 		if (!is_null($time)) {
-			if ($this->nicks_objs[$nick]->get_value('firstseen') === '') {
-				$this->nicks_objs[$nick]->set_value('firstseen', $this->date.' '.$time);
+			if ($this->nick_objs[$nick]->get_value('firstseen') === '') {
+				$this->nick_objs[$nick]->set_value('firstseen', $this->date.' '.$time);
 			}
 
-			$this->nicks_objs[$nick]->set_value('lastseen', $this->date.' '.$time);
+			$this->nick_objs[$nick]->set_value('lastseen', $this->date.' '.$time);
 		}
 
 		return $nick;
@@ -164,11 +164,11 @@ class parser
 	 */
 	private function add_topic($topic, $time, $nick)
 	{
-		if (!array_key_exists($topic, $this->topics_objs)) {
-			$this->topics_objs[$topic] = new topic($topic);
+		if (!array_key_exists($topic, $this->topic_objs)) {
+			$this->topic_objs[$topic] = new topic($topic);
 		}
 
-		$this->topics_objs[$topic]->add_uses($this->date.' '.$time, $nick);
+		$this->topic_objs[$topic]->add_uses($this->date.' '.$time, $nick);
 	}
 
 	/**
@@ -178,11 +178,11 @@ class parser
 	{
 		$url = $urldata['url'];
 
-		if (!array_key_exists($url, $this->urls_objs)) {
-			$this->urls_objs[$url] = new url($urldata);
+		if (!array_key_exists($url, $this->url_objs)) {
+			$this->url_objs[$url] = new url($urldata);
 		}
 
-		$this->urls_objs[$url]->add_uses($this->date.' '.$time, $nick);
+		$this->url_objs[$url]->add_uses($this->date.' '.$time, $nick);
 	}
 
 	/**
@@ -200,12 +200,12 @@ class parser
 			$word = mb_strtolower($csword, 'UTF-8');
 		}
 
-		if (!array_key_exists($word, $this->words_objs)) {
-			$this->words_objs[$word] = new word($word);
-			$this->words_objs[$word]->set_value('length', $length);
+		if (!array_key_exists($word, $this->word_objs)) {
+			$this->word_objs[$word] = new word($word);
+			$this->word_objs[$word]->set_value('length', $length);
 		}
 
-		$this->words_objs[$word]->add_value('total', 1);
+		$this->word_objs[$word]->add_value('total', 1);
 	}
 
 	/**
@@ -383,13 +383,13 @@ class parser
 
 		$line_length = mb_strlen($line, 'UTF-8');
 		$nick = $this->add_nick($csnick, $time);
-		$this->nicks_objs[$nick]->add_value('actions', 1);
+		$this->nick_objs[$nick]->add_value('actions', 1);
 
 		/**
 		 * Track quotes/example lines of up to a sensible limit of 255 characters in length.
 		 */
 		if ($line_length <= 255) {
-			$this->nicks_objs[$nick]->add_quote('ex_actions', $line, $line_length);
+			$this->nick_objs[$nick]->add_quote('ex_actions', $line, $line_length);
 		}
 	}
 
@@ -401,7 +401,7 @@ class parser
 		}
 
 		$nick = $this->add_nick($csnick, $time);
-		$this->nicks_objs[$nick]->add_value('joins', 1);
+		$this->nick_objs[$nick]->add_value('joins', 1);
 	}
 
 	protected function set_kick($time, $csnick_performing, $csnick_undergoing, $line)
@@ -416,16 +416,16 @@ class parser
 
 		$nick_performing = $this->add_nick($csnick_performing, $time);
 		$nick_undergoing = $this->add_nick($csnick_undergoing, $time);
-		$this->nicks_objs[$nick_performing]->add_value('kicks', 1);
-		$this->nicks_objs[$nick_undergoing]->add_value('kicked', 1);
+		$this->nick_objs[$nick_performing]->add_value('kicks', 1);
+		$this->nick_objs[$nick_undergoing]->add_value('kicked', 1);
 
 		/**
 		 * Track kick messages of up to a limit of 307 characters in length. The majority of IRC servers are
 		 * within this limit.
 		 */
 		if (mb_strlen($line, 'UTF-8') <= 307) {
-			$this->nicks_objs[$nick_performing]->set_value('ex_kicks', $line);
-			$this->nicks_objs[$nick_undergoing]->set_value('ex_kicked', $line);
+			$this->nick_objs[$nick_performing]->set_value('ex_kicks', $line);
+			$this->nick_objs[$nick_undergoing]->set_value('ex_kicked', $line);
 		}
 	}
 
@@ -444,20 +444,20 @@ class parser
 
 		switch ($mode) {
 			case '+o':
-				$this->nicks_objs[$nick_performing]->add_value('m_op', 1);
-				$this->nicks_objs[$nick_undergoing]->add_value('m_opped', 1);
+				$this->nick_objs[$nick_performing]->add_value('m_op', 1);
+				$this->nick_objs[$nick_undergoing]->add_value('m_opped', 1);
 				break;
 			case '+v':
-				$this->nicks_objs[$nick_performing]->add_value('m_voice', 1);
-				$this->nicks_objs[$nick_undergoing]->add_value('m_voiced', 1);
+				$this->nick_objs[$nick_performing]->add_value('m_voice', 1);
+				$this->nick_objs[$nick_undergoing]->add_value('m_voiced', 1);
 				break;
 			case '-o':
-				$this->nicks_objs[$nick_performing]->add_value('m_deop', 1);
-				$this->nicks_objs[$nick_undergoing]->add_value('m_deopped', 1);
+				$this->nick_objs[$nick_performing]->add_value('m_deop', 1);
+				$this->nick_objs[$nick_undergoing]->add_value('m_deopped', 1);
 				break;
 			case '-v':
-				$this->nicks_objs[$nick_performing]->add_value('m_devoice', 1);
-				$this->nicks_objs[$nick_undergoing]->add_value('m_devoiced', 1);
+				$this->nick_objs[$nick_performing]->add_value('m_devoice', 1);
+				$this->nick_objs[$nick_undergoing]->add_value('m_devoiced', 1);
 				break;
 		}
 	}
@@ -474,7 +474,7 @@ class parser
 
 		$nick_performing = $this->add_nick($csnick_performing, $time);
 		$nick_undergoing = $this->add_nick($csnick_undergoing, $time);
-		$this->nicks_objs[$nick_performing]->add_value('nickchanges', 1);
+		$this->nick_objs[$nick_performing]->add_value('nickchanges', 1);
 	}
 
 	protected function set_normal($time, $csnick, $line)
@@ -486,8 +486,8 @@ class parser
 
 		$line_length = mb_strlen($line, 'UTF-8');
 		$nick = $this->add_nick($csnick, $time);
-		$this->nicks_objs[$nick]->add_value('characters', $line_length);
-		$this->nicks_objs[$nick]->set_value('lasttalked', $this->date.' '.$time);
+		$this->nick_objs[$nick]->add_value('characters', $line_length);
+		$this->nick_objs[$nick]->set_value('lasttalked', $this->date.' '.$time);
 
 		/**
 		 * Keep track of monologues.
@@ -509,10 +509,10 @@ class parser
 					$this->add_nick($this->prevnick, null);
 				}
 
-				$this->nicks_objs[$this->prevnick]->add_value('monologues', 1);
+				$this->nick_objs[$this->prevnick]->add_value('monologues', 1);
 
-				if ($this->streak > $this->nicks_objs[$this->prevnick]->get_value('topmonologue')) {
-					$this->nicks_objs[$this->prevnick]->set_value('topmonologue', $this->streak);
+				if ($this->streak > $this->nick_objs[$this->prevnick]->get_value('topmonologue')) {
+					$this->nick_objs[$this->prevnick]->set_value('topmonologue', $this->streak);
 				}
 			}
 
@@ -530,25 +530,25 @@ class parser
 
 		if ($hour >= 0 && $hour <= 5) {
 			$this->l_night++;
-			$this->nicks_objs[$nick]->add_value('l_'.$day.'_night', 1);
-			$this->nicks_objs[$nick]->add_value('l_night', 1);
+			$this->nick_objs[$nick]->add_value('l_'.$day.'_night', 1);
+			$this->nick_objs[$nick]->add_value('l_night', 1);
 		} elseif ($hour >= 6 && $hour <= 11) {
 			$this->l_morning++;
-			$this->nicks_objs[$nick]->add_value('l_'.$day.'_morning', 1);
-			$this->nicks_objs[$nick]->add_value('l_morning', 1);
+			$this->nick_objs[$nick]->add_value('l_'.$day.'_morning', 1);
+			$this->nick_objs[$nick]->add_value('l_morning', 1);
 		} elseif ($hour >= 12 && $hour <= 17) {
 			$this->l_afternoon++;
-			$this->nicks_objs[$nick]->add_value('l_'.$day.'_afternoon', 1);
-			$this->nicks_objs[$nick]->add_value('l_afternoon', 1);
+			$this->nick_objs[$nick]->add_value('l_'.$day.'_afternoon', 1);
+			$this->nick_objs[$nick]->add_value('l_afternoon', 1);
 		} elseif ($hour >= 18 && $hour <= 23) {
 			$this->l_evening++;
-			$this->nicks_objs[$nick]->add_value('l_'.$day.'_evening', 1);
-			$this->nicks_objs[$nick]->add_value('l_evening', 1);
+			$this->nick_objs[$nick]->add_value('l_'.$day.'_evening', 1);
+			$this->nick_objs[$nick]->add_value('l_evening', 1);
 		}
 
 		$this->l_total++;
-		$this->nicks_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
-		$this->nicks_objs[$nick]->add_value('l_total', 1);
+		$this->nick_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
+		$this->nick_objs[$nick]->add_value('l_total', 1);
 		$this->{'l_'.($hour < 10 ? '0'.$hour : $hour)}++;
 
 		/**
@@ -556,14 +556,14 @@ class parser
 		 */
 		$skipquote = false;
 		$words = explode(' ', $line);
-		$this->nicks_objs[$nick]->add_value('words', count($words));
+		$this->nick_objs[$nick]->add_value('words', count($words));
 
 		foreach ($words as $csword) {
 			/**
 			 * Behold the amazing smileys regexp.
 			 */
 			if (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(]|\'\()|;([])(pxd\/o]|-\)|_;)|[:;](\)\)|\(\()|\\\o\/|<3|=[])p\/\\\d(x]|d:|8\)|-[_.]-|>:\()$/i', $csword)) {
-				$this->nicks_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
+				$this->nick_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 
 			/**
 			 * Only catch URLs which were intended to be clicked on. Most clients can handle URLs that begin
@@ -583,7 +583,7 @@ class parser
 					 */
 					if (strlen($urldata['url']) <= 1024) {
 						$this->add_url($urldata, $time, $nick);
-						$this->nicks_objs[$nick]->add_value('urls', 1);
+						$this->nick_objs[$nick]->add_value('urls', 1);
 					}
 				} else {
 					output::output('debug', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
@@ -614,7 +614,7 @@ class parser
 		 * of the types seen below.
 		 */
 		if (!$skipquote && $line_length <= 255) {
-			$this->nicks_objs[$nick]->add_quote('quote', $line, $line_length);
+			$this->nick_objs[$nick]->add_quote('quote', $line, $line_length);
 		}
 
 		/**
@@ -622,24 +622,24 @@ class parser
 		 * 50% non-letter characters from the Basic Latin and Latin-1 Supplement character sets in them.
 		 */
 		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/S', '', $line), 'UTF-8') * 2 > $line_length) {
-			$this->nicks_objs[$nick]->add_value('uppercased', 1);
+			$this->nick_objs[$nick]->add_value('uppercased', 1);
 
 			if (!$skipquote && $line_length <= 255) {
-				$this->nicks_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
+				$this->nick_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
 			}
 		}
 
 		if (preg_match('/!$/', $line)) {
-			$this->nicks_objs[$nick]->add_value('exclamations', 1);
+			$this->nick_objs[$nick]->add_value('exclamations', 1);
 
 			if (!$skipquote && $line_length <= 255) {
-				$this->nicks_objs[$nick]->add_quote('ex_exclamations', $line, $line_length);
+				$this->nick_objs[$nick]->add_quote('ex_exclamations', $line, $line_length);
 			}
 		} elseif (preg_match('/\?$/', $line)) {
-			$this->nicks_objs[$nick]->add_value('questions', 1);
+			$this->nick_objs[$nick]->add_value('questions', 1);
 
 			if (!$skipquote && $line_length <= 255) {
-				$this->nicks_objs[$nick]->add_quote('ex_questions', $line, $line_length);
+				$this->nick_objs[$nick]->add_quote('ex_questions', $line, $line_length);
 			}
 		}
 	}
@@ -652,7 +652,7 @@ class parser
 		}
 
 		$nick = $this->add_nick($csnick, $time);
-		$this->nicks_objs[$nick]->add_value('parts', 1);
+		$this->nick_objs[$nick]->add_value('parts', 1);
 	}
 
 	protected function set_quit($time, $csnick)
@@ -663,7 +663,7 @@ class parser
 		}
 
 		$nick = $this->add_nick($csnick, $time);
-		$this->nicks_objs[$nick]->add_value('quits', 1);
+		$this->nick_objs[$nick]->add_value('quits', 1);
 	}
 
 	protected function set_slap($time, $csnick_performing, $csnick_undergoing)
@@ -674,7 +674,7 @@ class parser
 		}
 
 		$nick_performing = $this->add_nick($csnick_performing, $time);
-		$this->nicks_objs[$nick_performing]->add_value('slaps', 1);
+		$this->nick_objs[$nick_performing]->add_value('slaps', 1);
 
 		if (is_null($csnick_undergoing)) {
 			return null;
@@ -698,7 +698,7 @@ class parser
 		 * seen for real.
 		 */
 		$nick_undergoing = $this->add_nick($csnick_undergoing, null);
-		$this->nicks_objs[$nick_undergoing]->add_value('slapped', 1);
+		$this->nick_objs[$nick_undergoing]->add_value('slapped', 1);
 	}
 
 	protected function set_topic($time, $csnick, $line)
@@ -709,7 +709,7 @@ class parser
 		}
 
 		$nick = $this->add_nick($csnick, $time);
-		$this->nicks_objs[$nick]->add_value('topics', 1);
+		$this->nick_objs[$nick]->add_value('topics', 1);
 
 		/**
 		 * Track topics of up to a limit of 390 characters in length. The majority of IRC servers are within
@@ -737,7 +737,7 @@ class parser
 		/**
 		 * If there are no nicks there is no data.
 		 */
-		if (empty($this->nicks_objs)) {
+		if (empty($this->nick_objs)) {
 			return false;
 		}
 
@@ -756,28 +756,28 @@ class parser
 		/**
 		 * Write user data to database. User data should be written prior to topic and URL data.
 		 */
-		foreach ($this->nicks_objs as $nick) {
+		foreach ($this->nick_objs as $nick) {
 			$nick->write_data($sqlite3);
 		}
 
 		/**
 		 * Write topic data to database.
 		 */
-		foreach ($this->topics_objs as $topic) {
+		foreach ($this->topic_objs as $topic) {
 			$topic->write_data($sqlite3);
 		}
 
 		/**
 		 * Write URL data to database.
 		 */
-		foreach ($this->urls_objs as $url) {
+		foreach ($this->url_objs as $url) {
 			$url->write_data($sqlite3);
 		}
 
 		/**
 		 * Write word data to database.
 		 */
-		foreach ($this->words_objs as $word) {
+		foreach ($this->word_objs as $word) {
 			$word->write_data($sqlite3);
 		}
 
