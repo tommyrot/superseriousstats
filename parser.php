@@ -144,7 +144,6 @@ class parser
 
 		if (!array_key_exists($nick, $this->nicks_objs)) {
 			$this->nicks_objs[$nick] = new nick($csnick);
-			$this->nicks_objs[$nick]->set_value('date', $this->date);
 		} else {
 			$this->nicks_objs[$nick]->set_value('csnick', $csnick);
 		}

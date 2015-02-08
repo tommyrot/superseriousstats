@@ -13,7 +13,6 @@ class nick
 	private $actions = 0;
 	private $characters = 0;
 	private $csnick = '';
-	private $date = '';
 	private $ex_actions = '';
 	private $ex_actions_stack = [];
 	private $ex_exclamations = '';
@@ -239,8 +238,8 @@ class nick
 		 */
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts($sqlite3, ['l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
-			$sqlite3->exec('INSERT OR IGNORE INTO uid_activity (uid, date, '.implode(', ', $queryparts['columnlist']).') VALUES ('.$uid.', \''.$this->date.'\', '.implode(', ', $queryparts['values']).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('UPDATE uid_activity SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND uid = '.$uid.' AND date = \''.$this->date.'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT OR IGNORE INTO uid_activity (uid, date, '.implode(', ', $queryparts['columnlist']).') VALUES ('.$uid.', \''.substr($this->firstseen, 0, 10).'\', '.implode(', ', $queryparts['values']).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('UPDATE uid_activity SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND uid = '.$uid.' AND date = \''.substr($this->firstseen, 0, 10).'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
