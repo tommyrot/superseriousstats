@@ -463,8 +463,8 @@ class sss
 			/**
 			 * The filenames should match the pattern provided by $logfile_dateformat.
 			 */
-			if (($datetime = date_create_from_format($this->logfile_dateformat, basename($file))) !== false) {
-				$logfiles[date_format($datetime, 'Y-m-d')] = $file;
+			if (($date = date_create_from_format($this->logfile_dateformat, basename($file))) !== false) {
+				$logfiles[date_format($date, 'Y-m-d')] = $file;
 			}
 		}
 
