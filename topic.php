@@ -10,23 +10,23 @@
 class topic
 {
 	use base;
-	private $datetime = [];
 	private $topic = '';
+	private $uses = [];
 
 	public function __construct($topic)
 	{
 		$this->topic = $topic;
 	}
 
-	public function add_datetime($datetime)
+	public function add_uses($datetime, $nick)
 	{
-		$this->datetime[] = $datetime;
+		$this->uses[] = [$datetime, $nick];
 	}
 
 	/**
 	 * Write data to database tables "topics" and "uid_topics".
 	 */
-	public function write_data($sqlite3, $uid)
+	public function write_data($sqlite3)
 	{
 		if (($tid = $sqlite3->querySingle('SELECT tid FROM topics WHERE topic = \''.$sqlite3->escapeString($this->topic).'\'')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -37,8 +37,8 @@ class topic
 			$tid = $sqlite3->lastInsertRowID();
 		}
 
-		foreach ($this->datetime as $datetime) {
-			$sqlite3->exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ('.$uid.', '.$tid.', DATETIME(\''.$datetime.'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		foreach ($this->uses as $key => $values) {
+			$sqlite3->exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$values[1].'\'), '.$tid.', DATETIME(\''.$values[0].'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 }

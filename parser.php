@@ -103,6 +103,7 @@ class parser
 		'>:(' => 's_49',
 		';o' => 's_50'];
 	private $streak = 0;
+	private $topics_objs = [];
 	private $urls_objs = [];
 	private $words_objs = [];
 	private $wordtracking = true;
@@ -157,6 +158,18 @@ class parser
 		}
 
 		return $nick;
+	}
+
+	/**
+	 * Keep track of every topic set. These are handled (and stored) while preserving case.
+	 */
+	public function add_topic($topic, $datetime, $nick)
+	{
+		if (!array_key_exists($topic, $this->topics_objs)) {
+			$this->topics_objs[$topic] = new topic($topic);
+		}
+
+		$this->topics_objs[$topic]->add_uses($datetime, $nick);
 	}
 
 	/**
@@ -704,7 +717,7 @@ class parser
 		 * this limit.
 		 */
 		if (mb_strlen($line, 'UTF-8') <= 390) {
-			$this->nicks_objs[$nick]->add_topic($line, $datetime);
+			$this->add_topic($line, $datetime, $nick);
 		}
 	}
 
@@ -742,10 +755,17 @@ class parser
 		}
 
 		/**
-		 * Write user data to database. User data should be written prior to URL data.
+		 * Write user data to database. User data should be written prior to topic and URL data.
 		 */
 		foreach ($this->nicks_objs as $nick) {
 			$nick->write_data($sqlite3);
+		}
+
+		/**
+		 * Write topic data to database.
+		 */
+		foreach ($this->topics_objs as $topic) {
+			$topic->write_data($sqlite3);
 		}
 
 		/**

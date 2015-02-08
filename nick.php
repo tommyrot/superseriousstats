@@ -156,7 +156,6 @@ class nick
 	private $slapped = 0;
 	private $slaps = 0;
 	private $topics = 0;
-	private $topics_objs = [];
 	private $topmonologue = 0;
 	private $uppercased = 0;
 	private $urls = 0;
@@ -182,18 +181,6 @@ class nick
 			 */
 			array_shift($this->{$type.'_stack'});
 		}
-	}
-
-	/**
-	 * Keep track of every topic set. These are handled (and stored) while preserving case.
-	 */
-	public function add_topic($topic, $datetime)
-	{
-		if (!array_key_exists($topic, $this->topics_objs)) {
-			$this->topics_objs[$topic] = new topic($topic);
-		}
-
-		$this->topics_objs[$topic]->add_datetime($datetime);
 	}
 
 	/**
@@ -325,13 +312,6 @@ class nick
 		if (!empty($queryparts)) {
 			$sqlite3->exec('INSERT OR IGNORE INTO uid_smileys (uid, '.implode(', ', $queryparts['columnlist']).') VALUES ('.$uid.', '.implode(', ', $queryparts['values']).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$sqlite3->exec('UPDATE uid_smileys SET '.implode(', ', $queryparts['update-assignments']).' WHERE CHANGES() = 0 AND uid = '.$uid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		/**
-		 * Write topic data to database.
-		 */
-		foreach ($this->topics_objs as $topic) {
-			$topic->write_data($sqlite3, $uid);
 		}
 	}
 }
