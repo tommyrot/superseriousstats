@@ -138,7 +138,7 @@ class parser
 	 * Create an object of the nick if it doesn't already exist, otherwise update $csnick. Return the lowercase nick
 	 * for further referencing by the calling function.
 	 */
-	private function add_nick($csnick, $datetime)
+	private function add_nick($csnick, $time)
 	{
 		$nick = strtolower($csnick);
 
@@ -149,12 +149,12 @@ class parser
 			$this->nicks_objs[$nick]->set_value('csnick', $csnick);
 		}
 
-		if (!is_null($datetime)) {
+		if (!is_null($time)) {
 			if ($this->nicks_objs[$nick]->get_value('firstseen') === '') {
-				$this->nicks_objs[$nick]->set_value('firstseen', $datetime);
+				$this->nicks_objs[$nick]->set_value('firstseen', $this->date.' '.$time);
 			}
 
-			$this->nicks_objs[$nick]->set_value('lastseen', $datetime);
+			$this->nicks_objs[$nick]->set_value('lastseen', $this->date.' '.$time);
 		}
 
 		return $nick;
@@ -163,19 +163,19 @@ class parser
 	/**
 	 * Keep track of every topic set. These are handled (and stored) while preserving case.
 	 */
-	public function add_topic($topic, $datetime, $nick)
+	public function add_topic($topic, $time, $nick)
 	{
 		if (!array_key_exists($topic, $this->topics_objs)) {
 			$this->topics_objs[$topic] = new topic($topic);
 		}
 
-		$this->topics_objs[$topic]->add_uses($datetime, $nick);
+		$this->topics_objs[$topic]->add_uses($this->date.' '.$time, $nick);
 	}
 
 	/**
 	 * Keep track of every URL. These are handled (and stored) while preserving case.
 	 */
-	private function add_url($urldata, $datetime, $nick)
+	private function add_url($urldata, $time, $nick)
 	{
 		$url = $urldata['url'];
 
@@ -183,7 +183,7 @@ class parser
 			$this->urls_objs[$url] = new url($urldata);
 		}
 
-		$this->urls_objs[$url]->add_uses($datetime, $nick);
+		$this->urls_objs[$url]->add_uses($this->date.' '.$time, $nick);
 	}
 
 	/**
@@ -375,7 +375,7 @@ class parser
 		return '';
 	}
 
-	protected function set_action($datetime, $csnick, $line)
+	protected function set_action($time, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_action(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -383,7 +383,7 @@ class parser
 		}
 
 		$line_length = mb_strlen($line, 'UTF-8');
-		$nick = $this->add_nick($csnick, $datetime);
+		$nick = $this->add_nick($csnick, $time);
 		$this->nicks_objs[$nick]->add_value('actions', 1);
 
 		/**
@@ -394,18 +394,18 @@ class parser
 		}
 	}
 
-	protected function set_join($datetime, $csnick)
+	protected function set_join($time, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_join(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
-		$nick = $this->add_nick($csnick, $datetime);
+		$nick = $this->add_nick($csnick, $time);
 		$this->nicks_objs[$nick]->add_value('joins', 1);
 	}
 
-	protected function set_kick($datetime, $csnick_performing, $csnick_undergoing, $line)
+	protected function set_kick($time, $csnick_performing, $csnick_undergoing, $line)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', 'set_kick(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -415,8 +415,8 @@ class parser
 			return null;
 		}
 
-		$nick_performing = $this->add_nick($csnick_performing, $datetime);
-		$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
+		$nick_performing = $this->add_nick($csnick_performing, $time);
+		$nick_undergoing = $this->add_nick($csnick_undergoing, $time);
 		$this->nicks_objs[$nick_performing]->add_value('kicks', 1);
 		$this->nicks_objs[$nick_undergoing]->add_value('kicked', 1);
 
@@ -430,7 +430,7 @@ class parser
 		}
 	}
 
-	protected function set_mode($datetime, $csnick_performing, $csnick_undergoing, $mode)
+	protected function set_mode($time, $csnick_performing, $csnick_undergoing, $mode)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', 'set_mode(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -440,8 +440,8 @@ class parser
 			return null;
 		}
 
-		$nick_performing = $this->add_nick($csnick_performing, $datetime);
-		$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
+		$nick_performing = $this->add_nick($csnick_performing, $time);
+		$nick_undergoing = $this->add_nick($csnick_undergoing, $time);
 
 		switch ($mode) {
 			case '+o':
@@ -463,7 +463,7 @@ class parser
 		}
 	}
 
-	protected function set_nickchange($datetime, $csnick_performing, $csnick_undergoing)
+	protected function set_nickchange($time, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', 'set_nickchange(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -473,12 +473,12 @@ class parser
 			return null;
 		}
 
-		$nick_performing = $this->add_nick($csnick_performing, $datetime);
-		$nick_undergoing = $this->add_nick($csnick_undergoing, $datetime);
+		$nick_performing = $this->add_nick($csnick_performing, $time);
+		$nick_undergoing = $this->add_nick($csnick_undergoing, $time);
 		$this->nicks_objs[$nick_performing]->add_value('nickchanges', 1);
 	}
 
-	protected function set_normal($datetime, $csnick, $line)
+	protected function set_normal($time, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -486,9 +486,9 @@ class parser
 		}
 
 		$line_length = mb_strlen($line, 'UTF-8');
-		$nick = $this->add_nick($csnick, $datetime);
+		$nick = $this->add_nick($csnick, $time);
 		$this->nicks_objs[$nick]->add_value('characters', $line_length);
-		$this->nicks_objs[$nick]->set_value('lasttalked', $datetime);
+		$this->nicks_objs[$nick]->set_value('lasttalked', $this->date.' '.$time);
 
 		/**
 		 * Keep track of monologues.
@@ -527,7 +527,7 @@ class parser
 		 * Increase line counts for relevant day, part of day, and hour.
 		 */
 		$day = strtolower(date('D', strtotime($this->date)));
-		$hour = (int) substr($datetime, 11, 2);
+		$hour = (int) substr($time, 0, 2);
 
 		if ($hour >= 0 && $hour <= 5) {
 			$this->l_night++;
@@ -583,7 +583,7 @@ class parser
 					 * Track URLs of up to a sensible limit of 1024 characters in length.
 					 */
 					if (strlen($urldata['url']) <= 1024) {
-						$this->add_url($urldata, $datetime, $nick);
+						$this->add_url($urldata, $time, $nick);
 						$this->nicks_objs[$nick]->add_value('urls', 1);
 					}
 				} else {
@@ -645,36 +645,36 @@ class parser
 		}
 	}
 
-	protected function set_part($datetime, $csnick)
+	protected function set_part($time, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_part(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
-		$nick = $this->add_nick($csnick, $datetime);
+		$nick = $this->add_nick($csnick, $time);
 		$this->nicks_objs[$nick]->add_value('parts', 1);
 	}
 
-	protected function set_quit($datetime, $csnick)
+	protected function set_quit($time, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_quit(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
-		$nick = $this->add_nick($csnick, $datetime);
+		$nick = $this->add_nick($csnick, $time);
 		$this->nicks_objs[$nick]->add_value('quits', 1);
 	}
 
-	protected function set_slap($datetime, $csnick_performing, $csnick_undergoing)
+	protected function set_slap($time, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', 'set_slap(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return null;
 		}
 
-		$nick_performing = $this->add_nick($csnick_performing, $datetime);
+		$nick_performing = $this->add_nick($csnick_performing, $time);
 		$this->nicks_objs[$nick_performing]->add_value('slaps', 1);
 
 		if (is_null($csnick_undergoing)) {
@@ -702,14 +702,14 @@ class parser
 		$this->nicks_objs[$nick_undergoing]->add_value('slapped', 1);
 	}
 
-	protected function set_topic($datetime, $csnick, $line)
+	protected function set_topic($time, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', 'set_topic(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
-		$nick = $this->add_nick($csnick, $datetime);
+		$nick = $this->add_nick($csnick, $time);
 		$this->nicks_objs[$nick]->add_value('topics', 1);
 
 		/**
@@ -717,7 +717,7 @@ class parser
 		 * this limit.
 		 */
 		if (mb_strlen($line, 'UTF-8') <= 390) {
-			$this->add_topic($line, $datetime, $nick);
+			$this->add_topic($line, $time, $nick);
 		}
 	}
 
