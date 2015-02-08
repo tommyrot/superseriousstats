@@ -10,9 +10,9 @@
 class word
 {
 	use base;
-	private $word = '';
 	private $length = 0;
 	private $total = 0;
+	private $word = '';
 
 	public function __construct($word)
 	{
