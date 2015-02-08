@@ -9,7 +9,6 @@
  */
 class topic
 {
-	use base;
 	private $topic = '';
 	private $uses = [];
 
