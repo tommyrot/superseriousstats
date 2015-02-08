@@ -9,8 +9,6 @@
  */
 class maintenance
 {
-	use base;
-
 	/**
 	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
 	 */
