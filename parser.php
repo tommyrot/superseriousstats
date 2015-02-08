@@ -14,6 +14,7 @@ class parser
 	/**
 	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
 	 */
+	private $date = '';
 	private $hex_latin1supplement = '[\x80-\xFF]';
 	private $hex_validutf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private $l_00 = 0;
@@ -107,7 +108,6 @@ class parser
 	private $urls_objs = [];
 	private $words_objs = [];
 	private $wordtracking = true;
-	protected $date = '';
 	protected $linenum = 0;
 
 	public function __construct($settings)
