@@ -7,7 +7,7 @@
 /**
  * Class for creating user stats.
  */
-final class user
+class user
 {
 	/**
 	 * Default settings for this script, which can be overridden in the configuration file.
