@@ -9,10 +9,8 @@
  */
 class output
 {
-	/**
-	 * By default all but debug messages will be displayed. This can be changed in the configuration file.
-	 */
 	private static $outputbits = 1;
+	private static $prevmessage = '';
 
 	private function __construct()
 	{
@@ -26,7 +24,15 @@ class output
 	 */
 	public static function output($type, $message)
 	{
+		/**
+		 * Avoid repeating the same message multiple times in a row, e.g. repeated lines and mode errors.
+		 */
+		if ($message === self::$prevmessage) {
+			return null;
+		}
+
 		$datetime = date('M d H:i:s');
+		self::$prevmessage = $message;
 
 		if (substr($datetime, 4, 1) === '0') {
 			$datetime = substr_replace($datetime, ' ', 4, 1);
@@ -56,8 +62,9 @@ class output
 	}
 
 	/**
-	 * Used to set the amount of bits corresponding to the type of output messages displayed.
-	 *  -  Critical events (will always display)
+	 * Set the amount of bits corresponding to the type(s) of output messages displayed. By default all but debug
+	 * messages will be displayed. This can be changed in the configuration file.
+	 *  0  Critical events (will always display)
 	 *  1  Notices
 	 *  2  Debug messages
 	 */
