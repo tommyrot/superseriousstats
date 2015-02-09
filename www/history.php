@@ -7,7 +7,7 @@
 /**
  * Class for creating historical stats.
  */
-final class history
+class history
 {
 	/**
 	 * Default settings for this script, which can be overridden in the configuration file.
