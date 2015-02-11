@@ -33,7 +33,6 @@ class html
 	private $maxrows_people_year = 10;
 	private $maxrows_recenturls = 25;
 	private $minrows = 3;
-	private $output = '';
 	private $recenturls_type = 1;
 	private $rows_domains_tlds = 10;
 	private $search_user = false;
@@ -196,7 +195,7 @@ class html
 
 		$date_max = $result['date'];
 		$l_max = $result['l_total'];
-		$this->output = '<!DOCTYPE html>'."\n\n"
+		$html = '<!DOCTYPE html>'."\n\n"
 			. '<html>'."\n\n"
 			. '<head>'."\n"
 			. '<meta charset="utf-8">'."\n"
@@ -216,17 +215,17 @@ class html
 		 * Activity section.
 		 */
 		if ($this->sectionbits & 1) {
-			$this->output .= '<div class="section">Activity</div>'."\n";
-			$this->output .= $this->make_table_activity_distribution_hour($sqlite3);
-			$this->output .= $this->make_table_activity($sqlite3, 'day');
-			$this->output .= $this->make_table_activity($sqlite3, 'month');
-			$this->output .= $this->make_table_activity_distribution_day($sqlite3);
-			$this->output .= $this->make_table_activity($sqlite3, 'year');
-			$this->output .= $this->make_table_people($sqlite3, 'alltime');
-			$this->output .= $this->make_table_people2($sqlite3);
-			$this->output .= $this->make_table_people($sqlite3, 'year');
-			$this->output .= $this->make_table_people($sqlite3, 'month');
-			$this->output .= $this->make_table_people_timeofday($sqlite3);
+			$html .= '<div class="section">Activity</div>'."\n";
+			$html .= $this->make_table_activity_distribution_hour($sqlite3);
+			$html .= $this->make_table_activity($sqlite3, 'day');
+			$html .= $this->make_table_activity($sqlite3, 'month');
+			$html .= $this->make_table_activity_distribution_day($sqlite3);
+			$html .= $this->make_table_activity($sqlite3, 'year');
+			$html .= $this->make_table_people($sqlite3, 'alltime');
+			$html .= $this->make_table_people2($sqlite3);
+			$html .= $this->make_table_people($sqlite3, 'year');
+			$html .= $this->make_table_people($sqlite3, 'month');
+			$html .= $this->make_table_people_timeofday($sqlite3);
 		}
 
 		/**
@@ -438,7 +437,7 @@ class html
 			$output .= $t->make_table($sqlite3);
 
 			if ($output !== '') {
-				$this->output .= '<div class="section">General Chat</div>'."\n".$output;
+				$html .= '<div class="section">General Chat</div>'."\n".$output;
 			}
 		}
 
@@ -475,7 +474,7 @@ class html
 			}
 
 			if ($output !== '') {
-				$this->output .= '<div class="section">Modes</div>'."\n".$output;
+				$html .= '<div class="section">Modes</div>'."\n".$output;
 			}
 		}
 
@@ -590,7 +589,7 @@ class html
 			$output .= $t->make_table($sqlite3);
 
 			if ($output !== '') {
-				$this->output .= '<div class="section">Events</div>'."\n".$output;
+				$html .= '<div class="section">Events</div>'."\n".$output;
 			}
 		}
 
@@ -676,7 +675,7 @@ class html
 			}
 
 			if ($output !== '') {
-				$this->output .= '<div class="section">Smileys</div>'."\n".$output;
+				$html .= '<div class="section">Smileys</div>'."\n".$output;
 			}
 		}
 
@@ -749,7 +748,7 @@ class html
 			$output .= $t->make_table($sqlite3);
 
 			if ($output !== '') {
-				$this->output .= '<div class="section">URLs</div>'."\n".$output;
+				$html .= '<div class="section">URLs</div>'."\n".$output;
 			}
 		}
 
@@ -777,7 +776,7 @@ class html
 			}
 
 			if ($output !== '') {
-				$this->output .= '<div class="section">Words</div>'."\n".$output;
+				$html .= '<div class="section">Words</div>'."\n".$output;
 			}
 		}
 
@@ -801,16 +800,16 @@ class html
 			}
 
 			if ($output !== '') {
-				$this->output .= '<div class="section">Milestones</div>'."\n".$output;
+				$html .= '<div class="section">Milestones</div>'."\n".$output;
 			}
 		}
 
 		/**
 		 * HTML Foot.
 		 */
-		$this->output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot !== '' ? '<br>'.trim(file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
-		$this->output .= '</div></body>'."\n\n".'</html>'."\n";
-		return $this->output;
+		$html .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot !== '' ? '<br>'.trim(file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
+		$html .= '</div></body>'."\n\n".'</html>'."\n";
+		return $html;
 	}
 
 	private function make_table_activity($sqlite3, $type)
