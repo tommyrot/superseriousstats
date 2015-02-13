@@ -120,7 +120,7 @@ class html
 	 */
 	public function make_html($sqlite3)
 	{
-		output::output('notice', 'make_html(): creating stats page');
+		output::output('notice', __METHOD__.'(): creating stats page');
 
 		if (($this->l_total = $sqlite3->querySingle('SELECT SUM(l_total) FROM channel_activity')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -130,7 +130,7 @@ class html
 		 * All queries from this point forward require a non-empty database.
 		 */
 		if (is_null($this->l_total)) {
-			output::output('warning', 'make_html(): database is empty');
+			output::output('warning', __METHOD__.'(): database is empty');
 			return '<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">There is not enough data to create statistics, yet.</div></div></body></html>'."\n";
 		}
 

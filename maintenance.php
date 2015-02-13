@@ -191,7 +191,7 @@ class maintenance
 
 	public function do_maintenance($sqlite3)
 	{
-		output::output('notice', 'do_maintenance(): performing database maintenance routines');
+		output::output('notice', __METHOD__.'(): performing database maintenance routines');
 		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$this->register_most_active_alias($sqlite3);
 		$this->make_materialized_views($sqlite3);
@@ -252,7 +252,7 @@ class maintenance
 
 			$sqlite3->exec('UPDATE uid_details SET ruid = '.$result['newruid'].', status = '.$result['status'].' WHERE uid = '.$result['newruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$sqlite3->exec('UPDATE uid_details SET ruid = '.$result['newruid'].', status = 2 WHERE ruid = '.$result['ruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			output::output('debug', 'register_most_active_alias(): \''.$alias.'\' set to new registered for \''.$registered.'\'');
+			output::output('debug', __METHOD__.'(): \''.$alias.'\' set to new registered for \''.$registered.'\'');
 		}
 	}
 }

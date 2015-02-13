@@ -237,10 +237,10 @@ class parser
 	public function gzparse_log($logfile, $firstline)
 	{
 		if (($zp = gzopen($logfile, 'rb')) === false) {
-			output::output('critical', 'gzparse_log(): failed to open gzip file: \''.$logfile.'\'');
+			output::output('critical', __METHOD__.'(): failed to open gzip file: \''.$logfile.'\'');
 		}
 
-		output::output('notice', 'gzparse_log(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
+		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
 
 		while (!gzeof($zp)) {
 			$line = gzgets($zp);
@@ -310,10 +310,10 @@ class parser
 	public function parse_log($logfile, $firstline)
 	{
 		if (($fp = fopen($logfile, 'rb')) === false) {
-			output::output('critical', 'parse_log(): failed to open file: \''.$logfile.'\'');
+			output::output('critical', __METHOD__.'(): failed to open file: \''.$logfile.'\'');
 		}
 
-		output::output('notice', 'parse_log(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
+		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
 
 		while (!feof($fp)) {
 			$line = fgets($fp);
@@ -377,7 +377,7 @@ class parser
 	protected function set_action($time, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'set_action(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -396,7 +396,7 @@ class parser
 	protected function set_join($time, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'set_join(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -407,10 +407,10 @@ class parser
 	protected function set_kick($time, $csnick_performing, $csnick_undergoing, $line)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			output::output('debug', 'set_kick(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return null;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			output::output('debug', 'set_kick(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -432,10 +432,10 @@ class parser
 	protected function set_mode($time, $csnick_performing, $csnick_undergoing, $mode)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			output::output('debug', 'set_mode(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return null;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			output::output('debug', 'set_mode(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -465,10 +465,10 @@ class parser
 	protected function set_nickchange($time, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			output::output('debug', 'set_nickchange(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return null;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			output::output('debug', 'set_nickchange(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -480,7 +480,7 @@ class parser
 	protected function set_normal($time, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'set_normal(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -586,7 +586,7 @@ class parser
 						$this->nick_objs[$nick]->add_value('urls', 1);
 					}
 				} else {
-					output::output('debug', 'set_normal(): invalid url: \''.$csword.'\' on line '.$this->linenum);
+					output::output('debug', __METHOD__.'(): invalid url: \''.$csword.'\' on line '.$this->linenum);
 				}
 
 			/**
@@ -647,7 +647,7 @@ class parser
 	protected function set_part($time, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'set_part(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -658,7 +658,7 @@ class parser
 	protected function set_quit($time, $csnick)
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'set_quit(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -669,7 +669,7 @@ class parser
 	protected function set_slap($time, $csnick_performing, $csnick_undergoing)
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			output::output('debug', 'set_slap(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -684,12 +684,12 @@ class parser
 		 * Clean possible network prefix (psyBNC) from the "undergoing" nick.
 		 */
 		if (preg_match('/^.*?[~\'](?<nick>.+)$/', $csnick_undergoing, $matches)) {
-			output::output('debug', 'set_slap(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			$csnick_undergoing = $matches['nick'];
 		}
 
 		if (!$this->validate_nick($csnick_undergoing)) {
-			output::output('debug', 'set_slap(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -704,7 +704,7 @@ class parser
 	protected function set_topic($time, $csnick, $line)
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'set_topic(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return null;
 		}
 
@@ -741,7 +741,7 @@ class parser
 			return false;
 		}
 
-		output::output('notice', 'write_data(): writing data to database');
+		output::output('notice', __METHOD__.'(): writing data to database');
 		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		/**

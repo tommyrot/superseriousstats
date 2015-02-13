@@ -98,7 +98,7 @@ class sss
 		 * output messages with user specified values.
 		 */
 		if (!date_default_timezone_set($this->timezone)) {
-			output::output('critical', 'sss(): invalid timezone: \''.$this->timezone.'\'');
+			output::output('critical', __METHOD__.'(): invalid timezone: \''.$this->timezone.'\'');
 		}
 
 		/**
@@ -139,7 +139,7 @@ class sss
 			$sqlite3->exec('PRAGMA '.$key.' = '.$value);
 		}
 
-		output::output('notice', 'sss(): succesfully connected to database: \''.$this->database.'\'');
+		output::output('notice', __METHOD__.'(): succesfully connected to database: \''.$this->database.'\'');
 
 		/**
 		 * The following options are listed in order of execution. Ie. "i" before "o", "b" before "o".
@@ -170,7 +170,7 @@ class sss
 		}
 
 		$sqlite3->close();
-		output::output('notice', 'sss(): kthxbye');
+		output::output('notice', __METHOD__.'(): kthxbye');
 	}
 
 	/**
@@ -191,12 +191,12 @@ class sss
 
 	private function export_nicks($sqlite3, $file)
 	{
-		output::output('notice', 'export_nicks(): exporting nicks');
+		output::output('notice', __METHOD__.'(): exporting nicks');
 		$query = $sqlite3->query('SELECT csnick, ruid, status FROM uid_details ORDER BY csnick ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
-			output::output('critical', 'export_nicks(): database is empty');
+			output::output('critical', __METHOD__.'(): database is empty');
 		}
 
 		$query->reset();
@@ -235,12 +235,12 @@ class sss
 		}
 
 		if (($fp = fopen($file, 'wb')) === false) {
-			output::output('critical', 'export_nicks(): failed to open file: \''.$file.'\'');
+			output::output('critical', __METHOD__.'(): failed to open file: \''.$file.'\'');
 		}
 
 		fwrite($fp, $output);
 		fclose($fp);
-		output::output('notice', 'export_nicks(): '.number_format($i).' nicks exported');
+		output::output('notice', __METHOD__.'(): '.number_format($i).' nicks exported');
 	}
 
 	private function export_settings()
@@ -287,12 +287,12 @@ class sss
 
 	private function import_nicks($sqlite3, $file)
 	{
-		output::output('notice', 'import_nicks(): importing nicks');
+		output::output('notice', __METHOD__.'(): importing nicks');
 		$query = $sqlite3->query('SELECT uid, csnick FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
-			output::output('critical', 'import_nicks(): database is empty');
+			output::output('critical', __METHOD__.'(): database is empty');
 		}
 
 		$query->reset();
@@ -302,11 +302,11 @@ class sss
 		}
 
 		if (($rp = realpath($file)) === false) {
-			output::output('critical', 'import_nicks(): no such file: \''.$file.'\'');
+			output::output('critical', __METHOD__.'(): no such file: \''.$file.'\'');
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::output('critical', 'import_nicks(): failed to open file: \''.$file.'\'');
+			output::output('critical', __METHOD__.'(): failed to open file: \''.$file.'\'');
 		}
 
 		while (!feof($fp)) {
@@ -333,7 +333,7 @@ class sss
 		fclose($fp);
 
 		if (empty($ruids)) {
-			output::output('critical', 'import_nicks(): no user relations found to import');
+			output::output('critical', __METHOD__.'(): no user relations found to import');
 		} else {
 			/**
 			 * Set all nicks to their default status before updating them according to imported data.
@@ -360,7 +360,7 @@ class sss
 	 */
 	private function link_nicks($sqlite3)
 	{
-		output::output('notice', 'link_nicks(): looking for possible aliases');
+		output::output('notice', __METHOD__.'(): looking for possible aliases');
 		$query = $sqlite3->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$strippednicks = [];
 
@@ -408,7 +408,7 @@ class sss
 				if ($nicks[$uids[$i]]['status'] === 0) {
 					$newalias = true;
 					$sqlite3->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-					output::output('debug', 'link_nicks(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
+					output::output('debug', __METHOD__.'(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
 				}
 			}
 
@@ -430,7 +430,7 @@ class sss
 		$output = $html->make_html($sqlite3);
 
 		if (($fp = fopen($file, 'wb')) === false) {
-			output::output('critical', 'make_html(): failed to open file: \''.$file.'\'');
+			output::output('critical', __METHOD__.'(): failed to open file: \''.$file.'\'');
 		}
 
 		fwrite($fp, $output);
@@ -440,14 +440,14 @@ class sss
 	private function parse_log($sqlite3, $filedir)
 	{
 		if (($rp = realpath($filedir)) === false) {
-			output::output('critical', 'parse_log(): no such file or directory: \''.$filedir.'\'');
+			output::output('critical', __METHOD__.'(): no such file or directory: \''.$filedir.'\'');
 		}
 
 		$files = [];
 
 		if (is_dir($rp)) {
 			if (($dh = opendir($rp)) === false) {
-				output::output('critical', 'parse_log(): failed to open directory: \''.$rp.'\'');
+				output::output('critical', __METHOD__.'(): failed to open directory: \''.$rp.'\'');
 			}
 
 			while (($file = readdir($dh)) !== false) {
@@ -469,7 +469,7 @@ class sss
 		}
 
 		if (empty($logfiles)) {
-			output::output('critical', 'parse_log(): no logfiles found matching \'logfile_dateformat\' setting');
+			output::output('critical', __METHOD__.'(): no logfiles found matching \'logfile_dateformat\' setting');
 		}
 
 		/**
@@ -525,7 +525,7 @@ class sss
 			 */
 			if (preg_match('/\.gz$/', $logfile)) {
 				if (!extension_loaded('zlib')) {
-					output::output('critical', 'parse_log(): zlib extension isn\'t loaded: can\'t parse gzipped logs'."\n");
+					output::output('critical', __METHOD__.'(): zlib extension isn\'t loaded: can\'t parse gzipped logs'."\n");
 				}
 
 				$parser->gzparse_log($logfile, $firstline);
@@ -572,11 +572,11 @@ class sss
 	private function read_config($file)
 	{
 		if (($rp = realpath($file)) === false) {
-			output::output('critical', 'read_config(): no such file: \''.$file.'\'');
+			output::output('critical', __METHOD__.'(): no such file: \''.$file.'\'');
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::output('critical', 'read_config(): failed to open file: \''.$rp.'\'');
+			output::output('critical', __METHOD__.'(): failed to open file: \''.$rp.'\'');
 		}
 
 		while (!feof($fp)) {
@@ -594,7 +594,7 @@ class sss
 		 */
 		foreach ($this->settings_list_required as $key) {
 			if (empty($this->settings[$key])) {
-				output::output('critical', 'read_config(): missing setting: \''.$key.'\'');
+				output::output('critical', __METHOD__.'(): missing setting: \''.$key.'\'');
 			}
 		}
 

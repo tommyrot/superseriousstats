@@ -104,7 +104,7 @@ class parser_hexchat extends parser
 		 * Skip everything else.
 		 */
 		} elseif ($line !== '') {
-			output::output('debug', 'parse_line(): skipping line '.$this->linenum.': \''.$line.'\'');
+			output::output('debug', __METHOD__.'(): skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}
 }
