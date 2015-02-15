@@ -87,7 +87,7 @@ class urltools
 			/**
 			 * Verify if the TLD is valid. If the validation array is empty we skip this step.
 			 */
-			if (!empty(self::$valid_tlds) && !in_array($matches['tld'], self::$valid_tlds)) {
+			if (!empty(self::$valid_tlds) && !empty($matches['tld']) && !in_array($matches['tld'], self::$valid_tlds)) {
 				return false;
 			}
 
