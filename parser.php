@@ -49,7 +49,6 @@ class parser
 	private $linenum_lastnonempty = 0;
 	private $newline = '';
 	private $nick_objs = [];
-	private $prevline = '';
 	private $prevnick = '';
 	private $settings_list = ['wordtracking' => 'bool'];
 	private $smileys = [
@@ -109,6 +108,7 @@ class parser
 	private $word_objs = [];
 	private $wordtracking = true;
 	protected $linenum = 0;
+	protected $prevline = '';
 
 	public function __construct($settings)
 	{
