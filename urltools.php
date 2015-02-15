@@ -39,7 +39,7 @@ class urltools
 		 */
 		if (self::$regexp_complete === '') {
 			$domain = '(?<domain>[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?(\.[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?)*)';
-			$tld = '\.(?<tld>[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?)';
+			$tld = '(?<tld>\.[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?)';
 			$fqdn = '(?<fqdn>'.$domain.$tld.')\.?';
 			$ipv4address = '(?<ipv4address>(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})';
 			$port = '(?<port>(6553[0-5]|(655[0-2]|(65[0-4]|(6[0-4]|[1-5][0-9]|[1-9])[0-9]|[1-9])[0-9]|[1-9])?[0-9]))';
@@ -67,7 +67,7 @@ class urltools
 					$tld = trim($tld);
 
 					if ($tld !== '' && strpos($tld, '#') === false) {
-						self::$valid_tlds[] = strtolower($tld);
+						self::$valid_tlds[] = '.'.strtolower($tld);
 					}
 				}
 			}
