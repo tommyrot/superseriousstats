@@ -560,9 +560,27 @@ class parser
 
 		foreach ($words as $csword) {
 			/**
-			 * Behold the amazing smileys regular expression.
+			 * Keep track of all character groups composed of the letters found in the Basic Latin and
+			 * Latin-1 Supplement character sets, the Hyphen (used properly), and any multibyte characters
+			 * beyond those two sets (found in UTF-8) regardless of their meaning. The regular expression
+			 * checks for any characters not wanted in the word - from the aforementioned Latin sets. Note
+			 * that normalize_line() already took all the dirt out. This method of finding words is not 100%
+			 * accurate, but it serves its purpose.
 			 */
-			if (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(]|\'\()|;([])(pxd\/o]|-\)|_;)|[:;](\)\)|\(\()|\\\o\/|<3|=[])p\/\\\d(x]|d:|8\)|-[_.]-|>:\()$/i', $csword)) {
+			if ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
+				$word_length = mb_strlen($csword, 'UTF-8');
+
+				/**
+				 * Words consisting of 30+ characters are most likely not real words.
+				 */
+				if ($word_length <= 30) {
+					$this->add_word($csword, $word_length);
+				}
+
+			/**
+			 * Behold the amazing smileys regular expression. Cannot evaluate as a word (see above).
+			 */
+			} elseif (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(]|\'\()|;([])(pxd\/o]|-\)|_;)|[:;](\)\)|\(\()|\\\o\/|<3|=[])p\/\\\d(x]|d:|8\)|-[_.]-|>:\()$/i', $csword)) {
 				$this->nick_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 
 			/**
@@ -587,24 +605,6 @@ class parser
 					}
 				} else {
 					output::output('debug', __METHOD__.'(): invalid url: \''.$csword.'\' on line '.$this->linenum);
-				}
-
-			/**
-			 * Keep track of all character groups composed of the letters found in the Basic Latin and
-			 * Latin-1 Supplement character sets, the Hyphen (used properly), and any multibyte characters
-			 * beyond those two sets (found in UTF-8) regardless of their meaning. The regular expression
-			 * checks for any characters not wanted in the word - from the aforementioned Latin sets. Note
-			 * that normalize_line() already took all the dirt out. This method of finding words is not 100%
-			 * accurate, but it serves its purpose.
-			 */
-			} elseif ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
-				$word_length = mb_strlen($csword, 'UTF-8');
-
-				/**
-				 * Words consisting of 30+ characters are most likely not real words.
-				 */
-				if ($word_length <= 30) {
-					$this->add_word($csword, $word_length);
 				}
 			}
 		}
