@@ -33,6 +33,7 @@ class html
 	private $maxrows_people_year = 10;
 	private $maxrows_recenturls = 25;
 	private $minrows = 3;
+	private $rankings = false;
 	private $recenturls_type = 1;
 	private $rows_domains_tlds = 10;
 	private $search_user = false;
@@ -51,6 +52,7 @@ class html
 		'maxrows_people_year' => 'int',
 		'maxrows_recenturls' => 'int',
 		'minrows' => 'int',
+		'rankings' => 'bool',
 		'recenturls_type' => 'int',
 		'rows_domains_tlds' => 'int',
 		'search_user' => 'bool',
@@ -1107,8 +1109,6 @@ class html
 			return null;
 		}
 
-		$rankings = false;
-
 		if ($type === 'alltime') {
 			$head = 'Most Talkative People &ndash; All-Time';
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
@@ -1116,11 +1116,10 @@ class html
 			/**
 			 * Don't try to calculate changes in rankings if we're dealing with the first month of activity.
 			 */
-			if (date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
+			if (!$this->rankings || date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
 				$query = $sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_lines.ruid) AS lastseen FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			} else {
 				$query = $sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_lines.ruid) AS lastseen, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 1, 1, $this->datetime['year'])).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				$rankings = true;
 			}
 		} elseif ($type === 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'];
@@ -1173,12 +1172,12 @@ class html
 				}
 			}
 
-			if ($rankings && (is_null($result['prevrank']) || $i < $result['prevrank'])) {
-				$pos = '<span class="green">&#x25B2;'.$i.'</span>';
-			} elseif ($rankings && $i > $result['prevrank']) {
-				$pos = '<span class="red">&#x25BC;'.$i.'</span>';
-			} else {
+			if (!isset($result['prevrank']) || $i === $result['prevrank']) {
 				$pos = $i;
+			} elseif ($i < $result['prevrank']) {
+				$pos = '<span class="green">&#x25B2;'.$i.'</span>';
+			} elseif ($i > $result['prevrank']) {
+				$pos = '<span class="red">&#x25BC;'.$i.'</span>';
 			}
 
 			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$pos.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.htmlspecialchars($result['csnick']).'</a>' : htmlspecialchars($result['csnick'])).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->daysago($result['lastseen']).'<td class="v6">'.htmlspecialchars($result['quote']);
@@ -1192,16 +1191,14 @@ class html
 	{
 		$current_column = 1;
 		$current_row = 0;
-		$rankings = false;
 
 		/**
 		 * Don't try to calculate changes in rankings if we're dealing with the first month of activity.
 		 */
-		if (date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
+		if (!$this->rankings || date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
 			$query = $sqlite3->query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		} else {
 			$query = $sqlite3->query('SELECT csnick, l_total, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 1, 1, $this->datetime['year'])).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$rankings = true;
 		}
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -1214,12 +1211,12 @@ class html
 
 			$i = $this->maxrows_people_alltime + ($current_column > 1 ? ($current_column - 1) * $this->maxrows_people2 : 0) + $current_row;
 
-			if ($rankings && (is_null($result['prevrank']) || $i < $result['prevrank'])) {
-				$pos = '<span class="green">'.$i.'</span>';
-			} elseif ($rankings && $i > $result['prevrank']) {
-				$pos = '<span class="red">'.$i.'</span>';
-			} else {
+			if (!isset($result['prevrank']) || $i === $result['prevrank']) {
 				$pos = $i;
+			} elseif ($i < $result['prevrank']) {
+				$pos = '<span class="green">&#x25B2;'.$i.'</span>';
+			} elseif ($i > $result['prevrank']) {
+				$pos = '<span class="red">&#x25BC;'.$i.'</span>';
 			}
 
 			$columns[$current_column][$current_row] = [$pos, $result['csnick'], $result['l_total']];
