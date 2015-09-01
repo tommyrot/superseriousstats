@@ -76,11 +76,11 @@ class sss
 		/**
 		 * Some options require additional settings to be set in the configuration file. Add those to the list.
 		 */
-		if (strpos($options_keys, 'i') !== false) {
+		if (array_key_exists('i', $options)) {
 			array_push($this->settings_list_required, 'parser', 'logfile_dateformat');
 		}
 
-		if (strpos($options_keys, 'o') !== false || strpos($options_keys, 's') !== false) {
+		if (array_key_exists('o', $options) || array_key_exists('s', $options)) {
 			$this->settings_list_required[] = 'channel';
 		}
 
