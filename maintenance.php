@@ -25,6 +25,9 @@ class maintenance
 				continue;
 			}
 
+			/**
+			 * Do some explicit type casting because everything is initially a string.
+			 */
 			if ($type === 'string') {
 				$this->$key = $settings[$key];
 			} elseif ($type === 'int') {
