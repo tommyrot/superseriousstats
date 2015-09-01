@@ -144,7 +144,7 @@ class sss
 		/**
 		 * The following options are listed in order of execution. Ie. "i" before "o", "b" before "o".
 		 */
-		if (array_key_exists('b', $options)) {
+		if (array_key_exists('b', $options) && preg_match('/^\d+$/', $options['b'])) {
 			$this->settings['sectionbits'] = (int) $options['b'];
 		}
 
