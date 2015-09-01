@@ -582,19 +582,19 @@ class sss
 		while (!feof($fp)) {
 			$line = trim(fgets($fp));
 
-			if (preg_match('/^(\w+)\s*=\s*"(.*?)"(\s*#.*)?$/', $line, $matches)) {
-				$this->settings[$matches[1]] = $matches[2];
+			if (preg_match('/^\s*(?<setting>\w+)\s*=\s*"\s*(?<value>([^\s"]+(\s+[^\s"]+)*))\s*"/', $line, $matches)) {
+				$this->settings[$matches['setting']] = $matches['value'];
 			}
 		}
 
 		fclose($fp);
 
 		/**
-		 * Exit if any crucial settings are missing or empty.
+		 * Exit if any crucial setting is missing.
 		 */
 		foreach ($this->settings_list_required as $key) {
-			if (empty($this->settings[$key])) {
-				output::output('critical', __METHOD__.'(): missing setting: \''.$key.'\'');
+			if (!array_key_exists($key, $this->settings)) {
+				output::output('critical', __METHOD__.'(): missing required setting: \''.$key.'\'');
 			}
 		}
 
@@ -606,6 +606,9 @@ class sss
 				continue;
 			}
 
+			/**
+			 * Do some explicit type casting because everything is initially a string.
+			 */
 			if ($type === 'string') {
 				$this->$key = $this->settings[$key];
 			} elseif ($type === 'int') {
