@@ -8,7 +8,7 @@ ini_set('display_errors', 'stdout');
 ini_set('error_reporting', -1);
 
 /**
- * Check if all required extension are loaded.
+ * Check if all required extensions are loaded.
  */
 if (!extension_loaded('sqlite3')) {
 	exit('sqlite3 extension isn\'t loaded'."\n");
