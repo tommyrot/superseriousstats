@@ -125,7 +125,7 @@ class parser
 			 */
 			if ($type === 'string') {
 				$this->$key = $settings[$key];
-			} elseif ($type === 'int') {
+			} elseif ($type === 'int' && preg_match('/^\d+$/', $settings[$key])) {
 				$this->$key = (int) $settings[$key];
 			} elseif ($type === 'bool') {
 				if (strtolower($settings[$key]) === 'true') {

@@ -611,7 +611,7 @@ class sss
 			 */
 			if ($type === 'string') {
 				$this->$key = $this->settings[$key];
-			} elseif ($type === 'int') {
+			} elseif ($type === 'int' && preg_match('/^\d+$/', $this->settings[$key])) {
 				$this->$key = (int) $this->settings[$key];
 			} elseif ($type === 'bool') {
 				if (strtolower($this->settings[$key]) === 'true') {
