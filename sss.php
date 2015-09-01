@@ -262,7 +262,7 @@ class sss
 			'userpics' => 'bool',
 			'userpics_dir' => 'string',
 			'userpics_default' => 'string'];
-		$vars = '$settings[\''.(!empty($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = [';
+		$vars = '$settings[\''.(isset($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = [';
 
 		foreach ($settings_list as $key => $type) {
 			if (!array_key_exists($key, $this->settings)) {
@@ -271,14 +271,10 @@ class sss
 
 			if ($type === 'string') {
 				$vars .= "\n\t".'\''.$key.'\' => \''.$this->settings[$key].'\',';
-			} elseif ($type === 'int') {
-				$vars .= "\n\t".'\''.$key.'\' => '.(int) $this->settings[$key].',';
-			} elseif ($type === 'bool') {
-				if (strtolower($this->settings[$key]) === 'true') {
-					$vars .= "\n\t".'\''.$key.'\' => true,';
-				} elseif (strtolower($this->settings[$key]) === 'false') {
-					$vars .= "\n\t".'\''.$key.'\' => false,';
-				}
+			} elseif ($type === 'int' && preg_match('/^\d+$/', $this->settings[$key])) {
+				$vars .= "\n\t".'\''.$key.'\' => '.$this->settings[$key].',';
+			} elseif ($type === 'bool' && preg_match('/^(true|false)$/i', $this->settings[$key])) {
+				$vars .= "\n\t".'\''.$key.'\' => '.strtolower($this->settings[$key]).',';
 			}
 		}
 
