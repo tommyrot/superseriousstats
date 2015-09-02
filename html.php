@@ -853,9 +853,7 @@ class html
 			}
 		}
 
-		$result = $query->fetchArray(SQLITE3_ASSOC);
-
-		if ($result === false) {
+		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
 			return null;
 		}
 

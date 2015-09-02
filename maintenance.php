@@ -48,9 +48,8 @@ class maintenance
 	private function calculate_milestones($sqlite3)
 	{
 		$query = $sqlite3->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if ($result === false) {
+		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
 			return null;
 		}
 
@@ -238,9 +237,8 @@ class maintenance
 	private function register_most_active_alias($sqlite3)
 	{
 		$query = $sqlite3->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS newruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND newruid IS NOT NULL AND ruid != newruid') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if ($result === false) {
+		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
 			return null;
 		}
 

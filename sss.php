@@ -193,9 +193,8 @@ class sss
 	{
 		output::output('notice', __METHOD__.'(): exporting nicks');
 		$query = $sqlite3->query('SELECT csnick, ruid, status FROM uid_details ORDER BY csnick ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if ($result === false) {
+		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
 			output::output('critical', __METHOD__.'(): database is empty');
 		}
 
@@ -285,9 +284,8 @@ class sss
 	{
 		output::output('notice', __METHOD__.'(): importing nicks');
 		$query = $sqlite3->query('SELECT uid, csnick FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$result = $query->fetchArray(SQLITE3_ASSOC);
 
-		if ($result === false) {
+		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
 			output::output('critical', __METHOD__.'(): database is empty');
 		}
 
