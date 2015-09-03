@@ -19,7 +19,8 @@ if (!extension_loaded('mbstring')) {
 }
 
 /**
- * Class autoloader. This code handles on the fly inclusion of class files at time of instantiation.
+ * Class autoloader. This code handles on the fly inclusion of class files at
+ * time of instantiation.
  */
 spl_autoload_register(function ($class) {
 	require_once(rtrim(dirname(__FILE__), '/\\').'/'.$class.'.php');
@@ -31,7 +32,8 @@ spl_autoload_register(function ($class) {
 class sss
 {
 	/**
-	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
+	 * Variables listed in $settings_list[] can have their default value overridden
+	 * in the configuration file.
 	 */
 	private $autolinknicks = true;
 	private $database = 'sss.db3';
@@ -52,8 +54,8 @@ class sss
 	public function __construct()
 	{
 		/**
-		 * Explicitly set the locale to C (POSIX) for all categories so there hopefully won't be any unexpected
-		 * results between platforms.
+		 * Explicitly set the locale to C (POSIX) for all categories so there hopefully
+		 * won't be any unexpected results between platforms.
 		 */
 		setlocale(LC_ALL, 'C');
 
@@ -74,7 +76,8 @@ class sss
 		}
 
 		/**
-		 * Some options require additional settings to be set in the configuration file. Add those to the list.
+		 * Some options require additional settings to be set in the configuration
+		 * file. Add those to the list.
 		 */
 		if (array_key_exists('i', $options)) {
 			array_push($this->settings_list_required, 'parser', 'logfile_dateformat');
@@ -94,21 +97,22 @@ class sss
 		}
 
 		/**
-		 * After the configuration file has been read we can update the used timezone and the level of console
-		 * output messages with user specified values.
+		 * After the configuration file has been read we can update the used timezone
+		 * and the level of console output messages with user specified values.
 		 */
 		if (!date_default_timezone_set($this->timezone)) {
 			output::output('critical', __METHOD__.'(): invalid timezone: \''.$this->timezone.'\'');
 		}
 
 		/**
-		 * Prior to having the updated value of $outputbits take effect there were no message types other than
-		 * critical events, which cannot be suppressed.
+		 * Prior to having the updated value of $outputbits take effect there were no
+		 * message types other than critical events, which cannot be suppressed.
 		 */
 		output::set_outputbits($this->outputbits);
 
 		/**
-		 * Export settings from the configuration file in the format vars.php accepts them.
+		 * Export settings from the configuration file in the format vars.php accepts
+		 * them.
 		 */
 		if (array_key_exists('s', $options)) {
 			$this->export_settings();
@@ -127,7 +131,8 @@ class sss
 		/**
 		 * Set SQLite3 PRAGMAs:
 		 *  journal_mode = OFF - Disable the rollback journal completely.
-		 *  synchronous = OFF - Continue without syncing as soon as data is handed off to the operating system.
+		 *  synchronous = OFF - Continue without syncing as soon as data is
+		 *                       handed off to the operating system.
 		 *  temp_store = MEMORY - Temporary tables and indices are kept in memory.
 		 */
 		$pragmas = [
@@ -142,7 +147,8 @@ class sss
 		output::output('notice', __METHOD__.'(): succesfully connected to database: \''.$this->database.'\'');
 
 		/**
-		 * The following options are listed in order of execution. Ie. "i" before "o", "b" before "o".
+		 * The following options are listed in order of execution. Ie. "i" before "o",
+		 * "b" before "o".
 		 */
 		if (array_key_exists('b', $options) && preg_match('/^\d+$/', $options['b'])) {
 			$this->settings['sectionbits'] = (int) $options['b'];
@@ -174,7 +180,8 @@ class sss
 	}
 
 	/**
-	 * The maintenance routines ensure that all relevant user data is accumulated properly.
+	 * The maintenance routines ensure that all relevant user data is accumulated
+	 * properly.
 	 */
 	private function do_maintenance($sqlite3)
 	{
@@ -246,7 +253,8 @@ class sss
 	private function export_settings()
 	{
 		/**
-		 * The following is a list of settings accepted by history.php and/or user.php along with their type.
+		 * The following is a list of settings accepted by history.php and/or user.php
+		 * along with their type.
 		 */
 		$settings_list = [
 			'channel' => 'string',
@@ -318,8 +326,8 @@ class sss
 			$status = (int) $lineparts[0];
 
 			/**
-			 * The first nick on each line will be the initial registered nick and its uid will become the ruid to which
-			 * aliases are linked.
+			 * The first nick on each line will be the initial registered nick and its uid
+			 * will become the ruid to which aliases are linked.
 			 */
 			if (array_key_exists($lineparts[1], $uids)) {
 				$ruid = $uids[$lineparts[1]];
@@ -342,7 +350,8 @@ class sss
 			$i = count($ruids);
 
 			/**
-			 * Set all nicks to their default status before updating them according to imported data.
+			 * Set all nicks to their default status before updating them according to
+			 * imported data.
 			 */
 			$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$sqlite3->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -362,9 +371,10 @@ class sss
 	}
 
 	/**
-	 * This function tries to link unlinked nicks to any other nick that is identical after stripping them both from
-	 * any non-alphanumeric characters (at any position in the nick) and trailing numerics. The results are compared
-	 * in a case insensitive manner.
+	 * This function tries to link unlinked nicks to any other nick that is
+	 * identical after stripping them both from any non-alphanumeric characters (at
+	 * any position in the nick) and trailing numerics. The results are compared in
+	 * a case insensitive manner.
 	 */
 	private function link_nicks($sqlite3)
 	{
@@ -384,9 +394,9 @@ class sss
 			 */
 			if (strlen($strippednick) >= 2) {
 				/**
-				 * Maintain an array for each stripped nick, containing the uids of every nick that
-				 * matches it. Put the uid of the matching nick at the start of the array if the nick is
-				 * already linked (status != 0), otherwise put it at the end.
+				 * Maintain an array for each stripped nick, containing the uids of every nick
+				 * that matches it. Put the uid of the matching nick at the start of the array
+				 * if the nick is already linked (status != 0), otherwise put it at the end.
 				 */
 				if ($result['status'] !== 0 && isset($strippednicks[$strippednick])) {
 					array_unshift($strippednicks[$strippednick], $result['uid']);
@@ -410,8 +420,8 @@ class sss
 
 			for ($i = 1, $j = count($uids); $i < $j; $i++) {
 				/**
-				 * Use the ruid that belongs to the first uid in the array to link all succeeding
-				 * _unlinked_ nicks to.
+				 * Use the ruid that belongs to the first uid in the array to link all
+				 * succeeding _unlinked_ nicks to.
 				 */
 				if ($nicks[$uids[$i]]['status'] === 0) {
 					$newalias = true;
@@ -421,8 +431,8 @@ class sss
 			}
 
 			/**
-			 * If there are aliases found, and the first nick in the array is unlinked (status = 0), make it
-			 * a registered nick (status = 1).
+			 * If there are aliases found, and the first nick in the array is unlinked
+			 * (status = 0), make it a registered nick (status = 1).
 			 */
 			if ($newalias && $nicks[$uids[0]]['status'] === 0) {
 				$sqlite3->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -506,7 +516,8 @@ class sss
 			$parser->set_value('date', $date);
 
 			/**
-			 * Get the streak history. This will assume logs are parsed in chronological order with no gaps.
+			 * Get the streak history. This will assume logs are parsed in chronological
+			 * order with no gaps.
 			 */
 			if (($result = $sqlite3->querySingle('SELECT prevnick, streak FROM streak_history', true)) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -518,7 +529,8 @@ class sss
 			}
 
 			/**
-			 * Get the parse history and set the line number on which to start parsing the log.
+			 * Get the parse history and set the line number on which to start parsing the
+			 * log.
 			 */
 			if (($firstline = $sqlite3->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -551,7 +563,8 @@ class sss
 				$sqlite3->exec('UPDATE parse_history SET lines_parsed = '.$parser->get_value('linenum_lastnonempty').' WHERE CHANGES() = 0 AND date = \''.$date.'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 				/**
-				 * Write data to database and set $needmaintenance to true if there was any data stored.
+				 * Write data to database and set $needmaintenance to true if there was any
+				 * data stored.
 				 */
 				if ($parser->write_data($sqlite3)) {
 					$needmaintenance = true;
@@ -576,8 +589,8 @@ class sss
 	}
 
 	/**
-	 * Read the settings from the configuration file and put them into $settings[] so they can be passed along to
-	 * other classes.
+	 * Read the settings from the configuration file and put them into $settings[]
+	 * so they can be passed along to other classes.
 	 */
 	private function read_config($file)
 	{
