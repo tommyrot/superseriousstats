@@ -214,12 +214,12 @@ class sss
 		$i = 0;
 		$output = '';
 
-		if (!empty($registerednicks)) {
+		if (isset($registerednicks)) {
 			foreach ($registerednicks as $ruid => $nick) {
 				$i++;
 				$output .= $statuses[$ruid].','.$nick;
 
-				if (!empty($aliases[$ruid])) {
+				if (isset($aliases[$ruid])) {
 					$i += count($aliases[$ruid]);
 					$output .= ','.implode(',', $aliases[$ruid]);
 				}
@@ -228,7 +228,7 @@ class sss
 			}
 		}
 
-		if (!empty($unlinked)) {
+		if (isset($unlinked)) {
 			$i += count($unlinked);
 			$output .= '*,'.implode(',', $unlinked)."\n";
 		}
