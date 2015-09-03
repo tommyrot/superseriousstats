@@ -305,19 +305,28 @@ class sss
 
 		while (!feof($fp)) {
 			$line = preg_replace('/\s/', '', fgets($fp));
+
+			/**
+			 * Skip lines which we can't interpret.
+			 */
+			if (!preg_match('/^[134],\S+(,\S+)*$/', $line)) {
+				continue;
+			}
+
 			$lineparts = explode(',', strtolower($line));
 			$status = (int) $lineparts[0];
 
 			/**
-			 * The first nick on each line will be the initial registered nick which aliases are linked to.
+			 * The first nick on each line will be the initial registered nick and its uid will become the ruid to which
+			 * aliases are linked.
 			 */
-			if (($status === 1 || $status === 3 || $status === 4) && !empty($lineparts[1]) && array_key_exists($lineparts[1], $uids)) {
+			if (array_key_exists($lineparts[1], $uids)) {
 				$ruid = $uids[$lineparts[1]];
 				$ruids[] = $ruid;
 				$statuses[$ruid] = $status;
 
 				for ($i = 2, $j = count($lineparts); $i < $j; $i++) {
-					if (!empty($lineparts[$i]) && array_key_exists($lineparts[$i], $uids)) {
+					if (isset($lineparts[$i]) && array_key_exists($lineparts[$i], $uids)) {
 						$aliases[$ruid][] = $uids[$lineparts[$i]];
 					}
 				}
@@ -326,7 +335,7 @@ class sss
 
 		fclose($fp);
 
-		if (empty($ruids)) {
+		if (!isset($ruids)) {
 			output::output('critical', __METHOD__.'(): no user relations found to import');
 		} else {
 			/**
@@ -338,7 +347,7 @@ class sss
 			foreach ($ruids as $ruid) {
 				$sqlite3->exec('UPDATE uid_details SET status = '.$statuses[$ruid].' WHERE uid = '.$ruid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-				if (!empty($aliases[$ruid])) {
+				if (isset($aliases[$ruid])) {
 					$sqlite3->exec('UPDATE uid_details SET ruid = '.$ruid.', status = 2 WHERE uid IN ('.implode(',', $aliases[$ruid]).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				}
 			}
