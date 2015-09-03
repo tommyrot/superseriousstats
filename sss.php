@@ -215,8 +215,9 @@ class sss
 		$output = '';
 
 		if (isset($registerednicks)) {
+			$i += count($registerednicks);
+
 			foreach ($registerednicks as $ruid => $nick) {
-				$i++;
 				$output .= $statuses[$ruid].','.$nick;
 
 				if (isset($aliases[$ruid])) {
