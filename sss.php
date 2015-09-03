@@ -382,13 +382,13 @@ class sss
 			/**
 			 * The stripped nick must consist of at least two characters.
 			 */
-			if (strlen($strippednick) > 1) {
+			if (strlen($strippednick) >= 2) {
 				/**
 				 * Maintain an array for each stripped nick, containing the uids of every nick that
 				 * matches it. Put the uid of the matching nick at the start of the array if the nick is
 				 * already linked (status != 0), otherwise put it at the end.
 				 */
-				if ($result['status'] !== 0 && !empty($strippednicks[$strippednick])) {
+				if ($result['status'] !== 0 && isset($strippednicks[$strippednick])) {
 					array_unshift($strippednicks[$strippednick], $result['uid']);
 				} else {
 					$strippednicks[$strippednick][] = $result['uid'];
