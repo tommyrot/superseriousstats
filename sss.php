@@ -476,7 +476,7 @@ class sss
 			}
 		}
 
-		if (empty($logfiles)) {
+		if (!isset($logfiles)) {
 			output::output('critical', __METHOD__.'(): no logfiles found matching \'logfile_dateformat\' setting');
 		}
 
@@ -520,11 +520,13 @@ class sss
 			/**
 			 * Get the parse history and set the line number on which to start parsing the log.
 			 */
-			if (($firstline = $sqlite3->querySingle('SELECT lines_parsed + 1 FROM parse_history WHERE date = \''.$date.'\'')) === false) {
+			if (($firstline = $sqlite3->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			if (is_null($firstline)) {
+			if (!is_null($firstline)) {
+				$firstline++;
+			} else {
 				$firstline = 1;
 			}
 
