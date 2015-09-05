@@ -42,8 +42,8 @@ class output
 		switch ($type) {
 			case 'critical':
 				/**
-				 * This type of message will always display and is followed up by the termination of the
-				 * program.
+				 * This type of message will always display and is followed up by the
+				 * termination of the program.
 				 */
 				echo $datetime.' [C] '.$message."\n";
 				exit;
@@ -63,8 +63,9 @@ class output
 	}
 
 	/**
-	 * Set the amount of bits corresponding to the type(s) of output messages displayed. By default all but debug
-	 * messages will be displayed. This can be changed in the configuration file.
+	 * Set the amount of bits corresponding to the type(s) of output messages
+	 * displayed. By default all but debug messages will be displayed. This can be
+	 * changed in the configuration file.
 	 *  0  Critical events (will always display)
 	 *  1  Notices
 	 *  2  Debug messages
