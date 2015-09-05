@@ -179,7 +179,7 @@ class user
 		}
 
 		$firstseen = $result['firstseen'];
-		$l_avg = $result['l_avg'];
+		$l_avg = (int) round($result['l_avg']);
 		$lastseen = $result['lastseen'];
 		$this->csnick = $result['csnick'];
 		$this->l_total = $result['l_total'];
