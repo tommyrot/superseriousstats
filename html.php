@@ -104,10 +104,10 @@ class html
 	{
 		$daysago = round((strtotime('today') - strtotime(substr($datetime, 0, 10))) / 86400);
 
-		if (($daysago / 365) >= 1) {
+		if ($daysago / 365 >= 1) {
 			$daysago = str_replace('.0', '', number_format($daysago / 365, 1));
 			$daysago .= ' Year'.((float) $daysago > 1 ? 's' : '').' Ago';
-		} elseif (($daysago / 30.42) >= 1) {
+		} elseif ($daysago / 30.42 >= 1) {
 			$daysago = str_replace('.0', '', number_format($daysago / 30.42, 1));
 			$daysago .= ' Month'.((float) $daysago > 1 ? 's' : '').' Ago';
 		} elseif ($daysago > 1) {
