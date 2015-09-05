@@ -346,28 +346,28 @@ class sss
 
 		if (!isset($ruids)) {
 			output::output('critical', __METHOD__.'(): no user relations found to import');
-		} else {
-			$i = count($ruids);
-
-			/**
-			 * Set all nicks to their default status before updating them according to
-			 * imported data.
-			 */
-			$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-			foreach ($ruids as $ruid) {
-				$sqlite3->exec('UPDATE uid_details SET status = '.$statuses[$ruid].' WHERE uid = '.$ruid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-				if (isset($aliases[$ruid])) {
-					$i += count($aliases[$ruid]);
-					$sqlite3->exec('UPDATE uid_details SET ruid = '.$ruid.', status = 2 WHERE uid IN ('.implode(',', $aliases[$ruid]).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				}
-			}
-
-			$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			output::output('notice', __METHOD__.'(): '.number_format($i).' nicks imported');
 		}
+
+		$i = count($ruids);
+
+		/**
+		 * Set all nicks to their default status before updating them according to
+		 * imported data.
+		 */
+		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$sqlite3->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+		foreach ($ruids as $ruid) {
+			$sqlite3->exec('UPDATE uid_details SET status = '.$statuses[$ruid].' WHERE uid = '.$ruid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+			if (isset($aliases[$ruid])) {
+				$i += count($aliases[$ruid]);
+				$sqlite3->exec('UPDATE uid_details SET ruid = '.$ruid.', status = 2 WHERE uid IN ('.implode(',', $aliases[$ruid]).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			}
+		}
+
+		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		output::output('notice', __METHOD__.'(): '.number_format($i).' nicks imported');
 	}
 
 	/**
