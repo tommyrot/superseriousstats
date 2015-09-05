@@ -10,7 +10,8 @@
 class html
 {
 	/**
-	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
+	 * Variables listed in $settings_list[] can have their default value overridden
+	 * in the configuration file.
 	 */
 	private $addhtml_foot = '';
 	private $addhtml_head = '';
@@ -155,8 +156,8 @@ class html
 		$l_avg = $this->l_total / $dayslogged;
 
 		/**
-		 * Date and time variables used throughout the script. These are based on the date of the last logfile
-		 * parsed, and are used to define our scope.
+		 * Date and time variables used throughout the script. These are based on the
+		 * date of the last logfile parsed, and are used to define our scope.
 		 */
 		$this->datetime['currentyear'] = (int) date('Y');
 		$this->datetime['dayofmonth'] = (int) date('j', strtotime($date_lastlogparsed));
@@ -175,12 +176,14 @@ class html
 		}
 
 		/**
-		 * If there are one or more days to come until the end of the year, display an additional column in the
-		 * Activity by Year table with an estimated line count for the current year.
+		 * If there are one or more days to come until the end of the year, display an
+		 * additional column in the Activity by Year table with an estimated line count
+		 * for the current year.
 		 */
 		if ($this->datetime['daysleft'] !== 0 && $this->datetime['year'] === $this->datetime['currentyear']) {
 			/**
-			 * Base the estimation on the activity in the last 90 days logged, if there is any.
+			 * Base the estimation on the activity in the last 90 days logged, if there is
+			 * any.
 			 */
 			if (($activity = $sqlite3->querySingle('SELECT COUNT(*) FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'')) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -887,8 +890,9 @@ class html
 
 			if ($l_total['estimate'] > $high_value) {
 				/**
-				 * Don't set $high_date because we don't want "Est." to be bold. The previous highest
-				 * date will be bold instead. $high_value must be set in order to calculate bar heights.
+				 * Don't set $high_date because we don't want "Est." to be bold. The previous
+				 * highest date will be bold instead. $high_value must be set in order to
+				 * calculate bar heights.
 				 */
 				$high_value = $l_total['estimate'];
 			}
@@ -1090,7 +1094,8 @@ class html
 	private function make_table_people($sqlite3, $type)
 	{
 		/**
-		 * Only create the table if there is activity from users other than bots and excluded users.
+		 * Only create the table if there is activity from users other than bots and
+		 * excluded users.
 		 */
 		if ($type === 'alltime') {
 			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
@@ -1115,7 +1120,8 @@ class html
 			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
 
 			/**
-			 * Don't try to calculate changes in rankings if we're dealing with the first month of activity.
+			 * Don't try to calculate changes in rankings if we're dealing with the first
+			 * month of activity.
 			 */
 			if (!$this->rankings || date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
 				$query = $sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_lines.ruid) AS lastseen FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -1194,7 +1200,8 @@ class html
 		$current_row = 0;
 
 		/**
-		 * Don't try to calculate changes in rankings if we're dealing with the first month of activity.
+		 * Don't try to calculate changes in rankings if we're dealing with the first
+		 * month of activity.
 		 */
 		if (!$this->rankings || date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
 			$query = $sqlite3->query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -1251,7 +1258,8 @@ class html
 	private function make_table_people_timeofday($sqlite3)
 	{
 		/**
-		 * Only create the table if there is activity from users other than bots and excluded users.
+		 * Only create the table if there is activity from users other than bots and
+		 * excluded users.
 		 */
 		if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
