@@ -222,11 +222,12 @@ class nick
 			$uid = $result['uid'];
 
 			/**
-			 * Only update $firstseen if the value stored in the database is zero. We're parsing logs in
-			 * chronological order so the stored value of $firstseen can never be lower and the value of
-			 * $lastseen can never be higher than the parsed values. (We are not going out of our way to
-			 * deal with possible DST nonsense.) Secondly, only update $csnick if the nick was seen. We want
-			 * to avoid it from being overwritten by a lowercase $prevnick (streak code) or weirdly cased
+			 * Only update $firstseen if the value stored in the database is zero. We're
+			 * parsing logs in chronological order so the stored value of $firstseen can
+			 * never be lower and the value of $lastseen can never be higher than the parsed
+			 * values. (We are not going out of our way to deal with possible DST nonsense.)
+			 * Secondly, only update $csnick if the nick was seen. We want to avoid it from
+			 * being overwritten by a lowercase $prevnick (streak code) or weirdly cased
 			 * nick due to a slap.
 			 */
 			if ($this->firstseen !== '') {
