@@ -89,14 +89,16 @@ class urltools
 		 */
 		if (preg_match(self::$regexp_complete, $url, $matches)) {
 			/**
-			 * Verify if the TLD is valid. If the validation array is empty we skip this step.
+			 * Verify if the TLD is valid. If the validation array is empty we skip this
+			 * step.
 			 */
 			if (!empty(self::$valid_tlds) && !empty($matches['tld']) && !in_array($matches['tld'], self::$valid_tlds)) {
 				return false;
 			}
 
 			/**
-			 * The maximum allowed length of the FQDN (root domain excluded) is 254 characters.
+			 * The maximum allowed length of the FQDN (root domain excluded) is 254
+			 * characters.
 			 */
 			if (strlen($matches['fqdn']) > 254) {
 				return false;
