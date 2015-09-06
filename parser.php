@@ -351,12 +351,14 @@ class parser
 	}
 
 	/**
-	 * Build a new line consisting of valid UTF-8 from the characters passed along in $char.
+	 * Build a new line consisting of valid UTF-8 from the characters passed along
+	 * in $char.
 	 */
 	private function rebuild_line($matches)
 	{
 		/**
-		 * $char is passed along as the first element of the array $matches (see preg_replace_callback).
+		 * $char is passed along as the first element of the array $matches (see
+		 * preg_replace_callback).
 		 */
 		$char = $matches[0];
 
