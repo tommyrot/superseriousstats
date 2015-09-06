@@ -10,7 +10,8 @@
 class user
 {
 	/**
-	 * Default settings for this script, which can be overridden in the configuration file.
+	 * Default settings for this script, which can be overridden in the
+	 * configuration file.
 	 */
 	private $channel = '';
 	private $database = 'sss.db3';
@@ -52,8 +53,8 @@ class user
 		}
 
 		/**
-		 * $cid is the channel ID used in vars.php and is passed along in the URL so that channel specific
-		 * settings can be identified and loaded.
+		 * $cid is the channel ID used in vars.php and is passed along in the URL so
+		 * that channel specific settings can be identified and loaded.
 		 */
 		if (empty($settings[$this->cid])) {
 			$this->output('error', 'This channel has not been configured.');
@@ -96,14 +97,16 @@ class user
 	}
 
 	/**
-	 * Look for an image in $userpics_dir that has an identical name to one of this user's aliases and return it.
+	 * Look for an image in $userpics_dir that has an identical name to one of this
+	 * user's aliases and return it.
 	 */
 	private function get_userpic($sqlite3)
 	{
 		/**
-		 * If a default image (or comma separated list thereof) is provided in the configuration file it (or a
-		 * randomly selected one) will be returned if no specific image is found for the user. If omitted, null
-		 * will be returned in said case.
+		 * If a default image (or comma separated list thereof) is provided in the
+		 * configuration file it (or a randomly selected one) will be returned if no
+		 * specific image is found for the user. If omitted, null will be returned in
+		 * said case.
 		 */
 		if (preg_match('/^\S+\.(bmp|gif|jpe?g|png)(,\S+\.(bmp|gif|jpe?g|png))*$/i', $this->userpics_default)) {
 			$userpics_default = explode(',', $this->userpics_default);
@@ -260,8 +263,8 @@ class user
 		}
 
 		/**
-		 * Date and time variables used throughout the script. These are based on the date of the last logfile
-		 * parsed, and are used to define our scope.
+		 * Date and time variables used throughout the script. These are based on the
+		 * date of the last logfile parsed, and are used to define our scope.
 		 */
 		$this->datetime['currentyear'] = (int) date('Y');
 		$this->datetime['dayofmonth'] = (int) date('j', strtotime($date_lastlogparsed));
@@ -278,12 +281,14 @@ class user
 		}
 
 		/**
-		 * If there are one or more days to come until the end of the year, display an additional column in the
-		 * Activity by Year table with an estimated line count for the current year.
+		 * If there are one or more days to come until the end of the year, display an
+		 * additional column in the Activity by Year table with an estimated line count
+		 * for the current year.
 		 */
 		if ($this->datetime['daysleft'] !== 0 && $this->datetime['year'] === $this->datetime['currentyear']) {
 			/**
-			 * Base the estimation on the activity in the last 90 days logged, if there is any.
+			 * Base the estimation on the activity in the last 90 days logged, if there is
+			 * any.
 			 */
 			if (($activity = $sqlite3->querySingle('SELECT COUNT(*) FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'')) === false) {
 				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -421,8 +426,9 @@ class user
 
 			if ($l_total['estimate'] > $high_value) {
 				/**
-				 * Don't set $high_date because we don't want "Est." to be bold. The previous highest
-				 * date will be bold instead. $high_value must be set in order to calculate bar heights.
+				 * Don't set $high_date because we don't want "Est." to be bold. The previous
+				 * highest date will be bold instead. $high_value must be set in order to
+				 * calculate bar heights.
 				 */
 				$high_value = $l_total['estimate'];
 			}
@@ -670,9 +676,10 @@ class user
 	}
 
 	/**
-	 * For compatibility reasons this function has the same name as the original version in the base class and
-	 * accepts the same arguments. Its functionality is slightly different in that it exits on any type of message
-	 * passed to it. SQLite3 result code 5 = SQLITE_BUSY, result code 6 = SQLITE_LOCKED.
+	 * For compatibility reasons this function has the same name as the original
+	 * version in the base class and accepts the same arguments. Its functionality
+	 * is slightly different in that it exits on any type of message passed to it.
+	 * SQLite3 result code 5 = SQLITE_BUSY, result code 6 = SQLITE_LOCKED.
 	 */
 	private function output($code, $msg)
 	{
@@ -685,7 +692,8 @@ class user
 }
 
 /**
- * The channel ID must be set, cannot be empty and cannot be of excessive length.
+ * The channel ID must be set, cannot be empty and cannot be of excessive
+ * length.
  */
 if (empty($_GET['cid']) || !preg_match('/^\S{1,32}$/', $_GET['cid'])) {
 	exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">Invalid channel ID.</div></div></body></html>'."\n");

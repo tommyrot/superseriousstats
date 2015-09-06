@@ -10,7 +10,8 @@
 class history
 {
 	/**
-	 * Default settings for this script, which can be overridden in the configuration file.
+	 * Default settings for this script, which can be overridden in the
+	 * configuration file.
 	 */
 	private $channel = '';
 	private $database = 'sss.db3';
@@ -50,8 +51,8 @@ class history
 		}
 
 		/**
-		 * $cid is the channel ID used in vars.php and is passed along in the URL so that channel specific
-		 * settings can be identified and loaded.
+		 * $cid is the channel ID used in vars.php and is passed along in the URL so
+		 * that channel specific settings can be identified and loaded.
 		 */
 		if (empty($settings[$this->cid])) {
 			$this->output(null, 'This channel has not been configured.');
@@ -306,7 +307,8 @@ class history
 	private function make_table_people($sqlite3, $type)
 	{
 		/**
-		 * Only create the table if there is activity from users other than bots and excluded users.
+		 * Only create the table if there is activity from users other than bots and
+		 * excluded users.
 		 */
 		if ($type === 'month') {
 			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\'')) === false) {
@@ -381,7 +383,8 @@ class history
 	private function make_table_people_timeofday($sqlite3, $type)
 	{
 		/**
-		 * Only create the table if there is activity from users other than bots and excluded users.
+		 * Only create the table if there is activity from users other than bots and
+		 * excluded users.
 		 */
 		if ($type === 'month') {
 			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\'')) === false) {
@@ -451,9 +454,10 @@ class history
 	}
 
 	/**
-	 * For compatibility reasons this function has the same name as the original version in the base class and
-	 * accepts the same arguments. Its functionality is slightly different in that it exits on any type of message
-	 * passed to it. SQLite3 result code 5 = SQLITE_BUSY, result code 6 = SQLITE_LOCKED.
+	 * For compatibility reasons this function has the same name as the original
+	 * version in the base class and accepts the same arguments. Its functionality
+	 * is slightly different in that it exits on any type of message passed to it.
+	 * SQLite3 result code 5 = SQLITE_BUSY, result code 6 = SQLITE_LOCKED.
 	 */
 	private function output($code, $msg)
 	{
@@ -466,7 +470,8 @@ class history
 }
 
 /**
- * The channel ID must be set, cannot be empty and cannot be of excessive length.
+ * The channel ID must be set, cannot be empty and cannot be of excessive
+ * length.
  */
 if (empty($_GET['cid']) || !preg_match('/^\S{1,32}$/', $_GET['cid'])) {
 	exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">Invalid channel ID.</div></div></body></html>'."\n");
