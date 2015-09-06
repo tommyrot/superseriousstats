@@ -5,14 +5,16 @@
  */
 
 /**
- * General parse instructions. This class will be extended by a class with logfile format specific parse instructions.
+ * General parse instructions. This class will be extended by a class with
+ * logfile format specific parse instructions.
  */
 class parser
 {
 	use base;
 
 	/**
-	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
+	 * Variables listed in $settings_list[] can have their default value overridden
+	 * in the configuration file.
 	 */
 	private $date = '';
 	private $hex_latin1supplement = '[\x80-\xFF]';
@@ -138,8 +140,9 @@ class parser
 	}
 
 	/**
-	 * Create an object of the nick if it doesn't already exist, otherwise update $csnick. Return the lowercase nick
-	 * for further referencing by the calling function.
+	 * Create an object of the nick if it doesn't already exist, otherwise update
+	 * $csnick. Return the lowercase nick for further referencing by the calling
+	 * function.
 	 */
 	private function add_nick($csnick, $time)
 	{
@@ -163,7 +166,8 @@ class parser
 	}
 
 	/**
-	 * Keep track of every topic set. These are handled (and stored) while preserving case.
+	 * Keep track of every topic set. These are handled (and stored) while
+	 * preserving case.
 	 */
 	private function add_topic($topic, $time, $nick)
 	{
@@ -175,7 +179,8 @@ class parser
 	}
 
 	/**
-	 * Keep track of every URL. These are handled (and stored) while preserving case.
+	 * Keep track of every URL. These are handled (and stored) while preserving
+	 * case.
 	 */
 	private function add_url($urldata, $time, $nick)
 	{
@@ -194,8 +199,8 @@ class parser
 	private function add_word($csword, $length)
 	{
 		/**
-		 * The multibyte strtolower function is significantly slower than its single-byte counterpart. Only use
-		 * it if necessary.
+		 * The multibyte strtolower function is significantly slower than its
+		 * single-byte counterpart. Only use it if necessary.
 		 */
 		if (preg_match('/^[\x00-\x7F]+$/', $csword)) {
 			$word = strtolower($csword);
@@ -260,8 +265,8 @@ class parser
 			}
 
 			/**
-			 * Pass on the non-empty normalized line to the logfile format specific parser class extending
-			 * this class. Remember the number of said line.
+			 * Pass on the non-empty normalized line to the logfile format specific parser
+			 * class extending this class. Remember the number of said line.
 			 */
 			$this->linenum_lastnonempty = $this->linenum;
 			$this->parse_line($line);
@@ -272,7 +277,8 @@ class parser
 	}
 
 	/**
-	 * Checks if a line is valid UTF-8 and convert all non-valid bytes into valid multibyte UTF-8.
+	 * Checks if a line is valid UTF-8 and convert all non-valid bytes into valid
+	 * multibyte UTF-8.
 	 */
 	private function normalize_line($line)
 	{
@@ -333,8 +339,8 @@ class parser
 			}
 
 			/**
-			 * Pass on the non-empty normalized line to the logfile format specific parser class extending
-			 * this class. Remember the number of said line.
+			 * Pass on the non-empty normalized line to the logfile format specific parser
+			 * class extending this class. Remember the number of said line.
 			 */
 			$this->linenum_lastnonempty = $this->linenum;
 			$this->parse_line($line);
