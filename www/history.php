@@ -428,20 +428,20 @@ class history
 		for ($i = 1; $i <= $this->maxrows_people_timeofday; $i++) {
 			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
 				break;
-			} else {
-				$trx .= '<tr><td class="pos">'.$i;
+			}
 
-				foreach ($times as $time) {
-					if (!isset(${$time}[$i]['lines'])) {
-						$trx .= '<td class="v">';
+			$trx .= '<tr><td class="pos">'.$i;
+
+			foreach ($times as $time) {
+				if (!isset(${$time}[$i]['lines'])) {
+					$trx .= '<td class="v">';
+				} else {
+					$width = round((${$time}[$i]['lines'] / $high_value) * 190);
+
+					if ($width !== (float) 0) {
+						$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div>';
 					} else {
-						$width = round((${$time}[$i]['lines'] / $high_value) * 190);
-
-						if ($width !== (float) 0) {
-							$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div>';
-						} else {
-							$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']);
-						}
+						$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']);
 					}
 				}
 			}
