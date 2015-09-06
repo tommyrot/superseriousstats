@@ -397,7 +397,8 @@ class parser
 		$this->nick_objs[$nick]->add_value('actions', 1);
 
 		/**
-		 * Track quotes/example lines of up to a sensible limit of 255 characters in length.
+		 * Track quotes/example lines of up to a sensible limit of 255 characters in
+		 * length.
 		 */
 		if ($line_length <= 255) {
 			$this->nick_objs[$nick]->add_quote('ex_actions', $line, $line_length);
@@ -431,8 +432,8 @@ class parser
 		$this->nick_objs[$nick_undergoing]->add_value('kicked', 1);
 
 		/**
-		 * Track kick messages of up to a limit of 307 characters in length. The majority of IRC servers are
-		 * within this limit.
+		 * Track kick messages of up to a limit of 307 characters in length. The
+		 * majority of IRC servers are within this limit.
 		 */
 		if (mb_strlen($line, 'UTF-8') <= 307) {
 			$this->nick_objs[$nick_performing]->set_value('ex_kicks', $line);
@@ -505,16 +506,16 @@ class parser
 		 */
 		if ($nick !== $this->prevnick) {
 			/**
-			 * Someone else typed a line and the previous streak is interrupted. Check if the streak
-			 * qualifies as a monologue and store it.
+			 * Someone else typed a line and the previous streak is interrupted. Check if
+			 * the streak qualifies as a monologue and store it.
 			 */
 			if ($this->streak >= 5) {
 				/**
 				 * If the current line count is 0 then $prevnick is not known yet (only seen in
-				 * previous parse run). It's safe to assume that $prevnick is a valid nick since it was
-				 * set by set_normal(). Create an object for it here so the monologue data can be added.
-				 * It doesn't matter if $prevnick is lowercase since it won't be updated before it is
-				 * actually seen (i.e. on any other activity).
+				 * previous parse run). It's safe to assume that $prevnick is a valid nick since
+				 * it was set by set_normal(). Create an object for it here so the monologue
+				 * data can be added. It doesn't matter if $prevnick is lowercase since it won't
+				 * be updated before it is actually seen (i.e. on any other activity).
 				 */
 				if ($this->l_total === 0) {
 					$this->add_nick($this->prevnick, null);
@@ -571,12 +572,13 @@ class parser
 
 		foreach ($words as $csword) {
 			/**
-			 * Keep track of all character groups composed of the letters found in the Basic Latin and
-			 * Latin-1 Supplement character sets, the Hyphen (used properly), and any multibyte characters
-			 * beyond those two sets (found in UTF-8) regardless of their meaning. The regular expression
-			 * checks for any characters not wanted in the word - from the aforementioned Latin sets. Note
-			 * that normalize_line() already took all the dirt out. This method of finding words is not 100%
-			 * accurate, but it serves its purpose.
+			 * Keep track of all character groups composed of the letters found in the
+			 * Basic Latin and Latin-1 Supplement character sets, the Hyphen (used
+			 * properly), and any multibyte characters beyond those two sets (found in
+			 * UTF-8) regardless of their meaning. The regular expression checks for any
+			 * characters not wanted in the word - from the aforementioned Latin sets. Note
+			 * that normalize_line() already took all the dirt out. This method of finding
+			 * words is not 100% accurate, but it serves its purpose.
 			 */
 			if ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
 				$word_length = mb_strlen($csword, 'UTF-8');
@@ -588,21 +590,22 @@ class parser
 					$this->add_word($csword, $word_length);
 				}
 
-			/**
-			 * Behold the amazing smileys regular expression. Cannot evaluate as a word (see above).
-			 */
+				/**
+				 * Behold the amazing smileys regular expression. Cannot evaluate as a word
+				 * (see above).
+				 */
 			} elseif (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(]|\'\()|;([])(pxd\/o]|-\)|_;)|[:;](\)\)|\(\()|\\\o\/|<3|=[])p\/\\\d(x]|d:|8\)|-[_.]-|>:\()$/i', $csword)) {
 				$this->nick_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 
-			/**
-			 * Only catch URLs which were intended to be clicked on. Most clients can handle URLs that begin
-			 * with "www." or a scheme like "http://".
-			 */
+				/**
+				 * Only catch URLs which were intended to be clicked on. Most clients can
+				 * handle URLs that begin with "www." or a scheme like "http://".
+				 */
 			} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 				/**
-				 * Regardless of it being a valid URL or not, set $skipquote to true, which ensures that
-				 * lines which contain a URL are not used as a quote. Quotes with URLs in them often
-				 * look messy/confusing on the stats page.
+				 * Regardless of it being a valid URL or not, set $skipquote to true, which
+				 * ensures that lines which contain a URL are not used as a quote. Quotes with
+				 * URLs in them often look messy/confusing on the stats page.
 				 */
 				$skipquote = true;
 
@@ -621,16 +624,17 @@ class parser
 		}
 
 		/**
-		 * Track quotes/example lines of up to a sensible limit of 255 characters in length. This applies to all
-		 * of the types seen below.
+		 * Track quotes/example lines of up to a sensible limit of 255 characters in
+		 * length. This applies to all of the types seen below.
 		 */
 		if (!$skipquote && $line_length <= 255) {
 			$this->nick_objs[$nick]->add_quote('quote', $line, $line_length);
 		}
 
 		/**
-		 * Uppercased lines should consist of 2 or more characters, be completely uppercased, and have less than
-		 * 50% non-letter characters from the Basic Latin and Latin-1 Supplement character sets in them.
+		 * Uppercased lines should consist of 2 or more characters, be completely
+		 * uppercased, and have less than 50% non-letter characters from the Basic Latin
+		 * and Latin-1 Supplement character sets in them.
 		 */
 		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/S', '', $line), 'UTF-8') * 2 > $line_length) {
 			$this->nick_objs[$nick]->add_value('uppercased', 1);
@@ -705,8 +709,8 @@ class parser
 		}
 
 		/**
-		 * Don't pass a time when adding the "undergoing" nick while it may only be referred to instead of being
-		 * seen for real.
+		 * Don't pass a time when adding the "undergoing" nick while it may only be
+		 * referred to instead of being seen for real.
 		 */
 		$nick_undergoing = $this->add_nick($csnick_undergoing, null);
 		$this->nick_objs[$nick_undergoing]->add_value('slapped', 1);
@@ -723,8 +727,8 @@ class parser
 		$this->nick_objs[$nick]->add_value('topics', 1);
 
 		/**
-		 * Track topics of up to a limit of 390 characters in length. The majority of IRC servers are within
-		 * this limit.
+		 * Track topics of up to a limit of 390 characters in length. The majority of
+		 * IRC servers are within this limit.
 		 */
 		if (mb_strlen($line, 'UTF-8') <= 390) {
 			$this->add_topic($line, $time, $nick);
@@ -732,7 +736,8 @@ class parser
 	}
 
 	/**
-	 * Check a nick on syntax and defined lengths. Again, the majority of IRC servers are within this limit.
+	 * Check a nick on syntax and defined lengths. Again, the majority of IRC
+	 * servers are within this limit.
 	 */
 	private function validate_nick($csnick)
 	{
@@ -765,7 +770,8 @@ class parser
 		}
 
 		/**
-		 * Write user data to database. User data should be written prior to topic and URL data.
+		 * Write user data to database. User data should be written prior to topic and
+		 * URL data.
 		 */
 		foreach ($this->nick_objs as $nick) {
 			$nick->write_data($sqlite3);
