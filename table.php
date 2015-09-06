@@ -30,7 +30,8 @@ class table
 	}
 
 	/**
-	 * Check if there are URLs in the string and if so, make hyperlinks out of them.
+	 * Check if there are URLs in the string and if so, make hyperlinks out of
+	 * them.
 	 */
 	private function find_urls($string)
 	{
@@ -51,7 +52,8 @@ class table
 	public function make_table($sqlite3)
 	{
 		/**
-		 * Detect which class to use. Class medium should be set explicitly by setting $medium to true.
+		 * Detect which class to use. Class medium should be set explicitly by setting
+		 * $medium to true.
 		 */
 		if ($this->medium) {
 			$class = 'medium';
