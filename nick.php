@@ -166,7 +166,8 @@ class nick
 	}
 
 	/**
-	 * Keep a stack of the 10 most recent quotes of each type along with their length.
+	 * Keep a stack of the 10 most recent quotes of each type along with their
+	 * length.
 	 */
 	public function add_quote($type, $line, $length)
 	{
@@ -290,7 +291,8 @@ class nick
 			$sqlite3->exec('UPDATE uid_lines SET '.implode(', ', $queryparts['update-assignments']).($this->lasttalked !== '' ? ', lasttalked = DATETIME(\''.$this->lasttalked.'\')' : '').' WHERE CHANGES() = 0 AND uid = '.$uid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			/**
-			 * Update $topmonologue separately as we want to keep the highest value instead of the sum.
+			 * Update $topmonologue separately as we want to keep the highest value instead
+			 * of the sum.
 			 */
 			if ($this->topmonologue !== 0) {
 				if (($topmonologue = $sqlite3->querySingle('SELECT topmonologue FROM uid_lines WHERE uid = '.$uid)) === false) {
