@@ -288,8 +288,8 @@ class parser
 			while ($line !== '') {
 				/**
 				 * 1. Match the first valid multibyte character or otherwise a single byte.
-				 * 2. Pass it on to rebuild_line() and replace the character with an empty string
-				 *    effectively making $line shorter.
+				 * 2. Pass it on to rebuild_line() and replace the character with an empty
+				 *    string effectively making $line shorter.
 				 * 3. Continue until $line is zero bytes in length.
 				 */
 				$line = preg_replace_callback('/^('.$this->hex_validutf8.'|.)/s', [$this, 'rebuild_line'], $line);
@@ -302,11 +302,12 @@ class parser
 		}
 
 		/**
-		 * 1. Remove control codes from the Basic Latin (7-bit ASCII) and Latin-1 Supplement character sets (the
-		 *    latter after conversion to multibyte). 0x03 is used for (mIRC) color codes and may be followed by
-		 *    additional characters; remove those as well.
-		 * 2. Replace all possible formations of adjacent tabs and spaces (including the multibyte no-break
-		 *    space) with a single space.
+		 * 1. Remove control codes from the Basic Latin (7-bit ASCII) and Latin-1
+		 *    Supplement character sets (the latter after conversion to multibyte).
+		 *    0x03 is used for (mIRC) color codes and may be followed by additional
+		 *    characters; remove those as well.
+		 * 2. Replace all possible formations of adjacent tabs and spaces (including
+		 *    the multibyte no-break space) with a single space.
 		 * 3. Remove whitespace characters at the beginning and end of a line.
 		 */
 		$line = preg_replace(['/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/S', '/([\x09\x20]|\xC2\xA0)+/S', '/^\x20|\x20$/'], ['', ' ', ''], $line);
@@ -364,9 +365,10 @@ class parser
 
 		/**
 		 * 1. Valid UTF-8 is passed along unmodified.
-		 * 2. Single byte characters from the Latin-1 Supplement are converted to multibyte unicode.
-		 * 3. Everything else is converted to the unicode questionmark sign (commonly used to depict unknown
-		 *    characters).
+		 * 2. Single byte characters from the Latin-1 Supplement are converted to
+		 *    multibyte unicode.
+		 * 3. Everything else is converted to the unicode questionmark sign (commonly
+		 *    used to depict unknown characters).
 		 */
 		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
 			$this->newline .= $char;
