@@ -10,7 +10,8 @@
 class maintenance
 {
 	/**
-	 * Variables listed in $settings_list[] can have their default value overridden in the configuration file.
+	 * Variables listed in $settings_list[] can have their default value overridden
+	 * in the configuration file.
 	 */
 	private $rankings = false;
 	private $settings_list = ['rankings' => 'bool'];
@@ -85,7 +86,8 @@ class maintenance
 	private function calculate_rankings($sqlite3)
 	{
 		/**
-		 * Create an array with all dates since first channel activity. This helps define the scope for ruids.
+		 * Create an array with all dates since first channel activity. This helps
+		 * define the scope for ruids.
 		 */
 		if (($date_firstactivity = $sqlite3->querySingle('SELECT MIN(date) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -110,8 +112,9 @@ class maintenance
 		}
 
 		/**
-		 * We don't have to worry about the possible gap between the date of first activity (as per $scope) and
-		 * the date of first days logged. All dates prior to actual activity won't be used in calculations.
+		 * We don't have to worry about the possible gap between the date of first
+		 * activity (as per $scope) and the date of first days logged. All dates prior
+		 * to actual activity won't be used in calculations.
 		 */
 		$cumulative_dayslogged = 0;
 		ksort($dayslogged_by_month);
@@ -208,14 +211,15 @@ class maintenance
 	}
 
 	/**
-	 * Make materialized views, which are actual stored copies of virtual tables (views).
+	 * Make materialized views, which are actual stored copies of virtual tables
+	 * (views).
 	 */
 	private function make_materialized_views($sqlite3)
 	{
 		/**
-		 * The results from the view in the left column will be stored as the materialized view in the right
-		 * column. The order in which they are listed is important, as some views depend on materialized views
-		 * created before them.
+		 * The results from the view in the left column will be stored as the
+		 * materialized view in the right column. The order in which they are listed is
+		 * important, as some views depend on materialized views created before them.
 		 */
 		$views = [
 			'v_ruid_activity_by_day' => 'ruid_activity_by_day',
@@ -232,7 +236,8 @@ class maintenance
 	}
 
 	/**
-	 * Make the alias with the most lines the new registered nick for the user or bot it is linked to.
+	 * Make the alias with the most lines the new registered nick for the user or
+	 * bot it is linked to.
 	 */
 	private function register_most_active_alias($sqlite3)
 	{
