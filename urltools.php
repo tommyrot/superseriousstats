@@ -56,9 +56,10 @@ class urltools
 			self::$regexp_complete = '/^(?<url>'.$scheme.'?'.$authority.$path.$query.$fragment.')$/i';
 
 			/**
-			 * Read "tlds-alpha-by-domain.txt" and put all TLDs in an array against which we can validate
-			 * found URLs. If the aforementioned file does not exist or fails to be read, the TLD check will
-			 * not be done. This would be an unexpected and undesired exception though.
+			 * Read "tlds-alpha-by-domain.txt" and put all TLDs in an array against which
+			 * we can validate found URLs. If the aforementioned file does not exist or
+			 * fails to be read, the TLD check will not be done. This would be an unexpected
+			 * and undesired exception though.
 			 */
 			if (($tlds = file('tlds-alpha-by-domain.txt')) === false) {
 				output::output('notice', __METHOD__.'(): failed to open file: \'tlds-alpha-by-domain.txt\', tld validation disabled');
