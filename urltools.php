@@ -87,59 +87,59 @@ class urltools
 		/**
 		 * Validate and further process the URL.
 		 */
-		if (preg_match(self::$regexp_complete, $url, $matches)) {
-			/**
-			 * Verify if the TLD is valid. If the validation array is empty we skip this
-			 * step.
-			 */
-			if (!empty(self::$valid_tlds) && !empty($matches['tld']) && !in_array($matches['tld'], self::$valid_tlds)) {
-				return false;
-			}
-
-			/**
-			 * The maximum allowed length of the FQDN (root domain excluded) is 254
-			 * characters.
-			 */
-			if (strlen($matches['fqdn']) > 254) {
-				return false;
-			}
-
-			/**
-			 * If the URL has no scheme, http:// is assumed. Update the elements.
-			 */
-			if (empty($matches['scheme'])) {
-				$matches['scheme'] = 'http://';
-				$matches['url'] = 'http://'.$matches['url'];
-			}
-
-			/**
-			 * Create and return an array with all the elements of this URL.
-			 */
-			$elements = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
-
-			foreach ($elements as $element) {
-				if (empty($matches[$element])) {
-					/**
-					 * Always pass along an empty string for nonexistent elements.
-					 */
-					$urldata[$element] = '';
-				} else {
-					$urldata[$element] = $matches[$element];
-				}
-			}
-
-			/**
-			 * Make sure the only numeric element isn't passed along as a string.
-			 */
-			if (empty($matches['port'])) {
-				$urldata['port'] = 0;
-			} else {
-				$urldata['port'] = (int) $matches['port'];
-			}
-
-			return $urldata;
-		} else {
+		if (!preg_match(self::$regexp_complete, $url, $matches)) {
 			return false;
 		}
+
+		/**
+		 * Verify if the TLD is valid. If the validation array is empty we skip this
+		 * step.
+		 */
+		if (!empty(self::$valid_tlds) && !empty($matches['tld']) && !in_array($matches['tld'], self::$valid_tlds)) {
+			return false;
+		}
+
+		/**
+		 * The maximum allowed length of the FQDN (root domain excluded) is 254
+		 * characters.
+		 */
+		if (strlen($matches['fqdn']) > 254) {
+			return false;
+		}
+
+		/**
+		 * If the URL has no scheme, http:// is assumed. Update the elements.
+		 */
+		if (empty($matches['scheme'])) {
+			$matches['scheme'] = 'http://';
+			$matches['url'] = 'http://'.$matches['url'];
+		}
+
+		/**
+		 * Create and return an array with all the elements of this URL.
+		 */
+		$elements = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
+
+		foreach ($elements as $element) {
+			if (empty($matches[$element])) {
+				/**
+				 * Always pass along an empty string for nonexistent elements.
+				 */
+				$urldata[$element] = '';
+			} else {
+				$urldata[$element] = $matches[$element];
+			}
+		}
+
+		/**
+		 * Make sure the only numeric element isn't passed along as a string.
+		 */
+		if (empty($matches['port'])) {
+			$urldata['port'] = 0;
+		} else {
+			$urldata['port'] = (int) $matches['port'];
+		}
+
+		return $urldata;
 	}
 }

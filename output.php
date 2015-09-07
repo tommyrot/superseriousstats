@@ -32,8 +32,8 @@ class output
 			return null;
 		}
 
-		$datetime = date('M d H:i:s');
 		self::$prevmessage = $message;
+		$datetime = date('M d H:i:s');
 
 		if (substr($datetime, 4, 1) === '0') {
 			$datetime = substr_replace($datetime, ' ', 4, 1);
