@@ -226,13 +226,13 @@ class parser
 		foreach ($columns as $key) {
 			if (is_int($this->$key) && $this->$key !== 0) {
 				$queryparts['columnlist'][] = $key;
-				$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
 				$queryparts['values'][] = $this->$key;
+				$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
 			} elseif (is_string($this->$key) && $this->$key !== '') {
 				$value = '\''.$sqlite3->escapeString($this->$key).'\'';
 				$queryparts['columnlist'][] = $key;
-				$queryparts['update-assignments'][] = $key.' = '.$value;
 				$queryparts['values'][] = $value;
+				$queryparts['update-assignments'][] = $key.' = '.$value;
 			}
 		}
 
