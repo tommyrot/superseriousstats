@@ -171,6 +171,10 @@ class nick
 	 */
 	public function add_quote($type, $line, $length)
 	{
+		/**
+		 * $length should be the first value in each array since we sort on this column
+		 * later on with rsort().
+		 */
 		$this->{$type.'_stack'}[] = [
 			'length' => $length,
 			'line' => $line];
@@ -261,6 +265,10 @@ class nick
 
 		foreach ($types as $type) {
 			if (!empty($this->{$type.'_stack'})) {
+				/**
+				 * rsort() sorts a multidimensional array on the first value of each contained
+				 * array, highest to lowest.
+				 */
 				rsort($this->{$type.'_stack'});
 				$this->$type = $this->{$type.'_stack'}[0]['line'];
 
