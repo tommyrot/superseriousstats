@@ -264,27 +264,29 @@ class nick
 		$types = ['ex_actions', 'ex_uppercased', 'ex_exclamations', 'ex_questions', 'quote'];
 
 		foreach ($types as $type) {
-			if (!empty($this->{$type.'_stack'})) {
-				/**
-				 * rsort() sorts a multidimensional array on the first value of each contained
-				 * array, highest to lowest.
-				 */
-				rsort($this->{$type.'_stack'});
-				$this->$type = $this->{$type.'_stack'}[0]['line'];
+			if (empty($this->{$type.'_stack'})) {
+				continue;
+			}
 
-				if (($type === 'ex_questions' || $type === 'ex_exclamations') && $this->$type === $this->ex_uppercased && count($this->{$type.'_stack'}) > 1) {
-					for ($i = 1, $j = count($this->{$type.'_stack'}); $i < $j; $i++) {
-						if ($this->{$type.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
-							$this->$type = $this->{$type.'_stack'}[$i]['line'];
-							break;
-						}
+			/**
+			 * rsort() sorts a multidimensional array on the first value of each contained
+			 * array, highest to lowest.
+			 */
+			rsort($this->{$type.'_stack'});
+			$this->$type = $this->{$type.'_stack'}[0]['line'];
+
+			if (($type === 'ex_questions' || $type === 'ex_exclamations') && $this->$type === $this->ex_uppercased && count($this->{$type.'_stack'}) > 1) {
+				for ($i = 1, $j = count($this->{$type.'_stack'}); $i < $j; $i++) {
+					if ($this->{$type.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
+						$this->$type = $this->{$type.'_stack'}[$i]['line'];
+						break;
 					}
-				} elseif ($type === 'quote' && ($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions) && count($this->quote_stack) > 1) {
-					for ($i = 1, $j = count($this->quote_stack); $i < $j; $i++) {
-						if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
-							$this->quote = $this->quote_stack[$i]['line'];
-							break;
-						}
+				}
+			} elseif ($type === 'quote' && ($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions) && count($this->quote_stack) > 1) {
+				for ($i = 1, $j = count($this->quote_stack); $i < $j; $i++) {
+					if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
+						$this->quote = $this->quote_stack[$i]['line'];
+						break;
 					}
 				}
 			}
