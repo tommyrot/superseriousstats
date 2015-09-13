@@ -131,8 +131,8 @@ class sss
 		/**
 		 * Set SQLite3 PRAGMAs:
 		 *  journal_mode = OFF - Disable the rollback journal completely.
-		 *  synchronous = OFF - Continue without syncing as soon as data is
-		 *                       handed off to the operating system.
+		 *  synchronous = OFF - Continue without syncing as soon as data is handed off
+		 *                       to the operating system.
 		 *  temp_store = MEMORY - Temporary tables and indices are kept in memory.
 		 */
 		$pragmas = [
