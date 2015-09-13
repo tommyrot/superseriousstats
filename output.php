@@ -25,8 +25,8 @@ class output
 	public static function output($type, $message)
 	{
 		/**
-		 * Avoid repeating the same message multiple times in a row, e.g. repeated
-		 * lines and mode errors.
+		 * Avoid repeating the same message multiple times in a row, e.g. repeated lines
+		 * and mode errors.
 		 */
 		if ($message === self::$prevmessage) {
 			return null;
