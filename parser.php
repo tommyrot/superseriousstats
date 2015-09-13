@@ -358,8 +358,8 @@ class parser
 	private function rebuild_line($matches)
 	{
 		/**
-		 * $char is passed along as the first element of the array $matches (see
-		 * preg_replace_callback).
+		 * $char is passed along as the first element of $matches[] (see
+		 * preg_replace_callback()).
 		 */
 		$char = $matches[0];
 
@@ -394,7 +394,6 @@ class parser
 			return null;
 		}
 
-		$line_length = mb_strlen($line, 'UTF-8');
 		$nick = $this->add_nick($csnick, $time);
 		$this->nick_objs[$nick]->add_value('actions', 1);
 
@@ -402,7 +401,7 @@ class parser
 		 * Track quotes/example lines of up to a sensible limit of 255 characters in
 		 * length.
 		 */
-		if ($line_length <= 255) {
+		if (($line_length = mb_strlen($line, 'UTF-8')) <= 255) {
 			$this->nick_objs[$nick]->add_quote('ex_actions', $line, $line_length);
 		}
 	}
@@ -498,8 +497,8 @@ class parser
 			return null;
 		}
 
-		$line_length = mb_strlen($line, 'UTF-8');
 		$nick = $this->add_nick($csnick, $time);
+		$line_length = mb_strlen($line, 'UTF-8');
 		$this->nick_objs[$nick]->add_value('characters', $line_length);
 		$this->nick_objs[$nick]->set_value('lasttalked', $this->date.' '.$time);
 
@@ -560,10 +559,10 @@ class parser
 			$this->nick_objs[$nick]->add_value('l_evening', 1);
 		}
 
-		$this->l_total++;
 		$this->nick_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
 		$this->nick_objs[$nick]->add_value('l_total', 1);
 		$this->{'l_'.($hour < 10 ? '0'.$hour : $hour)}++;
+		$this->l_total++;
 
 		/**
 		 * Words are simply considered character groups separated by whitespace.
@@ -592,17 +591,17 @@ class parser
 					$this->add_word($csword, $word_length);
 				}
 
-				/**
-				 * Behold the amazing smileys regular expression. Cannot evaluate as a word
-				 * (see above).
-				 */
+			/**
+			 * Behold the amazing smileys regular expression. Cannot evaluate as a word (see
+			 * above).
+			 */
 			} elseif (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(]|\'\()|;([])(pxd\/o]|-\)|_;)|[:;](\)\)|\(\()|\\\o\/|<3|=[])p\/\\\d(x]|d:|8\)|-[_.]-|>:\()$/i', $csword)) {
 				$this->nick_objs[$nick]->add_value($this->smileys[strtolower($csword)], 1);
 
-				/**
-				 * Only catch URLs which were intended to be clicked on. Most clients can
-				 * handle URLs that begin with "www." or a scheme like "http://".
-				 */
+			/**
+			 * Only catch URLs which were intended to be clicked on. Most clients can handle
+			 * URLs that begin with "www." or a scheme like "http://".
+			 */
 			} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 				/**
 				 * Regardless of it being a valid URL or not, set $skipquote to true, which
@@ -743,7 +742,7 @@ class parser
 	 */
 	private function validate_nick($csnick)
 	{
-		if ($csnick !== '0' && preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $csnick)) {
+		if (preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $csnick) && $csnick !== '0') {
 			return true;
 		} else {
 			return false;
