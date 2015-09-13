@@ -76,8 +76,8 @@ class sss
 		}
 
 		/**
-		 * Some options require additional settings to be set in the configuration
-		 * file. Add those to the list.
+		 * Some options require additional settings to be set in the configuration file.
+		 * Add those to the list.
 		 */
 		if (array_key_exists('i', $options)) {
 			array_push($this->settings_list_required, 'parser', 'logfile_dateformat');
@@ -563,8 +563,8 @@ class sss
 				$sqlite3->exec('UPDATE parse_history SET lines_parsed = '.$parser->get_value('linenum_lastnonempty').' WHERE CHANGES() = 0 AND date = \''.$date.'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 				/**
-				 * Write data to database and set $needmaintenance to true if there was any
-				 * data stored.
+				 * Write data to database and set $needmaintenance to true if there was any data
+				 * stored.
 				 */
 				if ($parser->write_data($sqlite3)) {
 					$needmaintenance = true;

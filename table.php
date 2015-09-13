@@ -30,8 +30,7 @@ class table
 	}
 
 	/**
-	 * Check if there are URLs in the string and if so, make hyperlinks out of
-	 * them.
+	 * Check if there are URLs in the string and if so, make hyperlinks out of them.
 	 */
 	private function find_urls($string)
 	{
