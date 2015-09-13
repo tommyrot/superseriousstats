@@ -173,7 +173,7 @@ class nick
 	{
 		/**
 		 * $length should be the first value in each array since we sort on this column
-		 * later on with rsort().
+		 * with rsort() later.
 		 */
 		$this->{$type.'_stack'}[] = [
 			'length' => $length,
