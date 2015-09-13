@@ -5,9 +5,9 @@
  */
 
 /**
- * Various functions related to URL validation and presentation. It follows
- * RFC 3986, and the preferred syntax as mentioned in RFC 1034 section 3.5 and
- * RFC 1123 section 2.1.
+ * Various functions related to URL validation and presentation. It follows RFC
+ * 3986, and the preferred syntax as mentioned in RFC 1034 section 3.5 and RFC
+ * 1123 section 2.1.
  *
  * Take note of the following which differ from the specification:
  * - Only the http:// and https:// schemes will validate. URLs without a scheme
