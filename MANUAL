@@ -25,9 +25,10 @@ options:
                 Export all user relations from the database to <file>.
 
         -i <file|directory>
-                Parse logfile <file>, or all logfiles in <directory>. After the
-                last logfile has been parsed database maintenance will commence
-                to verify, sort and index data.
+                Parse logfile <file>, or all logfiles in <directory>. Gzipped
+                logfiles with the ".gz" extension can be processed by the parser
+                if so desired. After the last logfile has been parsed database
+                maintenance will commence to verify, sort and index data.
 
         -n <file>
                 Import user relations from <file> into the database. Existing
