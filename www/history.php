@@ -99,23 +99,19 @@ class history
 	 */
 	private function daysago($datetime)
 	{
-		/**
-		 * The time is set to 00:00:00 in the subtraction below. Therefore $daysago will
-		 * always be either 0 or a multiple of 86400 (the amount of seconds in one day).
-		 */
-		$daysago = strtotime('today') - strtotime(substr($datetime, 0, 10));
+		$daysago = round((strtotime('today') - strtotime(substr($datetime, 0, 10))) / 86400);
 
-		if ($daysago >= 31536000) {
-			$daysago = str_replace('.0', '', number_format($daysago / 31536000, 1));
+		if ($daysago / 365 >= 1) {
+			$daysago = str_replace('.0', '', number_format($daysago / 365, 1));
 			$daysago .= ' Year'.((float) $daysago > 1 ? 's' : '').' Ago';
-		} elseif ($daysago >= 2628000) {
-			$daysago = str_replace('.0', '', number_format($daysago / 2628000, 1));
+		} elseif ($daysago / 30.42 >= 1) {
+			$daysago = str_replace('.0', '', number_format($daysago / 30.42, 1));
 			$daysago .= ' Month'.((float) $daysago > 1 ? 's' : '').' Ago';
-		} elseif ($daysago >= 172800) {
-			$daysago = ($daysago / 86400).' Days Ago';
-		} elseif ($daysago === 86400) {
+		} elseif ($daysago > 1) {
+			$daysago .= ' Days Ago';
+		} elseif ($daysago === (float) 1) {
 			$daysago = 'Yesterday';
-		} elseif ($daysago === 0) {
+		} elseif ($daysago === (float) 0) {
 			$daysago = 'Today';
 		}
 
