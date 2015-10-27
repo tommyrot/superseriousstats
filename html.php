@@ -102,6 +102,10 @@ class html
 	 */
 	private function daysago($datetime)
 	{
+		/**
+		 * Because the amount of seconds in a day can vary due to DST we have
+		 * to round the value of $daysago.
+		 */
 		$daysago = round((strtotime('today') - strtotime(substr($datetime, 0, 10))) / 86400);
 
 		if ($daysago / 365 >= 1) {
