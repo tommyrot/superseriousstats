@@ -773,7 +773,7 @@ class html
 			/**
 			 * Display the top 9 word tables ordered by totals.
 			 */
-			$query = $sqlite3->query('SELECT length, COUNT(*) AS total FROM words GROUP BY length ORDER BY total DESC, length DESC LIMIT 9') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT * FROM (SELECT length, COUNT(*) AS total FROM words GROUP BY length ORDER BY total DESC, length DESC LIMIT 9) ORDER BY length ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 				$t = new table('Words of '.$result['length'].' Characters', $this->minrows, $this->maxrows);
