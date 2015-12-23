@@ -629,10 +629,6 @@ class user
 
 	private function make_table_rankings($sqlite3)
 	{
-		if (($dayslogged = $sqlite3->querySingle('SELECT COUNT(*) FROM parse_history')) === false) {
-			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
 		$query = $sqlite3->query('SELECT date, rank, l_total, percentage, l_avg, activity, l_max FROM ruid_rankings WHERE ruid = '.$this->ruid.' ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
