@@ -339,7 +339,8 @@ class user
 		 */
 		if ($this->rankings) {
 			$output = '';
-			$output .= $this->make_table_rankings($sqlite3);
+			$output .= $this->make_table_rankings($sqlite3, 'month');
+			$output .= $this->make_table_rankings($sqlite3, 'year');
 
 			if ($output !== '') {
 				$this->output .= '<div class="section">Rankings</div>'."\n".$output;
@@ -627,9 +628,16 @@ class user
 		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function make_table_rankings($sqlite3)
+	private function make_table_rankings($sqlite3, $type)
 	{
-		$query = $sqlite3->query('SELECT date, rank, l_total, percentage, l_avg, activity, l_max FROM ruid_rankings WHERE ruid = '.$this->ruid.' ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if ($type === 'month') {
+			$head = 'Rankings and Cumulative Numbers by Month';
+			$query = $sqlite3->query('SELECT date, rank, l_total, percentage, l_avg, activity, l_max FROM ruid_rankings WHERE ruid = '.$this->ruid.' ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		} elseif ($type === 'year') {
+			$head = 'Rankings and Cumulative Numbers by Year';
+			$query = $sqlite3->query('SELECT date, rank, l_total, percentage, l_avg, activity, (SELECT MAX(l_max) FROM ruid_rankings WHERE ruid = t1.ruid AND SUBSTR(date, 0, 5) = SUBSTR(t1.date, 0, 5)) AS l_max FROM ruid_rankings AS t1 WHERE ruid = '.$this->ruid.' AND date IN (SELECT MAX(date) FROM ruid_rankings WHERE ruid = t1.ruid AND SUBSTR(date, 0, 5) = SUBSTR(t1.date, 0, 5)) ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
+
 		$result = $query->fetchArray(SQLITE3_ASSOC);
 
 		if ($result === false) {
@@ -640,7 +648,11 @@ class user
 		$rankings = [];
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$prevdate = date('Y-m', mktime(0, 0, 0, (int) substr($result['date'], 5, 2) - 1, 1, (int) substr($result['date'], 0, 4)));
+			if ($type === 'month') {
+				$prevdate = date('Y-m', mktime(0, 0, 0, (int) substr($result['date'], 5, 2) - 1, 1, (int) substr($result['date'], 0, 4)));
+			} elseif ($type === 'year') {
+				$prevdate = date('Y-m', mktime(0, 0, 0, 12, 1, (int) substr($result['date'] - 1, 0, 4)));
+			}
 
 			if (array_key_exists($prevdate, $rankings)) {
 				$rankings[$result['date']]['activity_delta'] = $result['activity'] - $rankings[$prevdate]['activity'];
@@ -659,13 +671,19 @@ class user
 		}
 
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"><col class="c8"><col class="c9"><col class="c10"><col class="c11"><col class="c12">';
-		$tr1 = '<tr><th colspan="12">Rankings and Cumulative Numbers';
+		$tr1 = '<tr><th colspan="12">'.$head;
 		$tr2 = '<tr><td class="k1-2" colspan="2">Rank<td class="k3"><td class="k4-5" colspan="2">Lines<td class="k6-7" colspan="2">Percentage<td class="k8-9" colspan="2">Lines/Day<td class="k10-11" colspan="2">Activity<td class="k12">Top Day';
 		$trx = '';
 		krsort($rankings);
 
 		foreach ($rankings as $date => $values) {
-			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.(empty($values['rank_delta']) ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.date('M Y', strtotime($date.'-01')).'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.(empty($values['l_total_delta']) ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.(empty($values['percentage_delta']) ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>')).'<td class="v8">'.number_format($values['l_avg'], 1).'<td class="v9">'.(empty($values['l_avg_delta']) ? '' : ($values['l_avg_delta'] < 0 ? '<span class="red">'.number_format($values['l_avg_delta'], 1).'</span>' : '<span class="green">+'.number_format($values['l_avg_delta'], 1).'</span>')).'<td class="v10">'.number_format($values['activity'], 2).'%<td class="v11">'.(empty($values['activity_delta']) ? '' : ($values['activity_delta'] < 0 ? '<span class="red">'.number_format($values['activity_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['activity_delta'], 2).'</span>')).'<td class="v12">'.($values['l_max'] === 0 ? '<span class="grey">n/a</span>' : number_format($values['l_max']));
+			if ($type === 'month') {
+				$date = date('M Y', strtotime($date.'-01'));
+			} elseif ($type === 'year') {
+				$date = date('Y', strtotime($date.'-01'));
+			}
+
+			$trx .= '<tr><td class="v1">'.$values['rank'].'<td class="v2">'.(empty($values['rank_delta']) ? '' : ($values['rank_delta'] < 0 ? '<span class="red">'.$values['rank_delta'].'</span>' : '<span class="green">+'.$values['rank_delta'].'</span>')).'<td class="v3">'.$date.'<td class="v4">'.number_format($values['l_total']).'<td class="v5">'.(empty($values['l_total_delta']) ? '' : '<span class="green">+'.number_format($values['l_total_delta']).'</span>').'<td class="v6">'.number_format($values['percentage'], 2).'%<td class="v7">'.(empty($values['percentage_delta']) ? '' : ($values['percentage_delta'] < 0 ? '<span class="red">'.number_format($values['percentage_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['percentage_delta'], 2).'</span>')).'<td class="v8">'.number_format($values['l_avg'], 1).'<td class="v9">'.(empty($values['l_avg_delta']) ? '' : ($values['l_avg_delta'] < 0 ? '<span class="red">'.number_format($values['l_avg_delta'], 1).'</span>' : '<span class="green">+'.number_format($values['l_avg_delta'], 1).'</span>')).'<td class="v10">'.number_format($values['activity'], 2).'%<td class="v11">'.(empty($values['activity_delta']) ? '' : ($values['activity_delta'] < 0 ? '<span class="red">'.number_format($values['activity_delta'], 2).'</span>' : '<span class="green">+'.number_format($values['activity_delta'], 2).'</span>')).'<td class="v12">'.($values['l_max'] === 0 ? '<span class="grey">n/a</span>' : number_format($values['l_max']));
 		}
 
 		return '<table class="rank">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
