@@ -315,7 +315,7 @@ class user
 			. '<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
 			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
 			. '<style type="text/css">'."\n"
-			. '  .act-year { width:'.(2 + (($this->datetime['years'] + ($this->estimate ? 1 : 0)) * 34)).'px }'."\n"
+			. '  .act-year { width:'.(2 + (($this->datetime['years'] + ($this->estimate ? 1 : 0) < 24 ? $this->datetime['years'] + ($this->estimate ? 1 : 0) : 24) * 34)).'px }'."\n"
 			. '</style>'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
@@ -376,10 +376,25 @@ class user
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
 			}
 		} elseif ($type === 'year') {
+			/**
+			 * Ensure that the maximum amount of columns doesn't exceed 24.
+			 */
+			if ($this->datetime['years'] >= 24) {
+				if ($this->estimate) {
+					/**
+					 * One column will be added later making the total 24.
+					 */
+					$columns = 23;
+				} else {
+					$columns = 24;
+				}
+			} else {
+				$columns = $this->datetime['years'];
+			}
+
 			$class = 'act-year';
-			$columns = $this->datetime['years'];
 			$head = 'Activity by Year';
-			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date > \''.($this->datetime['year'] - 24).'\'') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = $this->datetime['year'] - $i;

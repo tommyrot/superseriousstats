@@ -214,7 +214,7 @@ class html
 			. '<title>'.htmlspecialchars($this->channel).', seriously.</title>'."\n"
 			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
 			. '<style type="text/css">'."\n"
-			. '  .act-year { width:'.(2 + (($this->datetime['years'] + ($this->estimate ? 1 : 0)) * 34)).'px }'."\n"
+			. '  .act-year { width:'.(2 + (($this->datetime['years'] + ($this->estimate ? 1 : 0) < 24 ? $this->datetime['years'] + ($this->estimate ? 1 : 0) : 24) * 34)).'px }'."\n"
 			. '</style>'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
@@ -845,10 +845,25 @@ class html
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
 			}
 		} elseif ($type === 'year') {
+			/**
+			 * Ensure that the maximum amount of columns doesn't exceed 24.
+			 */
+			if ($this->datetime['years'] >= 24) {
+				if ($this->estimate) {
+					/**
+					 * One column will be added later making the total 24.
+					 */
+					$columns = 23;
+				} else {
+					$columns = 24;
+				}
+			} else {
+				$columns = $this->datetime['years'];
+			}
+
 			$class = 'act-year';
-			$columns = $this->datetime['years'];
 			$head = 'Activity by Year';
-			$query = $sqlite3->query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity GROUP BY SUBSTR(date, 1, 4)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) > \''.($this->datetime['year'] - 24).'\' GROUP BY SUBSTR(date, 1, 4)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = $this->datetime['year'] - $i;
