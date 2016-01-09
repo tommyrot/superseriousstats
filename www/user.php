@@ -331,8 +331,8 @@ class user
 		$this->output .= $this->make_table_activity_distribution_hour($sqlite3);
 		$this->output .= $this->make_table_activity($sqlite3, 'day');
 		$this->output .= $this->make_table_activity($sqlite3, 'month');
-		$this->output .= $this->make_table_activity_distribution_day($sqlite3);
 		$this->output .= $this->make_table_activity($sqlite3, 'year');
+		$this->output .= $this->make_table_activity_distribution_day($sqlite3);
 
 		/**
 		 * Rankings section.

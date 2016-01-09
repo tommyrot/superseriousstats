@@ -231,8 +231,8 @@ class html
 			$html .= $this->make_table_activity_distribution_hour($sqlite3);
 			$html .= $this->make_table_activity($sqlite3, 'day');
 			$html .= $this->make_table_activity($sqlite3, 'month');
-			$html .= $this->make_table_activity_distribution_day($sqlite3);
 			$html .= $this->make_table_activity($sqlite3, 'year');
+			$html .= $this->make_table_activity_distribution_day($sqlite3);
 			$html .= $this->make_table_people($sqlite3, 'alltime');
 			$html .= $this->make_table_people2($sqlite3);
 			$html .= $this->make_table_people($sqlite3, 'year');
