@@ -197,7 +197,7 @@ class html
 		 * the Activity Distribution by Day table to be adjacent to the right so we pad
 		 * the Activity by Year table up to 24 columns so it looks neat.
 		 */
-		$this->columns_act_year = $this->datetime['year'] - (int) date('Y', strtotime($firstseen)) + ($this->estimate ? 1 : 0) + 1;
+		$this->columns_act_year = $this->datetime['year'] - (int) date('Y', strtotime($date_first)) + ($this->estimate ? 1 : 0) + 1;
 
 		if ($this->columns_act_year < 3) {
 			$this->columns_act_year = 3;
