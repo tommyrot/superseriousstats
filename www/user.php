@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -32,6 +32,7 @@ class user
 		'morning' => 'g',
 		'afternoon' => 'y',
 		'evening' => 'r'];
+	private $columns_act_year = 0;
 	private $csnick = '';
 	private $datetime = [];
 	private $estimate = false;
@@ -270,15 +271,7 @@ class user
 		$this->datetime['dayofmonth'] = (int) date('j', strtotime($date_lastlogparsed));
 		$this->datetime['month'] = (int) date('n', strtotime($date_lastlogparsed));
 		$this->datetime['year'] = (int) date('Y', strtotime($date_lastlogparsed));
-		$this->datetime['years'] = $this->datetime['year'] - (int) date('Y', strtotime($firstseen)) + 1;
 		$this->datetime['daysleft'] = (int) date('z', strtotime('last day of December '.$this->datetime['year'])) - (int) date('z', strtotime($date_lastlogparsed));
-
-		/**
-		 * Show a minimum of 3 columns in the Activity by Year table.
-		 */
-		if ($this->datetime['years'] < 3) {
-			$this->datetime['years'] = 3;
-		}
 
 		/**
 		 * If there are one or more days to come until the end of the year, display an
@@ -300,6 +293,20 @@ class user
 		}
 
 		/**
+		 * Show a minimum of 3 and maximum of 24 columns in the Activity by Year table.
+		 * In case the data allows for more than 16 columns there won't be any room for
+		 * the Activity Distribution by Day table to be adjacent to the right so we pad
+		 * the Activity by Year table up to 24 columns so it looks neat.
+		 */
+		$this->columns_act_year = $this->datetime['year'] - (int) date('Y', strtotime($firstseen)) + ($this->estimate ? 1 : 0) + 1;
+
+		if ($this->columns_act_year < 3) {
+			$this->columns_act_year = 3;
+		} elseif ($this->columns_act_year > 16) {
+			$this->columns_act_year = 24;
+		}
+
+		/**
 		 * HTML Head.
 		 */
 		if (($result = $sqlite3->querySingle('SELECT MIN(date) AS date, l_total FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND l_total = (SELECT MAX(l_total) FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.')', true)) === false) {
@@ -315,7 +322,7 @@ class user
 			. '<title>'.htmlspecialchars($this->csnick).', seriously.</title>'."\n"
 			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
 			. '<style type="text/css">'."\n"
-			. '  .act-year { width:'.(2 + (($this->datetime['years'] + ($this->estimate ? 1 : 0) < 24 ? $this->datetime['years'] + ($this->estimate ? 1 : 0) : 24) * 34)).'px }'."\n"
+			. '  .act-year { width:'.(2 + ($this->columns_act_year * 34)).'px }'."\n"
 			. '</style>'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
@@ -376,32 +383,16 @@ class user
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
 			}
 		} elseif ($type === 'year') {
-			/**
-			 * Ensure that the maximum amount of columns doesn't exceed 24.
-			 */
-			if ($this->datetime['years'] >= 24) {
-				if ($this->estimate) {
-					/**
-					 * One column will be added later making the total 24.
-					 */
-					$columns = 23;
-				} else {
-					$columns = 24;
-				}
-			} else {
-				$columns = $this->datetime['years'];
-			}
-
 			$class = 'act-year';
+			$columns = $this->columns_act_year;
 			$head = 'Activity by Year';
 			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date > \''.($this->datetime['year'] - 24).'\'') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-			for ($i = $columns - 1; $i >= 0; $i--) {
+			for ($i = $columns - ($this->estimate ? 1 : 0) - 1; $i >= 0; $i--) {
 				$dates[] = $this->datetime['year'] - $i;
 			}
 
 			if ($this->estimate) {
-				$columns++;
 				$dates[] = 'estimate';
 			}
 		}
