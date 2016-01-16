@@ -171,7 +171,7 @@ class user
 			$this->output('error', 'This user does not exist.');
 		}
 
-		if (($result = $sqlite3->querySingle('SELECT (SELECT csnick FROM uid_details WHERE uid = '.$this->ruid.') AS csnick, MIN(firstseen) AS firstseen, MAX(lastseen) AS lastseen, l_total, CAST(l_total AS REAL) / activedays AS l_avg FROM uid_details JOIN ruid_lines ON uid_details.ruid = ruid_lines.ruid WHERE uid_details.ruid = '.$this->ruid.' AND firstseen != \'0000-00-00 00:00:00\'', true)) === false) {
+		if (($result = $sqlite3->querySingle('SELECT (SELECT csnick FROM uid_details WHERE uid = '.$this->ruid.') AS csnick, MIN(firstseen) AS date_first, MAX(lastseen) AS date_last, l_total, CAST(l_total AS REAL) / activedays AS l_avg FROM uid_details JOIN ruid_lines ON uid_details.ruid = ruid_lines.ruid WHERE uid_details.ruid = '.$this->ruid.' AND firstseen != \'0000-00-00 00:00:00\'', true)) === false) {
 			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
@@ -182,9 +182,9 @@ class user
 			$this->output('error', 'This user does not have any activity logged.');
 		}
 
-		$firstseen = $result['firstseen'];
+		$date_first = $result['date_first'];
+		$date_last = $result['date_last'];
 		$l_avg = (int) round($result['l_avg']);
-		$lastseen = $result['lastseen'];
 		$this->csnick = $result['csnick'];
 		$this->l_total = $result['l_total'];
 
@@ -298,7 +298,7 @@ class user
 		 * the Activity Distribution by Day table to be adjacent to the right so we pad
 		 * the Activity by Year table up to 24 columns so it looks neat.
 		 */
-		$this->columns_act_year = $this->datetime['year'] - (int) date('Y', strtotime($firstseen)) + ($this->estimate ? 1 : 0) + 1;
+		$this->columns_act_year = $this->datetime['year'] - (int) date('Y', strtotime($date_first)) + ($this->estimate ? 1 : 0) + 1;
 
 		if ($this->columns_act_year < 3) {
 			$this->columns_act_year = 3;
@@ -327,7 +327,7 @@ class user
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
 			. '<div class="info">'.($this->userpics ? $this->get_userpic($sqlite3) : '').htmlspecialchars($this->csnick).', seriously'.($mood !== '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
-			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
+			. 'First seen on '.date('M j, Y', strtotime($date_first)).' and last seen on '.date('M j, Y', strtotime($date_last)).'.<br><br>'
 			. htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
