@@ -309,7 +309,7 @@ class sss
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::output('critical', __METHOD__.'(): failed to open file: \''.$file.'\'');
+			output::output('critical', __METHOD__.'(): failed to open file: \''.$rp.'\'');
 		}
 
 		while (!feof($fp)) {
