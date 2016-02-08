@@ -13,8 +13,6 @@ class html
 	 * Variables listed in $settings_list[] can have their default value overridden
 	 * in the configuration file.
 	 */
-	private $addhtml_foot = '';
-	private $addhtml_head = '';
 	private $channel = '';
 	private $cid = '';
 	private $color = [
@@ -41,8 +39,6 @@ class html
 	private $search_user = false;
 	private $sectionbits = 255;
 	private $settings_list = [
-		'addhtml_foot' => 'string',
-		'addhtml_head' => 'string',
 		'channel' => 'string',
 		'cid' => 'string',
 		'history' => 'bool',
@@ -228,7 +224,7 @@ class html
 			. '<div class="info">'.($this->search_user ? '<form action="user.php"><input type="hidden" name="cid" value="'.urlencode($this->cid).'"><input type="text" name="nick" placeholder="Search User.."></form>' : '').htmlspecialchars($this->channel).', seriously.<br><br>'
 			. number_format($dayslogged).' day'.($dayslogged > 1 ? 's logged from '.date('M j, Y', strtotime($date_first)).' to '.date('M j, Y', strtotime($date_last)) : ' logged on '.date('M j, Y', strtotime($date_first))).'.<br><br>'
 			. 'Logs contain '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
-			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.'.($this->addhtml_head !== '' ? '<br><br>'.trim(file_get_contents($this->addhtml_head)) : '').'</div>'."\n";
+			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * Activity section.
@@ -826,7 +822,7 @@ class html
 		/**
 		 * HTML Foot.
 		 */
-		$html .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.'.($this->addhtml_foot !== '' ? '<br>'.trim(file_get_contents($this->addhtml_foot)) : '').'</div>'."\n";
+		$html .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
 		$html .= '</div></body>'."\n\n".'</html>'."\n";
 		return $html;
 	}
