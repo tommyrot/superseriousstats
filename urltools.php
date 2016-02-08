@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -64,7 +64,7 @@ class urltools
 			 * to be read, the TLD check will not be done. This would be an unexpected and
 			 * undesired exception though.
 			 */
-			if (($tlds = file(rtrim(dirname(__FILE__), '/\\').'/tlds-alpha-by-domain.txt')) === false) {
+			if (($tlds = file(__DIR__.'/tlds-alpha-by-domain.txt')) === false) {
 				output::output('notice', __METHOD__.'(): failed to open file: \'tlds-alpha-by-domain.txt\', tld validation disabled');
 			} else {
 				foreach ($tlds as $tld) {

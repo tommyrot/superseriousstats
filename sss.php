@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2016, Jos de Ruijter <jos@dutnie.nl>
  */
 
 ini_set('display_errors', 'stdout');
@@ -23,7 +23,7 @@ if (!extension_loaded('mbstring')) {
  * time of instantiation.
  */
 spl_autoload_register(function ($class) {
-	require_once(rtrim(dirname(__FILE__), '/\\').'/'.$class.'.php');
+	require_once(__DIR__.'/'.$class.'.php');
 });
 
 /**
@@ -93,7 +93,7 @@ class sss
 		if (array_key_exists('c', $options)) {
 			$this->read_config($options['c']);
 		} else {
-			$this->read_config(dirname(__FILE__).'/sss.conf');
+			$this->read_config(__DIR__.'/sss.conf');
 		}
 
 		/**
