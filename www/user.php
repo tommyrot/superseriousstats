@@ -106,7 +106,7 @@ class user
 		/**
 		 * Try to open and read from $userpics_dir.
 		 */
-		if (($dh = opendir($this->userpics_dir)) !== false) {
+		if (is_dir($this->userpics_dir) && ($dh = opendir($this->userpics_dir)) !== false) {
 			while (($file = readdir($dh)) !== false) {
 				if (preg_match('/^(?<name>\S+)\.(bmp|gif|jpe?g|png)$/i', $file, $matches)) {
 					$files[strtolower($matches['name'])] = $file;
