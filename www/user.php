@@ -98,32 +98,15 @@ class user
 	}
 
 	/**
-	 * Look for an image in $userpics_dir that has an identical name to one of this
+	 * Look for an image in $userpics_dir that has an identical name to one of the
 	 * user's aliases and return it.
 	 */
 	private function get_userpic($sqlite3)
 	{
 		/**
-		 * If a default image (or comma separated list thereof) is provided in the
-		 * configuration file it (or a randomly selected one) will be returned if no
-		 * specific image is found for the user. If omitted, null will be returned in
-		 * said case.
-		 */
-		if (preg_match('/^\S+\.(bmp|gif|jpe?g|png)(,\S+\.(bmp|gif|jpe?g|png))*$/i', $this->userpics_default)) {
-			$userpics_default = explode(',', $this->userpics_default);
-			$userpic = '<img src="'.htmlspecialchars(rtrim($this->userpics_dir, '/').'/'.$userpics_default[mt_rand(0, count($userpics_default) - 1)]).'" alt="" class="userpic">';
-		} else {
-			$userpic = null;
-		}
-
-		/**
 		 * Try to open and read from $userpics_dir.
 		 */
-		if (is_dir($this->userpics_dir)) {
-			if (($dh = opendir($this->userpics_dir)) === false) {
-				return null;
-			}
-
+		if (($dh = opendir($this->userpics_dir)) !== false) {
 			while (($file = readdir($dh)) !== false) {
 				if (preg_match('/^(?<name>\S+)\.(bmp|gif|jpe?g|png)$/i', $file, $matches)) {
 					$files[strtolower($matches['name'])] = $file;
@@ -133,12 +116,15 @@ class user
 			closedir($dh);
 		}
 
-		if (empty($files)) {
-			return $userpic;
+		/**
+		 * If there are no images found we can stop here.
+		 */
+		if (!isset($files)) {
+			return null;
 		}
 
 		/**
-		 * Fetch this user's aliases.
+		 * Fetch the user's aliases.
 		 */
 		$query = $sqlite3->query('SELECT csnick FROM uid_details WHERE ruid = '.$this->ruid) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
@@ -147,15 +133,22 @@ class user
 		}
 
 		/**
-		 * Return the first image that matches any of this user's aliases.
+		 * Return the first image that matches any of the user's aliases.
 		 */
 		foreach ($files as $name => $file) {
 			if (in_array($name, $aliases)) {
-				return '<img src="'.htmlspecialchars(rtrim($this->userpics_dir, '/').'/'.$file).'" alt="" class="userpic">';
+				return '<img src="'.htmlspecialchars(realpath($this->userpics_dir.'/'.$file)).'" alt="" class="userpic">';
 			}
 		}
 
-		return $userpic;
+		/**
+		 * If no specific image is found for the user return the default image provided
+		 * in $userpics_default or a randomly selected one if it is a list of images.
+		 */
+		if (preg_match('/^\S+\.(bmp|gif|jpe?g|png)(,\S+\.(bmp|gif|jpe?g|png))*$/i', $this->userpics_default)) {
+			$userpics_default = explode(',', $this->userpics_default);
+			return '<img src="'.htmlspecialchars(realpath($this->userpics_dir.'/'.$userpics_default[mt_rand(0, count($userpics_default) - 1)])).'" alt="" class="userpic">';
+		}
 	}
 
 	/**
@@ -696,9 +689,9 @@ class user
 	}
 
 	/**
-	 * For compatibility reasons this function has the same name as the original
-	 * version in the base class and accepts the same arguments. Its functionality
-	 * is slightly different in that it exits on any type of message passed to it.
+	 * For compatibility reasons this function has the same name as the version
+	 * found in output.php and accepts the same arguments. Its functionality is
+	 * slightly different in that it exits on any type of message passed to it.
 	 * SQLite3 result code 5 = SQLITE_BUSY, result code 6 = SQLITE_LOCKED.
 	 */
 	private function output($code, $msg)
