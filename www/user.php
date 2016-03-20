@@ -168,7 +168,7 @@ class user
 		}
 
 		if (is_null($this->ruid)) {
-			$this->output('error', 'This user does not exist.');
+			$this->output('error', 'Nonexistent nickname.');
 		}
 
 		if (($result = $sqlite3->querySingle('SELECT (SELECT csnick FROM uid_details WHERE uid = '.$this->ruid.') AS csnick, MIN(firstseen) AS date_first, MAX(lastseen) AS date_last, l_total, CAST(l_total AS REAL) / activedays AS l_avg FROM uid_details JOIN ruid_lines ON uid_details.ruid = ruid_lines.ruid WHERE uid_details.ruid = '.$this->ruid.' AND firstseen != \'0000-00-00 00:00:00\'', true)) === false) {
@@ -722,10 +722,10 @@ if (empty($_GET['cid']) || !preg_match('/^\S{1,32}$/', $_GET['cid'])) {
 $cid = $_GET['cid'];
 
 /**
- * Exit if the nick is not set or has an erroneous value.
+ * The nick must be set, cannot be zero, empty, nor contain invalid characters.
  */
 if (empty($_GET['nick']) || !preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $_GET['nick'])) {
-	exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">Erroneous Nickname</div></div></body></html>'."\n");
+	exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">Erroneous nickname.</div></div></body></html>'."\n");
 }
 
 $nick = $_GET['nick'];
