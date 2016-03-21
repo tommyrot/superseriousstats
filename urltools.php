@@ -116,7 +116,7 @@ class urltools
 		}
 
 		/**
-		 * Create and return an array with all the elements of this URL.
+		 * Create and return an array with all the elements of the URL.
 		 */
 		$elements = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
 
