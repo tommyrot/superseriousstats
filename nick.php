@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -195,15 +195,19 @@ class nick
 		$queryparts = [];
 
 		foreach ($columns as $key) {
-			if (is_int($this->$key) && $this->$key !== 0) {
-				$queryparts['columns'][] = $key;
-				$queryparts['values'][] = $this->$key;
-				$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
-			} elseif (is_string($this->$key) && $this->$key !== '') {
-				$value = '\''.$sqlite3->escapeString($this->$key).'\'';
-				$queryparts['columns'][] = $key;
-				$queryparts['values'][] = $value;
-				$queryparts['update-assignments'][] = $key.' = '.$value;
+			if (is_int($this->$key)) {
+				if ($this->$key !== 0) {
+					$queryparts['columns'][] = $key;
+					$queryparts['values'][] = $this->$key;
+					$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
+				}
+			} elseif (is_string($this->$key)) {
+				if ($this->$key !== '') {
+					$value = '\''.$sqlite3->escapeString($this->$key).'\'';
+					$queryparts['columns'][] = $key;
+					$queryparts['values'][] = $value;
+					$queryparts['update-assignments'][] = $key.' = '.$value;
+				}
 			}
 		}
 
@@ -215,12 +219,12 @@ class nick
 		/**
 		 * Write data to database table "uid_details".
 		 */
-		if (($result = $sqlite3->querySingle('SELECT uid, firstseen FROM uid_details WHERE csnick = \''.$sqlite3->escapeString($this->csnick).'\'', true)) === false) {
+		if (($result = $sqlite3->querySingle('SELECT uid, firstseen FROM uid_details WHERE csnick = \''.$this->csnick.'\'', true)) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		if (empty($result)) {
-			$sqlite3->exec('INSERT INTO uid_details (uid, csnick'.($this->firstseen !== '' ? ', firstseen, lastseen' : '').') VALUES (NULL, \''.$sqlite3->escapeString($this->csnick).'\''.($this->firstseen !== '' ? ', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\')' : '').')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO uid_details (uid, csnick'.($this->firstseen !== '' ? ', firstseen, lastseen' : '').') VALUES (NULL, \''.$this->csnick.'\''.($this->firstseen !== '' ? ', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\')' : '').')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			$uid = $sqlite3->lastInsertRowID();
 		} else {
 			$uid = $result['uid'];
@@ -235,7 +239,7 @@ class nick
 			 * nick due to a slap.
 			 */
 			if ($this->firstseen !== '') {
-				$sqlite3->exec('UPDATE uid_details SET csnick = \''.$sqlite3->escapeString($this->csnick).'\''.($result['firstseen'] === '0000-00-00 00:00:00' ? ', firstseen = DATETIME(\''.$this->firstseen.'\')' : '').', lastseen = DATETIME(\''.$this->lastseen.'\') WHERE uid = '.$uid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				$sqlite3->exec('UPDATE uid_details SET csnick = \''.$this->csnick.'\''.($result['firstseen'] === '0000-00-00 00:00:00' ? ', firstseen = DATETIME(\''.$this->firstseen.'\')' : '').', lastseen = DATETIME(\''.$this->lastseen.'\') WHERE uid = '.$uid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 
@@ -275,18 +279,22 @@ class nick
 			rsort($this->{$type.'_stack'});
 			$this->$type = $this->{$type.'_stack'}[0]['line'];
 
-			if (($type === 'ex_questions' || $type === 'ex_exclamations') && $this->$type === $this->ex_uppercased && count($this->{$type.'_stack'}) > 1) {
-				for ($i = 1, $j = count($this->{$type.'_stack'}); $i < $j; $i++) {
-					if ($this->{$type.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
-						$this->$type = $this->{$type.'_stack'}[$i]['line'];
-						break;
+			if ($type === 'ex_questions' || $type === 'ex_exclamations') {
+				if ($this->$type === $this->ex_uppercased && count($this->{$type.'_stack'}) > 1) {
+					for ($i = 1, $j = count($this->{$type.'_stack'}); $i < $j; $i++) {
+						if ($this->{$type.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
+							$this->$type = $this->{$type.'_stack'}[$i]['line'];
+							break;
+						}
 					}
 				}
-			} elseif ($type === 'quote' && ($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions) && count($this->quote_stack) > 1) {
-				for ($i = 1, $j = count($this->quote_stack); $i < $j; $i++) {
-					if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
-						$this->quote = $this->quote_stack[$i]['line'];
-						break;
+			} elseif ($type === 'quote') {
+				if (($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions) && count($this->quote_stack) > 1) {
+					for ($i = 1, $j = count($this->quote_stack); $i < $j; $i++) {
+						if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
+							$this->quote = $this->quote_stack[$i]['line'];
+							break;
+						}
 					}
 				}
 			}
