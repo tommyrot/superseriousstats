@@ -30,11 +30,11 @@ class output
 			$datetime = substr_replace($datetime, ' ', 4, 1);
 		}
 
+		/**
+		 * Critical messages will always display along with the termination of the
+		 * program.
+		 */
 		if ($type === 'critical') {
-			/**
-			 * This type of message will always display along with the termination of the
-			 * program.
-			 */
 			exit($datetime.' [C] '.$message."\n");
 		}
 
