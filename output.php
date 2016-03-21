@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2010-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2016, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -20,46 +20,48 @@ class output
 	}
 
 	/**
-	 * Output given messages to the console.
+	 * Output a given message to the console.
 	 */
 	public static function output($type, $message)
 	{
-		/**
-		 * Avoid repeating the same message multiple times in a row, e.g. repeated lines
-		 * and mode errors.
-		 */
-		if ($message === self::$prevmessage) {
-			return null;
-		}
-
-		self::$prevmessage = $message;
 		$datetime = date('M d H:i:s');
 
 		if (substr($datetime, 4, 1) === '0') {
 			$datetime = substr_replace($datetime, ' ', 4, 1);
 		}
 
-		switch ($type) {
-			case 'critical':
-				/**
-				 * This type of message will always display and is followed up by the
-				 * termination of the program.
-				 */
-				echo $datetime.' [C] '.$message."\n";
-				exit;
-			case 'notice':
-				if (self::$outputbits & 1) {
-					echo $datetime.' [ ] '.$message."\n";
-				}
-
-				break;
-			case 'debug':
-				if (self::$outputbits & 2) {
-					echo $datetime.' [D] '.$message."\n";
-				}
-
-				break;
+		if ($type === 'critical') {
+			/**
+			 * This type of message will always display along with the termination of the
+			 * program.
+			 */
+			exit($datetime.' [C] '.$message."\n");
 		}
+
+		/**
+		 * Avoid repeating the same message multiple times in a row, e.g. repeated lines
+		 * and errors related to mode changes.
+		 */
+		if ($message === self::$prevmessage) {
+			return;
+		}
+
+		if ($type === 'notice') {
+			if (self::$outputbits & 1) {
+				echo $datetime.' [ ] '.$message."\n";
+			}
+		} elseif ($type === 'debug') {
+			if (self::$outputbits & 2) {
+				echo $datetime.' [D] '.$message."\n";
+			}
+		} else {
+			return;
+		}
+
+		/**
+		 * Following message actually got displayed, therefore we keep track of it.
+		 */
+		self::$prevmessage = $message;
 	}
 
 	/**
