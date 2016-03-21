@@ -59,7 +59,7 @@ class output
 		}
 
 		/**
-		 * Following message actually got displayed, therefore we keep track of it.
+		 * Keep track of displayed messages.
 		 */
 		self::$prevmessage = $message;
 	}
