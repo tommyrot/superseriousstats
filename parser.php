@@ -146,7 +146,7 @@ class parser
 	 * $csnick. Return the lowercase nick for further referencing by the calling
 	 * function.
 	 */
-	private function add_nick($csnick, $time)
+	private function add_nick($csnick, $time = null)
 	{
 		$nick = strtolower($csnick);
 
@@ -397,7 +397,7 @@ class parser
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick = $this->add_nick($csnick, $time);
@@ -416,7 +416,7 @@ class parser
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick = $this->add_nick($csnick, $time);
@@ -427,10 +427,10 @@ class parser
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
-			return null;
+			return;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
 			output::output('debug', __METHOD__.'(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick_performing = $this->add_nick($csnick_performing, $time);
@@ -452,10 +452,10 @@ class parser
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
-			return null;
+			return;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
 			output::output('debug', __METHOD__.'(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick_performing = $this->add_nick($csnick_performing, $time);
@@ -485,10 +485,10 @@ class parser
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
-			return null;
+			return;
 		} elseif (!$this->validate_nick($csnick_undergoing)) {
 			output::output('debug', __METHOD__.'(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick_performing = $this->add_nick($csnick_performing, $time);
@@ -500,7 +500,7 @@ class parser
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick = $this->add_nick($csnick, $time);
@@ -525,7 +525,7 @@ class parser
 				 * be updated before it is actually seen (i.e. on any other activity).
 				 */
 				if ($this->l_total === 0) {
-					$this->add_nick($this->prevnick, null);
+					$this->add_nick($this->prevnick);
 				}
 
 				$this->nick_objs[$this->prevnick]->add_value('monologues', 1);
@@ -673,7 +673,7 @@ class parser
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick = $this->add_nick($csnick, $time);
@@ -684,7 +684,7 @@ class parser
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick = $this->add_nick($csnick, $time);
@@ -695,14 +695,14 @@ class parser
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick_performing = $this->add_nick($csnick_performing, $time);
 		$this->nick_objs[$nick_performing]->add_value('slaps', 1);
 
 		if (is_null($csnick_undergoing)) {
-			return null;
+			return;
 		}
 
 		/**
@@ -715,14 +715,14 @@ class parser
 
 		if (!$this->validate_nick($csnick_undergoing)) {
 			output::output('debug', __METHOD__.'(): invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		/**
 		 * Don't pass a time when adding the "undergoing" nick while it may only be
 		 * referred to instead of being seen for real.
 		 */
-		$nick_undergoing = $this->add_nick($csnick_undergoing, null);
+		$nick_undergoing = $this->add_nick($csnick_undergoing);
 		$this->nick_objs[$nick_undergoing]->add_value('slapped', 1);
 	}
 
@@ -730,7 +730,7 @@ class parser
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
-			return null;
+			return;
 		}
 
 		$nick = $this->add_nick($csnick, $time);
