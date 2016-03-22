@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -127,8 +127,10 @@ class parser
 			 */
 			if ($type === 'string') {
 				$this->$key = $settings[$key];
-			} elseif ($type === 'int' && preg_match('/^\d+$/', $settings[$key])) {
-				$this->$key = (int) $settings[$key];
+			} elseif ($type === 'int') {
+				if (preg_match('/^\d+$/', $settings[$key])) {
+					$this->$key = (int) $settings[$key];
+				}
 			} elseif ($type === 'bool') {
 				if (strtolower($settings[$key]) === 'true') {
 					$this->$key = true;
@@ -224,15 +226,19 @@ class parser
 		$queryparts = [];
 
 		foreach ($columns as $key) {
-			if (is_int($this->$key) && $this->$key !== 0) {
-				$queryparts['columns'][] = $key;
-				$queryparts['values'][] = $this->$key;
-				$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
-			} elseif (is_string($this->$key) && $this->$key !== '') {
-				$value = '\''.$sqlite3->escapeString($this->$key).'\'';
-				$queryparts['columns'][] = $key;
-				$queryparts['values'][] = $value;
-				$queryparts['update-assignments'][] = $key.' = '.$value;
+			if (is_int($this->$key)) {
+				if ($this->$key !== 0) {
+					$queryparts['columns'][] = $key;
+					$queryparts['values'][] = $this->$key;
+					$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
+				}
+			} elseif (is_string($this->$key)) {
+				if ($this->$key !== '') {
+					$value = '\''.$sqlite3->escapeString($this->$key).'\'';
+					$queryparts['columns'][] = $key;
+					$queryparts['values'][] = $value;
+					$queryparts['update-assignments'][] = $key.' = '.$value;
+				}
 			}
 		}
 
@@ -260,7 +266,7 @@ class parser
 
 			$line = $this->normalize_line($line);
 
-			if (empty($line)) {
+			if ($line === '') {
 				continue;
 			}
 
@@ -335,7 +341,7 @@ class parser
 
 			$line = $this->normalize_line($line);
 
-			if (empty($line)) {
+			if ($line === '') {
 				continue;
 			}
 
@@ -539,7 +545,8 @@ class parser
 		 * Increase line counts for relevant day, part of day, and hour.
 		 */
 		$day = strtolower(date('D', strtotime($this->date)));
-		$hour = (int) substr($time, 0, 2);
+		$hour_leadingzero = substr($time, 0, 2);
+		$hour = (int) $hour_leadingzero;
 
 		if ($hour >= 0 && $hour <= 5) {
 			$this->l_night++;
@@ -559,9 +566,9 @@ class parser
 			$this->nick_objs[$nick]->add_value('l_evening', 1);
 		}
 
-		$this->nick_objs[$nick]->add_value('l_'.($hour < 10 ? '0'.$hour : $hour), 1);
+		$this->nick_objs[$nick]->add_value('l_'.$hour_leadingzero, 1);
 		$this->nick_objs[$nick]->add_value('l_total', 1);
-		$this->{'l_'.($hour < 10 ? '0'.$hour : $hour)}++;
+		$this->{'l_'.$hour_leadingzero}++;
 		$this->l_total++;
 
 		/**
@@ -630,6 +637,8 @@ class parser
 		 */
 		if (!$skipquote && $line_length <= 255) {
 			$this->nick_objs[$nick]->add_quote('quote', $line, $line_length);
+		} else {
+			$skipquote = true;
 		}
 
 		/**
@@ -640,7 +649,7 @@ class parser
 		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/S', '', $line), 'UTF-8') * 2 > $line_length) {
 			$this->nick_objs[$nick]->add_value('uppercased', 1);
 
-			if (!$skipquote && $line_length <= 255) {
+			if (!$skipquote) {
 				$this->nick_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
 			}
 		}
@@ -648,13 +657,13 @@ class parser
 		if (preg_match('/!$/', $line)) {
 			$this->nick_objs[$nick]->add_value('exclamations', 1);
 
-			if (!$skipquote && $line_length <= 255) {
+			if (!$skipquote) {
 				$this->nick_objs[$nick]->add_quote('ex_exclamations', $line, $line_length);
 			}
 		} elseif (preg_match('/\?$/', $line)) {
 			$this->nick_objs[$nick]->add_value('questions', 1);
 
-			if (!$skipquote && $line_length <= 255) {
+			if (!$skipquote) {
 				$this->nick_objs[$nick]->add_quote('ex_questions', $line, $line_length);
 			}
 		}
