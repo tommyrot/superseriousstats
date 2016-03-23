@@ -751,7 +751,7 @@ class parser
 	 */
 	private function validate_nick($csnick)
 	{
-		if (preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $csnick) && $csnick !== '0') {
+		if (preg_match('/^[][^{}|\\\`_a-z][][^{}|\\\`_a-z0-9-]{0,31}$/i', $csnick)) {
 			return true;
 		} else {
 			return false;
