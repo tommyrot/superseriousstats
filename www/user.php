@@ -717,7 +717,7 @@ $cid = $_GET['cid'];
 /**
  * The nick must be set, cannot be zero, empty, nor contain invalid characters.
  */
-if (empty($_GET['nick']) || !preg_match('/^[][^{}|\\\`_0-9a-z-]{1,32}$/i', $_GET['nick'])) {
+if (empty($_GET['nick']) || !preg_match('/^[][^{}|\\\`_a-z][][^{}|\\\`_a-z0-9-]{0,31}$/i', $_GET['nick'])) {
 	exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">Erroneous nickname.</div></div></body></html>'."\n");
 }
 
