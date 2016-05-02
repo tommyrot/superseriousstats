@@ -5,19 +5,22 @@
  */
 
 /**
- * Various functions related to URL validation and presentation. It follows RFC
- * 3986, and the preferred syntax as mentioned in RFC 1034 section 3.5 and RFC
- * 1123 section 2.1.
+ * Various functions related to URL validation and presentation.
  *
- * Take note of the following which differ from the specification:
- * - Only the http:// and https:// schemes will validate. URLs without a scheme
- *   get http:// prefixed.
- * - User part in authority is not recognized, and will not validate.
- * - IPv4 addresses only.
- * - TLDs as in http://data.iana.org/TLD/tlds-alpha-by-domain.txt (locally
- *   stored, can be updated at will).
- * - The root domain is excluded from the FQDN (not from the other elements).
- * - Square brackets must be percent encoded.
+ * Guided by:
+ *  - RFC 3986
+ *  - RFC 1034 section 3.5
+ *  - RFC 1123 section 2.1
+ *
+ * Notes:
+ *  - Only the http:// and https:// schemes will validate. URLs without a scheme
+ *    are considered http://.
+ *  - User part in authority is not recognized and will not validate.
+ *  - IPv4 addresses only.
+ *  - TLDs as in http://data.iana.org/TLD/tlds-alpha-by-domain.txt (this file
+      can be stored locally and updated at will).
+ *  - The root domain is excluded from the FQDN (not from the other elements).
+ *  - Square brackets must be percent encoded.
  */
 class urltools
 {
