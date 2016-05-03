@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -122,9 +122,9 @@ class parser_eggdrop extends parser
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Last message repeated (?<num>\d+) time\(s\)\.$/', $line, $matches)) {
 			/**
 			 * Prevent the parser from repeating a preceding repeat line. Also, skip processing if we find a
-			 * repeat line on the first line of the logfile. We can't look back across files.
+			 * repeat line but $prevline isn't set.
 			 */
-			if ($this->linenum === 1 || $this->repeatlock) {
+			if ($this->prevline === '' || $this->repeatlock) {
 				return null;
 			}
 
