@@ -18,7 +18,7 @@
  *  - User part in authority is not recognized and will not validate.
  *  - IPv4 addresses only.
  *  - TLDs as in http://data.iana.org/TLD/tlds-alpha-by-domain.txt (this file
-      can be stored locally and updated at will).
+ *    can be stored locally and updated at will).
  *  - The root domain is excluded from the FQDN (not from the other elements).
  *  - Square brackets must be percent encoded.
  */
