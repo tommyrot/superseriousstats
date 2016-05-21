@@ -279,22 +279,26 @@ class nick
 			rsort($this->{$type.'_stack'});
 			$this->$type = $this->{$type.'_stack'}[0]['line'];
 
-			if ($type === 'ex_questions' || $type === 'ex_exclamations') {
-				if ($this->$type === $this->ex_uppercased && count($this->{$type.'_stack'}) > 1) {
-					for ($i = 1, $j = count($this->{$type.'_stack'}); $i < $j; $i++) {
-						if ($this->{$type.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
-							$this->$type = $this->{$type.'_stack'}[$i]['line'];
-							break;
-						}
+			/**
+			 * Try to move away from duplicate quotes. The order of the if/else statement
+			 * aims to cover most possible cases.
+			 */
+			if ($type === 'ex_uppercased' || $type === 'ex_actions' || count($this->{$type.'_stack'}) === 1) {
+				continue;
+			}
+
+			if (($type === 'ex_questions' || $type === 'ex_exclamations') && $this->$type === $this->ex_uppercased) {
+				for ($i = 1, $j = count($this->{$type.'_stack'}); $i < $j; $i++) {
+					if ($this->{$type.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
+						$this->$type = $this->{$type.'_stack'}[$i]['line'];
+						break;
 					}
 				}
-			} elseif ($type === 'quote') {
-				if (($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions) && count($this->quote_stack) > 1) {
-					for ($i = 1, $j = count($this->quote_stack); $i < $j; $i++) {
-						if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
-							$this->quote = $this->quote_stack[$i]['line'];
-							break;
-						}
+			} elseif ($type === 'quote' && ($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions)) {
+				for ($i = 1, $j = count($this->quote_stack); $i < $j; $i++) {
+					if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
+						$this->quote = $this->quote_stack[$i]['line'];
+						break;
 					}
 				}
 			}
