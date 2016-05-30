@@ -243,12 +243,6 @@ class maintenance
 	{
 		$query = $sqlite3->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS newruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND newruid IS NOT NULL AND ruid != newruid') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
-			return null;
-		}
-
-		$query->reset();
-
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$registered = $result['csnick'];
 
