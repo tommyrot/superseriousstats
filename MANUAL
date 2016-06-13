@@ -1,7 +1,7 @@
 usage:  php sss.php [-c <file>] [-i <file|directory>]
-                    [-o <file> [-b <numbits>]]
-        php sss.php [-c <file>] [-e <file>]
-        php sss.php [-c <file>] [-n <file>]
+                    [-o <file> [-b <numbits>]] [-q]
+        php sss.php [-c <file>] [-e <file>] [-q]
+        php sss.php [-c <file>] [-n <file>] [-q]
         php sss.php [-c <file>] [-s]
 
 options:
@@ -39,6 +39,9 @@ options:
 
         -o <file>
                 Generate statistics and output to <file>.
+
+        -q
+                Quiet mode. Output only errors.
 
         -s
                 Export settings from the configuration file in the format

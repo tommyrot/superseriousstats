@@ -67,11 +67,11 @@ class sss
 		/**
 		 * Read options from the command line. Print the manual on invalid input.
 		 */
-		$options = getopt('b:c:e:i:n:o:s');
+		$options = getopt('b:c:e:i:n:o:qs');
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
-		if (!preg_match('/^(bc?i?o|c|c?(e|i|i?o|n|s))$/', $options_keys)) {
+		if (!preg_match('/^(bc?i?oq?|cq?|c?(e|i|i?o|n)q?|c?s)$/', $options_keys)) {
 			$this->print_manual();
 		}
 
@@ -107,8 +107,13 @@ class sss
 		/**
 		 * Prior to having the updated value of $outputbits take effect there were no
 		 * message types other than critical events, which cannot be suppressed.
+		 * $outputbits will always be zero if the "q" option is set for quiet mode.
 		 */
-		output::set_outputbits($this->outputbits);
+		if (array_key_exists('q', $options)) {
+			output::set_outputbits(0);
+		} else {
+			output::set_outputbits($this->outputbits);
+		}
 
 		/**
 		 * Export settings from the configuration file in the format vars.php accepts
@@ -583,7 +588,7 @@ class sss
 	private function print_manual()
 	{
 		$man = 'usage:  php sss.php [-c <file>] [-i <file|directory>]'."\n"
-			. '                    [-o <file> [-b <numbits>]]'."\n\n"
+			. '                    [-o <file> [-b <numbits>]] [-q]'."\n\n"
 			. 'See the MANUAL file for an overview of all available options.'."\n";
 		exit($man);
 	}
