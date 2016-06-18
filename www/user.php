@@ -306,7 +306,7 @@ class user
 			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		$date_max = $result['date'];
+		$date_l_max = $result['date'];
 		$l_max = $result['l_total'];
 		$this->output = '<!DOCTYPE html>'."\n\n"
 			. '<html>'."\n\n"
@@ -322,7 +322,7 @@ class user
 			. '<div class="info">'.($this->userpics ? $this->get_userpic($sqlite3) : '').htmlspecialchars($this->csnick).', seriously'.($mood !== '' ? ' '.htmlspecialchars($mood) : '.').'<br><br>'
 			. 'First seen on '.date('M j, Y', strtotime($date_first)).' and last seen on '.date('M j, Y', strtotime($date_last)).'.<br><br>'
 			. htmlspecialchars($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
-			. 'Most active day was '.date('M j, Y', strtotime($date_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
+			. 'Most active day was '.date('M j, Y', strtotime($date_l_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * Activity section.
