@@ -162,30 +162,30 @@ class html
 		 * Date and time variables used throughout the script. These are based on the
 		 * date of the last logfile parsed, and are used to define our scope.
 		 */
-		$this->datetime['currentyear'] = (int) date('Y');
 		$this->datetime['dayofmonth'] = (int) date('j', strtotime($date_lastlogparsed));
 		$this->datetime['firstyearmonth'] = substr($date_first, 0, 7);
 		$this->datetime['month'] = (int) date('n', strtotime($date_lastlogparsed));
 		$this->datetime['monthname'] = date('F', strtotime($date_lastlogparsed));
 		$this->datetime['year'] = (int) date('Y', strtotime($date_lastlogparsed));
-		$this->datetime['daysleft'] = (int) date('z', strtotime('last day of December '.$this->datetime['year'])) - (int) date('z', strtotime($date_lastlogparsed));
 
 		/**
-		 * If there are one or more days to come until the end of the year, display an
-		 * additional column in the Activity by Year table with an estimated line count
-		 * for the current year.
+		 * If the date of the last logfile parsed is in the current year and there are
+		 * one or more days to come until the end of the year, display an additional
+		 * column in the Activity by Year table with an estimated line count for said
+		 * year. The estimation is based on the activity in the last 90 days logged and
+		 * won't be shown if there has been no activity in the current year yet.
 		 */
-		if ($this->datetime['daysleft'] !== 0 && $this->datetime['year'] === $this->datetime['currentyear']) {
-			/**
-			 * Base the estimation on the activity in the last 90 days logged, if there is
-			 * any.
-			 */
-			if (($activity = $sqlite3->querySingle('SELECT COUNT(*) FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'')) === false) {
-				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
+		if ($this->datetime['year'] === (int) date('Y')) {
+			$this->datetime['daysleft'] = (int) date('z', strtotime('last day of December '.$this->datetime['year'])) - (int) date('z', strtotime($date_lastlogparsed));
 
-			if ($activity !== 0) {
-				$this->estimate = true;
+			if ($this->datetime['daysleft'] !== 0) {
+				if (($date_lastactivity = $sqlite3->querySingle('SELECT MAX(date) FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'')) === false) {
+					output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				}
+
+				if ((int) substr($date_lastactivity, 0, 4) === $this->datetime['year']) {
+					$this->estimate = true;
+				}
 			}
 		}
 
@@ -885,16 +885,16 @@ class html
 			}
 		}
 
-		if ($this->estimate && $type === 'year' && !empty($l_total[$this->datetime['currentyear']])) {
+		if ($type === 'year' && $this->estimate) {
 			if (($result = $sqlite3->querySingle('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg, CAST(SUM(l_total) AS REAL) / 90 AS l_total_avg FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'', true)) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			$l_afternoon['estimate'] = $l_afternoon[$this->datetime['currentyear']] + round($result['l_afternoon_avg'] * $this->datetime['daysleft']);
-			$l_evening['estimate'] = $l_evening[$this->datetime['currentyear']] + round($result['l_evening_avg'] * $this->datetime['daysleft']);
-			$l_morning['estimate'] = $l_morning[$this->datetime['currentyear']] + round($result['l_morning_avg'] * $this->datetime['daysleft']);
-			$l_night['estimate'] = $l_night[$this->datetime['currentyear']] + round($result['l_night_avg'] * $this->datetime['daysleft']);
-			$l_total['estimate'] = $l_total[$this->datetime['currentyear']] + round($result['l_total_avg'] * $this->datetime['daysleft']);
+			$l_afternoon['estimate'] = $l_afternoon[$this->datetime['year']] + round($result['l_afternoon_avg'] * $this->datetime['daysleft']);
+			$l_evening['estimate'] = $l_evening[$this->datetime['year']] + round($result['l_evening_avg'] * $this->datetime['daysleft']);
+			$l_morning['estimate'] = $l_morning[$this->datetime['year']] + round($result['l_morning_avg'] * $this->datetime['daysleft']);
+			$l_night['estimate'] = $l_night[$this->datetime['year']] + round($result['l_night_avg'] * $this->datetime['daysleft']);
+			$l_total['estimate'] = $l_total[$this->datetime['year']] + round($result['l_total_avg'] * $this->datetime['daysleft']);
 
 			if ($l_total['estimate'] > $high_value) {
 				/**
