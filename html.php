@@ -139,7 +139,7 @@ class html
 		 * All queries from this point forward require a non-empty database.
 		 */
 		if (is_null($this->l_total)) {
-			output::output('warning', __METHOD__.'(): database is empty');
+			output::output('debug', __METHOD__.'(): database is empty');
 			return '<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">There is not enough data to create statistics, yet.</div></div></body></html>'."\n";
 		}
 
