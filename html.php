@@ -865,7 +865,7 @@ class html
 		}
 
 		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
-			return null;
+			return;
 		}
 
 		$high_date = '';
