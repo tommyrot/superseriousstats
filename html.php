@@ -886,7 +886,7 @@ class html
 		}
 
 		if ($type === 'year' && $this->estimate) {
-			if (($result = $sqlite3->querySingle('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg, CAST(SUM(l_total) AS REAL) / 90 AS l_total_avg FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'', true)) === false) {
+			if (($result = $sqlite3->querySingle('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'', true)) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
@@ -894,7 +894,7 @@ class html
 			$l_evening['estimate'] = $l_evening[$this->datetime['year']] + round($result['l_evening_avg'] * $this->datetime['daysleft']);
 			$l_morning['estimate'] = $l_morning[$this->datetime['year']] + round($result['l_morning_avg'] * $this->datetime['daysleft']);
 			$l_night['estimate'] = $l_night[$this->datetime['year']] + round($result['l_night_avg'] * $this->datetime['daysleft']);
-			$l_total['estimate'] = $l_total[$this->datetime['year']] + round($result['l_total_avg'] * $this->datetime['daysleft']);
+			$l_total['estimate'] = $l_afternoon['estimate'] + $l_evening['estimate'] + $l_morning['estimate'] + $l_night['estimate'];
 
 			if ($l_total['estimate'] > $high_value) {
 				/**
