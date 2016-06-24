@@ -1004,7 +1004,7 @@ class html
 			$l_evening[$day] = $result['l_'.$day.'_evening'];
 			$l_morning[$day] = $result['l_'.$day.'_morning'];
 			$l_night[$day] = $result['l_'.$day.'_night'];
-			$l_total[$day] = $l_night[$day] + $l_morning[$day] + $l_afternoon[$day] + $l_evening[$day];
+			$l_total[$day] = $l_afternoon[$day] + $l_evening[$day] + $l_morning[$day] + $l_night[$day];
 
 			if ($l_total[$day] > $high_value) {
 				$high_day = $day;
@@ -1029,26 +1029,45 @@ class html
 					$percentage = number_format($percentage, 1).'%';
 				}
 
+				$height_int['total'] = (int) round(($l_total[$day] / $high_value) * 100);
+				$height = $height_int['total'];
+
 				foreach ($times as $time) {
 					if (${'l_'.$time}[$day] !== 0) {
-						$height[$time] = round((${'l_'.$time}[$day] / $high_value) * 100);
+						$height_float[$time] = (float) (${'l_'.$time}[$day] / $high_value) * 100;
+						$height_int[$time] = (int) floor($height_float[$time]);
+						$height_remainders[$time] = $height_float[$time] - $height_int[$time];
+						$height -= $height_int[$time];
 					} else {
-						$height[$time] = (float) 0;
+						$height_int[$time] = 0;
 					}
 				}
 
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage;
+				if ($height !== 0) {
+					arsort($height_remainders);
+
+					foreach ($height_remainders as $time => $remainder) {
+						$height--;
+						$height_int[$time]++;
+
+						if ($height === 0) {
+							break;
+						}
+					}
+				}
+
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height_int['total'] + 14).'px">'.$percentage;
 
 				foreach ($times as $time) {
-					if ($height[$time] !== (float) 0) {
+					if ($height_int[$time] !== 0) {
 						if ($time === 'evening') {
-							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
+							$height_li = $height_int['night'] + $height_int['morning'] + $height_int['afternoon'] + $height_int['evening'];
 						} elseif ($time === 'afternoon') {
-							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
+							$height_li = $height_int['night'] + $height_int['morning'] + $height_int['afternoon'];
 						} elseif ($time === 'morning') {
-							$height_li = $height['night'] + $height['morning'];
+							$height_li = $height_int['night'] + $height_int['morning'];
 						} elseif ($time === 'night') {
-							$height_li = $height['night'];
+							$height_li = $height_int['night'];
 						}
 
 						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'">';
@@ -1056,6 +1075,12 @@ class html
 				}
 
 				$tr2 .= '</ul>';
+
+				/**
+				 * It's important to unset $height_remainders so the next iteration won't try to
+				 * work with old values.
+				 */
+				unset($height_remainders);
 			}
 
 			$tr3 .= '<td'.($day === $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
