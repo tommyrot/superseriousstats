@@ -1314,7 +1314,7 @@ class html
 			$trx .= '<tr>';
 
 			for ($j = 1; $j <= 4; $j++) {
-				$trx .= '<td class="v1">'.number_format($columns[$j][$i][2]).'<td class="pos">'.$columns[$j][$i][0].'<td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i][1]).'">'.htmlspecialchars($columns[$j][$i][1]).'</a>' : htmlspecialchars($columns[$j][$i][1]));
+				$trx .= '<td class="v1">'.number_format($columns[$j][$i][2]).'<td class="pos">'.$columns[$j][$i][0].'<td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i][1]).'">'.$columns[$j][$i][1].'</a>' : $columns[$j][$i][1]);
 			}
 		}
 
