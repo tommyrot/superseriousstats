@@ -1293,7 +1293,10 @@ class html
 				$pos = '<span class="red">&#x25BC;'.$i.'</span>';
 			}
 
-			$columns[$current_column][$current_row] = [$pos, $result['csnick'], $result['l_total']];
+			$columns[$current_column][$current_row] = [
+				'csnick' => $result['csnick'],
+				'l_total' => $result['l_total'],
+				'pos' => $pos];
 		}
 
 		if ($current_column < 4 || $current_row < $this->maxrows_people2) {
@@ -1314,7 +1317,7 @@ class html
 			$trx .= '<tr>';
 
 			for ($j = 1; $j <= 4; $j++) {
-				$trx .= '<td class="v1">'.number_format($columns[$j][$i][2]).'<td class="pos">'.$columns[$j][$i][0].'<td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i][1]).'">'.$columns[$j][$i][1].'</a>' : $columns[$j][$i][1]);
+				$trx .= '<td class="v1">'.number_format($columns[$j][$i]['l_total']).'<td class="pos">'.$columns[$j][$i]['pos'].'<td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i]['csnick']).'">'.$columns[$j][$i]['csnick'].'</a>' : $columns[$j][$i]['csnick']);
 			}
 		}
 
@@ -1344,11 +1347,12 @@ class html
 
 			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 				$i++;
-				${$time}[$i]['lines'] = $result['l_'.$time];
-				${$time}[$i]['user'] = $result['csnick'];
+				${$time}[$i] = [
+					'csnick' => $result['csnick'],
+					'lines' => $result['l_'.$time]];
 
-				if (${$time}[$i]['lines'] > $high_value) {
-					$high_value = ${$time}[$i]['lines'];
+				if ($result['l_'.$time] > $high_value) {
+					$high_value = $result['l_'.$time];
 				}
 			}
 		}
@@ -1372,9 +1376,9 @@ class html
 					$width = round((${$time}[$i]['lines'] / $high_value) * 190);
 
 					if ($width !== (float) 0) {
-						$trx .= '<td class="v">'.${$time}[$i]['user'].' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div>';
+						$trx .= '<td class="v">'.${$time}[$i]['csnick'].' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div>';
 					} else {
-						$trx .= '<td class="v">'.${$time}[$i]['user'].' - '.number_format(${$time}[$i]['lines']);
+						$trx .= '<td class="v">'.${$time}[$i]['csnick'].' - '.number_format(${$time}[$i]['lines']);
 					}
 				}
 			}
