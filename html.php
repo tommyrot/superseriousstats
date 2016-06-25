@@ -136,7 +136,8 @@ class html
 		}
 
 		/**
-		 * All queries from this point forward require a non-empty database.
+		 * All queries from this point forward require that there has at least been one
+		 * line typed in the channel.
 		 */
 		if (is_null($this->l_total)) {
 			output::output('debug', __METHOD__.'(): database is empty');
@@ -1156,7 +1157,7 @@ class html
 		 * excluded users.
 		 */
 		if ($type === 'alltime') {
-			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
+			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		} elseif ($type === 'month') {
@@ -1169,8 +1170,8 @@ class html
 			}
 		}
 
-		if (empty($total)) {
-			return null;
+		if (is_null($total)) {
+			return;
 		}
 
 		if ($type === 'alltime') {
@@ -1213,6 +1214,8 @@ class html
 					$width_int[$time] = (int) floor($width_float[$time]);
 					$width_remainders[$time] = $width_float[$time] - $width_int[$time];
 					$width -= $width_int[$time];
+				} else {
+					$width_int[$time] = 0;
 				}
 			}
 
@@ -1232,7 +1235,7 @@ class html
 			$when = '';
 
 			foreach ($times as $time) {
-				if (!empty($width_int[$time])) {
+				if ($width_int[$time] !== 0) {
 					$when .= '<li class="'.$this->color[$time].'" style="width:'.$width_int[$time].'px">';
 				}
 			}
@@ -1245,8 +1248,13 @@ class html
 				$pos = '<span class="red">&#x25BC;'.$i.'</span>';
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$pos.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.htmlspecialchars($result['csnick']).'</a>' : htmlspecialchars($result['csnick'])).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->daysago($result['lastseen']).'<td class="v6">'.htmlspecialchars($result['quote']);
-			unset($width_float, $width_int, $width_remainders);
+			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$pos.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.$result['csnick'].'</a>' : $result['csnick']).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->daysago($result['lastseen']).'<td class="v6">'.htmlspecialchars($result['quote']);
+
+			/**
+			 * It's important to unset $width_remainders so the next iteration won't try to
+			 * work with old values.
+			 */
+			unset($width_remainders);
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
