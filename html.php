@@ -1372,9 +1372,9 @@ class html
 					$width = round((${$time}[$i]['lines'] / $high_value) * 190);
 
 					if ($width !== (float) 0) {
-						$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div>';
+						$trx .= '<td class="v">'.${$time}[$i]['user'].' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div>';
 					} else {
-						$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']);
+						$trx .= '<td class="v">'.${$time}[$i]['user'].' - '.number_format(${$time}[$i]['lines']);
 					}
 				}
 			}
