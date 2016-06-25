@@ -1283,7 +1283,7 @@ class html
 				$current_row = 1;
 			}
 
-			$i = $this->maxrows_people_alltime + ($current_column > 1 ? ($current_column - 1) * $this->maxrows_people2 : 0) + $current_row;
+			$i = $this->maxrows_people_alltime + ($current_column - 1) * $this->maxrows_people2 + $current_row;
 
 			if (!isset($result['prevrank']) || $i === $result['prevrank']) {
 				$pos = $i;
