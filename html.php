@@ -1331,8 +1331,8 @@ class html
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		if (empty($total)) {
-			return null;
+		if (is_null($total)) {
+			return;
 		}
 
 		$high_value = 0;
