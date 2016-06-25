@@ -1262,9 +1262,6 @@ class html
 
 	private function make_table_people2($sqlite3)
 	{
-		$current_column = 1;
-		$current_row = 0;
-
 		/**
 		 * Don't try to calculate changes in rankings if we're dealing with the first
 		 * month of activity.
@@ -1274,6 +1271,9 @@ class html
 		} else {
 			$query = $sqlite3->query('SELECT csnick, l_total, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 1, 1, $this->datetime['year'])).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
+
+		$current_column = 1;
+		$current_row = 0;
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$current_row++;
@@ -1297,7 +1297,7 @@ class html
 		}
 
 		if ($current_column < 4 || $current_row < $this->maxrows_people2) {
-			return null;
+			return;
 		}
 
 		if (($total = $sqlite3->querySingle('SELECT COUNT(*) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)')) === false) {
