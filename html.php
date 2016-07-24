@@ -845,7 +845,7 @@ class html
 			$class = 'act';
 			$columns = 24;
 			$head = 'Activity by Month';
-			$query = $sqlite3->query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE date > \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 24, 1, $this->datetime['year'])).'%\' GROUP BY SUBSTR(date, 1, 7)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$query = $sqlite3->query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) > \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 24, 1, $this->datetime['year'])).'\' GROUP BY SUBSTR(date, 1, 7)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			for ($i = $columns - 1; $i >= 0; $i--) {
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
