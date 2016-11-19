@@ -31,8 +31,8 @@ class output
 		}
 
 		/**
-		 * Critical messages will always display along with the termination of the
-		 * program.
+		 * Critical messages will always display and are followed by the termination of
+		 * the program.
 		 */
 		if ($type === 'critical') {
 			exit($datetime.' [C] '.$message."\n");
@@ -54,12 +54,10 @@ class output
 			if (self::$outputbits & 2) {
 				echo $datetime.' [D] '.$message."\n";
 			}
-		} else {
-			return;
 		}
 
 		/**
-		 * Keep track of displayed messages.
+		 * Remember the last message displayed.
 		 */
 		self::$prevmessage = $message;
 	}
@@ -68,6 +66,7 @@ class output
 	 * Set the amount of bits corresponding to the type(s) of output messages
 	 * displayed. By default all but debug messages will be displayed. This can be
 	 * changed in the configuration file.
+	 *
 	 *  0  Critical events (will always display)
 	 *  1  Notices
 	 *  2  Debug messages
