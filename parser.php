@@ -404,10 +404,10 @@ class parser
 		$this->nick_objs[$nick]->add_value('actions', 1);
 
 		/**
-		 * Track quotes/example lines of up to a sensible limit of 255 characters in
+		 * Track quotes/example lines of up to a sensible limit of 256 characters in
 		 * length.
 		 */
-		if (($line_length = mb_strlen($line, 'UTF-8')) <= 255) {
+		if (($line_length = mb_strlen($line, 'UTF-8')) <= 256) {
 			$this->nick_objs[$nick]->add_quote('ex_actions', $line, $line_length);
 		}
 	}
@@ -619,9 +619,9 @@ class parser
 
 				if (($urldata = urltools::get_elements($csword)) !== false) {
 					/**
-					 * Track URLs of up to a sensible limit of 1024 characters in length.
+					 * Track URLs of up to a sensible limit of 512 characters in length.
 					 */
-					if (strlen($urldata['url']) <= 1024) {
+					if (strlen($urldata['url']) <= 512) {
 						$this->add_url($urldata, $time, $nick);
 						$this->nick_objs[$nick]->add_value('urls', 1);
 					}
@@ -632,10 +632,10 @@ class parser
 		}
 
 		/**
-		 * Track quotes/example lines of up to a sensible limit of 255 characters in
+		 * Track quotes/example lines of up to a sensible limit of 256 characters in
 		 * length. This applies to all of the types seen below.
 		 */
-		if (!$skipquote && $line_length <= 255) {
+		if (!$skipquote && $line_length <= 256) {
 			$this->nick_objs[$nick]->add_quote('quote', $line, $line_length);
 		} else {
 			$skipquote = true;
