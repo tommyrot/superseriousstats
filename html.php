@@ -219,6 +219,7 @@ class html
 			. '<meta charset="utf-8">'."\n"
 			. '<title>'.htmlspecialchars($this->channel).', seriously.</title>'."\n"
 			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
+			. '<meta name="referrer" content="no-referrer">'."\n"
 			. '<style type="text/css">'."\n"
 			. '  .act-year { width:'.(2 + ($this->columns_act_year * 34)).'px }'."\n"
 			. '</style>'."\n"
