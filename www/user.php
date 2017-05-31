@@ -339,8 +339,8 @@ class user
 		 */
 		if ($this->rankings) {
 			$output = '';
-			$output .= $this->make_table_rankings($sqlite3, 'month');
 			$output .= $this->make_table_rankings($sqlite3, 'year');
+			$output .= $this->make_table_rankings($sqlite3, 'month');
 
 			if ($output !== '') {
 				$this->output .= '<div class="section">Rankings</div>'."\n".$output;
