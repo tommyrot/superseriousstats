@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2018, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -156,6 +156,14 @@ class table
 			if ($class === 'small') {
 				$trx .= '<tr><td class="v1"><td class="pos">&nbsp;<td class="v2">';
 			} else {
+				/*
+				 * Temporary fix to prevent an ugly empty table that doesn't have alignment
+				 * requirements.
+				 */
+				if ($this->head === 'Most Recent URLs') {
+					break;
+				}
+
 				$trx .= '<tr><td class="v1"><td class="pos">&nbsp;<td class="v2"><td class="v3">';
 			}
 		}
