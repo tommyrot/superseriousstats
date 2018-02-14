@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2018, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -242,7 +242,14 @@ class html
 			$html .= $this->make_table_activity_distribution_day($sqlite3);
 			$html .= $this->make_table_people($sqlite3, 'alltime');
 			$html .= $this->make_table_people2($sqlite3);
-			$html .= $this->make_table_people($sqlite3, 'year');
+
+			/**
+			 * In January, don't display the year table if it's identical to the month one.
+			 */
+			if ($this->datetime['month'] !== 1 || ($this->datetime['month'] === 1 && $this->maxrows_people_year !== $this->maxrows_people_month)) {
+				$html .= $this->make_table_people($sqlite3, 'year');
+			}
+
 			$html .= $this->make_table_people($sqlite3, 'month');
 			$html .= $this->make_table_people_timeofday($sqlite3);
 		}
