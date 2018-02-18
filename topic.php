@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2018, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -36,8 +36,8 @@ class topic
 			$tid = $sqlite3->lastInsertRowID();
 		}
 
-		foreach ($this->uses as $key => $values) {
-			$sqlite3->exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$values[1].'\'), '.$tid.', DATETIME(\''.$values[0].'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		foreach ($this->uses as $key => list($datetime, $nick)) {
+			$sqlite3->exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$tid.', DATETIME(\''.$datetime.'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
 }
