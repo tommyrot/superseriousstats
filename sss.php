@@ -629,8 +629,8 @@ class sss
 		/**
 		 * If set, override variables listed in $settings_list[].
 		 */
-		foreach ($this->settings_list as $key => $type) {
-			if (!array_key_exists($key, $this->settings)) {
+		foreach ($this->settings_list as $setting => $type) {
+			if (!array_key_exists($setting, $this->settings)) {
 				continue;
 			}
 
@@ -638,14 +638,16 @@ class sss
 			 * Do some explicit type casting because everything is initially a string.
 			 */
 			if ($type === 'string') {
-				$this->$key = $this->settings[$key];
-			} elseif ($type === 'int' && preg_match('/^\d+$/', $this->settings[$key])) {
-				$this->$key = (int) $this->settings[$key];
+				$this->$setting = $this->settings[$setting];
+			} elseif ($type === 'int') {
+				if (preg_match('/^\d+$/', $this->settings[$setting])) {
+					$this->$setting = (int) $this->settings[$setting];
+				}
 			} elseif ($type === 'bool') {
-				if (strtolower($this->settings[$key]) === 'true') {
-					$this->$key = true;
-				} elseif (strtolower($this->settings[$key]) === 'false') {
-					$this->$key = false;
+				if (strtolower($this->settings[$setting]) === 'true') {
+					$this->$setting = true;
+				} elseif (strtolower($this->settings[$setting]) === 'false') {
+					$this->$setting = false;
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2018, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -21,8 +21,8 @@ class maintenance
 		/**
 		 * If set, override variables listed in $settings_list[].
 		 */
-		foreach ($this->settings_list as $key => $type) {
-			if (!array_key_exists($key, $settings)) {
+		foreach ($this->settings_list as $setting => $type) {
+			if (!array_key_exists($setting, $settings)) {
 				continue;
 			}
 
@@ -30,14 +30,16 @@ class maintenance
 			 * Do some explicit type casting because everything is initially a string.
 			 */
 			if ($type === 'string') {
-				$this->$key = $settings[$key];
-			} elseif ($type === 'int' && preg_match('/^\d+$/', $settings[$key])) {
-				$this->$key = (int) $settings[$key];
+				$this->$setting = $settings[$setting];
+			} elseif ($type === 'int') {
+				if (preg_match('/^\d+$/', $settings[$setting])) {
+					$this->$setting = (int) $settings[$setting];
+				}
 			} elseif ($type === 'bool') {
-				if (strtolower($settings[$key]) === 'true') {
-					$this->$key = true;
-				} elseif (strtolower($settings[$key]) === 'false') {
-					$this->$key = false;
+				if (strtolower($settings[$setting]) === 'true') {
+					$this->$setting = true;
+				} elseif (strtolower($settings[$setting]) === 'false') {
+					$this->$setting = false;
 				}
 			}
 		}
