@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2009-2016, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2018, Jos de Ruijter <jos@dutnie.nl>
  */
 
 ini_set('display_errors', 'stdout');
@@ -610,7 +610,7 @@ class sss
 		while (!feof($fp)) {
 			$line = trim(fgets($fp));
 
-			if (preg_match('/^\s*(?<setting>\w+)\s*=\s*"\s*(?<value>([^\s"]+(\s+[^\s"]+)*))\s*"/', $line, $matches)) {
+			if (preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>([^\s"]+( [^\s"]+)*))"/', $line, $matches)) {
 				$this->settings[$matches['setting']] = $matches['value'];
 			}
 		}
