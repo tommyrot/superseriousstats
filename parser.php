@@ -171,7 +171,7 @@ class parser
 	 * Keep track of every topic set. These are handled (and stored) while
 	 * preserving case.
 	 */
-	private function add_topic($topic, $time, $nick)
+	private function add_topic($time, $nick, $topic)
 	{
 		if (!array_key_exists($topic, $this->topic_objs)) {
 			$this->topic_objs[$topic] = new topic($topic);
