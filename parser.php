@@ -187,7 +187,7 @@ class parser
 	 * Keep track of every URL. These are handled (and stored) while preserving
 	 * case.
 	 */
-	private function add_url($urldata, $time, $nick)
+	private function add_url($time, $nick, $urldata)
 	{
 		$url = $urldata['url'];
 
@@ -625,7 +625,7 @@ class parser
 					 * Track URLs of up to a sensible limit of 512 characters in length.
 					 */
 					if (strlen($urldata['url']) <= 512) {
-						$this->add_url($urldata, $time, $nick);
+						$this->add_url($time, $nick, $urldata);
 						$this->nick_objs[$nick]->add_value('urls', 1);
 					}
 				} else {
