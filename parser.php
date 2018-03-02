@@ -146,7 +146,7 @@ class parser
 	 * $csnick. Return the lowercase nick for further referencing by the calling
 	 * function.
 	 */
-	private function add_nick($csnick, $time = null)
+	private function add_nick($time, $csnick)
 	{
 		$nick = strtolower($csnick);
 
@@ -400,7 +400,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($csnick, $time);
+		$nick = $this->add_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_value('actions', 1);
 
 		/**
@@ -419,7 +419,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($csnick, $time);
+		$nick = $this->add_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_value('joins', 1);
 	}
 
@@ -433,8 +433,8 @@ class parser
 			return;
 		}
 
-		$nick_performing = $this->add_nick($csnick_performing, $time);
-		$nick_undergoing = $this->add_nick($csnick_undergoing, $time);
+		$nick_performing = $this->add_nick($time, $csnick_performing);
+		$nick_undergoing = $this->add_nick($time, $csnick_undergoing);
 		$this->nick_objs[$nick_performing]->add_value('kicks', 1);
 		$this->nick_objs[$nick_undergoing]->add_value('kicked', 1);
 
@@ -458,8 +458,8 @@ class parser
 			return;
 		}
 
-		$nick_performing = $this->add_nick($csnick_performing, $time);
-		$nick_undergoing = $this->add_nick($csnick_undergoing, $time);
+		$nick_performing = $this->add_nick($time, $csnick_performing);
+		$nick_undergoing = $this->add_nick($time, $csnick_undergoing);
 
 		switch ($mode) {
 			case '+o':
@@ -491,8 +491,8 @@ class parser
 			return;
 		}
 
-		$nick_performing = $this->add_nick($csnick_performing, $time);
-		$nick_undergoing = $this->add_nick($csnick_undergoing, $time);
+		$nick_performing = $this->add_nick($time, $csnick_performing);
+		$nick_undergoing = $this->add_nick($time, $csnick_undergoing);
 		$this->nick_objs[$nick_performing]->add_value('nickchanges', 1);
 	}
 
@@ -503,7 +503,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($csnick, $time);
+		$nick = $this->add_nick($time, $csnick);
 		$line_length = mb_strlen($line, 'UTF-8');
 		$this->nick_objs[$nick]->add_value('characters', $line_length);
 		$this->nick_objs[$nick]->set_value('lasttalked', $this->date.' '.$time);
@@ -525,7 +525,7 @@ class parser
 				 * be updated before it is actually seen (i.e. on any other activity).
 				 */
 				if ($this->l_total === 0) {
-					$this->add_nick($this->prevnick);
+					$this->add_nick(null, $this->prevnick);
 				}
 
 				$this->nick_objs[$this->prevnick]->add_value('monologues', 1);
@@ -676,7 +676,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($csnick, $time);
+		$nick = $this->add_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_value('parts', 1);
 	}
 
@@ -687,7 +687,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($csnick, $time);
+		$nick = $this->add_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_value('quits', 1);
 	}
 
@@ -698,7 +698,7 @@ class parser
 			return;
 		}
 
-		$nick_performing = $this->add_nick($csnick_performing, $time);
+		$nick_performing = $this->add_nick($time, $csnick_performing);
 		$this->nick_objs[$nick_performing]->add_value('slaps', 1);
 
 		if (is_null($csnick_undergoing)) {
@@ -722,7 +722,7 @@ class parser
 		 * Don't pass a time when adding the "undergoing" nick while it may only be
 		 * referred to instead of being seen for real.
 		 */
-		$nick_undergoing = $this->add_nick($csnick_undergoing);
+		$nick_undergoing = $this->add_nick(null, $csnick_undergoing);
 		$this->nick_objs[$nick_undergoing]->add_value('slapped', 1);
 	}
 
@@ -733,7 +733,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($csnick, $time);
+		$nick = $this->add_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_value('topics', 1);
 
 		/**
