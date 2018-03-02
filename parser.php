@@ -156,6 +156,9 @@ class parser
 			$this->nick_objs[$nick]->set_value('csnick', $csnick);
 		}
 
+		/**
+		 * $time is null if the nick hasn't actually been seen and was only referenced.
+		 */
 		if (!is_null($time)) {
 			if ($this->nick_objs[$nick]->get_value('firstseen') === '') {
 				$this->nick_objs[$nick]->set_value('firstseen', $this->date.' '.$time);
@@ -321,7 +324,7 @@ class parser
 	}
 
 	/**
-	 * Parser function for normal logs.
+	 * Parser function for normal (uncompressed) logs.
 	 */
 	public function parse_log($logfile, $firstline)
 	{
@@ -741,13 +744,13 @@ class parser
 		 * IRC servers are within this limit.
 		 */
 		if (mb_strlen($line, 'UTF-8') <= 390) {
-			$this->add_topic($line, $time, $nick);
+			$this->add_topic($time, $nick, $line);
 		}
 	}
 
 	/**
-	 * Check a nick on syntax and defined lengths. Again, the majority of IRC
-	 * servers are within this limit.
+	 * Check a nick on syntax and defined lengths. The majority of IRC servers are
+	 * within this limit.
 	 */
 	private function validate_nick($csnick)
 	{
