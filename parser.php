@@ -635,13 +635,15 @@ class parser
 		}
 
 		/**
-		 * Track quotes/example lines of up to a sensible limit of 256 characters in
-		 * length. This applies to all of the types seen below.
+		 * All quotes and example lines below should be within a sensible limit of 256
+		 * characters in length.
 		 */
-		if (!$skipquote && $line_length <= 256) {
-			$this->nick_objs[$nick]->add_quote('quote', $line, $line_length);
-		} else {
+		if ($line_length > 256) {
 			$skipquote = true;
+		}
+
+		if (!$skipquote) {
+			$this->nick_objs[$nick]->add_quote('quote', $line, $line_length);
 		}
 
 		/**
