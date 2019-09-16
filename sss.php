@@ -519,7 +519,7 @@ class sss
 			}
 
 			$parser = new $this->parser($this->settings);
-			$parser->set_value('date', $date);
+			$parser->set_str('date', $date);
 
 			/**
 			 * Get the streak history. This will assume logs are parsed in chronological
@@ -530,8 +530,8 @@ class sss
 			}
 
 			if (!empty($result)) {
-				$parser->set_value('prevnick', $result['prevnick']);
-				$parser->set_value('streak', $result['streak']);
+				$parser->set_str('prevnick', $result['prevnick']);
+				$parser->set_num('streak', $result['streak']);
 			}
 
 			/**
@@ -564,9 +564,9 @@ class sss
 			/**
 			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
-			if ($parser->get_value('linenum_lastnonempty') >= $firstline) {
-				$sqlite3->exec('INSERT OR IGNORE INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_value('linenum_lastnonempty').')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				$sqlite3->exec('UPDATE parse_history SET lines_parsed = '.$parser->get_value('linenum_lastnonempty').' WHERE CHANGES() = 0 AND date = \''.$date.'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			if ($parser->get_num('linenum_lastnonempty') >= $firstline) {
+				$sqlite3->exec('INSERT OR IGNORE INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_lastnonempty').')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				$sqlite3->exec('UPDATE parse_history SET lines_parsed = '.$parser->get_num('linenum_lastnonempty').' WHERE CHANGES() = 0 AND date = \''.$date.'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 				/**
 				 * Write data to database and set $needmaintenance to true if there was any data
