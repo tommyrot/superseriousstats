@@ -1,11 +1,12 @@
 <?php
 
 /**
- * Copyright (c) 2009-2018, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2019, Jos de Ruijter <jos@dutnie.nl>
  */
 
 ini_set('display_errors', 'stdout');
 ini_set('error_reporting', -1);
+ini_set('pcre.jit', 0);
 
 /**
  * Check if all required extensions are loaded.
