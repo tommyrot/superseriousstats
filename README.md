@@ -10,14 +10,14 @@ A small and efficient program written in PHP to create HTML pages with statistic
 
 download
 --------
-Either latest release or checkout current master branch which always aims to be in working condition.
+Either latest release or checkout current master branch which always aims to be in working condition. The **80dev branch** requires php74 with sqlite3 and mbstring extensions compiled in and **is not** guaranteed to work at all or ever.
 
 *feel free to join us in #superseriousstats on chat.freenode.net if you have any questions etc*
 
 license
 -------
 ```
-Copyright (c) 2007-2018, Jos de Ruijter
+Copyright (c) 2007-2019, Jos de Ruijter
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
