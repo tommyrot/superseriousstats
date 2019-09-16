@@ -128,7 +128,7 @@ class sss
 		 * Open the database connection. Always needed from this point forward.
 		 */
 		try {
-			$sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
+			$sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READONLY);
 			$sqlite3->busyTimeout(60000);
 		} catch (Exception $e) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
