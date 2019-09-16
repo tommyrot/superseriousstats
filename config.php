@@ -1,18 +1,20 @@
 <?php
 
 /**
- * Copyright (c) 2018, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2018-2019, Jos de Ruijter <jos@dutnie.nl>
  */
+
+declare(strict_types=1);
 
 /**
  * Trait with functions related to configuration management.
  */
 trait config
 {
-	private function set_config($settings)
+	private function set_config(array $settings): void
 	{
 		/**
-		 * If set, override variables listed in $settings_list[].
+		 * Update variables listed in $settings_list[].
 		 */
 		foreach ($this->settings_list as $setting => $type) {
 			if (!array_key_exists($setting, $settings)) {
