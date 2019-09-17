@@ -7,7 +7,7 @@
 declare(strict_types=1);
 
 /**
- * Trait with functions related to configuration management.
+ * Trait related to configuration management.
  */
 trait config
 {
