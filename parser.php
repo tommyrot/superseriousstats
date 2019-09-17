@@ -238,8 +238,7 @@ class parser
 
 		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
 
-		while (!gzeof($zp)) {
-			$line = gzgets($zp);
+		while (($line = gzgets($zp)) !== false) {
 			$this->linenum++;
 
 			if ($this->linenum < $firstline) {
