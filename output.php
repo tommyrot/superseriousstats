@@ -1,16 +1,18 @@
 <?php
 
 /**
- * Copyright (c) 2010-2016, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2019, Jos de Ruijter <jos@dutnie.nl>
  */
+
+declare(strict_types=1);
 
 /**
  * Class for handling output messages.
  */
 class output
 {
-	private static $outputbits = 1;
-	private static $prevmessage = '';
+	private static int $outputbits = 1;
+	private static string $prevmessage = '';
 
 	private function __construct()
 	{
@@ -22,7 +24,7 @@ class output
 	/**
 	 * Output a given message to the console.
 	 */
-	public static function output($type, $message)
+	public static function output(string $type, string $message): void
 	{
 		$datetime = date('M d H:i:s');
 
@@ -71,7 +73,7 @@ class output
 	 *  1  Notices
 	 *  2  Debug messages
 	 */
-	public static function set_outputbits($outputbits)
+	public static function set_outputbits(int $outputbits): void
 	{
 		self::$outputbits = $outputbits;
 	}
