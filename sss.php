@@ -4,9 +4,14 @@
  * Copyright (c) 2009-2019, Jos de Ruijter <jos@dutnie.nl>
  */
 
+declare(strict_types=1);
+
+/*
+ * Override php.ini directives.
+ */
 ini_set('display_errors', 'stdout');
-ini_set('error_reporting', -1);
-ini_set('pcre.jit', 0);
+ini_set('error_reporting', '-1');
+ini_set('pcre.jit', '0');
 
 /**
  * Check if all required extensions are loaded.
@@ -23,7 +28,7 @@ if (!extension_loaded('mbstring')) {
  * Autoloader. This code handles on the fly inclusion of classes and traits at
  * time of instantiation.
  */
-spl_autoload_register(function ($class) {
+spl_autoload_register(function (string $class): void {
 	require_once(__DIR__.'/'.$class.'.php');
 });
 
