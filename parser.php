@@ -312,8 +312,7 @@ class parser
 
 		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
 
-		while (!feof($fp)) {
-			$line = fgets($fp);
+		while (($line = fgets($fp)) !== false) {
 			$this->linenum++;
 
 			if ($this->linenum < $firstline) {
