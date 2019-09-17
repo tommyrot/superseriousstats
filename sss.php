@@ -615,9 +615,7 @@ class sss
 			output::output('critical', __METHOD__.'(): failed to open file: \''.$rp.'\'');
 		}
 
-		while (!feof($fp)) {
-			$line = trim(fgets($fp));
-
+		while (($line = fgets($fp)) !== false) {
 			if (preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>([^\s"]+( [^\s"]+)*))"/', $line, $matches)) {
 				$this->settings[$matches['setting']] = $matches['value'];
 			}
