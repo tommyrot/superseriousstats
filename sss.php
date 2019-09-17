@@ -20,7 +20,7 @@ if (!extension_loaded('mbstring')) {
 }
 
 /**
- * Class autoloader. This code handles on the fly inclusion of class files at
+ * Autoloader. This code handles on the fly inclusion of classes and traits at
  * time of instantiation.
  */
 spl_autoload_register(function ($class) {
@@ -32,6 +32,8 @@ spl_autoload_register(function ($class) {
  */
 class sss
 {
+	use config;
+
 	/**
 	 * Variables listed in $settings_list[] can have their default value overridden
 	 * in the configuration file.
@@ -628,30 +630,9 @@ class sss
 		}
 
 		/**
-		 * If set, override variables listed in $settings_list[].
+		 * Apply settings from the configuration file.
 		 */
-		foreach ($this->settings_list as $setting => $type) {
-			if (!array_key_exists($setting, $this->settings)) {
-				continue;
-			}
-
-			/**
-			 * Do some explicit type casting because everything is initially a string.
-			 */
-			if ($type === 'string') {
-				$this->$setting = $this->settings[$setting];
-			} elseif ($type === 'int') {
-				if (preg_match('/^\d+$/', $this->settings[$setting])) {
-					$this->$setting = (int) $this->settings[$setting];
-				}
-			} elseif ($type === 'bool') {
-				if (strtolower($this->settings[$setting]) === 'true') {
-					$this->$setting = true;
-				} elseif (strtolower($this->settings[$setting]) === 'false') {
-					$this->$setting = false;
-				}
-			}
-		}
+		$this->set_config($this->settings);
 	}
 }
 
