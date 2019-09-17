@@ -325,8 +325,8 @@ class sss
 			output::output('critical', __METHOD__.'(): failed to open file: \''.$rp.'\'');
 		}
 
-		while (!feof($fp)) {
-			$line = preg_replace('/\s/', '', fgets($fp));
+		while (($line = fgets($fp)) !== false) {
+			$line = preg_replace('/\s/', '', $line);
 
 			/**
 			 * Skip lines which we can't interpret.
