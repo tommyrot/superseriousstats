@@ -626,16 +626,16 @@ class sss
 		/**
 		 * Exit if any crucial setting is missing.
 		 */
-		foreach ($this->settings_list_required as $key) {
-			if (!array_key_exists($key, $this->settings)) {
-				output::output('critical', __METHOD__.'(): missing required setting: \''.$key.'\'');
+		foreach ($this->settings_list_required as $setting) {
+			if (!array_key_exists($setting, $this->settings)) {
+				output::output('critical', __METHOD__.'(): missing required setting: \''.$setting.'\'');
 			}
 		}
 
 		/**
 		 * Apply settings from the configuration file.
 		 */
-		$this->set_config($this->settings);
+		$this->apply_settings($this->settings);
 	}
 }
 

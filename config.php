@@ -11,7 +11,7 @@ declare(strict_types=1);
  */
 trait config
 {
-	private function set_config(array $settings): void
+	private function apply_settings(array $settings): void
 	{
 		/**
 		 * Update variables listed in $settings_list[].

@@ -117,7 +117,7 @@ class parser
 		/**
 		 * Apply settings from the configuration file.
 		 */
-		$this->set_config($settings);
+		$this->apply_settings($settings);
 	}
 
 	/**
