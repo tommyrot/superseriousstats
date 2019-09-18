@@ -43,14 +43,14 @@ class sss
 	 * Variables listed in $settings_list[] can have their default value overridden
 	 * in the configuration file.
 	 */
-	private $autolinknicks = true;
+	private $auto_link_nicks = true;
 	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
 	private $outputbits = 1;
 	private $parser = '';
 	private $settings = [];
 	private $settings_list = [
-		'autolinknicks' => 'bool',
+		'auto_link_nicks' => 'bool',
 		'database' => 'string',
 		'logfile_dateformat' => 'string',
 		'outputbits' => 'int',
@@ -199,9 +199,9 @@ class sss
 	private function do_maintenance($sqlite3)
 	{
 		/**
-		 * Search for new aliases if $autolinknicks is enabled.
+		 * Search for new aliases if $auto_link_nicks is enabled.
 		 */
-		if ($this->autolinknicks) {
+		if ($this->auto_link_nicks) {
 			$this->link_nicks($sqlite3);
 		}
 
