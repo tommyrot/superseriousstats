@@ -196,7 +196,7 @@ class sss
 	private function maintenance(object $sqlite3): void
 	{
 		/**
-		 * Search for new aliases if $autolink_nicks is enabled.
+		 * Search for new aliases if $autolink_nicks is true.
 		 */
 		if ($this->autolink_nicks) {
 			$this->link_nicks($sqlite3);

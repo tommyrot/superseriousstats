@@ -67,7 +67,7 @@ class output
 	/**
 	 * Set the amount of bits corresponding to the type(s) of output messages
 	 * displayed. By default all but debug messages will be displayed. This can be
-	 * changed in the configuration file.
+	 * changed in the config file.
 	 *
 	 *  0  Critical events (will always display)
 	 *  1  Notices
