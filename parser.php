@@ -4,6 +4,8 @@
  * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
  */
 
+declare(strict_types=1);
+
 /**
  * General parse instructions. This class will be extended by a class with
  * logfile format specific parse instructions.
