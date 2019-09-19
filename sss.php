@@ -280,7 +280,7 @@ class sss
 			'userpics' => 'boolean',
 			'userpics_dir' => 'string',
 			'userpics_default' => 'string'];
-		$vars = '$settings[\''.(isset($this->config['cid']) ? $this->config['cid'] : $this->config['channel']).'\'] = [';
+		$vars = '$settings[\''.($this->config['cid'] ?? $this->config['channel']).'\'] = [';
 
 		foreach ($settings_allow_override as $setting => $type) {
 			if (!array_key_exists($setting, $this->config)) {
