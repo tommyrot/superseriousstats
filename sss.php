@@ -288,11 +288,15 @@ class sss
 			}
 
 			if ($type === 'string') {
-				$vars .= "\n\t".'\''.$key.'\' => \''.$this->config[$key].'\',';
-			} elseif ($type === 'int' && preg_match('/^\d+$/', $this->config[$key])) {
-				$vars .= "\n\t".'\''.$key.'\' => '.$this->config[$key].',';
-			} elseif ($type === 'bool' && preg_match('/^(true|false)$/i', $this->config[$key])) {
-				$vars .= "\n\t".'\''.$key.'\' => '.strtolower($this->config[$key]).',';
+				$vars .= "\n\t".'\''.$setting.'\' => \''.$this->config[$setting].'\',';
+			} elseif ($type === 'integer') {
+				if (preg_match('/^\d+$/', $this->config[$setting])) {
+					$vars .= "\n\t".'\''.$setting.'\' => '.$this->config[$setting].',';
+				}
+			} elseif ($type === 'boolean') {
+				if (preg_match('/^(true|false)$/i', $this->config[$setting])) {
+					$vars .= "\n\t".'\''.$setting.'\' => '.strtolower($this->config[$setting]).',';
+				}
 			}
 		}
 
