@@ -33,30 +33,30 @@ spl_autoload_register(function (string $class): void {
 });
 
 /**
- * Class for controlling all features of the program.
+ * Main class.
  */
 class sss
 {
 	use config;
 
 	/**
-	 * Variables listed in $settings_list[] can have their default value overridden
-	 * in the configuration file.
+	 * Variables listed in $settings_allow_override[] can have their default value
+	 * overridden through the config file.
 	 */
 	private $autolink_nicks = true;
+	private $config = [];
 	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
 	private $outputbits = 1;
 	private $parser = '';
-	private $settings = [];
-	private $settings_list = [
-		'autolink_nicks' => 'bool',
+	private $settings_allow_override = [
+		'autolink_nicks' => 'boolean',
 		'database' => 'string',
 		'logfile_dateformat' => 'string',
-		'outputbits' => 'int',
+		'outputbits' => 'integer',
 		'parser' => 'string',
 		'timezone' => 'string'];
-	private $settings_list_required = [];
+	private $settings_required = [];
 	private $timezone = 'UTC';
 
 	public function __construct()
@@ -84,19 +84,19 @@ class sss
 		}
 
 		/**
-		 * Some options require additional settings to be set in the configuration file.
-		 * Add those to the list.
+		 * Some options require additional settings to be set in the config file.
+		 * Add those to $settings_required[].
 		 */
 		if (array_key_exists('i', $options)) {
-			array_push($this->settings_list_required, 'parser', 'logfile_dateformat');
+			array_push($this->settings_required, 'parser', 'logfile_dateformat');
 		}
 
 		if (array_key_exists('o', $options) || array_key_exists('s', $options)) {
-			$this->settings_list_required[] = 'channel';
+			$this->settings_required[] = 'channel';
 		}
 
 		/**
-		 * Read the configuration file.
+		 * Read the config file and have settings take effect.
 		 */
 		if (array_key_exists('c', $options)) {
 			$this->read_config($options['c']);
@@ -105,17 +105,15 @@ class sss
 		}
 
 		/**
-		 * After the configuration file has been read we can update the used timezone
-		 * and the level of console output messages with user specified values.
+		 * After reading the config file we can now update the timezone.
 		 */
 		if (!date_default_timezone_set($this->timezone)) {
 			output::output('critical', __METHOD__.'(): invalid timezone: \''.$this->timezone.'\'');
 		}
 
 		/**
-		 * Prior to having the updated value of $outputbits take effect there were no
-		 * message types other than critical events, which cannot be suppressed.
-		 * $outputbits will always be zero if the "q" option is set for quiet mode.
+		 * Up until this point the value of $outputbits didn't matter as there could
+		 * have been only critical messages which always display (even in quiet mode).
 		 */
 		if (array_key_exists('q', $options)) {
 			output::set_outputbits(0);
@@ -124,8 +122,7 @@ class sss
 		}
 
 		/**
-		 * Export settings from the configuration file in the format vars.php accepts
-		 * them.
+		 * Export settings from the config file in the format vars.php accepts them.
 		 */
 		if (array_key_exists('s', $options)) {
 			$this->export_settings();
@@ -181,11 +178,11 @@ class sss
 			/**
 			 * Run maintenance after import.
 			 */
-			$this->do_maintenance($sqlite3);
+			$this->maintenance($sqlite3);
 		}
 
 		if (array_key_exists('o', $options)) {
-			$this->make_html($sqlite3, $options['o']);
+			$this->html($sqlite3, $options['o']);
 		}
 
 		$sqlite3->close();
@@ -196,7 +193,7 @@ class sss
 	 * The maintenance routines ensure that all relevant user data is accumulated
 	 * properly.
 	 */
-	private function do_maintenance($sqlite3)
+	private function maintenance(object $sqlite3): void
 	{
 		/**
 		 * Search for new aliases if $autolink_nicks is enabled.
@@ -205,8 +202,8 @@ class sss
 			$this->link_nicks($sqlite3);
 		}
 
-		$maintenance = new maintenance($this->settings);
-		$maintenance->do_maintenance($sqlite3);
+		$maintenance = new maintenance($this->config);
+		$maintenance->maintenance($sqlite3);
 	}
 
 	private function export_nicks($sqlite3, $file)
@@ -457,8 +454,8 @@ class sss
 
 	private function make_html($sqlite3, $file)
 	{
-		$html = new html($this->settings);
-		$output = $html->make_html($sqlite3);
+		$html = new html($this->config);
+		$output = $html->html($sqlite3);
 
 		if (($fp = fopen($file, 'wb')) === false) {
 			output::output('critical', __METHOD__.'(): failed to open file: \''.$file.'\'');
@@ -602,8 +599,8 @@ class sss
 	}
 
 	/**
-	 * Read the settings from the configuration file and put them into $settings[]
-	 * so they can be passed along to other classes.
+	 * Read and apply settings from the config file and put them into $config[] so
+	 * they can be passed along to other classes.
 	 */
 	private function read_config(string $file): void
 	{
@@ -617,7 +614,7 @@ class sss
 
 		while (($line = fgets($fp)) !== false) {
 			if (preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>([^\s"]+( [^\s"]+)*))"/', $line, $matches)) {
-				$this->settings[$matches['setting']] = $matches['value'];
+				$this->config[$matches['setting']] = $matches['value'];
 			}
 		}
 
@@ -626,16 +623,16 @@ class sss
 		/**
 		 * Exit if any crucial setting is missing.
 		 */
-		foreach ($this->settings_list_required as $setting) {
-			if (!array_key_exists($setting, $this->settings)) {
+		foreach ($this->settings_required as $setting) {
+			if (!array_key_exists($setting, $this->config)) {
 				output::output('critical', __METHOD__.'(): missing required setting: \''.$setting.'\'');
 			}
 		}
 
 		/**
-		 * Apply settings from the configuration file.
+		 * Apply settings from the config file.
 		 */
-		$this->apply_settings($this->settings);
+		$this->apply_settings($this->config);
 	}
 }
 
