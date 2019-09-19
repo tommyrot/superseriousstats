@@ -260,7 +260,7 @@ class sss
 		output::output('notice', __METHOD__.'(): '.number_format($i).' nicks exported');
 	}
 
-	private function export_settings()
+	private function export_settings(): void
 	{
 		/**
 		 * The following is a list of settings accepted by history.php and/or user.php
