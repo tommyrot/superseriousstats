@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-/*
+/**
  * Override php.ini directives.
  */
 ini_set('display_errors', 'stdout');
@@ -43,14 +43,14 @@ class sss
 	 * Variables listed in $settings_list[] can have their default value overridden
 	 * in the configuration file.
 	 */
-	private $auto_link_nicks = true;
+	private $autolink__nicks = true;
 	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
 	private $outputbits = 1;
 	private $parser = '';
 	private $settings = [];
 	private $settings_list = [
-		'auto_link_nicks' => 'bool',
+		'autolink__nicks' => 'bool',
 		'database' => 'string',
 		'logfile_dateformat' => 'string',
 		'outputbits' => 'int',
@@ -199,9 +199,9 @@ class sss
 	private function do_maintenance($sqlite3)
 	{
 		/**
-		 * Search for new aliases if $auto_link_nicks is enabled.
+		 * Search for new aliases if $autolink__nicks is enabled.
 		 */
-		if ($this->auto_link_nicks) {
+		if ($this->autolink__nicks) {
 			$this->link_nicks($sqlite3);
 		}
 
