@@ -112,7 +112,7 @@ class parser
 	protected $linenum = 0;
 	protected $prevline = '';
 
-	public function __construct($settings)
+	public function __construct(array $config)
 	{
 		/**
 		 * Apply settings from the configuration file.
