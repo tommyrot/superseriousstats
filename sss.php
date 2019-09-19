@@ -206,7 +206,7 @@ class sss
 		$maintenance->maintenance($sqlite3);
 	}
 
-	private function export_nicks($sqlite3, $file)
+	private function export_nicks(object $sqlite3, string $file): void
 	{
 		output::output('notice', __METHOD__.'(): exporting nicks');
 		$query = $sqlite3->query('SELECT csnick, ruid, status FROM uid_details ORDER BY csnick ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -452,7 +452,7 @@ class sss
 		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 	}
 
-	private function make_html($sqlite3, $file)
+	private function html(object $sqlite3, string $file): void
 	{
 		$html = new html($this->config);
 		$output = $html->html($sqlite3);
@@ -590,7 +590,7 @@ class sss
 		}
 	}
 
-	private function print_manual()
+	private function print_manual(): void
 	{
 		$man = 'usage:  php sss.php [-c <file>] [-i <file|directory>]'."\n"
 			. '                    [-o <file> [-b <numbits>]] [-q]'."\n\n"
