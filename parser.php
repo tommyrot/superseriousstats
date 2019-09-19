@@ -52,7 +52,7 @@ class parser
 	private $newline = '';
 	private $nick_objs = [];
 	private $prevnick = '';
-	private $settings_list = ['wordtracking' => 'bool'];
+	private $settings_allow_override = ['wordtracking' => 'bool'];
 	private $smileys = [
 		':)' => 's_01',
 		';)' => 's_02',
@@ -117,7 +117,7 @@ class parser
 		/**
 		 * Apply settings from the configuration file.
 		 */
-		$this->apply_settings($settings);
+		$this->apply_settings($config);
 	}
 
 	/**

@@ -161,7 +161,7 @@ class sss
 		 * "b" before "o".
 		 */
 		if (array_key_exists('b', $options) && preg_match('/^\d+$/', $options['b'])) {
-			$this->settings['sectionbits'] = (int) $options['b'];
+			$this->config['sectionbits'] = (int) $options['b'];
 		}
 
 		if (array_key_exists('e', $options)) {
@@ -280,19 +280,19 @@ class sss
 			'userpics' => 'bool',
 			'userpics_dir' => 'string',
 			'userpics_default' => 'string'];
-		$vars = '$settings[\''.(isset($this->settings['cid']) ? $this->settings['cid'] : $this->settings['channel']).'\'] = [';
+		$vars = '$settings[\''.(isset($this->config['cid']) ? $this->config['cid'] : $this->config['channel']).'\'] = [';
 
 		foreach ($settings_list as $key => $type) {
-			if (!array_key_exists($key, $this->settings)) {
+			if (!array_key_exists($key, $this->config)) {
 				continue;
 			}
 
 			if ($type === 'string') {
-				$vars .= "\n\t".'\''.$key.'\' => \''.$this->settings[$key].'\',';
-			} elseif ($type === 'int' && preg_match('/^\d+$/', $this->settings[$key])) {
-				$vars .= "\n\t".'\''.$key.'\' => '.$this->settings[$key].',';
-			} elseif ($type === 'bool' && preg_match('/^(true|false)$/i', $this->settings[$key])) {
-				$vars .= "\n\t".'\''.$key.'\' => '.strtolower($this->settings[$key]).',';
+				$vars .= "\n\t".'\''.$key.'\' => \''.$this->config[$key].'\',';
+			} elseif ($type === 'int' && preg_match('/^\d+$/', $this->config[$key])) {
+				$vars .= "\n\t".'\''.$key.'\' => '.$this->config[$key].',';
+			} elseif ($type === 'bool' && preg_match('/^(true|false)$/i', $this->config[$key])) {
+				$vars .= "\n\t".'\''.$key.'\' => '.strtolower($this->config[$key]).',';
 			}
 		}
 
@@ -522,7 +522,7 @@ class sss
 				continue;
 			}
 
-			$parser = new $this->parser($this->settings);
+			$parser = new $this->parser($this->config);
 			$parser->set_str('date', $date);
 
 			/**
