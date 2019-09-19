@@ -7,17 +7,17 @@
 declare(strict_types=1);
 
 /**
- * Trait related to configuration management.
+ * Trait to apply relevant settings from the config file.
  */
 trait config
 {
-	private function apply_settings(array $settings): void
+	private function apply_settings(array $config): void
 	{
 		/**
-		 * Update variables listed in $settings_list[].
+		 * Update variables listed in $settings_allow_override[].
 		 */
-		foreach ($this->settings_list as $setting => $type) {
-			if (!array_key_exists($setting, $settings)) {
+		foreach ($this->settings_allow_override as $setting => $type) {
+			if (!array_key_exists($setting, $config)) {
 				continue;
 			}
 
@@ -25,15 +25,15 @@ trait config
 			 * Do some explicit type casting because everything is initially a string.
 			 */
 			if ($type === 'string') {
-				$this->$setting = $settings[$setting];
-			} elseif ($type === 'int') {
-				if (preg_match('/^\d+$/', $settings[$setting])) {
-					$this->$setting = (int) $settings[$setting];
+				$this->$setting = $config[$setting];
+			} elseif ($type === 'integer') {
+				if (preg_match('/^\d+$/', $config[$setting])) {
+					$this->$setting = (int) $config[$setting];
 				}
-			} elseif ($type === 'bool') {
-				if (strtolower($settings[$setting]) === 'true') {
+			} elseif ($type === 'boolean') {
+				if (strtolower($config[$setting]) === 'true') {
 					$this->$setting = true;
-				} elseif (strtolower($settings[$setting]) === 'false') {
+				} elseif (strtolower($config[$setting]) === 'false') {
 					$this->$setting = false;
 				}
 			}
