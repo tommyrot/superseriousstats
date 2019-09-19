@@ -605,7 +605,7 @@ class sss
 	 * Read the settings from the configuration file and put them into $settings[]
 	 * so they can be passed along to other classes.
 	 */
-	private function read_config($file)
+	private function read_config(string $file): void
 	{
 		if (($rp = realpath($file)) === false) {
 			output::output('critical', __METHOD__.'(): no such file: \''.$file.'\'');
