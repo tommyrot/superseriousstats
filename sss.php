@@ -150,8 +150,8 @@ class sss
 			'synchronous' => 'OFF',
 			'temp_store' => 'MEMORY'];
 
-		foreach ($pragmas as $key => $value) {
-			$sqlite3->exec('PRAGMA '.$key.' = '.$value);
+		foreach ($pragmas as $pragma => $value) {
+			$sqlite3->exec('PRAGMA '.$pragma.' = '.$value);
 		}
 
 		output::output('notice', __METHOD__.'(): succesfully connected to database: \''.$this->database.'\'');
@@ -219,7 +219,7 @@ class sss
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if ($result['status'] === 1 || $result['status'] === 3 || $result['status'] === 4) {
-				$registerednicks[$result['ruid']] = strtolower($result['csnick']);
+				$registered_nicks[$result['ruid']] = strtolower($result['csnick']);
 				$statuses[$result['ruid']] = $result['status'];
 			} elseif ($result['status'] === 2) {
 				$aliases[$result['ruid']][] = strtolower($result['csnick']);
@@ -231,10 +231,10 @@ class sss
 		$i = 0;
 		$output = '';
 
-		if (isset($registerednicks)) {
-			$i += count($registerednicks);
+		if (isset($registered_nicks)) {
+			$i += count($registered_nicks);
 
-			foreach ($registerednicks as $ruid => $nick) {
+			foreach ($registered_nicks as $ruid => $nick) {
 				$output .= $statuses[$ruid].','.$nick;
 
 				if (isset($aliases[$ruid])) {
@@ -266,24 +266,24 @@ class sss
 		 * The following is a list of settings accepted by history.php and/or user.php
 		 * along with their type.
 		 */
-		$settings_list = [
+		$settings_allow_override = [
 			'channel' => 'string',
 			'database' => 'string',
 			'mainpage' => 'string',
-			'maxrows_people_month' => 'int',
-			'maxrows_people_timeofday' => 'int',
-			'maxrows_people_year' => 'int',
-			'rankings' => 'bool',
+			'maxrows_people_month' => 'integer',
+			'maxrows_people_timeofday' => 'integer',
+			'maxrows_people_year' => 'integer',
+			'rankings' => 'boolean',
 			'stylesheet' => 'string',
 			'timezone' => 'string',
-			'userstats' => 'bool',
-			'userpics' => 'bool',
+			'userstats' => 'boolean',
+			'userpics' => 'boolean',
 			'userpics_dir' => 'string',
 			'userpics_default' => 'string'];
 		$vars = '$settings[\''.(isset($this->config['cid']) ? $this->config['cid'] : $this->config['channel']).'\'] = [';
 
-		foreach ($settings_list as $key => $type) {
-			if (!array_key_exists($key, $this->config)) {
+		foreach ($settings_allow_override as $setting => $type) {
+			if (!array_key_exists($setting, $this->config)) {
 				continue;
 			}
 
