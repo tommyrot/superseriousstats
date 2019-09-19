@@ -31,10 +31,8 @@ trait config
 					$this->$setting = (int) $config[$setting];
 				}
 			} elseif ($type === 'boolean') {
-				if (strtolower($config[$setting]) === 'true') {
-					$this->$setting = true;
-				} elseif (strtolower($config[$setting]) === 'false') {
-					$this->$setting = false;
+				if (preg_match('/^(true|false)$/i', $config[$setting])) {
+					$this->$setting = strtolower($config[$setting]);
 				}
 			}
 		}
