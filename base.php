@@ -11,7 +11,7 @@ declare(strict_types=1);
  */
 trait base
 {
-	public function add_num(string $var, int $value)
+	public function add_num(string $var, int $value): void
 	{
 		$this->$var += $value;
 	}
@@ -26,12 +26,12 @@ trait base
 		return $this->$var;
 	}
 
-	public function set_num(string $var, int $value)
+	public function set_num(string $var, int $value): void
 	{
 		$this->$var = $value;
 	}
 
-	public function set_str(string $var, string $value)
+	public function set_str(string $var, string $value): void
 	{
 		$this->$var = $value;
 	}
