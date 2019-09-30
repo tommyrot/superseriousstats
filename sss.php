@@ -47,9 +47,9 @@ class sss
 	private $config = [];
 	private $database = 'sss.db3';
 	private $logfile_dateformat = '';
-	private $outputbits = 1;
+	private $verbosity = 1;
 	private $parser = '';
-	private $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'outputbits', 'parser', 'timezone'];
+	private $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'verbosity', 'parser', 'timezone'];
 	private $settings_required = [];
 	private $timezone = 'UTC';
 
@@ -106,13 +106,13 @@ class sss
 		}
 
 		/**
-		 * Up until this point the value of $outputbits didn't matter as there could
+		 * Up until this point the value of $verbosity didn't matter as there could
 		 * have been only critical messages which always display (even in quiet mode).
 		 */
 		if (array_key_exists('q', $options)) {
-			output::set_outputbits(0);
+			output::set_verbosity(0);
 		} else {
-			output::set_outputbits($this->outputbits);
+			output::set_verbosity($this->verbosity);
 		}
 
 		/**
