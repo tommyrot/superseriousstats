@@ -11,8 +11,8 @@ declare(strict_types=1);
  */
 class output
 {
-	private static int $outputbits = 1;
-	private static string $prevmessage = '';
+	private static int $verbosity = 1;
+	private static string $prev_message = '';
 
 	private function __construct()
 	{
@@ -44,16 +44,16 @@ class output
 		 * Avoid repeating the same message multiple times in a row, e.g. repeated lines
 		 * and errors related to mode changes.
 		 */
-		if ($message === self::$prevmessage) {
+		if ($message === self::$prev_message) {
 			return;
 		}
 
 		if ($type === 'notice') {
-			if (self::$outputbits & 1) {
+			if (self::$verbosity & 1) {
 				echo $datetime.' [ ] '.$message."\n";
 			}
 		} elseif ($type === 'debug') {
-			if (self::$outputbits & 2) {
+			if (self::$verbosity & 2) {
 				echo $datetime.' [D] '.$message."\n";
 			}
 		}
@@ -61,20 +61,19 @@ class output
 		/**
 		 * Remember the last message displayed.
 		 */
-		self::$prevmessage = $message;
+		self::$prev_message = $message;
 	}
 
 	/**
-	 * Set the amount of bits corresponding to the type(s) of output messages
-	 * displayed. By default all but debug messages will be displayed. This can be
-	 * changed in the config file.
+	 * Set output verbosity. This is a bitwise value which defaults to 1 until
+	 * overridden during init with the value from the config file.
 	 *
 	 *  0  Critical events (will always display)
 	 *  1  Notices
 	 *  2  Debug messages
 	 */
-	public static function set_outputbits(int $outputbits): void
+	public static function set_verbosity(int $verbosity): void
 	{
-		self::$outputbits = $outputbits;
+		self::$verbosity = $verbosity;
 	}
 }
