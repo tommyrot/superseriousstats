@@ -297,7 +297,7 @@ class sss
 		exit(rtrim($vars, ',').'];'."\n");
 	}
 
-	private function import_nicks($sqlite3, $file)
+	private function import_nicks(object $sqlite3, string $file): void
 	{
 		output::output('notice', __METHOD__.'(): importing nicks');
 		$query = $sqlite3->query('SELECT uid, csnick FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
