@@ -16,7 +16,7 @@ trait config
 		/**
 		 * Update variables listed in $settings_allow_override[].
 		 */
-		foreach ($this->settings_allow_override as $setting => $type) {
+		foreach ($this->settings_allow_override as $setting) {
 			if (!array_key_exists($setting, $config)) {
 				continue;
 			}
@@ -24,15 +24,17 @@ trait config
 			/**
 			 * Do some explicit type casting because everything is initially a string.
 			 */
-			if ($type === 'string') {
+			if (is_string($this->$setting)) {
 				$this->$setting = $config[$setting];
-			} elseif ($type === 'integer') {
+			} elseif (is_int($this->$setting)) {
 				if (preg_match('/^\d+$/', $config[$setting])) {
 					$this->$setting = (int) $config[$setting];
 				}
-			} elseif ($type === 'boolean') {
-				if (preg_match('/^(true|false)$/i', $config[$setting])) {
-					$this->$setting = strtolower($config[$setting]);
+			} elseif (is_bool($this->$setting)) {
+				if (strtolower($config[$setting]]) === 'true') {
+					$this->$setting = true;
+				} elseif (strtolower($config[$setting]]) === 'false') {
+					$this->$setting = false;
 				}
 			}
 		}
