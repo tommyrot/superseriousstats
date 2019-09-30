@@ -49,13 +49,7 @@ class sss
 	private $logfile_dateformat = '';
 	private $outputbits = 1;
 	private $parser = '';
-	private $settings_allow_override = [
-		'autolink_nicks' => 'boolean',
-		'database' => 'string',
-		'logfile_dateformat' => 'string',
-		'outputbits' => 'integer',
-		'parser' => 'string',
-		'timezone' => 'string'];
+	private $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'outputbits', 'parser', 'timezone'];
 	private $settings_required = [];
 	private $timezone = 'UTC';
 

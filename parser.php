@@ -54,7 +54,7 @@ class parser
 	private $newline = '';
 	private $nick_objs = [];
 	private $prevnick = '';
-	private $settings_allow_override = ['wordtracking' => 'bool'];
+	private $settings_allow_override = ['wordtracking'];
 	private $smileys = [
 		':)' => 's_01',
 		';)' => 's_02',
