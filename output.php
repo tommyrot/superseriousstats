@@ -65,8 +65,8 @@ class output
 	}
 
 	/**
-	 * Set output verbosity. This is a bitwise value which defaults to 1 until
-	 * overridden during init with the value from the config file.
+	 * Set output verbosity. This is a bitwise value which defaults to 1 and can be
+	 * overridden through the config file.
 	 *
 	 *  0  Critical events (will always display)
 	 *  1  Notices
