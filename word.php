@@ -1,8 +1,10 @@
 <?php
 
 /**
- * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
  */
+
+declare(strict_types=1);
 
 /**
  * Class for handling word data.
@@ -10,16 +12,16 @@
 class word
 {
 	use base;
-	private $length = 0;
-	private $total = 0;
-	private $word = '';
+	private int $length = 0;
+	private int $total = 0;
+	private string $word = '';
 
-	public function __construct($word)
+	public function __construct(string $word)
 	{
 		$this->word = $word;
 	}
 
-	public function write_data($sqlite3)
+	public function write_data(object $sqlite3): void
 	{
 		/**
 		 * Write data to database table "words".
