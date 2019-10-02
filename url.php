@@ -1,32 +1,34 @@
 <?php
 
 /**
- * Copyright (c) 2007-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
  */
+
+declare(strict_types=1);
 
 /**
  * Class for handling URL data.
  */
 class url
 {
-	private $fqdn = '';
-	private $tld = '';
-	private $url = '';
-	private $uses = [];
+	private string $fqdn = '';
+	private string $tld = '';
+	private string $url = '';
+	private array $uses = [];
 
-	public function __construct($urldata)
+	public function __construct(array $urldata)
 	{
 		$this->fqdn = $urldata['fqdn'];
 		$this->tld = $urldata['tld'];
 		$this->url = $urldata['url'];
 	}
 
-	public function add_uses($datetime, $nick)
+	public function add_uses(string $datetime, string $nick): void
 	{
 		$this->uses[] = [$datetime, $nick];
 	}
 
-	public function write_data($sqlite3)
+	public function write_data(object $sqlite3): void
 	{
 		/**
 		 * Write data to database table "fqdns".
