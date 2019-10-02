@@ -9,9 +9,11 @@
  */
 class html
 {
+	use config;
+
 	/**
-	 * Variables listed in $settings_list[] can have their default value overridden
-	 * in the configuration file.
+	 * Variables listed in $settings_allow_override[] can have their default value
+	 * overridden through the config file.
 	 */
 	private $channel = '';
 	private $cid = '';
@@ -38,55 +40,16 @@ class html
 	private $rows_domains_tlds = 10;
 	private $search_user = false;
 	private $sectionbits = 255;
-	private $settings_list = [
-		'channel' => 'string',
-		'cid' => 'string',
-		'history' => 'bool',
-		'maxrows' => 'int',
-		'maxrows_people2' => 'int',
-		'maxrows_people_alltime' => 'int',
-		'maxrows_people_month' => 'int',
-		'maxrows_people_timeofday' => 'int',
-		'maxrows_people_year' => 'int',
-		'maxrows_recenturls' => 'int',
-		'minrows' => 'int',
-		'rankings' => 'bool',
-		'recenturls_type' => 'int',
-		'rows_domains_tlds' => 'int',
-		'search_user' => 'bool',
-		'sectionbits' => 'int',
-		'stylesheet' => 'string',
-		'userstats' => 'bool'];
+	private $settings_allow_override = ['channel', 'cid', 'history', 'maxrows', 'maxrows_people2', 'maxrows_people_alltime', 'maxrows_people_month', 'maxrows_people_timeofday', 'maxrows_people_year', 'maxrows_recenturls', 'minrows', 'rankings', 'recenturls_type', 'rows_domains_tlds', 'search_user', 'sectionbits', 'stylesheet', 'userstats'];
 	private $stylesheet = 'sss.css';
 	private $userstats = false;
 
-	public function __construct($settings)
+	public function __construct(array $config)
 	{
 		/**
-		 * If set, override variables listed in $settings_list[].
+		 * Apply settings from the config file.
 		 */
-		foreach ($this->settings_list as $setting => $type) {
-			if (!array_key_exists($setting, $settings)) {
-				continue;
-			}
-
-			/**
-			 * Do some explicit type casting because everything is initially a string.
-			 */
-			if ($type === 'string') {
-				$this->$setting = $settings[$setting];
-			} elseif ($type === 'int') {
-				if (preg_match('/^\d+$/', $settings[$setting])) {
-					$this->$setting = (int) $settings[$setting];
-				}
-			} elseif ($type === 'bool') {
-				if (strtolower($settings[$setting]) === 'true') {
-					$this->$setting = true;
-				} elseif (strtolower($settings[$setting]) === 'false') {
-					$this->$setting = false;
-				}
-			}
-		}
+		$this->apply_settings($config);
 
 		/**
 		 * If $cid has no value set it to $channel.
