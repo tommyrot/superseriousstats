@@ -1,23 +1,25 @@
 <?php
 
 /**
- * Copyright (c) 2007-2018, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
  */
+
+declare(strict_types=1);
 
 /**
  * Class for handling topic data.
  */
 class topic
 {
-	private $topic = '';
-	private $uses = [];
+	private string $topic = '';
+	private array $uses = [];
 
-	public function __construct($topic)
+	public function __construct(string $topic)
 	{
 		$this->topic = $topic;
 	}
 
-	public function add_uses($datetime, $nick)
+	public function add_uses(string $datetime, string $nick): void
 	{
 		$this->uses[] = [$datetime, $nick];
 	}
@@ -25,7 +27,7 @@ class topic
 	/**
 	 * Write data to database tables "topics" and "uid_topics".
 	 */
-	public function write_data($sqlite3)
+	public function write_data(object $sqlite3): void
 	{
 		if (($tid = $sqlite3->querySingle('SELECT tid FROM topics WHERE topic = \''.$sqlite3->escapeString($this->topic).'\'')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
