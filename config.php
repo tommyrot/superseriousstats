@@ -31,9 +31,9 @@ trait config
 					$this->$setting = (int) $config[$setting];
 				}
 			} elseif (is_bool($this->$setting)) {
-				if (strtolower($config[$setting]) === 'true') {
+				if (preg_match('/^true$/i', $config[$setting])) {
 					$this->$setting = true;
-				} elseif (strtolower($config[$setting]) === 'false') {
+				} elseif (preg_match('/^false$/i', $config[$setting])) {
 					$this->$setting = false;
 				}
 			}
