@@ -324,7 +324,7 @@ class sss
 			$line = preg_replace('/\s/', '', $line);
 
 			/**
-			 * Skip lines which we can't interpret.
+			 * Skip lines we can't work with.
 			 */
 			if (!preg_match('/^[134],\S+(,\S+)*$/', $line)) {
 				continue;
@@ -335,7 +335,8 @@ class sss
 
 			/**
 			 * The first nick on each line will be the initial registered nick and its uid
-			 * will become the ruid to which aliases are linked.
+			 * will become the ruid to which aliases are linked. If the nick is not in the
+			 * database we skip the line.
 			 */
 			if (array_key_exists($lineparts[1], $uids)) {
 				$ruid = $uids[$lineparts[1]];
