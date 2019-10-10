@@ -15,8 +15,8 @@ class parser
 	use base, config;
 
 	/**
-	 * Variables listed in $settings_list[] can have their default value overridden
-	 * in the configuration file.
+	 * Variables listed in $settings_allow_override[] can have their default value
+	 * overridden through the config file.
 	 */
 	private $date = '';
 	private $hex_latin1supplement = '[\x80-\xFF]';
