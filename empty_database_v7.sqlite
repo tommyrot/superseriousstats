@@ -448,7 +448,9 @@ s_50 INT NOT NULL DEFAULT 0
 CREATE TABLE uid_topics (
 uid INT NOT NULL,
 tid INT NOT NULL,
-datetime TEXT NOT NULL
+datetime TEXT NOT NULL,
+FOREIGN KEY(uid) REFERENCES uid_details(uid),
+FOREIGN KEY(tid) REFERENCES topics(tid)
 );
 CREATE INDEX uid_topics_tid ON uid_topics (tid);
 
