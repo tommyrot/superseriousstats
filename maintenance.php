@@ -34,7 +34,7 @@ class maintenance
 		$query = $sqlite3->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
-			return null;
+			return;
 		}
 
 		$query->reset();
@@ -77,7 +77,7 @@ class maintenance
 		}
 
 		if (is_null($date_firstactivity)) {
-			return null;
+			return;
 		}
 
 		for ($i = $date_firstactivity, $j = date('Y-m', mktime(0, 0, 0, (int) date('n') + 1, 1, (int) date('Y'))); $i < $j; $i = date('Y-m', mktime(0, 0, 0, (int) substr($i, 5, 2) + 1, 1, (int) substr($i, 0, 4)))) {
