@@ -138,11 +138,13 @@ class sss
 		 *  synchronous = OFF - Continue without syncing as soon as data is handed off
 		 *                       to the operating system.
 		 *  temp_store = MEMORY - Temporary tables and indices are kept in memory.
+		 *  foreign_keys = ON - Enable foreign key constraints.
 		 */
 		$pragmas = [
 			'journal_mode' => 'OFF',
 			'synchronous' => 'OFF',
-			'temp_store' => 'MEMORY'];
+			'temp_store' => 'MEMORY',
+			'foreign_keys' => 'ON'];
 
 		foreach ($pragmas as $pragma => $value) {
 			$sqlite3->exec('PRAGMA '.$pragma.' = '.$value);
