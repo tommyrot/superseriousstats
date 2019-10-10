@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2018, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -9,40 +9,21 @@
  */
 class maintenance
 {
+	use config;
+
 	/**
-	 * Variables listed in $settings_list[] can have their default value overridden
-	 * in the configuration file.
+	 * Variables listed in $settings_allow_override[] can have their default value
+	 * overridden through the config file.
 	 */
 	private $rankings = false;
-	private $settings_list = ['rankings' => 'bool'];
+	private $settings_allow_override = ['rankings'];
 
-	public function __construct($settings)
+	public function __construct($config)
 	{
 		/**
-		 * If set, override variables listed in $settings_list[].
+		 * Apply settings from the configuration file.
 		 */
-		foreach ($this->settings_list as $setting => $type) {
-			if (!array_key_exists($setting, $settings)) {
-				continue;
-			}
-
-			/**
-			 * Do some explicit type casting because everything is initially a string.
-			 */
-			if ($type === 'string') {
-				$this->$setting = $settings[$setting];
-			} elseif ($type === 'int') {
-				if (preg_match('/^\d+$/', $settings[$setting])) {
-					$this->$setting = (int) $settings[$setting];
-				}
-			} elseif ($type === 'bool') {
-				if (strtolower($settings[$setting]) === 'true') {
-					$this->$setting = true;
-				} elseif (strtolower($settings[$setting]) === 'false') {
-					$this->$setting = false;
-				}
-			}
-		}
+		$this->apply_settings($config);
 	}
 
 	/**
