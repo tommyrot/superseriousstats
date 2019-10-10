@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2018, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -149,7 +149,7 @@ class table
 		}
 
 		if ($i < $this->minrows) {
-			return null;
+			return;
 		}
 
 		for ($i; $i < $this->maxrows; $i++) {
