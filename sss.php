@@ -585,7 +585,7 @@ class sss
 		 * Finally, call maintenance if needed.
 		 */
 		if ($needmaintenance) {
-			$this->do_maintenance($sqlite3);
+			$this->maintenance($sqlite3);
 		}
 	}
 
