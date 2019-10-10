@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -125,7 +125,7 @@ class parser_eggdrop extends parser
 			 * repeat line but $prevline isn't set.
 			 */
 			if ($this->prevline === '' || $this->repeatlock) {
-				return null;
+				return;
 			}
 
 			$this->linenum--;
