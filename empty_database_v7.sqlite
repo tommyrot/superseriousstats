@@ -446,17 +446,15 @@ s_50 INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE uid_topics (
-uid INT NOT NULL,
-tid INT NOT NULL,
-datetime TEXT NOT NULL,
-FOREIGN KEY(uid) REFERENCES uid_details(uid),
-FOREIGN KEY(tid) REFERENCES topics(tid)
+uid INT NOT NULL REFERENCES uid_details (uid),
+tid INT NOT NULL REFERENCES topics (tid),
+datetime TEXT NOT NULL
 );
 CREATE INDEX uid_topics_tid ON uid_topics (tid);
 
 CREATE TABLE uid_urls (
-uid INT NOT NULL,
-lid INT NOT NULL,
+uid INT NOT NULL REFERENCES uid_details (uid),
+lid INT NOT NULL REFERENCES urls (lid),
 datetime TEXT NOT NULL
 );
 CREATE INDEX uid_urls_lid ON uid_urls (lid);
@@ -464,7 +462,7 @@ CREATE INDEX uid_urls_lid ON uid_urls (lid);
 CREATE TABLE urls (
 lid INTEGER PRIMARY KEY AUTOINCREMENT,
 url TEXT UNIQUE NOT NULL,
-fid INT
+fid INT REFERENCES fqdns (fid)
 );
 CREATE INDEX urls_fid ON urls (fid);
 
