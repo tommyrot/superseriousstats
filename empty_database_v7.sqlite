@@ -32,7 +32,7 @@ l_night INT NOT NULL DEFAULT 0,
 l_morning INT NOT NULL DEFAULT 0,
 l_afternoon INT NOT NULL DEFAULT 0,
 l_evening INT NOT NULL DEFAULT 0,
-l_total INT NOT NULL --must be >0
+l_total INT NOT NULL CHECK (l_total > 0)
 );
 
 CREATE TABLE fqdns (
