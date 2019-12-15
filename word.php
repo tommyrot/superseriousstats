@@ -12,6 +12,7 @@ declare(strict_types=1);
 class word
 {
 	use base;
+
 	private int $length = 0;
 	private int $total = 0;
 	private string $word = '';

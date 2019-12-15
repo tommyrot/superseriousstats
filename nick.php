@@ -1,8 +1,10 @@
 <?php
 
 /**
- * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
  */
+
+declare(strict_types=1);
 
 /**
  * Class for handling user data.
@@ -10,157 +12,158 @@
 class nick
 {
 	use base;
-	private $actions = 0;
-	private $characters = 0;
-	private $csnick = '';
-	private $ex_actions = '';
-	private $ex_actions_stack = [];
-	private $ex_exclamations = '';
-	private $ex_exclamations_stack = [];
-	private $ex_kicked = '';
-	private $ex_kicks = '';
-	private $ex_questions = '';
-	private $ex_questions_stack = [];
-	private $ex_uppercased = '';
-	private $ex_uppercased_stack = [];
-	private $exclamations = 0;
-	private $firstseen = '';
-	private $joins = 0;
-	private $kicked = 0;
-	private $kicks = 0;
-	private $l_00 = 0;
-	private $l_01 = 0;
-	private $l_02 = 0;
-	private $l_03 = 0;
-	private $l_04 = 0;
-	private $l_05 = 0;
-	private $l_06 = 0;
-	private $l_07 = 0;
-	private $l_08 = 0;
-	private $l_09 = 0;
-	private $l_10 = 0;
-	private $l_11 = 0;
-	private $l_12 = 0;
-	private $l_13 = 0;
-	private $l_14 = 0;
-	private $l_15 = 0;
-	private $l_16 = 0;
-	private $l_17 = 0;
-	private $l_18 = 0;
-	private $l_19 = 0;
-	private $l_20 = 0;
-	private $l_21 = 0;
-	private $l_22 = 0;
-	private $l_23 = 0;
-	private $l_afternoon = 0;
-	private $l_evening = 0;
-	private $l_fri_afternoon = 0;
-	private $l_fri_evening = 0;
-	private $l_fri_morning = 0;
-	private $l_fri_night = 0;
-	private $l_mon_afternoon = 0;
-	private $l_mon_evening = 0;
-	private $l_mon_morning = 0;
-	private $l_mon_night = 0;
-	private $l_morning = 0;
-	private $l_night = 0;
-	private $l_sat_afternoon = 0;
-	private $l_sat_evening = 0;
-	private $l_sat_morning = 0;
-	private $l_sat_night = 0;
-	private $l_sun_afternoon = 0;
-	private $l_sun_evening = 0;
-	private $l_sun_morning = 0;
-	private $l_sun_night = 0;
-	private $l_thu_afternoon = 0;
-	private $l_thu_evening = 0;
-	private $l_thu_morning = 0;
-	private $l_thu_night = 0;
-	private $l_total = 0;
-	private $l_tue_afternoon = 0;
-	private $l_tue_evening = 0;
-	private $l_tue_morning = 0;
-	private $l_tue_night = 0;
-	private $l_wed_afternoon = 0;
-	private $l_wed_evening = 0;
-	private $l_wed_morning = 0;
-	private $l_wed_night = 0;
-	private $lastseen = '';
-	private $lasttalked = '';
-	private $m_deop = 0;
-	private $m_deopped = 0;
-	private $m_devoice = 0;
-	private $m_devoiced = 0;
-	private $m_op = 0;
-	private $m_opped = 0;
-	private $m_voice = 0;
-	private $m_voiced = 0;
-	private $monologues = 0;
-	private $nickchanges = 0;
-	private $parts = 0;
-	private $questions = 0;
-	private $quits = 0;
-	private $quote = '';
-	private $quote_stack = [];
-	private $s_01 = 0;
-	private $s_02 = 0;
-	private $s_03 = 0;
-	private $s_04 = 0;
-	private $s_05 = 0;
-	private $s_06 = 0;
-	private $s_07 = 0;
-	private $s_08 = 0;
-	private $s_09 = 0;
-	private $s_10 = 0;
-	private $s_11 = 0;
-	private $s_12 = 0;
-	private $s_13 = 0;
-	private $s_14 = 0;
-	private $s_15 = 0;
-	private $s_16 = 0;
-	private $s_17 = 0;
-	private $s_18 = 0;
-	private $s_19 = 0;
-	private $s_20 = 0;
-	private $s_21 = 0;
-	private $s_22 = 0;
-	private $s_23 = 0;
-	private $s_24 = 0;
-	private $s_25 = 0;
-	private $s_26 = 0;
-	private $s_27 = 0;
-	private $s_28 = 0;
-	private $s_29 = 0;
-	private $s_30 = 0;
-	private $s_31 = 0;
-	private $s_32 = 0;
-	private $s_33 = 0;
-	private $s_34 = 0;
-	private $s_35 = 0;
-	private $s_36 = 0;
-	private $s_37 = 0;
-	private $s_38 = 0;
-	private $s_39 = 0;
-	private $s_40 = 0;
-	private $s_41 = 0;
-	private $s_42 = 0;
-	private $s_43 = 0;
-	private $s_44 = 0;
-	private $s_45 = 0;
-	private $s_46 = 0;
-	private $s_47 = 0;
-	private $s_48 = 0;
-	private $s_49 = 0;
-	private $s_50 = 0;
-	private $slapped = 0;
-	private $slaps = 0;
-	private $topics = 0;
-	private $topmonologue = 0;
-	private $uppercased = 0;
-	private $urls = 0;
-	private $words = 0;
 
-	public function __construct($csnick)
+	private array $ex_actions_stack = [];
+	private array $ex_exclamations_stack = [];
+	private array $ex_questions_stack = [];
+	private array $ex_uppercased_stack = [];
+	private array $quote_stack = [];
+	private int $actions = 0;
+	private int $characters = 0;
+	private int $exclamations = 0;
+	private int $joins = 0;
+	private int $kicked = 0;
+	private int $kicks = 0;
+	private int $l_00 = 0;
+	private int $l_01 = 0;
+	private int $l_02 = 0;
+	private int $l_03 = 0;
+	private int $l_04 = 0;
+	private int $l_05 = 0;
+	private int $l_06 = 0;
+	private int $l_07 = 0;
+	private int $l_08 = 0;
+	private int $l_09 = 0;
+	private int $l_10 = 0;
+	private int $l_11 = 0;
+	private int $l_12 = 0;
+	private int $l_13 = 0;
+	private int $l_14 = 0;
+	private int $l_15 = 0;
+	private int $l_16 = 0;
+	private int $l_17 = 0;
+	private int $l_18 = 0;
+	private int $l_19 = 0;
+	private int $l_20 = 0;
+	private int $l_21 = 0;
+	private int $l_22 = 0;
+	private int $l_23 = 0;
+	private int $l_afternoon = 0;
+	private int $l_evening = 0;
+	private int $l_fri_afternoon = 0;
+	private int $l_fri_evening = 0;
+	private int $l_fri_morning = 0;
+	private int $l_fri_night = 0;
+	private int $l_mon_afternoon = 0;
+	private int $l_mon_evening = 0;
+	private int $l_mon_morning = 0;
+	private int $l_mon_night = 0;
+	private int $l_morning = 0;
+	private int $l_night = 0;
+	private int $l_sat_afternoon = 0;
+	private int $l_sat_evening = 0;
+	private int $l_sat_morning = 0;
+	private int $l_sat_night = 0;
+	private int $l_sun_afternoon = 0;
+	private int $l_sun_evening = 0;
+	private int $l_sun_morning = 0;
+	private int $l_sun_night = 0;
+	private int $l_thu_afternoon = 0;
+	private int $l_thu_evening = 0;
+	private int $l_thu_morning = 0;
+	private int $l_thu_night = 0;
+	private int $l_total = 0;
+	private int $l_tue_afternoon = 0;
+	private int $l_tue_evening = 0;
+	private int $l_tue_morning = 0;
+	private int $l_tue_night = 0;
+	private int $l_wed_afternoon = 0;
+	private int $l_wed_evening = 0;
+	private int $l_wed_morning = 0;
+	private int $l_wed_night = 0;
+	private int $m_deop = 0;
+	private int $m_deopped = 0;
+	private int $m_devoice = 0;
+	private int $m_devoiced = 0;
+	private int $m_op = 0;
+	private int $m_opped = 0;
+	private int $m_voice = 0;
+	private int $m_voiced = 0;
+	private int $monologues = 0;
+	private int $nickchanges = 0;
+	private int $parts = 0;
+	private int $questions = 0;
+	private int $quits = 0;
+	private int $s_01 = 0;
+	private int $s_02 = 0;
+	private int $s_03 = 0;
+	private int $s_04 = 0;
+	private int $s_05 = 0;
+	private int $s_06 = 0;
+	private int $s_07 = 0;
+	private int $s_08 = 0;
+	private int $s_09 = 0;
+	private int $s_10 = 0;
+	private int $s_11 = 0;
+	private int $s_12 = 0;
+	private int $s_13 = 0;
+	private int $s_14 = 0;
+	private int $s_15 = 0;
+	private int $s_16 = 0;
+	private int $s_17 = 0;
+	private int $s_18 = 0;
+	private int $s_19 = 0;
+	private int $s_20 = 0;
+	private int $s_21 = 0;
+	private int $s_22 = 0;
+	private int $s_23 = 0;
+	private int $s_24 = 0;
+	private int $s_25 = 0;
+	private int $s_26 = 0;
+	private int $s_27 = 0;
+	private int $s_28 = 0;
+	private int $s_29 = 0;
+	private int $s_30 = 0;
+	private int $s_31 = 0;
+	private int $s_32 = 0;
+	private int $s_33 = 0;
+	private int $s_34 = 0;
+	private int $s_35 = 0;
+	private int $s_36 = 0;
+	private int $s_37 = 0;
+	private int $s_38 = 0;
+	private int $s_39 = 0;
+	private int $s_40 = 0;
+	private int $s_41 = 0;
+	private int $s_42 = 0;
+	private int $s_43 = 0;
+	private int $s_44 = 0;
+	private int $s_45 = 0;
+	private int $s_46 = 0;
+	private int $s_47 = 0;
+	private int $s_48 = 0;
+	private int $s_49 = 0;
+	private int $s_50 = 0;
+	private int $slapped = 0;
+	private int $slaps = 0;
+	private int $topics = 0;
+	private int $topmonologue = 0;
+	private int $uppercased = 0;
+	private int $urls = 0;
+	private int $words = 0;
+	private string $csnick = '';
+	private string $ex_actions = '';
+	private string $ex_exclamations = '';
+	private string $ex_kicked = '';
+	private string $ex_kicks = '';
+	private string $ex_questions = '';
+	private string $ex_uppercased = '';
+	private string $firstseen = '';
+	private string $lastseen = '';
+	private string $lasttalked = '';
+	private string $quote = '';
+
+	public function __construct(string $csnick)
 	{
 		$this->csnick = $csnick;
 	}
@@ -169,44 +172,44 @@ class nick
 	 * Keep a stack of the 10 most recent quotes of each type along with their
 	 * length.
 	 */
-	public function add_quote($type, $line, $length)
+	public function add_quote(string $var, string $value, int $length): void
 	{
 		/**
 		 * $length should be the first value in each array since we sort on this column
 		 * with rsort() later.
 		 */
-		$this->{$type.'_stack'}[] = [
+		$this->{$var.'_stack'}[] = [
 			'length' => $length,
-			'line' => $line];
+			'line' => $value];
 
-		if (count($this->{$type.'_stack'}) > 10) {
+		if (count($this->{$var.'_stack'}) > 10) {
 			/**
 			 * Shift the first (oldest) entry off the stack.
 			 */
-			array_shift($this->{$type.'_stack'});
+			array_shift($this->{$var.'_stack'});
 		}
 	}
 
 	/**
 	 * Create parts of the SQLite3 query.
 	 */
-	private function get_queryparts($sqlite3, $columns)
+	private function get_queryparts(object $sqlite3, array $columns): array
 	{
 		$queryparts = [];
 
-		foreach ($columns as $key) {
-			if (is_int($this->$key)) {
-				if ($this->$key !== 0) {
-					$queryparts['columns'][] = $key;
-					$queryparts['values'][] = $this->$key;
-					$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
+		foreach ($columns as $var) {
+			if (is_int($this->$var)) {
+				if ($this->$var !== 0) {
+					$queryparts['columns'][] = $var;
+					$queryparts['values'][] = $this->$var;
+					$queryparts['update-assignments'][] = $var.' = '.$var.' + '.$this->$var;
 				}
-			} elseif (is_string($this->$key)) {
-				if ($this->$key !== '') {
-					$value = '\''.$sqlite3->escapeString($this->$key).'\'';
-					$queryparts['columns'][] = $key;
+			} elseif (is_string($this->$var)) {
+				if ($this->$var !== '') {
+					$value = '\''.$sqlite3->escapeString($this->$var).'\'';
+					$queryparts['columns'][] = $var;
 					$queryparts['values'][] = $value;
-					$queryparts['update-assignments'][] = $key.' = '.$value;
+					$queryparts['update-assignments'][] = $var.' = '.$value;
 				}
 			}
 		}
@@ -214,7 +217,7 @@ class nick
 		return $queryparts;
 	}
 
-	public function write_data($sqlite3)
+	public function write_data(object $sqlite3): void
 	{
 		/**
 		 * Write data to database table "uid_details".
@@ -265,10 +268,10 @@ class nick
 		/**
 		 * Try to pick the longest unique line from each of the quote stacks.
 		 */
-		$types = ['ex_actions', 'ex_uppercased', 'ex_exclamations', 'ex_questions', 'quote'];
+		$vars = ['ex_actions', 'ex_uppercased', 'ex_exclamations', 'ex_questions', 'quote'];
 
-		foreach ($types as $type) {
-			if (empty($this->{$type.'_stack'})) {
+		foreach ($vars as $var) {
+			if (empty($this->{$var.'_stack'})) {
 				continue;
 			}
 
@@ -276,25 +279,25 @@ class nick
 			 * rsort() sorts a multidimensional array on the first value of each contained
 			 * array, highest to lowest.
 			 */
-			rsort($this->{$type.'_stack'});
-			$this->$type = $this->{$type.'_stack'}[0]['line'];
+			rsort($this->{$var.'_stack'});
+			$this->$var = $this->{$var.'_stack'}[0]['line'];
 
 			/**
 			 * Try to move away from duplicate quotes. The order of the if/else statement
 			 * aims to cover most possible cases.
 			 */
-			if ($type === 'ex_uppercased' || $type === 'ex_actions' || count($this->{$type.'_stack'}) === 1) {
+			if ($var === 'ex_uppercased' || $var === 'ex_actions' || count($this->{$var.'_stack'}) === 1) {
 				continue;
 			}
 
-			if (($type === 'ex_questions' || $type === 'ex_exclamations') && $this->$type === $this->ex_uppercased) {
-				for ($i = 1, $j = count($this->{$type.'_stack'}); $i < $j; $i++) {
-					if ($this->{$type.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
-						$this->$type = $this->{$type.'_stack'}[$i]['line'];
+			if (($var === 'ex_questions' || $var === 'ex_exclamations') && $this->$var === $this->ex_uppercased) {
+				for ($i = 1, $j = count($this->{$var.'_stack'}); $i < $j; $i++) {
+					if ($this->{$var.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
+						$this->$var = $this->{$var.'_stack'}[$i]['line'];
 						break;
 					}
 				}
-			} elseif ($type === 'quote' && ($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions)) {
+			} elseif ($var === 'quote' && ($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions)) {
 				for ($i = 1, $j = count($this->quote_stack); $i < $j; $i++) {
 					if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
 						$this->quote = $this->quote_stack[$i]['line'];
@@ -314,8 +317,8 @@ class nick
 			$sqlite3->exec('UPDATE uid_lines SET '.implode(', ', $queryparts['update-assignments']).($this->lasttalked !== '' ? ', lasttalked = DATETIME(\''.$this->lasttalked.'\')' : '').' WHERE CHANGES() = 0 AND uid = '.$uid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 			/**
-			 * Update $topmonologue separately as we want to keep the highest value instead
-			 * of the sum.
+			 * Insert (update) $topmonologue separately as we want to keep the highest value
+			 * instead of the sum.
 			 */
 			if ($this->topmonologue !== 0) {
 				if (($topmonologue = $sqlite3->querySingle('SELECT topmonologue FROM uid_lines WHERE uid = '.$uid)) === false) {
