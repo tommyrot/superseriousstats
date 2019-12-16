@@ -11,8 +11,8 @@ declare(strict_types=1);
  */
 class topic
 {
-	private string $topic = '';
 	private array $uses = [];
+	private string $topic = '';
 
 	public function __construct(string $topic)
 	{
