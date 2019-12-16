@@ -267,19 +267,19 @@ topic TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE uid_activity (
-uid INT NOT NULL,
+uid INT NOT NULL REFERENCES uid_details (uid),
 date TEXT NOT NULL,
 l_night INT NOT NULL DEFAULT 0,
 l_morning INT NOT NULL DEFAULT 0,
 l_afternoon INT NOT NULL DEFAULT 0,
 l_evening INT NOT NULL DEFAULT 0,
-l_total INT NOT NULL, --must be >0
+l_total INT NOT NULL CHECK (l_total > 0),
 PRIMARY KEY (uid, date)
 );
 
 CREATE TABLE uid_details (
 uid INTEGER PRIMARY KEY AUTOINCREMENT,
-csnick TEXT COLLATE NOCASE UNIQUE NOT NULL, --allow for case insensitive matching
+csnick TEXT COLLATE NOCASE UNIQUE NOT NULL, --case insensitive matching and sorting
 firstseen TEXT NOT NULL DEFAULT '0000-00-00 00:00:00',
 lastseen TEXT NOT NULL DEFAULT '0000-00-00 00:00:00',
 ruid INT NOT NULL DEFAULT 0, --defaults to uid by trigger
@@ -293,7 +293,7 @@ UPDATE uid_details SET ruid = uid WHERE uid = LAST_INSERT_ROWID();
 END;
 
 CREATE TABLE uid_events (
-uid INT PRIMARY KEY NOT NULL,
+uid INT PRIMARY KEY NOT NULL REFERENCES uid_details (uid),
 m_op INT NOT NULL DEFAULT 0,
 m_opped INT NOT NULL DEFAULT 0,
 m_voice INT NOT NULL DEFAULT 0,
@@ -314,7 +314,7 @@ ex_kicked TEXT
 );
 
 CREATE TABLE uid_lines (
-uid INT PRIMARY KEY NOT NULL,
+uid INT PRIMARY KEY NOT NULL REFERENCES uid_details (uid),
 l_00 INT NOT NULL DEFAULT 0,
 l_01 INT NOT NULL DEFAULT 0,
 l_02 INT NOT NULL DEFAULT 0,
@@ -392,7 +392,7 @@ lasttalked TEXT NOT NULL DEFAULT '0000-00-00 00:00:00'
 );
 
 CREATE TABLE uid_smileys (
-uid INT PRIMARY KEY NOT NULL,
+uid INT PRIMARY KEY NOT NULL REFERENCES uid_details (uid),
 s_01 INT NOT NULL DEFAULT 0,
 s_02 INT NOT NULL DEFAULT 0,
 s_03 INT NOT NULL DEFAULT 0,
