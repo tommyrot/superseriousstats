@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2018-2019, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2018-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
 declare(strict_types=1);
