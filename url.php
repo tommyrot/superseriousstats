@@ -11,10 +11,10 @@ declare(strict_types=1);
  */
 class url
 {
+	private array $uses = [];
 	private string $fqdn = '';
 	private string $tld = '';
 	private string $url = '';
-	private array $uses = [];
 
 	public function __construct(array $urldata)
 	{
