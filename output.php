@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2010-2019, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
 declare(strict_types=1);
@@ -49,11 +49,11 @@ class output
 		}
 
 		if ($type === 'notice') {
-			if (self::$verbosity & 1) {
+			if (self::$verbosity >= 1) {
 				echo $datetime.' [ ] '.$message."\n";
 			}
 		} elseif ($type === 'debug') {
-			if (self::$verbosity & 2) {
+			if (self::$verbosity >= 2) {
 				echo $datetime.' [D] '.$message."\n";
 			}
 		}
@@ -65,10 +65,11 @@ class output
 	}
 
 	/**
-	 * Set output verbosity. This is a bitwise value which defaults to 1 and can be
-	 * overridden through the config file.
+	 * Set the level of output verbosity. All message types with a lower numeric
+	 * value will also be displayed. Default value is 1 and can be overridden in the
+	 * config file and/or by using the command line argument -q.
 	 *
-	 *  0  Critical events (will always display)
+	 *  0  Critical events (these will always display)
 	 *  1  Notices
 	 *  2  Debug messages
 	 */
