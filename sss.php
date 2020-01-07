@@ -198,8 +198,7 @@ class sss
 			$this->link_nicks($sqlite3);
 		}
 
-		$maintenance = new maintenance($this->config);
-		$maintenance->maintenance($sqlite3);
+		$maintenance = new maintenance($sqlite3);
 	}
 
 	private function export_nicks(object $sqlite3, string $file): void
