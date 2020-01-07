@@ -35,12 +35,11 @@ class html
 	private $maxrows_people_year = 10;
 	private $maxrows_recenturls = 25;
 	private $minrows = 3;
-	private $rankings = false;
 	private $recenturls_type = 1;
 	private $rows_domains_tlds = 10;
 	private $search_user = false;
 	private $sectionbits = 255;
-	private $settings_allow_override = ['channel', 'cid', 'history', 'maxrows', 'maxrows_people2', 'maxrows_people_alltime', 'maxrows_people_month', 'maxrows_people_timeofday', 'maxrows_people_year', 'maxrows_recenturls', 'minrows', 'rankings', 'recenturls_type', 'rows_domains_tlds', 'search_user', 'sectionbits', 'stylesheet', 'userstats'];
+	private $settings_allow_override = ['channel', 'cid', 'history', 'maxrows', 'maxrows_people2', 'maxrows_people_alltime', 'maxrows_people_month', 'maxrows_people_timeofday', 'maxrows_people_year', 'maxrows_recenturls', 'minrows', 'recenturls_type', 'rows_domains_tlds', 'search_user', 'sectionbits', 'stylesheet', 'userstats'];
 	private $stylesheet = 'sss.css';
 	private $userstats = false;
 

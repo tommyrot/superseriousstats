@@ -190,18 +190,6 @@ PRIMARY KEY (ruid, milestone)
 );
 CREATE INDEX ruid_milestones_milestone ON ruid_milestones (milestone);
 
-CREATE TABLE ruid_rankings (
-ruid INT NOT NULL,
-date TEXT NOT NULL,
-rank INT NOT NULL,
-l_total INT NOT NULL,
-percentage REAL NOT NULL,
-l_avg REAL NOT NULL,
-activity REAL NOT NULL,
-l_max INT NOT NULL,
-PRIMARY KEY (ruid, date)
-);
-
 CREATE TABLE ruid_smileys (
 ruid INT PRIMARY KEY NOT NULL,
 s_01 INT NOT NULL,
