@@ -23,7 +23,6 @@ class maintenance
 		$this->calculate_milestones($sqlite3);
 		output::output('notice', __METHOD__.'(): committing data');
 		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		$sqlite3->exec('ANALYZE') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 	}
 
 	/**
