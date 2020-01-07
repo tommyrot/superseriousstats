@@ -16,7 +16,7 @@ class maintenance
 		output::output('notice', __METHOD__.'(): performing database maintenance routines');
 		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		output::output('notice', __METHOD__.'(): (1/3) registering most active aliases');
-		$this->register_most_active_alias($sqlite3);
+		$this->register_most_active_aliases($sqlite3);
 		output::output('notice', __METHOD__.'(): (2/3) creating materialized views');
 		$this->create_materialized_views($sqlite3);
 		output::output('notice', __METHOD__.'(): (3/3) calculating milestones');
@@ -92,7 +92,7 @@ class maintenance
 	 * Make the alias with the most lines the new registered nick for the user or
 	 * bot it is linked to.
 	 */
-	private function register_most_active_alias(object $sqlite3): void
+	private function register_most_active_aliases(object $sqlite3): void
 	{
 		$query = $sqlite3->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS newruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND newruid IS NOT NULL AND ruid != newruid') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
