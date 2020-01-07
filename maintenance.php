@@ -18,7 +18,7 @@ class maintenance
 		output::output('notice', __METHOD__.'(): (1/3) registering most active aliases');
 		$this->register_most_active_alias($sqlite3);
 		output::output('notice', __METHOD__.'(): (2/3) creating materialized views');
-		$this->make_materialized_views($sqlite3);
+		$this->create_materialized_views($sqlite3);
 		output::output('notice', __METHOD__.'(): (3/3) calculating milestones');
 		$this->calculate_milestones($sqlite3);
 		output::output('notice', __METHOD__.'(): committing data');
@@ -64,10 +64,10 @@ class maintenance
 	}
 
 	/**
-	 * Make materialized views, which are actual stored copies of virtual tables
+	 * Create materialized views, which are actual stored copies of virtual tables
 	 * (views).
 	 */
-	private function make_materialized_views(object $sqlite3): void
+	private function create_materialized_views(object $sqlite3): void
 	{
 		/**
 		 * The results from the view in the left column will be stored as the
