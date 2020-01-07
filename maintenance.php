@@ -4,6 +4,8 @@
  * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
+declare(strict_types=1);
+
 /**
  * Class for performing database maintenance.
  */
@@ -17,7 +19,7 @@ class maintenance
 	/**
 	 * Calculate on which date a user reached certain milestone.
 	 */
-	private function calculate_milestones($sqlite3)
+	private function calculate_milestones(object $sqlite3): void
 	{
 		$query = $sqlite3->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
@@ -51,7 +53,7 @@ class maintenance
 		}
 	}
 
-	public function maintenance($sqlite3)
+	public function maintenance(object $sqlite3): void
 	{
 		output::output('notice', __METHOD__.'(): performing database maintenance routines');
 		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
@@ -70,7 +72,7 @@ class maintenance
 	 * Make materialized views, which are actual stored copies of virtual tables
 	 * (views).
 	 */
-	private function make_materialized_views($sqlite3)
+	private function make_materialized_views(object $sqlite3): void
 	{
 		/**
 		 * The results from the view in the left column will be stored as the
@@ -95,7 +97,7 @@ class maintenance
 	 * Make the alias with the most lines the new registered nick for the user or
 	 * bot it is linked to.
 	 */
-	private function register_most_active_alias($sqlite3)
+	private function register_most_active_alias(object $sqlite3): void
 	{
 		$query = $sqlite3->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS newruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND newruid IS NOT NULL AND ruid != newruid') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
