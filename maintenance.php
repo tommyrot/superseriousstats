@@ -21,7 +21,7 @@ class maintenance
 	public function __construct($config)
 	{
 		/**
-		 * Apply settings from the configuration file.
+		 * Apply settings from the config file.
 		 */
 		$this->apply_settings($config);
 	}
