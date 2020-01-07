@@ -9,21 +9,9 @@
  */
 class maintenance
 {
-	use config;
-
-	/**
-	 * Variables listed in $settings_allow_override[] can have their default value
-	 * overridden through the config file.
-	 */
-	private $rankings = false;
-	private $settings_allow_override = ['rankings'];
-
-	public function __construct($config)
+	public function __construct()
 	{
-		/**
-		 * Apply settings from the config file.
-		 */
-		$this->apply_settings($config);
+
 	}
 
 	/**
