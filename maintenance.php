@@ -15,11 +15,11 @@ class maintenance
 	{
 		output::output('notice', __METHOD__.'(): performing database maintenance routines');
 		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		output::output('notice', __METHOD__.'(): start register_most_active_alias()');
+		output::output('notice', __METHOD__.'(): (1/3) registering most active aliases');
 		$this->register_most_active_alias($sqlite3);
-		output::output('notice', __METHOD__.'(): start make_materialized_views()');
+		output::output('notice', __METHOD__.'(): (2/3) creating materialized views');
 		$this->make_materialized_views($sqlite3);
-		output::output('notice', __METHOD__.'(): start calculate_milestones()');
+		output::output('notice', __METHOD__.'(): (3/3) calculating milestones');
 		$this->calculate_milestones($sqlite3);
 		output::output('notice', __METHOD__.'(): committing data');
 		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
