@@ -11,7 +11,7 @@ declare(strict_types=1);
  */
 class maintenance
 {
-	public function __construct(object $sqlite)
+	public function __construct(object $sqlite3)
 	{
 		output::output('notice', __METHOD__.'(): performing database maintenance routines');
 		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
