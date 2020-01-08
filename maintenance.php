@@ -26,7 +26,7 @@ class maintenance
 	}
 
 	/**
-	 * Calculate on which date a user reached certain milestone.
+	 * Calculate on which date a user reached certain milestones.
 	 */
 	private function calculate_milestones(object $sqlite3): void
 	{
@@ -36,22 +36,22 @@ class maintenance
 			if (!isset($l_total[$result['ruid']])) {
 				$l_total[$result['ruid']] = $result['l_total'];
 				$milestones = [1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000];
-				$nextmilestone = array_shift($milestones);
+				$milestone = array_shift($milestones);
 			} else {
 				$l_total[$result['ruid']] += $result['l_total'];
 			}
 
-			while (!is_null($nextmilestone) && $l_total[$result['ruid']] >= $nextmilestone) {
-				$values[] = '('.$result['ruid'].', '.$nextmilestone.', \''.$result['date'].'\')';
-				$nextmilestone = array_shift($milestones);
+			while (!is_null($milestone) && $l_total[$result['ruid']] >= $milestone) {
+				$queryparts[] = '('.$result['ruid'].', '.$milestone.', \''.$result['date'].'\')';
+				$milestone = array_shift($milestones);
 			}
 		}
 
-		if (!empty($values)) {
+		if (!empty($queryparts)) {
 			$sqlite3->exec('DELETE FROM ruid_milestones') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-			foreach ($values as $value) {
-				$sqlite3->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES '.$value) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			foreach ($queryparts as $values) {
+				$sqlite3->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES '.$values) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 	}
