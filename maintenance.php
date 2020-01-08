@@ -63,9 +63,9 @@ class maintenance
 	private function create_materialized_views(object $sqlite3): void
 	{
 		/**
-		 * The results from the view in the left column will be stored as the
-		 * materialized view in the right column. The order in which they are listed is
-		 * important, as some views depend on materialized views created before them.
+		 * Data from the views below (v_ruid_*) will be stored as materialized views
+		 * (ruid_*) in the database. The order in which they are processed is important,
+		 * as some views depend on materialized views created prior to them.
 		 */
 		$views = [
 			'v_ruid_activity_by_day' => 'ruid_activity_by_day',
