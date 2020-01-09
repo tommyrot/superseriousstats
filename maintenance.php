@@ -72,7 +72,7 @@ class maintenance
 		}
 	}
 
-	public function main(object $sqlite3): void
+	private function main(object $sqlite3): void
 	{
 		output::output('notice', __METHOD__.'(): performing database maintenance routines');
 		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
