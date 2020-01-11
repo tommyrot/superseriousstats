@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
 declare(strict_types=1);
@@ -117,7 +117,7 @@ class parser
 	public function __construct(array $config)
 	{
 		/**
-		 * Apply settings from the configuration file.
+		 * Apply settings from the config file.
 		 */
 		$this->apply_settings($config);
 	}
