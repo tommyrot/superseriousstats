@@ -21,6 +21,7 @@ class maintenance
 	 */
 	private function calculate_milestones(object $sqlite3): void
 	{
+		$sqlite3->exec('DELETE FROM ruid_milestones') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$query = $sqlite3->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -33,16 +34,8 @@ class maintenance
 			}
 
 			while (!is_null($milestone) && $l_total[$result['ruid']] >= $milestone) {
-				$queryparts[] = '('.$result['ruid'].', '.$milestone.', \''.$result['date'].'\')';
+				$sqlite3->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES ('.$result['ruid'].', '.$milestone.', \''.$result['date'].'\')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				$milestone = array_shift($milestones);
-			}
-		}
-
-		if (!empty($queryparts)) {
-			$sqlite3->exec('DELETE FROM ruid_milestones') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-			foreach ($queryparts as $values) {
-				$sqlite3->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES '.$values) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 	}
