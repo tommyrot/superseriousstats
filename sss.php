@@ -570,8 +570,7 @@ class sss
 			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
 			if ($parser->get_num('linenum_lastnonempty') >= $firstline) {
-				$sqlite3->exec('INSERT OR IGNORE INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_lastnonempty').')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				$sqlite3->exec('UPDATE parse_history SET lines_parsed = '.$parser->get_num('linenum_lastnonempty').' WHERE CHANGES() = 0 AND date = \''.$date.'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				$sqlite3->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_lastnonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_lastnonempty')) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 				/**
 				 * Write data to database and set $needmaintenance to true if there was any data
