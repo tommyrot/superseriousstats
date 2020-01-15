@@ -11,7 +11,7 @@ declare(strict_types=1);
  */
 class nick
 {
-	use base;
+	use base, queryparts;
 
 	private array $ex_actions_stack = [];
 	private array $ex_exclamations_stack = [];
@@ -188,38 +188,6 @@ class nick
 			 */
 			array_shift($this->{$var.'_stack'});
 		}
-	}
-
-	/**
-	 * Create parts of the SQLite3 query.
-	 */
-	private function get_queryparts(object $sqlite3, array $columns): ?array
-	{
-		foreach ($columns as $var) {
-			if (is_int($this->$var)) {
-				if ($this->$var !== 0) {
-					$insert_columns[] = $var;
-					$insert_values[] = $this->$var;
-					$update_assignments[] = $var.' = '.$var.' + '.$this->$var;
-				}
-			} elseif (is_string($this->$var)) {
-				if ($this->$var !== '') {
-					$value = '\''.$sqlite3->escapeString($this->$var).'\'';
-					$insert_columns[] = $var;
-					$insert_values[] = $value;
-					$update_assignments[] = $var.' = '.$value;
-				}
-			}
-		}
-
-		if (empty($insert_columns)) {
-			return null;
-		}
-
-		return [
-			'insert_columns' => implode(', ', $insert_columns),
-			'insert_values' => implode(', ', $insert_values),
-			'update_assignments' => implode(', ', $update_assignments)];
 	}
 
 	public function write_data(object $sqlite3): void
