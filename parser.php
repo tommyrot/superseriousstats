@@ -205,28 +205,33 @@ class parser
 	/**
 	 * Create parts of the SQLite3 query.
 	 */
-	private function get_queryparts($sqlite3, $columns)
+	private function get_queryparts(object $sqlite3, array $columns): ?array
 	{
-		$queryparts = [];
-
-		foreach ($columns as $key) {
-			if (is_int($this->$key)) {
-				if ($this->$key !== 0) {
-					$queryparts['columns'][] = $key;
-					$queryparts['values'][] = $this->$key;
-					$queryparts['update-assignments'][] = $key.' = '.$key.' + '.$this->$key;
+		foreach ($columns as $var) {
+			if (is_int($this->$var)) {
+				if ($this->$var !== 0) {
+					$insert_columns[] = $var;
+					$insert_values[] = $this->$var;
+					$update_assignments[] = $var.' = '.$var.' + '.$this->$var;
 				}
-			} elseif (is_string($this->$key)) {
-				if ($this->$key !== '') {
-					$value = '\''.$sqlite3->escapeString($this->$key).'\'';
-					$queryparts['columns'][] = $key;
-					$queryparts['values'][] = $value;
-					$queryparts['update-assignments'][] = $key.' = '.$value;
+			} elseif (is_string($this->$var)) {
+				if ($this->$var !== '') {
+					$value = '\''.$sqlite3->escapeString($this->$var).'\'';
+					$insert_columns[] = $var;
+					$insert_values[] = $value;
+					$update_assignments[] = $var.' = '.$value;
 				}
 			}
 		}
 
-		return $queryparts;
+		if (empty($insert_columns)) {
+			return null;
+		}
+
+		return [
+			'insert_columns' => implode(', ', $insert_columns),
+			'insert_values' => implode(', ', $insert_values),
+			'update_assignments' => implode(', ', $update_assignments)];
 	}
 
 	/**
@@ -759,7 +764,7 @@ class parser
 		 */
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts($sqlite3, ['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
-			$sqlite3->exec('INSERT INTO channel_activity (date, '.implode(', ', $queryparts['columns']).') VALUES (\''.$this->date.'\', '.implode(', ', $queryparts['values']).') ON CONFLICT (date) DO UPDATE SET '.implode(', ', $queryparts['update-assignments'])) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO channel_activity (date, '.$queryparts['insert_columns'].') VALUES (\''.$this->date.'\', '.$queryparts['insert_values'].') ON CONFLICT (date) DO UPDATE SET '.$queryparts['update_assignments']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
