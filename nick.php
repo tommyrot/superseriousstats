@@ -237,9 +237,9 @@ class nick
 		/**
 		 * Try to pick the longest unique line from each of the quote stacks.
 		 */
-		$vars = ['ex_actions', 'ex_uppercased', 'ex_exclamations', 'ex_questions', 'quote'];
+		$columns = ['ex_actions', 'ex_uppercased', 'ex_exclamations', 'ex_questions', 'quote'];
 
-		foreach ($vars as $var) {
+		foreach ($columns as $var) {
 			if (empty($this->{$var.'_stack'})) {
 				continue;
 			}
