@@ -38,7 +38,7 @@ class topic
 			$tid = $sqlite3->lastInsertRowID();
 		}
 
-		foreach ($this->uses as $key => list($datetime, $nick)) {
+		foreach ($this->uses as [$datetime, $nick]) {
 			$sqlite3->exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$tid.', DATETIME(\''.$datetime.'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}

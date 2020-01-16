@@ -56,7 +56,7 @@ class url
 			$lid = $sqlite3->lastInsertRowID();
 		}
 
-		foreach ($this->uses as $key => list($datetime, $nick)) {
+		foreach ($this->uses as [$datetime, $nick]) {
 			$sqlite3->exec('INSERT INTO uid_urls (uid, lid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$lid.', DATETIME(\''.$datetime.'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 	}
