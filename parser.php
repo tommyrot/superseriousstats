@@ -127,7 +127,7 @@ class parser
 	 * $csnick. Return the lowercase nick for further referencing by the calling
 	 * function.
 	 */
-	private function add_nick($time, $csnick)
+	private function add_nick(string $time, string $csnick, bool $real = true): string
 	{
 		$nick = strtolower($csnick);
 
@@ -138,9 +138,9 @@ class parser
 		}
 
 		/**
-		 * $time is null if the nick hasn't actually been seen and was only referenced.
+		 * $real is false if the nick hasn't actually been seen and was only referenced.
 		 */
-		if (!is_null($time)) {
+		if ($real) {
 			if ($this->nick_objs[$nick]->get_str('firstseen') === '') {
 				$this->nick_objs[$nick]->set_str('firstseen', $this->date.' '.$time);
 			}
@@ -480,7 +480,7 @@ class parser
 				 * be updated before it is actually seen (i.e. on any other activity).
 				 */
 				if ($this->l_total === 0) {
-					$this->add_nick(null, $this->prevnick);
+					$this->add_nick($time, $this->prevnick, false);
 				}
 
 				$this->nick_objs[$this->prevnick]->add_num('monologues', 1);
@@ -676,10 +676,9 @@ class parser
 		}
 
 		/**
-		 * Don't pass a time when adding the "undergoing" nick while it may only be
-		 * referred to instead of being seen for real.
+		 * The "undergoing" nick is only referred to and might not be real.
 		 */
-		$nick_undergoing = $this->add_nick(null, $csnick_undergoing);
+		$nick_undergoing = $this->add_nick($time, $csnick_undergoing, false);
 		$this->nick_objs[$nick_undergoing]->add_num('slapped', 1);
 	}
 
