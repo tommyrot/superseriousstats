@@ -676,7 +676,7 @@ class parser
 		}
 
 		/**
-		 * The "undergoing" nick is only referred to and might not be real.
+		 * The "undergoing" nick is only referenced and might not be real.
 		 */
 		$nick_undergoing = $this->add_nick($time, $csnick_undergoing, false);
 		$this->nick_objs[$nick_undergoing]->add_num('slapped', 1);
