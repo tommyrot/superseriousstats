@@ -155,7 +155,7 @@ class parser
 	 * Keep track of every topic set. These are handled (and stored) while
 	 * preserving case.
 	 */
-	private function add_topic($time, $nick, $topic)
+	private function add_topic(string $time, string $nick, string $topic): void
 	{
 		if (!array_key_exists($topic, $this->topic_objs)) {
 			$this->topic_objs[$topic] = new topic($topic);
@@ -166,9 +166,9 @@ class parser
 
 	/**
 	 * Keep track of every URL. These are handled (and stored) while preserving
-	 * case.
+	 * case (for the parts where it matters).
 	 */
-	private function add_url($time, $nick, $urldata)
+	private function add_url(string $time, string $nick, array $urldata): void
 	{
 		$url = $urldata['url'];
 
@@ -182,7 +182,7 @@ class parser
 	/**
 	 * Words are stored in lower case. Handle UTF-8 conversion appropriately.
 	 */
-	private function add_word($csword, $length)
+	private function add_word(string $csword, int $length): void
 	{
 		/**
 		 * The multibyte strtolower function is significantly slower than its
