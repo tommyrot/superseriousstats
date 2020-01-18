@@ -29,7 +29,7 @@
  * - Given that nicks can't contain "/" or any of the channel prefixes, the order of the regular expressions below is
  *   irrelevant (current order aims for best performance).
  * - We have to be mindful that nicks can contain "[" and "]".
- * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*". If one of the nick
+ * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!". If one of the nick
  *   prefixes slips through then validate_nick() will fail.
  * - Irssi may log multiple "performing" nicks in "mode" lines separated by commas. We use only the first one.
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use
@@ -45,7 +45,7 @@ class parser_irssi extends parser
 		/**
 		 * "Normal" lines.
 		 */
-		if (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) <[\x20~&@%+!*]?(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+		if (preg_match('/^(?<time>\d{2}:\d{2}(:\d{2})?) <[\x20~&@%+!]?(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
 
 		/**

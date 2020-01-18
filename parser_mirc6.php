@@ -32,7 +32,7 @@
  *   script available however, referred to as "mIRC6hack". It's on the howto.
  * - Given our handling of "action" lines (and lack thereof) the order of the regular expressions below is irrelevant
  *   (current order aims for best performance).
- * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!*". If one of the nick
+ * - The most common channel prefixes are "#&!+" and the most common nick prefixes are "~&@%+!". If one of the nick
  *   prefixes slips through then validate_nick() will fail.
  * - In certain cases $matches[] won't contain index items if these optionally appear at the end of a line. We use
  *   empty() to check whether an index item is both set and has a value.
@@ -47,7 +47,7 @@ class parser_mirc6 extends parser
 		/**
 		 * "Normal" lines.
 		 */
-		if (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] <[~&@%+!*]?(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+		if (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] <[~&@%+!]?(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
 
 		/**
