@@ -523,8 +523,7 @@ class sss
 				continue;
 			}
 
-			$parser = new $this->parser($this->config);
-			$parser->set_str('date', $date);
+			$parser = new $this->parser($date, $this->config);
 
 			/**
 			 * Get the streak history. This will assume logs are parsed in chronological

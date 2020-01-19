@@ -114,8 +114,10 @@ class parser
 	protected int $linenum = 0;
 	protected string $prev_line = '';
 
-	public function __construct(array $config)
+	public function __construct(string $date, array $config)
 	{
+		$this->date = $date;
+
 		/**
 		 * Apply settings from the config file.
 		 */
