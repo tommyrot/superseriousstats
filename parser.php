@@ -110,7 +110,7 @@ class parser
 	private string $hex_latin1supplement = '[\x80-\xFF]';
 	private string $hex_validutf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private string $newline = '';
-	private string $prevnick = '';
+	private string $prev_nick = '';
 	protected int $linenum = 0;
 	protected string $prevline = '';
 
@@ -458,31 +458,31 @@ class parser
 		/**
 		 * Keep track of monologues.
 		 */
-		if ($nick !== $this->prevnick) {
+		if ($nick !== $this->prev_nick) {
 			/**
 			 * Someone else typed a line and the previous streak is interrupted. Check if
 			 * the streak qualifies as a monologue and store it.
 			 */
 			if ($this->streak >= 5) {
 				/**
-				 * If the current line count is 0 then $prevnick is not known yet (only seen in
-				 * previous parse run). It's safe to assume that $prevnick is a valid nick since
+				 * If the current line count is 0 then $prev_nick is not yet known (only seen in
+				 * previous parse run). It's safe to assume that $prev_nick is a valid nick as
 				 * it was set by set_normal(). Create an object for it here so the monologue
-				 * data can be added. It doesn't matter if $prevnick is lowercase since it won't
-				 * be updated before it is actually seen (i.e. on any other activity).
+				 * data can be added. It won't matter that $prev_nick is lowercase at this point
+				 * because it will be updated when any other activity is recorded.
 				 */
 				if ($this->l_total === 0) {
-					$this->add_nick($time, $this->prevnick, false);
+					$this->add_nick($time, $this->prev_nick, false);
 				}
 
-				$this->nick_objs[$this->prevnick]->add_num('monologues', 1);
+				$this->nick_objs[$this->prev_nick]->add_num('monologues', 1);
 
-				if ($this->streak > $this->nick_objs[$this->prevnick]->get_num('topmonologue')) {
-					$this->nick_objs[$this->prevnick]->set_num('topmonologue', $this->streak);
+				if ($this->streak > $this->nick_objs[$this->prev_nick]->get_num('topmonologue')) {
+					$this->nick_objs[$this->prev_nick]->set_num('topmonologue', $this->streak);
 				}
 			}
 
-			$this->prevnick = $nick;
+			$this->prev_nick = $nick;
 			$this->streak = 0;
 		}
 
@@ -760,7 +760,7 @@ class parser
 		 */
 		if ($this->l_total !== 0) {
 			$sqlite3->exec('DELETE FROM streak_history') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			$sqlite3->exec('INSERT INTO streak_history (prevnick, streak) VALUES (\''.$this->prevnick.'\', '.$this->streak.')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			$sqlite3->exec('INSERT INTO streak_history (prev_nick, streak) VALUES (\''.$this->prev_nick.'\', '.$this->streak.')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());

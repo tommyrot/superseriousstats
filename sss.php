@@ -530,12 +530,12 @@ class sss
 			 * Get the streak history. This will assume logs are parsed in chronological
 			 * order with no gaps.
 			 */
-			if (($result = $sqlite3->querySingle('SELECT prevnick, streak FROM streak_history', true)) === false) {
+			if (($result = $sqlite3->querySingle('SELECT prev_nick, streak FROM streak_history', true)) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
 			if (!empty($result)) {
-				$parser->set_str('prevnick', $result['prevnick']);
+				$parser->set_str('prev_nick', $result['prev_nick']);
 				$parser->set_num('streak', $result['streak']);
 			}
 

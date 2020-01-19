@@ -245,7 +245,7 @@ s_50 INT NOT NULL
 );
 
 CREATE TABLE streak_history ( --single row table
-prevnick TEXT NOT NULL,
+prev_nick TEXT NOT NULL,
 streak INT NOT NULL
 );
 
