@@ -197,7 +197,7 @@ class parser
 	/**
 	 * Parser function for gzipped logs. This function requires the zlib extension.
 	 */
-	public function gzparse_log($logfile, $firstline)
+	public function gzparse_log(string $logfile, int $firstline): void
 	{
 		if (($zp = gzopen($logfile, 'rb')) === false) {
 			output::output('critical', __METHOD__.'(): failed to open gzip file: \''.$logfile.'\'');
@@ -308,7 +308,7 @@ class parser
 	 * Build a new line consisting of valid UTF-8 from the characters passed along
 	 * in $char.
 	 */
-	private function rebuild_line($matches)
+	private function rebuild_line(array $matches): string
 	{
 		/**
 		 * $char is passed along as the first element of $matches[] (see
