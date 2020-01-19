@@ -271,7 +271,7 @@ class parser
 	/**
 	 * Parser function for normal (uncompressed) logs.
 	 */
-	public function parse_log($logfile, $firstline)
+	public function parse_log(string $logfile, int $firstline): void
 	{
 		if (($fp = fopen($logfile, 'rb')) === false) {
 			output::output('critical', __METHOD__.'(): failed to open file: \''.$logfile.'\'');
