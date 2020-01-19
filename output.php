@@ -12,7 +12,7 @@ declare(strict_types=1);
 class output
 {
 	private static int $verbosity = 1;
-	private static string $prev_message = '';
+	private static string $message_prev = '';
 
 	private function __construct()
 	{
@@ -44,7 +44,7 @@ class output
 		 * Avoid repeating the same message multiple times in a row, e.g. repeated lines
 		 * and errors related to mode changes.
 		 */
-		if ($message === self::$prev_message) {
+		if ($message === self::$message_prev) {
 			return;
 		}
 
@@ -61,7 +61,7 @@ class output
 		/**
 		 * Remember the last message displayed.
 		 */
-		self::$prev_message = $message;
+		self::$message_prev = $message;
 	}
 
 	/**
