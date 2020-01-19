@@ -166,7 +166,7 @@ class parser
 
 	/**
 	 * Keep track of every URL. These are handled (and stored) while preserving
-	 * case (for the parts where it matters).
+	 * case (for the parts where it matters, otherwise lowercase).
 	 */
 	private function add_url(string $time, string $nick, array $urldata): void
 	{
