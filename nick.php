@@ -211,7 +211,7 @@ class nick
 			 * never be lower and the value of $lastseen can never be higher than the parsed
 			 * values. (We are not going out of our way to deal with possible DST nonsense.)
 			 * Secondly, only update $csnick if the nick was seen. We want to avoid it from
-			 * being overwritten by a lowercase $nick_prev (streak code) or weirdly cased
+			 * being overwritten by a lower case $nick_prev (streak code) or weirdly cased
 			 * nick due to a slap.
 			 */
 			if ($this->firstseen !== '') {

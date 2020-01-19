@@ -126,7 +126,7 @@ class parser
 
 	/**
 	 * Create an object of the nick if it doesn't already exist, otherwise update
-	 * $csnick. Return the lowercase nick for further referencing by the calling
+	 * $csnick. Return the lower case nick for further referencing by the calling
 	 * function.
 	 */
 	private function add_nick(string $time, string $csnick, bool $real = true): string
@@ -168,7 +168,7 @@ class parser
 
 	/**
 	 * Keep track of every URL. These are handled (and stored) while preserving
-	 * case (for the parts where it matters, otherwise lowercase).
+	 * case (for the parts where it matters, otherwise lower case).
 	 */
 	private function add_url(string $time, string $nick, array $urldata): void
 	{
@@ -470,8 +470,8 @@ class parser
 				 * If the current line count is 0 then $nick_prev is not yet known (only seen in
 				 * previous parse run). It's safe to assume that $nick_prev is a valid nick as
 				 * it was set by set_normal(). Create an object for it here so the monologue
-				 * data can be added. It won't matter that $nick_prev is lowercase at this point
-				 * because it will be updated when any other activity is recorded.
+				 * data can be added. It won't matter that $nick_prev is lower case at this
+				 * point because it will be updated when any other activity is recorded.
 				 */
 				if ($this->l_total === 0) {
 					$this->add_nick($time, $this->nick_prev, false);
@@ -593,8 +593,8 @@ class parser
 		}
 
 		/**
-		 * Uppercased lines should consist of 2 or more characters, be completely
-		 * uppercased, and have less than 50% non-letter characters from the Basic Latin
+		 * Upper cased lines should consist of 2 or more characters, be completely
+		 * upper cased, and have less than 50% non-letter characters from the Basic Latin
 		 * and Latin-1 Supplement character sets in them.
 		 */
 		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/S', '', $line), 'UTF-8') * 2 > $line_length) {
