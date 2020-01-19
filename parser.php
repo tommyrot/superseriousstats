@@ -180,19 +180,11 @@ class parser
 	}
 
 	/**
-	 * Words are stored in lower case. Handle UTF-8 conversion appropriately.
+	 * Words are stored in lower case.
 	 */
 	private function add_word(string $csword, int $length): void
 	{
-		/**
-		 * The multibyte strtolower function is significantly slower than its
-		 * single-byte counterpart. Only use it if necessary.
-		 */
-		if (preg_match('/^[\x00-\x7F]+$/', $csword)) {
-			$word = strtolower($csword);
-		} else {
-			$word = mb_strtolower($csword, 'UTF-8');
-		}
+		$word = mb_strtolower($csword, 'UTF-8');
 
 		if (!array_key_exists($word, $this->word_objs)) {
 			$this->word_objs[$word] = new word($word);
