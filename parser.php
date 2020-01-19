@@ -109,7 +109,7 @@ class parser
 	private string $date = '';
 	private string $hex_latin1supplement = '[\x80-\xFF]';
 	private string $hex_validutf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
-	private string $newline = '';
+	private string $line_new = '';
 	private string $nick_prev = '';
 	protected int $linenum = 0;
 	protected string $prev_line = '';
@@ -239,7 +239,7 @@ class parser
 	private function normalize_line($line)
 	{
 		if (!preg_match('/^'.$this->hex_validutf8.'+$/', $line)) {
-			$this->newline = '';
+			$this->line_new = '';
 
 			while ($line !== '') {
 				/**
@@ -252,9 +252,9 @@ class parser
 			}
 
 			/**
-			 * Set $line to the rebuilt $newline.
+			 * Set $line to the rebuilt $line_new.
 			 */
-			$line = $this->newline;
+			$line = $this->line_new;
 		}
 
 		/**
@@ -326,14 +326,14 @@ class parser
 		 *    used to depict unknown characters).
 		 */
 		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
-			$this->newline .= $char;
+			$this->line_new .= $char;
 		} elseif (preg_match('/^'.$this->hex_latin1supplement.'$/', $char)) {
 			$char = preg_replace_callback('/^'.$this->hex_latin1supplement.'$/', function ($matches) {
 				return pack('C*', (ord($matches[0]) >> 6) | 0xC0, (ord($matches[0]) & 0x3F) | 0x80);
 			}, $char);
-			$this->newline .= $char;
+			$this->line_new .= $char;
 		} else {
-			$this->newline .= "\xEF\xBF\xBD";
+			$this->line_new .= "\xEF\xBF\xBD";
 		}
 
 		/**
