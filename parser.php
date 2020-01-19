@@ -112,7 +112,7 @@ class parser
 	private string $newline = '';
 	private string $prev_nick = '';
 	protected int $linenum = 0;
-	protected string $prevline = '';
+	protected string $prev_line = '';
 
 	public function __construct(array $config)
 	{
@@ -224,7 +224,7 @@ class parser
 			 */
 			$this->linenum_lastnonempty = $this->linenum;
 			$this->parse_line($line);
-			$this->prevline = $line;
+			$this->prev_line = $line;
 		}
 
 		gzclose($zp);
@@ -298,7 +298,7 @@ class parser
 			 */
 			$this->linenum_lastnonempty = $this->linenum;
 			$this->parse_line($line);
-			$this->prevline = $line;
+			$this->prev_line = $line;
 		}
 
 		fclose($fp);

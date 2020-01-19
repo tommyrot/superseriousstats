@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2007-2019, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -122,9 +122,9 @@ class parser_eggdrop extends parser
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Last message repeated (?<num>\d+) time\(s\)\.$/', $line, $matches)) {
 			/**
 			 * Prevent the parser from repeating a preceding repeat line. Also, skip processing if we find a
-			 * repeat line but $prevline isn't set.
+			 * repeat line but $prev_line isn't set.
 			 */
-			if ($this->prevline === '' || $this->repeatlock) {
+			if ($this->prev_line === '' || $this->repeatlock) {
 				return;
 			}
 
@@ -133,7 +133,7 @@ class parser_eggdrop extends parser
 			output::output('debug', __METHOD__.'(): repeating line '.$this->linenum.': '.$matches['num'].' time'.(($matches['num'] !== '1') ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; $i++) {
-				$this->parse_line($this->prevline);
+				$this->parse_line($this->prev_line);
 			}
 
 			$this->linenum++;
