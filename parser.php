@@ -334,7 +334,7 @@ class parser
 		return '';
 	}
 
-	protected function set_action($time, $csnick, $line)
+	protected function set_action(string $time, string $csnick, string $line): void
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -353,7 +353,7 @@ class parser
 		}
 	}
 
-	protected function set_join($time, $csnick)
+	protected function set_join(string $time, string $csnick): void
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -364,7 +364,7 @@ class parser
 		$this->nick_objs[$nick]->add_num('joins', 1);
 	}
 
-	protected function set_kick($time, $csnick_performing, $csnick_undergoing, $line)
+	protected function set_kick(string $time, string $csnick_performing, string $csnick_undergoing, string $line): void
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
