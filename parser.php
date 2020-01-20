@@ -236,7 +236,7 @@ class parser
 	 * Checks if a line is valid UTF-8 and convert all non-valid bytes into valid
 	 * multibyte UTF-8.
 	 */
-	private function normalize_line($line)
+	private function normalize_line(string $line): string
 	{
 		if (!preg_match('/^'.$this->hex_validutf8.'+$/', $line)) {
 			$this->line_new = '';
@@ -307,15 +307,10 @@ class parser
 	}
 
 	/**
-	 * Build a new line consisting of valid UTF-8 from the characters passed along
-	 * in $char.
+	 * Build a new line consisting of valid UTF-8 characters.
 	 */
 	private function rebuild_line(array $matches): string
 	{
-		/**
-		 * $char is passed along as the first element of $matches[] (see
-		 * preg_replace_callback()).
-		 */
 		$char = $matches[0];
 
 		/**
@@ -336,9 +331,6 @@ class parser
 			$this->line_new .= "\xEF\xBF\xBD";
 		}
 
-		/**
-		 * Return an empty string; see normalize_line() for it to make sense.
-		 */
 		return '';
 	}
 
