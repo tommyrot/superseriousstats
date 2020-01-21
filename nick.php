@@ -172,21 +172,21 @@ class nick
 	 * Keep a stack of the 10 most recent quotes of each type along with their
 	 * length.
 	 */
-	public function add_quote(string $var, string $value, int $length): void
+	public function add_quote(string $type, string $line, int $length): void
 	{
 		/**
 		 * $length should be the first value in each array since we sort on this column
 		 * with rsort() later.
 		 */
-		$this->{$var.'_stack'}[] = [
+		$this->{$type.'_stack'}[] = [
 			'length' => $length,
-			'line' => $value];
+			'line' => $line];
 
-		if (count($this->{$var.'_stack'}) > 10) {
+		if (count($this->{$type.'_stack'}) > 10) {
 			/**
 			 * Shift the first (oldest) entry off the stack.
 			 */
-			array_shift($this->{$var.'_stack'});
+			array_shift($this->{$type.'_stack'});
 		}
 	}
 
