@@ -343,14 +343,7 @@ class parser
 
 		$nick = $this->add_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_num('actions', 1);
-
-		/**
-		 * Track quotes/example lines of up to a sensible limit of 256 characters in
-		 * length.
-		 */
-		if (($line_length = mb_strlen($line, 'UTF-8')) <= 256) {
-			$this->nick_objs[$nick]->add_quote('ex_actions', $line, $line_length);
-		}
+		$this->nick_objs[$nick]->add_quote('ex_actions', $line, mb_strlen($line, 'UTF-8'));
 	}
 
 	protected function set_join(string $time, string $csnick): void
