@@ -598,7 +598,7 @@ class parser
 		}
 	}
 
-	protected function set_part($time, $csnick)
+	protected function set_part(string $time, string $csnick): void
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -609,7 +609,7 @@ class parser
 		$this->nick_objs[$nick]->add_num('parts', 1);
 	}
 
-	protected function set_quit($time, $csnick)
+	protected function set_quit(string $time, string $csnick): void
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -620,7 +620,7 @@ class parser
 		$this->nick_objs[$nick]->add_num('quits', 1);
 	}
 
-	protected function set_slap($time, $csnick_performing, $csnick_undergoing)
+	protected function set_slap(string $time, string $csnick_performing, string $csnick_undergoing): void
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -654,7 +654,7 @@ class parser
 		$this->nick_objs[$nick_undergoing]->add_num('slapped', 1);
 	}
 
-	protected function set_topic($time, $csnick, $line)
+	protected function set_topic(string $time, string $csnick, string $line): void
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
@@ -677,7 +677,7 @@ class parser
 	 * Check a nick on syntax and defined lengths. The majority of IRC servers are
 	 * within this limit.
 	 */
-	private function validate_nick($csnick)
+	private function validate_nick(string $csnick): bool
 	{
 		if (preg_match('/^[][^{}|\\\`_a-z][][^{}|\\\`_a-z0-9-]{0,31}$/i', $csnick)) {
 			return true;
