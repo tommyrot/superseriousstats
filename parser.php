@@ -375,7 +375,7 @@ class parser
 		$this->nick_objs[$nick_undergoing]->set_str('ex_kicked', $line);
 	}
 
-	protected function set_mode($time, $csnick_performing, $csnick_undergoing, $mode)
+	protected function set_mode(string $time, string $csnick_performing, string $csnick_undergoing, string $mode): void
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
@@ -408,7 +408,7 @@ class parser
 		}
 	}
 
-	protected function set_nickchange($time, $csnick_performing, $csnick_undergoing)
+	protected function set_nickchange(string $time, string $csnick_performing, string $csnick_undergoing): void
 	{
 		if (!$this->validate_nick($csnick_performing)) {
 			output::output('debug', __METHOD__.'(): invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
