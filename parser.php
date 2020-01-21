@@ -371,15 +371,8 @@ class parser
 		$nick_undergoing = $this->add_nick($time, $csnick_undergoing);
 		$this->nick_objs[$nick_performing]->add_num('kicks', 1);
 		$this->nick_objs[$nick_undergoing]->add_num('kicked', 1);
-
-		/**
-		 * Track kick messages of up to a limit of 307 characters in length. The
-		 * majority of IRC servers are within this limit.
-		 */
-		if (mb_strlen($line, 'UTF-8') <= 307) {
-			$this->nick_objs[$nick_performing]->set_str('ex_kicks', $line);
-			$this->nick_objs[$nick_undergoing]->set_str('ex_kicked', $line);
-		}
+		$this->nick_objs[$nick_performing]->set_str('ex_kicks', $line);
+		$this->nick_objs[$nick_undergoing]->set_str('ex_kicked', $line);
 	}
 
 	protected function set_mode($time, $csnick_performing, $csnick_undergoing, $mode)
