@@ -663,14 +663,7 @@ class parser
 
 		$nick = $this->add_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_num('topics', 1);
-
-		/**
-		 * Track topics of up to a limit of 390 characters in length. The majority of
-		 * IRC servers are within this limit.
-		 */
-		if (mb_strlen($line, 'UTF-8') <= 390) {
-			$this->add_topic($time, $nick, $line);
-		}
+		$this->add_topic($time, $nick, $line);
 	}
 
 	/**
