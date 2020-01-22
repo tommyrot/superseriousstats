@@ -678,7 +678,7 @@ class parser
 		}
 	}
 
-	public function write_data($sqlite3)
+	public function write_data(object $sqlite3): bool
 	{
 		/**
 		 * If there are no nicks there is no data.
@@ -728,7 +728,7 @@ class parser
 		}
 
 		/**
-		 * Write streak data (history) to database.
+		 * Write streak history to database.
 		 */
 		if ($this->l_total !== 0) {
 			$sqlite3->exec('DELETE FROM streak_history') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
