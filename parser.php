@@ -323,7 +323,7 @@ class parser
 		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
 			$this->line_new .= $char;
 		} elseif (preg_match('/^'.$this->hex_latin1supplement.'$/', $char)) {
-			$char = preg_replace_callback('/^'.$this->hex_latin1supplement.'$/', function ($matches) {
+			$char = preg_replace_callback('/^'.$this->hex_latin1supplement.'$/', function (array $matches): string {
 				return pack('C*', (ord($matches[0]) >> 6) | 0xC0, (ord($matches[0]) & 0x3F) | 0x80);
 			}, $char);
 			$this->line_new .= $char;
