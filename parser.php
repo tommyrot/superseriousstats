@@ -667,8 +667,7 @@ class parser
 	}
 
 	/**
-	 * Check a nick on syntax and defined lengths. The majority of IRC servers are
-	 * within this limit.
+	 * Syntax check a given nick.
 	 */
 	private function validate_nick(string $csnick): bool
 	{
