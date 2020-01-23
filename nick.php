@@ -261,7 +261,7 @@ class nick
 
 			if ($var === 'ex_questions' || $var === 'ex_exclamations') {
 				if ($this->$var === $this->ex_uppercased) {
-					for ($i = 1, $j = count($this->{$var.'_stack'}); $i < $j; $i++) {
+					for ($i = 1, $j = count($this->{$var.'_stack'}); $i < $j; ++$i) {
 						if ($this->{$var.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
 							$this->$var = $this->{$var.'_stack'}[$i]['line'];
 							break;
@@ -270,7 +270,7 @@ class nick
 				}
 			} elseif ($var === 'quote') {
 				if ($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions) {
-					for ($i = 1, $j = count($this->quote_stack); $i < $j; $i++) {
+					for ($i = 1, $j = count($this->quote_stack); $i < $j; ++$i) {
 						if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
 							$this->quote = $this->quote_stack[$i]['line'];
 							break;

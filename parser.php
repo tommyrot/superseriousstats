@@ -208,7 +208,7 @@ class parser
 		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
 
 		while (($line = gzgets($zp)) !== false) {
-			$this->linenum++;
+			++$this->linenum;
 
 			if ($this->linenum < $firstline) {
 				continue;
@@ -282,7 +282,7 @@ class parser
 		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
 
 		while (($line = fgets($fp)) !== false) {
-			$this->linenum++;
+			++$this->linenum;
 
 			if ($this->linenum < $firstline) {
 				continue;
@@ -466,7 +466,7 @@ class parser
 			$this->streak = 0;
 		}
 
-		$this->streak++;
+		++$this->streak;
 
 		/**
 		 * Increase line counts for relevant day, part of day, and hour.
@@ -476,27 +476,27 @@ class parser
 		$hour = (int) $hour_leadingzero;
 
 		if ($hour >= 0 && $hour <= 5) {
-			$this->l_night++;
+			++$this->l_night;
 			$this->nick_objs[$nick]->add_num('l_'.$day.'_night', 1);
 			$this->nick_objs[$nick]->add_num('l_night', 1);
 		} elseif ($hour >= 6 && $hour <= 11) {
-			$this->l_morning++;
+			++$this->l_morning;
 			$this->nick_objs[$nick]->add_num('l_'.$day.'_morning', 1);
 			$this->nick_objs[$nick]->add_num('l_morning', 1);
 		} elseif ($hour >= 12 && $hour <= 17) {
-			$this->l_afternoon++;
+			++$this->l_afternoon;
 			$this->nick_objs[$nick]->add_num('l_'.$day.'_afternoon', 1);
 			$this->nick_objs[$nick]->add_num('l_afternoon', 1);
 		} elseif ($hour >= 18 && $hour <= 23) {
-			$this->l_evening++;
+			++$this->l_evening;
 			$this->nick_objs[$nick]->add_num('l_'.$day.'_evening', 1);
 			$this->nick_objs[$nick]->add_num('l_evening', 1);
 		}
 
 		$this->nick_objs[$nick]->add_num('l_'.$hour_leadingzero, 1);
 		$this->nick_objs[$nick]->add_num('l_total', 1);
-		$this->{'l_'.$hour_leadingzero}++;
-		$this->l_total++;
+		++$this->{'l_'.$hour_leadingzero};
+		++$this->l_total;
 
 		/**
 		 * Words are simply considered character groups separated by whitespace.
