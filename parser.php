@@ -526,8 +526,8 @@ class parser
 				}
 
 			/**
-			 * Behold the amazing smileys regular expression. Cannot evaluate as a word (see
-			 * above).
+			 * 50 smileys, 1 regular expression. These should not be able to match the
+			 * regular expression above.
 			 */
 			} elseif (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(]|\'\()|;([])(pxd\/o]|-\)|_;)|[:;](\)\)|\(\()|\\\o\/|<3|=[])p\/\\\d(x]|d:|8\)|-[_.]-|>:\()$/i', $csword)) {
 				$this->nick_objs[$nick]->add_num($this->smileys[strtolower($csword)], 1);
@@ -538,9 +538,8 @@ class parser
 			 */
 			} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 				/**
-				 * Regardless of it being a valid URL or not, set $skip_quote to true, which
-				 * ensures that lines which contain a URL are not used as a quote. Quotes with
-				 * URLs in them often look messy/confusing on the stats page.
+				 * Regardless of validity set $skip_quote to true which ensures that lines
+				 * containing a URL are not used as a quote. These often look awful.
 				 */
 				$skip_quote = true;
 
