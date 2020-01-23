@@ -423,7 +423,7 @@ class parser
 		$this->nick_objs[$nick_performing]->add_num('nickchanges', 1);
 	}
 
-	protected function set_normal($time, $csnick, $line)
+	protected function set_normal(string $time, string $csnick, string $line): void
 	{
 		if (!$this->validate_nick($csnick)) {
 			output::output('debug', __METHOD__.'(): invalid nick: \''.$csnick.'\' on line '.$this->linenum);
