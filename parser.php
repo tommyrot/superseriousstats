@@ -558,14 +558,6 @@ class parser
 			}
 		}
 
-		/**
-		 * All quotes and example lines below should be within a sensible limit of 256
-		 * characters in length.
-		 */
-		if ($line_length > 256) {
-			$skipquote = true;
-		}
-
 		if (!$skipquote) {
 			$this->nick_objs[$nick]->add_quote('quote', $line, $line_length);
 		}
