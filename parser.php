@@ -501,19 +501,19 @@ class parser
 		/**
 		 * Words are simply considered character groups separated by whitespace.
 		 */
-		$skipquote = false;
 		$words = explode(' ', $line);
 		$this->nick_objs[$nick]->add_num('words', count($words));
+		$skip_quote = false;
 
 		foreach ($words as $csword) {
 			/**
 			 * Keep track of all character groups composed of the letters found in the Basic
 			 * Latin and Latin-1 Supplement character sets, the Hyphen (used properly), and
-			 * any multibyte characters beyond those two sets (found in UTF-8) regardless of
-			 * their meaning. The regular expression checks for any characters not wanted in
-			 * the word - from the aforementioned Latin sets. Note that normalize_line()
-			 * already took all the dirt out. This method of finding words is not 100%
-			 * accurate, but it serves its purpose.
+			 * any multibyte characters beyond those two sets found in UTF-8 regardless of
+			 * their meaning. The regular expression checks for any unwanted characters from
+			 * the aforementioned Latin sets only. Note that normalize_line() already took
+			 * all the dirt out so further checks are unnecessary. This method of finding
+			 * words is not 100% accurate but it serves its purpose.
 			 */
 			if ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
 				$word_length = mb_strlen($csword, 'UTF-8');
@@ -538,11 +538,11 @@ class parser
 			 */
 			} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 				/**
-				 * Regardless of it being a valid URL or not, set $skipquote to true, which
+				 * Regardless of it being a valid URL or not, set $skip_quote to true, which
 				 * ensures that lines which contain a URL are not used as a quote. Quotes with
 				 * URLs in them often look messy/confusing on the stats page.
 				 */
-				$skipquote = true;
+				$skip_quote = true;
 
 				if (($urldata = urltools::get_elements($csword)) !== false) {
 					/**
@@ -558,7 +558,7 @@ class parser
 			}
 		}
 
-		if (!$skipquote) {
+		if (!$skip_quote) {
 			$this->nick_objs[$nick]->add_quote('quote', $line, $line_length);
 		}
 
@@ -570,7 +570,7 @@ class parser
 		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/S', '', $line), 'UTF-8') * 2 > $line_length) {
 			$this->nick_objs[$nick]->add_num('uppercased', 1);
 
-			if (!$skipquote) {
+			if (!$skip_quote) {
 				$this->nick_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
 			}
 		}
@@ -578,13 +578,13 @@ class parser
 		if (preg_match('/!$/', $line)) {
 			$this->nick_objs[$nick]->add_num('exclamations', 1);
 
-			if (!$skipquote) {
+			if (!$skip_quote) {
 				$this->nick_objs[$nick]->add_quote('ex_exclamations', $line, $line_length);
 			}
 		} elseif (preg_match('/\?$/', $line)) {
 			$this->nick_objs[$nick]->add_num('questions', 1);
 
-			if (!$skipquote) {
+			if (!$skip_quote) {
 				$this->nick_objs[$nick]->add_quote('ex_questions', $line, $line_length);
 			}
 		}
