@@ -223,11 +223,11 @@ class history
 		$tr2 = '<tr><td class="pos"><td class="k">Jan<td class="k">Feb<td class="k">Mar<td class="k">Apr<td class="k">May<td class="k">Jun<td class="k">Jul<td class="k">Aug<td class="k">Sep<td class="k">Oct<td class="k">Nov<td class="k">Dec';
 		$trx = '';
 
-		for ($year = $this->datetime['year_first']; $year <= $this->datetime['year_last']; $year++) {
+		for ($year = $this->datetime['year_first']; $year <= $this->datetime['year_last']; ++$year) {
 			if (array_key_exists($year, $this->activity)) {
 				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'">'.$year.'</a>';
 
-				for ($month = 1; $month <= 12; $month++) {
+				for ($month = 1; $month <= 12; ++$month) {
 					if (array_key_exists($month, $this->activity[$year])) {
 						$trx .= '<td class="v"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'&amp;month='.$month.'">'.number_format($this->activity[$year][$month]).'</a>';
 					} else {
@@ -344,7 +344,7 @@ class history
 		$trx = '';
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$i++;
+			++$i;
 			$width = 50;
 
 			foreach ($times as $time) {
@@ -360,8 +360,8 @@ class history
 				arsort($width_remainders);
 
 				foreach ($width_remainders as $time => $remainder) {
-					$width--;
-					$width_int[$time]++;
+					--$width;
+					++$width_int[$time];
 
 					if ($width === 0) {
 						break;
@@ -417,7 +417,7 @@ class history
 			$i = 0;
 
 			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-				$i++;
+				++$i;
 				${$time}[$i]['lines'] = $result['l_'.$time];
 				${$time}[$i]['user'] = $result['csnick'];
 
@@ -432,7 +432,7 @@ class history
 		$tr2 = '<tr><td class="pos"><td class="k">Night<br>0h - 5h<td class="k">Morning<br>6h - 11h<td class="k">Afternoon<br>12h - 17h<td class="k">Evening<br>18h - 23h';
 		$trx = '';
 
-		for ($i = 1; $i <= $this->maxrows_people_timeofday; $i++) {
+		for ($i = 1; $i <= $this->maxrows_people_timeofday; ++$i) {
 			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
 				break;
 			}
