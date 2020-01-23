@@ -808,7 +808,7 @@ class html
 			$head = 'Activity by Day';
 			$query = $sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 24, $this->datetime['year'])).'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-			for ($i = $columns - 1; $i >= 0; $i--) {
+			for ($i = $columns - 1; $i >= 0; --$i) {
 				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - $i, $this->datetime['year']));
 			}
 		} elseif ($type === 'month') {
@@ -817,7 +817,7 @@ class html
 			$head = 'Activity by Month';
 			$query = $sqlite3->query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) > \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 24, 1, $this->datetime['year'])).'\' GROUP BY SUBSTR(date, 1, 7)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-			for ($i = $columns - 1; $i >= 0; $i--) {
+			for ($i = $columns - 1; $i >= 0; --$i) {
 				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
 			}
 		} elseif ($type === 'year') {
@@ -826,7 +826,7 @@ class html
 			$head = 'Activity by Year';
 			$query = $sqlite3->query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) > \''.($this->datetime['year'] - 24).'\' GROUP BY SUBSTR(date, 1, 4)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-			for ($i = $columns - ($this->estimate ? 1 : 0) - 1; $i >= 0; $i--) {
+			for ($i = $columns - ($this->estimate ? 1 : 0) - 1; $i >= 0; --$i) {
 				$dates[] = $this->datetime['year'] - $i;
 			}
 
@@ -912,8 +912,8 @@ class html
 					arsort($height_remainders);
 
 					foreach ($height_remainders as $time => $remainder) {
-						$height--;
-						$height_int[$time]++;
+						--$height;
+						++$height_int[$time];
 
 						if ($height === 0) {
 							break;
@@ -1018,8 +1018,8 @@ class html
 					arsort($height_remainders);
 
 					foreach ($height_remainders as $time => $remainder) {
-						$height--;
-						$height_int[$time]++;
+						--$height;
+						++$height_int[$time];
 
 						if ($height === 0) {
 							break;
@@ -1175,7 +1175,7 @@ class html
 		$trx = '';
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$i++;
+			++$i;
 			$width = 50;
 
 			foreach ($times as $time) {
@@ -1193,8 +1193,8 @@ class html
 				arsort($width_remainders);
 
 				foreach ($width_remainders as $time => $remainder) {
-					$width--;
-					$width_int[$time]++;
+					--$width;
+					++$width_int[$time];
 
 					if ($width === 0) {
 						break;
@@ -1246,10 +1246,10 @@ class html
 		$current_row = 0;
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$current_row++;
+			++$current_row;
 
 			if ($current_row > $this->maxrows_people2) {
-				$current_column++;
+				++$current_column;
 				$current_row = 1;
 			}
 
@@ -1283,10 +1283,10 @@ class html
 		$tr2 = '<tr><td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User';
 		$trx = '';
 
-		for ($i = 1; $i <= $this->maxrows_people2; $i++) {
+		for ($i = 1; $i <= $this->maxrows_people2; ++$i) {
 			$trx .= '<tr>';
 
-			for ($j = 1; $j <= 4; $j++) {
+			for ($j = 1; $j <= 4; ++$j) {
 				$trx .= '<td class="v1">'.number_format($columns[$j][$i]['l_total']).'<td class="pos">'.$columns[$j][$i]['pos'].'<td class="v2">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i]['csnick']).'">'.$columns[$j][$i]['csnick'].'</a>' : $columns[$j][$i]['csnick']);
 			}
 		}
@@ -1316,7 +1316,7 @@ class html
 			$i = 0;
 
 			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-				$i++;
+				++$i;
 				${$time}[$i] = [
 					'csnick' => $result['csnick'],
 					'lines' => $result['l_'.$time]];
@@ -1332,7 +1332,7 @@ class html
 		$tr2 = '<tr><td class="pos"><td class="k">Night<br>0h - 5h<td class="k">Morning<br>6h - 11h<td class="k">Afternoon<br>12h - 17h<td class="k">Evening<br>18h - 23h';
 		$trx = '';
 
-		for ($i = 1; $i <= $this->maxrows_people_timeofday; $i++) {
+		for ($i = 1; $i <= $this->maxrows_people_timeofday; ++$i) {
 			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
 				break;
 			}

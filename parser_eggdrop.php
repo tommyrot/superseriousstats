@@ -70,14 +70,14 @@ class parser_eggdrop extends parser
 			$modenum = 0;
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 
-			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
+			for ($i = 0, $j = strlen($matches['modes']); $i < $j; ++$i) {
 				$mode = substr($matches['modes'], $i, 1);
 
 				if ($mode === '-' || $mode === '+') {
 					$modesign = $mode;
 				} else {
 					$this->set_mode($matches['time'], $matches['nick_performing'], $nicks_undergoing[$modenum], $modesign.$mode);
-					$modenum++;
+					++$modenum;
 				}
 			}
 
@@ -128,15 +128,15 @@ class parser_eggdrop extends parser
 				return;
 			}
 
-			$this->linenum--;
+			--$this->linenum;
 			$this->repeatlock = true;
 			output::output('debug', __METHOD__.'(): repeating line '.$this->linenum.': '.$matches['num'].' time'.(($matches['num'] !== '1') ? 's' : ''));
 
-			for ($i = 1, $j = (int) $matches['num']; $i <= $j; $i++) {
+			for ($i = 1, $j = (int) $matches['num']; $i <= $j; ++$i) {
 				$this->parse_line($this->line_prev);
 			}
 
-			$this->linenum++;
+			++$this->linenum;
 			$this->repeatlock = false;
 
 		/**

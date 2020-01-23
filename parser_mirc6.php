@@ -69,14 +69,14 @@ class parser_mirc6 extends parser
 			$modenum = 0;
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 
-			for ($i = 0, $j = strlen($matches['modes']); $i < $j; $i++) {
+			for ($i = 0, $j = strlen($matches['modes']); $i < $j; ++$i) {
 				$mode = substr($matches['modes'], $i, 1);
 
 				if ($mode === '-' || $mode === '+') {
 					$modesign = $mode;
 				} else {
 					$this->set_mode($matches['time'], $matches['nick_performing'], $nicks_undergoing[$modenum], $modesign.$mode);
-					$modenum++;
+					++$modenum;
 				}
 			}
 

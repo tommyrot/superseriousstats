@@ -345,7 +345,7 @@ class sss
 				$ruids[] = $ruid;
 				$statuses[$ruid] = $status;
 
-				for ($i = 2, $j = count($lineparts); $i < $j; $i++) {
+				for ($i = 2, $j = count($lineparts); $i < $j; ++$i) {
 					if (isset($lineparts[$i]) && array_key_exists($lineparts[$i], $uids)) {
 						$aliases[$ruid][] = $uids[$lineparts[$i]];
 					}
@@ -429,7 +429,7 @@ class sss
 
 			$newalias = false;
 
-			for ($i = 1, $j = count($uids); $i < $j; $i++) {
+			for ($i = 1, $j = count($uids); $i < $j; ++$i) {
 				/**
 				 * Use the ruid that belongs to the first uid in the array to link all
 				 * succeeding _unlinked_ nicks to.
@@ -547,7 +547,7 @@ class sss
 			}
 
 			if (!is_null($firstline)) {
-				$firstline++;
+				++$firstline;
 			} else {
 				$firstline = 1;
 			}
