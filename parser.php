@@ -170,12 +170,12 @@ class parser
 	 * Keep track of every URL. These are handled (and stored) while preserving
 	 * case (for the parts where it matters, otherwise lower case).
 	 */
-	private function add_url(string $time, string $nick, array $urldata): void
+	private function add_url(string $time, string $nick, array $url_data): void
 	{
-		$url = $urldata['url'];
+		$url = $url_data['url'];
 
 		if (!array_key_exists($url, $this->url_objs)) {
-			$this->url_objs[$url] = new url($urldata);
+			$this->url_objs[$url] = new url($url_data);
 		}
 
 		$this->url_objs[$url]->add_uses($this->date.' '.$time, $nick);
@@ -544,12 +544,12 @@ class parser
 				 */
 				$skip_quote = true;
 
-				if (($urldata = urltools::get_elements($csword)) !== false) {
+				if (($url_data = urltools::get_elements($csword)) !== false) {
 					/**
 					 * Track URLs of up to a sensible limit of 512 characters in length.
 					 */
-					if (strlen($urldata['url']) <= 512) {
-						$this->add_url($time, $nick, $urldata);
+					if (strlen($url_data['url']) <= 512) {
+						$this->add_url($time, $nick, $url_data);
 						$this->nick_objs[$nick]->add_num('urls', 1);
 					}
 				} else {

@@ -128,9 +128,9 @@ class urltools
 				/**
 				 * Always pass along an empty string for nonexistent elements.
 				 */
-				$urldata[$element] = '';
+				$url_data[$element] = '';
 			} else {
-				$urldata[$element] = $matches[$element];
+				$url_data[$element] = $matches[$element];
 			}
 		}
 
@@ -138,11 +138,11 @@ class urltools
 		 * Make sure the only numeric element isn't passed along as a string.
 		 */
 		if (empty($matches['port'])) {
-			$urldata['port'] = 0;
+			$url_data['port'] = 0;
 		} else {
-			$urldata['port'] = (int) $matches['port'];
+			$url_data['port'] = (int) $matches['port'];
 		}
 
-		return $urldata;
+		return $url_data;
 	}
 }
