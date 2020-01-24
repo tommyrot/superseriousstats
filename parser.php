@@ -507,15 +507,12 @@ class parser
 
 		foreach ($words as $csword) {
 			/**
-			 * Keep track of all character groups composed of the letters found in the Basic
-			 * Latin and Latin-1 Supplement character sets, the Hyphen (used properly), and
-			 * any multibyte characters beyond those two sets found in UTF-8 regardless of
-			 * their meaning. The regular expression checks for any unwanted characters from
-			 * the aforementioned Latin sets only. Note that normalize_line() already took
-			 * all the dirt out so further checks are unnecessary. This method of finding
-			 * words is not 100% accurate but it serves its purpose.
+			 * Strip most common punctuation from the beginning and end of the word before
+			 * validating with a light sanity check. This method of finding words is not
+			 * 100% accurate but it's good enough for our use case.
 			 */
-			if ($this->wordtracking && !preg_match('/^-|-$|--|[\x21-\x2C\x2E-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/', $csword)) {
+			if ($this->wordtracking && preg_match('/^["\'(]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;]?$/u', $csword, $matches)) {
+				$csword = $matches['csword_trimmed'];
 				$word_length = mb_strlen($csword, 'UTF-8');
 
 				/**
@@ -539,7 +536,7 @@ class parser
 			} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
 				/**
 				 * Regardless of validity set $skip_quote to true which ensures that lines
-				 * containing a URL are not used as a quote. These often look awful.
+				 * containing a URL are not used as a quote. Such quotes often look awful.
 				 */
 				$skip_quote = true;
 
