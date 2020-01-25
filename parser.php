@@ -559,10 +559,11 @@ class parser
 		}
 
 		/**
-		 * Upper cased lines should consist of 2 or more characters, be completely upper
-		 * cased, and have less than 50% non-letter characters in them.
+		 * Upper cased lines should have no more than 50% non-letter characters in them.
 		 */
-		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[^\p{L}]/u', '', $line), 'UTF-8') * 2 > $line_length) {
+		$line_trimmed = preg_replace('/[^\p{L}]/u', '', $line);
+
+		if (mb_strtoupper($line_trimmed, 'UTF-8') === $line_trimmed && mb_strlen($line_trimmed, 'UTF-8') * 2 >= $line_length) {
 			$this->nick_objs[$nick]->add_num('uppercased', 1);
 
 			if (!$skip_quote) {
