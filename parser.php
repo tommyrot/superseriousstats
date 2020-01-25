@@ -266,7 +266,7 @@ class parser
 		 *    the multibyte no-break space) with a single space.
 		 * 3. Remove whitespace characters at the beginning and end of a line.
 		 */
-		$line = preg_replace(['/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/S', '/([\x09\x20]|\xC2\xA0)+/S', '/^\x20|\x20$/'], ['', ' ', ''], $line);
+		$line = preg_replace(['/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'], ['', ' ', ''], $line);
 		return $line;
 	}
 
@@ -562,7 +562,7 @@ class parser
 		 * Upper cased lines should consist of 2 or more characters, be completely upper
 		 * cased, and have less than 50% non-letter characters in them.
 		 */
-		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[^\p{L}]/uS', '', $line), 'UTF-8') * 2 > $line_length) {
+		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[^\p{L}]/u', '', $line), 'UTF-8') * 2 > $line_length) {
 			$this->nick_objs[$nick]->add_num('uppercased', 1);
 
 			if (!$skip_quote) {
