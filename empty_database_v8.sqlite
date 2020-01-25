@@ -456,7 +456,7 @@ CREATE INDEX urls_fid ON urls (fid);
 
 CREATE TABLE words (
 word TEXT PRIMARY KEY NOT NULL,
-length INT NOT NULL CHECK (length > 1),
+length INT NOT NULL CHECK (length > 0),
 total INT NOT NULL CHECK (total > 0)
 );
 CREATE INDEX words_length ON words (length);
