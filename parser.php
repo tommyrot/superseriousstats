@@ -560,10 +560,9 @@ class parser
 
 		/**
 		 * Upper cased lines should consist of 2 or more characters, be completely upper
-		 * cased, and have less than 50% non-letter characters from the Basic Latin and
-		 * Latin-1 Supplement character sets in them.
+		 * cased, and have less than 50% non-letter characters in them.
 		 */
-		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[\x21-\x40\x5B-\x60\x7B-\x7E]|\xC2[\xA1-\xBF]|\xC3\x97|\xC3\xB7|\xEF\xBF\xBD/S', '', $line), 'UTF-8') * 2 > $line_length) {
+		if ($line_length >= 2 && mb_strtoupper($line, 'UTF-8') === $line && mb_strlen(preg_replace('/[^\p{L}]/uS', '', $line), 'UTF-8') * 2 > $line_length) {
 			$this->nick_objs[$nick]->add_num('uppercased', 1);
 
 			if (!$skip_quote) {
