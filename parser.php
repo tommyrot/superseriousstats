@@ -318,8 +318,7 @@ class parser
 		 * 1. Valid UTF-8 is passed along unmodified.
 		 * 2. Single-byte characters from the Latin-1 Supplement are converted to
 		 *    multibyte unicode.
-		 * 3. Everything else is converted to the unicode questionmark sign (commonly
-		 *    used to depict unknown characters).
+		 * 3. Everything else is converted to the unicode replacement character.
 		 */
 		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
 			$this->line_new .= $char;
