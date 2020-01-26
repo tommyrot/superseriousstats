@@ -258,15 +258,16 @@ class parser
 		}
 
 		/**
-		 * 1. Remove control codes from the Basic Latin (7-bit ASCII) and Latin-1
-		 *    Supplement character sets (the latter after conversion to multibyte).
-		 *    0x03 is used for (mIRC) color codes and may be followed by additional
-		 *    characters; remove those as well.
-		 * 2. Replace all possible formations of adjacent tabs and spaces (including
-		 *    the multibyte no-break space) with a single space.
-		 * 3. Remove whitespace characters at the beginning and end of a line.
+		 * 1. 0x03 is used for (mIRC) color codes and may be followed by additional
+		 *    characters; completely strip all of these.
+		 * 2. Replace the tab character (0x09) with a space (0x20).
+		 * 3. Strip all remaining control characters, unused, reserved and unassigned
+		 *    code points as well as any surrogates.
+		 * 4. Replace any and all adjacent whitespace (including the multibyte no-break
+		 *    space, and the line and paragraph separators) with a single space.
+		 * 5. Finally, remove spaces at the beginning and end of a line.
 		 */
-		$line = preg_replace(['/[\x00-\x02\x04-\x08\x0A-\x1F\x7F]|\x03([0-9]{1,2}(,[0-9]{1,2})?)?|\xC2[\x80-\x9F]/', '/([\x09\x20]|\xC2\xA0)+/', '/^\x20|\x20$/'], ['', ' ', ''], $line);
+		$line = preg_replace(['/\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09/', '/\p{C}/u', '/(\x20|\xC2\xA0|\xE2\x80[\xA8\xA9])+/', '/^\x20|\x20$/'], ['', ' ', '', ' ', ''], $line);
 		return $line;
 	}
 
@@ -508,7 +509,8 @@ class parser
 		foreach ($words as $csword) {
 			/**
 			 * Strip most common punctuation from the beginning and end of the word before
-			 * validating with a light sanity check. This method of finding words is not
+			 * validating with a light sanity check. We look at single code points for our
+			 * letters, no adjacent combination marks. This method of finding words is not
 			 * 100% accurate but it's good enough for our use case.
 			 */
 			if ($this->wordtracking && preg_match('/^["\'(]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;]?$/u', $csword, $matches)) {
@@ -655,14 +657,14 @@ class parser
 	}
 
 	/**
-	 * Syntax check a given nick.
+	 * Syntax check a given nick. Leave unicode constraints mostly up to the server.
 	 */
 	private function validate_nick(string $csnick): bool
 	{
-		if (preg_match('/^[][^{}|\\\`_a-z][][^{}|\\\`_a-z0-9-]*$/i', $csnick)) {
-			return true;
-		} else {
+		if (preg_match('/^[0-9-]|[\x21-\x2C\x2E\x2F\x3A-\x40\x7E]/', $csnick)) {
 			return false;
+		} else {
+			return true;
 		}
 	}
 
