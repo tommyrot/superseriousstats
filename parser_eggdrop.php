@@ -4,11 +4,13 @@
  * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
+declare(strict_types=1);
+
 class parser_eggdrop extends parser
 {
 	private $repeat_lock = false;
 
-	protected function parse_line($line)
+	protected function parse_line(string $line): void
 	{
 		// "Normal" lines.
 		if (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] <(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
