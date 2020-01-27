@@ -40,7 +40,7 @@ class parser_mirc6 extends parser
 
 		// "Action" and "slap" lines.
 		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] \*\* [~&@%+!*]?(?<line>(?<nick_performing>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick_undergoing>\S+)( .+)?)?)|(.+)))$/', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
-			if (!empty($matches['slap'])) {
+			if (!is_null($matches['slap'])) {
 				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 			}
 
