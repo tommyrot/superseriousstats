@@ -1,8 +1,10 @@
 <?php
 
 /**
- * Copyright (c) 2007-2016, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
  */
+
+declare(strict_types=1);
 
 /**
  * Various functions related to URL validation and presentation.
