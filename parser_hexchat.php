@@ -1,40 +1,14 @@
 <?php
 
 /**
- * Copyright (c) 2012-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2012-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
-/**
- * Parse instructions for the HexChat logfile format.
- *
- * Line         Format                                                  Notes
- * ---------------------------------------------------------------------------------------------------------------------
- * Normal       <NICK> MSG                                              Skip empty lines.
- * Nickchange   * NICK is now known as NICK
- * Join         * NICK (HOST) has joined CHAN
- * Part         * NICK (HOST) has left CHAN (MSG)                       Part message may be absent, or empty due to
- *                                                                      normalization.
- * Quit         * NICK has quit (MSG)                                   Quit message may be empty due to normalization.
- * Mode         * NICK gives channel operator status to NICK NICK       Only check for ops (channel operator status) and
- *                                                                      voices.
- * Mode         * NICK removes voice from NICK NICK                     "
- * Topic        * NICK has changed the topic to: MSG                    Skip empty topics.
- * Kick         * NICK has kicked NICK from CHAN (MSG)                  Kick message may be empty due to normalization.
- * ---------------------------------------------------------------------------------------------------------------------
- *
- * Notes:
- * - normalize_line() scrubs all lines before passing them on to parse_line().
- * - The way HexChat logs actions is pretty dumb, we can spoof nearly all other line types with our actions. Even
- *   non-chat messages are logged with the same syntax. For this reason we won't parse for actions.
- * - The order of the regular expressions below is irrelevant (current order aims for best performance).
- * - The most common channel prefixes are "#&!+".
- */
+declare(strict_types=1);
+
 class parser_hexchat extends parser
 {
-	/**
-	 * Parse a line for various chat data.
-	 */
-	protected function parse_line($line)
+	protected function parse_line(string $line): void
 	{
 		/**
 		 * "Normal" lines.
