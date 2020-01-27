@@ -6,7 +6,7 @@
 
 class parser_eggdrop extends parser
 {
-	private $repeatlock = false;
+	private $repeat_lock = false;
 
 	protected function parse_line($line)
 	{
@@ -72,12 +72,12 @@ class parser_eggdrop extends parser
 			 * Prevent the parser from repeating a preceding repeat line. Also, skip
 			 * processing if we find a repeat line but $line_prev isn't set.
 			 */
-			if ($this->line_prev === '' || $this->repeatlock) {
+			if ($this->line_prev === '' || $this->repeat_lock) {
 				return;
 			}
 
 			--$this->linenum;
-			$this->repeatlock = true;
+			$this->repeat_lock = true;
 			output::output('debug', __METHOD__.'(): repeating line '.$this->linenum.': '.$matches['num'].' time'.($matches['num'] !== '1' ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; ++$i) {
@@ -85,7 +85,7 @@ class parser_eggdrop extends parser
 			}
 
 			++$this->linenum;
-			$this->repeatlock = false;
+			$this->repeat_lock = false;
 
 		// Skip everything else.
 		} elseif ($line !== '') {
