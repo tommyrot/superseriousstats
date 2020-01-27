@@ -38,12 +38,10 @@ class parser_eggdrop extends parser
 				}
 			}
 
-		/**
-		 * "Action" and "slap" lines.
-		 */
-		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Action: (?<line>(?<nick_performing>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick_undergoing>\S+)( .+)?)?)|(.+)))$/', $line, $matches)) {
-			if (!empty($matches['slap'])) {
-				$this->set_slap($matches['time'], $matches['nick_performing'], (!empty($matches['nick_undergoing']) ? $matches['nick_undergoing'] : null));
+		// "Action" and "slap" lines.
+		} elseif (preg_match('/^\[(?<time>\d{2}:\d{2}(:\d{2})?)\] Action: (?<line>(?<nick_performing>\S+) ((?<slap>[sS][lL][aA][pP][sS]( (?<nick_undergoing>\S+)( .+)?)?)|(.+)))$/', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
+			if (!is_null($matches['slap'])) {
+				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 			}
 
 			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
@@ -80,7 +78,7 @@ class parser_eggdrop extends parser
 
 			--$this->linenum;
 			$this->repeatlock = true;
-			output::output('debug', __METHOD__.'(): repeating line '.$this->linenum.': '.$matches['num'].' time'.(($matches['num'] !== '1') ? 's' : ''));
+			output::output('debug', __METHOD__.'(): repeating line '.$this->linenum.': '.$matches['num'].' time'.($matches['num'] !== '1' ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; ++$i) {
 				$this->parse_line($this->line_prev);
