@@ -54,7 +54,7 @@ l_night INT NOT NULL,
 l_morning INT NOT NULL,
 l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
-l_total INT NOT NULL CHECK (l_total > 0),
+l_total INT NOT NULL,
 PRIMARY KEY (ruid, date)
 );
 
@@ -65,7 +65,7 @@ l_night INT NOT NULL,
 l_morning INT NOT NULL,
 l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
-l_total INT NOT NULL CHECK (l_total > 0),
+l_total INT NOT NULL,
 PRIMARY KEY (ruid, date)
 );
 CREATE INDEX ruid_activity_by_month_date ON ruid_activity_by_month (date);
@@ -77,7 +77,7 @@ l_night INT NOT NULL,
 l_morning INT NOT NULL,
 l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
-l_total INT NOT NULL CHECK (l_total > 0),
+l_total INT NOT NULL,
 PRIMARY KEY (ruid, date)
 );
 CREATE INDEX ruid_activity_by_year_date ON ruid_activity_by_year (date);
