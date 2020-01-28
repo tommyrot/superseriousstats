@@ -246,7 +246,7 @@ s_50 INT NOT NULL
 
 CREATE TABLE streak_history ( --single row table
 nick_prev TEXT NOT NULL,
-streak INT NOT NULL
+streak INT NOT NULL CHECK (streak > 0)
 );
 
 CREATE TABLE topics (
