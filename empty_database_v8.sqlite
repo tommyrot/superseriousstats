@@ -44,7 +44,7 @@ CREATE INDEX fqdns_tld ON fqdns (tld);
 
 CREATE TABLE parse_history (
 date TEXT PRIMARY KEY NOT NULL,
-lines_parsed INT NOT NULL --must be >0
+lines_parsed INT NOT NULL CHECK (lines_parsed > 0)
 );
 
 CREATE TABLE ruid_activity_by_day (
@@ -54,7 +54,7 @@ l_night INT NOT NULL,
 l_morning INT NOT NULL,
 l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
-l_total INT NOT NULL,
+l_total INT NOT NULL CHECK (l_total > 0),
 PRIMARY KEY (ruid, date)
 );
 
@@ -65,7 +65,7 @@ l_night INT NOT NULL,
 l_morning INT NOT NULL,
 l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
-l_total INT NOT NULL,
+l_total INT NOT NULL CHECK (l_total > 0),
 PRIMARY KEY (ruid, date)
 );
 CREATE INDEX ruid_activity_by_month_date ON ruid_activity_by_month (date);
@@ -77,7 +77,7 @@ l_night INT NOT NULL,
 l_morning INT NOT NULL,
 l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
-l_total INT NOT NULL,
+l_total INT NOT NULL CHECK (l_total > 0),
 PRIMARY KEY (ruid, date)
 );
 CREATE INDEX ruid_activity_by_year_date ON ruid_activity_by_year (date);
