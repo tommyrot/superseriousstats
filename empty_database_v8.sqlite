@@ -183,7 +183,7 @@ lasttalked TEXT NOT NULL
 );
 
 CREATE TABLE ruid_milestones (
-ruid INT NOT NULL REFERENCES uid_details (uid),
+ruid INT NOT NULL,
 milestone INT NOT NULL,
 date TEXT NOT NULL,
 PRIMARY KEY (ruid, milestone)
