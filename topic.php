@@ -24,11 +24,11 @@ class topic
 		$this->uses[] = [$datetime, $nick];
 	}
 
-	/**
-	 * Write data to database tables "topics" and "uid_topics".
-	 */
 	public function write_data(object $sqlite3): void
 	{
+		/**
+		 * Write data to database tables "topics" and "uid_topics".
+		 */
 		if (($tid = $sqlite3->querySingle('SELECT tid FROM topics WHERE topic = \''.$sqlite3->escapeString($this->topic).'\'')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
