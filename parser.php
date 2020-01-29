@@ -440,16 +440,15 @@ class parser
 		 */
 		if ($nick !== $this->nick_prev) {
 			/**
-			 * Someone else typed a line and the previous streak is interrupted. Check if
-			 * the streak qualifies as a monologue and store it.
+			 * Current $nick typed a line and $nick_prev's streak is interrupted. Check if
+			 * $nick_prev's streak qualifies as a monologue and store it.
 			 */
 			if ($this->streak >= 5) {
 				/**
-				 * If the current line count is 0 then $nick_prev is not yet known (only seen in
-				 * previous parse run). It's safe to assume that $nick_prev is a valid nick as
-				 * it was set by set_normal(). Create an object for it here so the monologue
-				 * data can be added. It won't matter that $nick_prev is lower case at this
-				 * point because it will be updated when any other activity is recorded.
+				 * If the current line count is 0 then $nick_prev might not be known yet (only
+				 * seen in previous parse run). It's safe to assume that $nick_prev is a valid
+				 * nick as it was set by set_normal() previously. Create an object for it here
+				 * so the streak data can be added.
 				 */
 				if ($this->l_total === 0) {
 					$this->add_nick($time, $this->nick_prev, false);
