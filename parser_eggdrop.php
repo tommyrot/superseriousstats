@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 class parser_eggdrop extends parser
 {
-	private $repeat_lock = false;
+	private bool $repeat_lock = false;
 
 	protected function parse_line(string $line): void
 	{
