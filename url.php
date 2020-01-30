@@ -34,7 +34,7 @@ class url
 		 * Write data to database table "fqdns".
 		 */
 		if ($this->fqdn !== '') {
-			if (($fid = $sqlite3->querySingle('SELECT fid FROM fqdns WHERE fqdn = \''.$this->fqdn.'\'')) === false) {
+			if (($fid = $sqlite3->querySingle('SELECT fid FROM fqdns WHERE fqdn = \''.$sqlite3->escapeString($this->fqdn).'\'')) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
