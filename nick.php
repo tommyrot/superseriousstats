@@ -195,7 +195,7 @@ class nick
 		/**
 		 * Check if current nick already exists in the database.
 		 */
-		if (($uid = $sqlite3->querySingle('SELECT uid FROM uid_details WHERE csnick = \''.$this->csnick.'\'')) === false) {
+		if (($uid = $sqlite3->querySingle('SELECT uid FROM uid_details WHERE csnick = \''.$sqlite3->escapeString($this->csnick).'\'')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
@@ -217,7 +217,7 @@ class nick
 				/**
 				 * Write data to database table "uid_details".
 				 */
-				$sqlite3->exec('INSERT INTO uid_details (uid, csnick, firstseen, lastseen) VALUES (NULL, \''.$this->csnick.'\', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				$sqlite3->exec('INSERT INTO uid_details (uid, csnick, firstseen, lastseen) VALUES (NULL, \''.$sqlite3->escapeString($this->csnick).'\', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 				$uid = $sqlite3->lastInsertRowID();
 			}
 
