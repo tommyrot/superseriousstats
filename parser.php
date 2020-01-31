@@ -559,17 +559,16 @@ class parser
 		}
 
 		/**
-		 * Upper cased lines should have no more than 50% non-letter characters in them.
-		 * We're ignoring (possibly valid) combination marks just to make sure we won't
-		 * get bitten by "zalgo text" on the stats page.
+		 * Upper cased lines may not contain any lower cased characters and must consist
+		 * of more than 50% upper cased characters.
 		 */
-		$line_trimmed = preg_replace('/\P{L}/u', '', $line);
+		if (!preg_match('/\p{Ll}/u', $line)) {
+			if (mb_strlen(preg_replace('/\P{Lu}/u', '', $line), 'UTF-8') * 2 > $line_length) {
+				$this->nick_objs[$nick]->add_num('uppercased', 1);
 
-		if (mb_strtoupper($line_trimmed, 'UTF-8') === $line_trimmed && mb_strlen($line_trimmed, 'UTF-8') * 2 >= $line_length) {
-			$this->nick_objs[$nick]->add_num('uppercased', 1);
-
-			if (!$skip_quote) {
-				$this->nick_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
+				if (!$skip_quote) {
+					$this->nick_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
+				}
 			}
 		}
 
