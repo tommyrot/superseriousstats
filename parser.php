@@ -533,7 +533,7 @@ class parser
 			 * Only catch URLs which were intended to be clicked on. Most clients can handle
 			 * URLs that begin with "www." or a scheme like "http://".
 			 */
-			} elseif (preg_match('/^(www\.|https?:\/\/)/i', $csword)) {
+			} elseif (preg_match('/^(www\.|https?:\/\/)\S+/i', $csword)) {
 				/**
 				 * Regardless of validity set $skip_quote to true which ensures that lines
 				 * containing a URL are not used as a quote. Such quotes often look awful.
