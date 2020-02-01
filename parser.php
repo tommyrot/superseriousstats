@@ -619,16 +619,12 @@ class parser
 		$nick_performing = $this->add_nick($time, $csnick_performing);
 		$this->nick_objs[$nick_performing]->add_num('slaps', 1);
 
-		if (is_null($csnick_undergoing)) {
-			return;
-		}
-
 		/**
-		 * Clean possible network prefix (psyBNC) from the "undergoing" nick.
+		 * Strip possible network prefix (psyBNC) from the "undergoing" nick.
 		 */
-		if (preg_match('/^\S+?[~\'](?<nick>\S+)$/', $csnick_undergoing, $matches)) {
+		if (preg_match('/^\S+?[~\'](?<nick_trimmed>\S+)$/', $csnick_undergoing, $matches)) {
 			output::output('debug', __METHOD__.'(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
-			$csnick_undergoing = $matches['nick'];
+			$csnick_undergoing = $matches['nick_trimmed'];
 		}
 
 		if (!$this->validate_nick($csnick_undergoing)) {
