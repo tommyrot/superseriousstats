@@ -323,7 +323,7 @@ class sss
 		}
 
 		while (($line = fgets($fp)) !== false) {
-			$line = preg_replace('/\s/', '', $line);
+			$line = preg_replace('/\s+/', '', $line);
 
 			/**
 			 * Skip lines we can't work with.

@@ -260,14 +260,14 @@ class parser
 		/**
 		 * 1. 0x03 is used for (mIRC) color codes and may be followed by additional
 		 *    characters; completely strip all of these.
-		 * 2. Replace the tab character (0x09) with a space (0x20).
+		 * 2. Replace any and all adjacent tab characters (0x09) with a single space.
 		 * 3. Strip all remaining control characters, unused, reserved and unassigned
 		 *    code points as well as any surrogates.
 		 * 4. Replace any and all adjacent whitespace (including the multibyte no-break
 		 *    space, and the line and paragraph separators) with a single space.
 		 * 5. Finally, remove spaces at the beginning and end of a line.
 		 */
-		$line = preg_replace(['/\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09/', '/\p{C}/u', '/(\x20|\xC2\xA0|\xE2\x80[\xA8\xA9])+/', '/^\x20|\x20$/'], ['', ' ', '', ' ', ''], $line);
+		$line = preg_replace(['/\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09+/', '/\p{C}+/u', '/( |\xC2\xA0|\xE2\x80[\xA8\xA9])+/', '/^ | $/'], ['', ' ', '', ' ', ''], $line);
 		return $line;
 	}
 
