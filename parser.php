@@ -533,7 +533,7 @@ class parser
 			 * Only catch URLs which were intended to be clicked on. Most clients can handle
 			 * URLs that begin with "www." or a scheme like "http://".
 			 */
-			} elseif (preg_match('/^(www\.|https?:\/\/)\S+/i', $csword)) {
+			} elseif (preg_match('/^(www\.|https?:\/\/).+/i', $csword)) {
 				/**
 				 * Regardless of validity set $skip_quote to true which ensures that lines
 				 * containing a URL are not used as a quote. Such quotes often look awful.
@@ -622,7 +622,7 @@ class parser
 		/**
 		 * Strip possible network prefix (psyBNC) from the "undergoing" nick.
 		 */
-		if (preg_match('/^\S+?[~\'](?<nick_trimmed>\S+)$/', $csnick_undergoing, $matches)) {
+		if (preg_match('/^.+?[~\'](?<nick_trimmed>.+)$/', $csnick_undergoing, $matches)) {
 			output::output('debug', __METHOD__.'(): cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			$csnick_undergoing = $matches['nick_trimmed'];
 		}
