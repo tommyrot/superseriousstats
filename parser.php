@@ -563,7 +563,7 @@ class parser
 		 * of more than 50% upper cased characters.
 		 */
 		if (!preg_match('/\p{Ll}/u', $line)) {
-			if (mb_strlen(preg_replace('/\P{Lu}/u', '', $line), 'UTF-8') * 2 > $line_length) {
+			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line), 'UTF-8') * 2 > $line_length) {
 				$this->nick_objs[$nick]->add_num('uppercased', 1);
 
 				if (!$skip_quote) {
