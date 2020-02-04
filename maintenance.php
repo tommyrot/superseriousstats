@@ -65,16 +65,53 @@ class maintenance
 		}
 	}
 
+	/**
+	 * The file "tlds-alpha-by-domain.txt" contains all TLDs which are currently
+	 * active on the internet. Cross-match this list with the TLDs we have stored
+	 * in our database and deactivate those that do not match. We expect the
+	 * aforementioned file to be present, readable and up to date.
+	 */
+	private function deactivate_fqdns(object $sqlite3): void
+	{
+		if (($tlds = file(__DIR__.'/tlds-alpha-by-domain.txt')) === false) {
+			output::output('notice', __METHOD__.'(): failed to open file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
+		} else {
+			$sqlite3->exec('UPDATE fqdns SET active = 1') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+			foreach ($tlds as $tld) {
+				$tld = trim($tld);
+
+				if ($tld !== '' && strpos($tld, '#') === false) {
+					$tlds_active[] = '\'.'.strtolower($tld).'\'';
+				}
+			}
+
+			if (!empty($tlds_active)) {
+				$sqlite3->exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+				if (($changes = $sqlite3->querySingle('SELECT CHANGES()')) === false) {
+					output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+				}
+
+				if (!is_null($changes)) {
+					output::output('debug', __METHOD__.'(): deactivated '.$changes.' fqdn'.($changes !== 1 ? 's' : ''));
+				}
+			}
+		}
+	}
+
 	private function main(object $sqlite3): void
 	{
 		output::output('notice', __METHOD__.'(): performing database maintenance routines');
 		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		output::output('notice', __METHOD__.'(): (1/3) registering most active aliases');
+		output::output('notice', __METHOD__.'(): (1/4) registering most active aliases');
 		$this->register_most_active_aliases($sqlite3);
-		output::output('notice', __METHOD__.'(): (2/3) creating materialized views');
+		output::output('notice', __METHOD__.'(): (2/4) creating materialized views');
 		$this->create_materialized_views($sqlite3);
-		output::output('notice', __METHOD__.'(): (3/3) calculating milestones');
+		output::output('notice', __METHOD__.'(): (3/4) calculating milestones');
 		$this->calculate_milestones($sqlite3);
+		output::output('notice', __METHOD__.'(): (4/4) deactivating invalid fqdns');
+		$this->deactivate_fqdns($sqlite3);
 		output::output('notice', __METHOD__.'(): committing data');
 		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 	}

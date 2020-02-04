@@ -28,7 +28,6 @@ class urltools
 {
 	private static $regexp_callback = '';
 	private static $regexp_complete = '';
-	private static $valid_tlds = [];
 
 	private function __construct()
 	{
@@ -62,24 +61,6 @@ class urltools
 			$scheme = '(?<scheme>https?:\/\/)';
 			self::$regexp_callback = '/^'.$scheme.'?'.$authority.'/i';
 			self::$regexp_complete = '/^(?<url>'.$scheme.'?'.$authority.$path.$query.$fragment.')$/i';
-
-			/**
-			 * Read "tlds-alpha-by-domain.txt" and put all TLDs in an array against which we
-			 * can validate found URLs. If the aforementioned file does not exist or fails
-			 * to be read, the TLD check will not be done. This would be an unexpected and
-			 * undesired exception though.
-			 */
-			if (($tlds = file(__DIR__.'/tlds-alpha-by-domain.txt')) === false) {
-				output::output('notice', __METHOD__.'(): failed to open file: \'tlds-alpha-by-domain.txt\', tld validation disabled');
-			} else {
-				foreach ($tlds as $tld) {
-					$tld = trim($tld);
-
-					if ($tld !== '' && strpos($tld, '#') === false) {
-						self::$valid_tlds[] = '.'.strtolower($tld);
-					}
-				}
-			}
 		}
 
 		/**
@@ -100,9 +81,9 @@ class urltools
 		 * Verify if the TLD is valid. If the validation array is empty we skip this
 		 * step.
 		 */
-		if (!empty(self::$valid_tlds) && !empty($matches['tld']) && !in_array($matches['tld'], self::$valid_tlds)) {
-			return false;
-		}
+		//if (!empty(self::$valid_tlds) && !empty($matches['tld']) && !in_array($matches['tld'], self::$valid_tlds)) {
+		//	return false;
+		//}
 
 		/**
 		 * The maximum allowed length of the FQDN (root domain excluded) is 254
