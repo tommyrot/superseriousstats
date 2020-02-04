@@ -11,7 +11,7 @@ declare(strict_types=1);
  */
 trait queryparts
 {
-	private function get_queryparts(object $sqlite3, array $columns): ?array
+	private function get_queryparts(array $columns): ?array
 	{
 		foreach ($columns as $var) {
 			if (is_int($this->$var)) {
@@ -22,7 +22,7 @@ trait queryparts
 				}
 			} elseif (is_string($this->$var)) {
 				if ($this->$var !== '') {
-					$value = '\''.$sqlite3->escapeString($this->$var).'\'';
+					$value = '\''.preg_replace('/\'/', '\'\'', $this->$var).'\'';
 					$insert_columns[] = $var;
 					$insert_values[] = $value;
 					$update_assignments[] = $var.' = '.$value;
