@@ -38,9 +38,11 @@ l_total INT NOT NULL CHECK (l_total > 0)
 CREATE TABLE fqdns (
 fid INTEGER PRIMARY KEY AUTOINCREMENT,
 fqdn TEXT UNIQUE NOT NULL,
-tld TEXT NOT NULL
+tld TEXT NOT NULL,
+active BOOLEAN NOT NULL DEFAULT 1 CHECK (active IN (0,1)) --column affinity NUMERIC
 );
 CREATE INDEX fqdns_tld ON fqdns (tld);
+CREATE INDEX fqdns_active ON fqdns (active);
 
 CREATE TABLE parse_history (
 date TEXT PRIMARY KEY NOT NULL,
