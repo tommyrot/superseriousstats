@@ -29,7 +29,11 @@ if (!extension_loaded('mbstring')) {
  * time of instantiation.
  */
 spl_autoload_register(function (string $class): void {
-	require_once(__DIR__.'/'.$class.'.php');
+	if (strpos($class, 'parser_') === 0) {
+		require_once(__DIR__.'/parsers/'.$class.'.php');
+	} else {
+		require_once(__DIR__.'/'.$class.'.php');
+	}
 });
 
 /**
