@@ -82,7 +82,7 @@ class maintenance
 				$tld = trim($tld);
 
 				if ($tld !== '' && strpos($tld, '#') === false) {
-					$tlds_active[] = '\'.'.strtolower($tld).'\'';
+					$tlds_active[] = '\''.strtolower($tld).'\'';
 				}
 			}
 

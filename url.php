@@ -16,11 +16,11 @@ class url
 	private string $tld = '';
 	private string $url = '';
 
-	public function __construct(array $url_data)
+	public function __construct(array $url_components)
 	{
-		$this->fqdn = $url_data['fqdn'];
-		$this->tld = $url_data['tld'];
-		$this->url = $url_data['url'];
+		$this->fqdn = $url_components['fqdn'];
+		$this->tld = $url_components['tld'];
+		$this->url = $url_components['url'];
 	}
 
 	public function add_uses(string $datetime, string $nick): void

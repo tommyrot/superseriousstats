@@ -24,7 +24,7 @@ declare(strict_types=1);
  *  - The root domain is excluded from the FQDN (not from the other elements).
  *  - Square brackets must be percent encoded.
  */
-class urltools
+class url_tools
 {
 	private static $regexp_callback = '';
 	private static $regexp_complete = '';
@@ -37,17 +37,17 @@ class urltools
 	}
 
 	/**
-	 * Normalize and validate a URL and return an array with its elements.
+	 * Validate a given URL.
 	 */
-	public static function get_elements($url)
+	public static function get_components(string $url)
 	{
 		/**
 		 * Assemble the regular expression if not already done so.
 		 */
 		if (self::$regexp_complete === '') {
 			$domain = '(?<domain>[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?(\.[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?)*)';
-			$tld = '(?<tld>\.[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?)';
-			$fqdn = '(?<fqdn>'.$domain.$tld.')\.?';
+			$tld = '(?<tld>[a-z0-9]([a-z0-9-]{0,61}?[a-z0-9]|[a-z0-9]{0,62})?)';
+			$fqdn = '(?<fqdn>'.$domain.'\.'.$tld.')\.?';
 			$ipv4address = '(?<ipv4address>(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})';
 			$port = '(?<port>(6553[0-5]|(655[0-2]|(65[0-4]|(6[0-4]|[1-5][0-9]|[1-9])[0-9]|[1-9])[0-9]|[1-9])?[0-9]))';
 			$authority = '(?<authority>('.$ipv4address.'|'.$fqdn.')(:'.$port.')?)';
@@ -58,7 +58,7 @@ class urltools
 			$fragment = '(?<fragment>(#('.$pchar.'|[\/?])*)?)';
 			$path = '(?<path>(\/\/?('.$pchar.'+\/?)*)?)';
 			$query = '(?<query>(\?('.$pchar.'|[\/?])*)?)';
-			$scheme = '(?<scheme>https?:\/\/)';
+			$scheme = '((?<scheme>https?):\/\/)';
 			self::$regexp_callback = '/^'.$scheme.'?'.$authority.'/i';
 			self::$regexp_complete = '/^(?<url>'.$scheme.'?'.$authority.$path.$query.$fragment.')$/i';
 		}
@@ -66,66 +66,64 @@ class urltools
 		/**
 		 * Convert scheme and authority to lower case.
 		 */
-		$url = preg_replace_callback(self::$regexp_callback, function ($matches) {
+		$url = preg_replace_callback(self::$regexp_callback, function (array $matches): string {
 			return strtolower($matches[0]);
 		}, $url);
 
 		/**
-		 * Validate and further process the URL.
+		 * Validate the URL.
 		 */
 		if (!preg_match(self::$regexp_complete, $url, $matches)) {
 			return false;
 		}
 
 		/**
-		 * Verify if the TLD is valid. If the validation array is empty we skip this
-		 * step.
+		 * The TLD may not consist of all digits.
 		 */
-		//if (!empty(self::$valid_tlds) && !empty($matches['tld']) && !in_array($matches['tld'], self::$valid_tlds)) {
-		//	return false;
-		//}
-
-		/**
-		 * The maximum allowed length of the FQDN (root domain excluded) is 254
-		 * characters.
-		 */
-		if (strlen($matches['fqdn']) > 254) {
+		if (!empty($matches['tld']) && preg_match('/^\d+$/', $matches['tld'])) {
 			return false;
 		}
 
 		/**
-		 * If the URL has no scheme, http:// is assumed. Update the elements.
+		 * The FQDN (excluding trailing dot) may not exceed 253 characters.
+		 */
+		if (!empty($matches['fqdn']) && strlen($matches['fqdn']) > 253) {
+			return false;
+		}
+
+		/**
+		 * If the URL has no scheme, http is assumed.
 		 */
 		if (empty($matches['scheme'])) {
-			$matches['scheme'] = 'http://';
+			$matches['scheme'] = 'http';
 			$matches['url'] = 'http://'.$matches['url'];
 		}
 
 		/**
-		 * Create and return an array with all the elements of the URL.
+		 * Create an array with all the components of the URL.
 		 */
-		$elements = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
+		$components = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
 
-		foreach ($elements as $element) {
-			if (empty($matches[$element])) {
+		foreach ($components as $component) {
+			if (empty($matches[$component])) {
 				/**
-				 * Always pass along an empty string for nonexistent elements.
+				 * Nonexistent components are returned as an empty string.
 				 */
-				$url_data[$element] = '';
+				$url_components[$component] = '';
 			} else {
-				$url_data[$element] = $matches[$element];
+				$url_components[$component] = $matches[$component];
 			}
 		}
 
 		/**
-		 * Make sure the only numeric element isn't passed along as a string.
+		 * The port component should be of type integer. 0 means no port.
 		 */
 		if (empty($matches['port'])) {
-			$url_data['port'] = 0;
+			$url_components['port'] = 0;
 		} else {
-			$url_data['port'] = (int) $matches['port'];
+			$url_components['port'] = (int) $matches['port'];
 		}
 
-		return $url_data;
+		return $url_components;
 	}
 }
