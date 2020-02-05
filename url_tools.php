@@ -7,27 +7,23 @@
 declare(strict_types=1);
 
 /**
- * Various functions related to URL validation and presentation.
+ * Class handling URL validation. Returns false if a URL fails the syntax check.
+ * Returns an array with the URLs components on success. Missing components are
+ * represented by an empty string, a missing port component by (int) 0.
  *
- * Guided by:
- *  - RFC 3986
- *  - RFC 1034 section 3.5
- *  - RFC 1123 section 2.1
+ * For reference: RFC 3986, RFC 1034 section 3.5, RFC 1123 section 2.1
  *
- * Notes:
- *  - Only the http:// and https:// schemes will validate. URLs without a scheme
- *    are considered http://.
+ * Additional notes:
+ *  - The scheme should either be http or https. For URLs without a scheme, http
+ *    is assumed.
  *  - User part in authority is not recognized and will not validate.
- *  - IPv4 addresses only.
- *  - TLDs as in http://data.iana.org/TLD/tlds-alpha-by-domain.txt (this file
- *    can be stored locally and updated at will).
- *  - The root domain is excluded from the FQDN (not from the other elements).
+ *  - IPv6 addresses will not validate.
  *  - Square brackets must be percent encoded.
  */
 class url_tools
 {
-	private static $regexp_callback = '';
-	private static $regexp_complete = '';
+	private static string $regexp_callback = '';
+	private static string $regexp_complete = '';
 
 	private function __construct()
 	{
