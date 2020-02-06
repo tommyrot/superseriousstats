@@ -47,15 +47,15 @@ class sss
 	 * Variables listed in $settings_allow_override[] can have their default value
 	 * overridden through the config file.
 	 */
-	private $autolink_nicks = true;
-	private $config = [];
-	private $database = 'sss.db3';
-	private $logfile_dateformat = '';
-	private $verbosity = 1;
-	private $parser = '';
-	private $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'verbosity', 'parser', 'timezone'];
-	private $settings_required = [];
-	private $timezone = 'UTC';
+	private array $config = [];
+	private array $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'verbosity', 'parser', 'timezone'];
+	private array $settings_required = [];
+	private bool $autolink_nicks = true;
+	private int $verbosity = 1;
+	private string $database = 'sss.db3';
+	private string $logfile_dateformat = '';
+	private string $parser = '';
+	private string $timezone = 'UTC';
 
 	public function __construct()
 	{
