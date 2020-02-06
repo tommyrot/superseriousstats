@@ -71,14 +71,14 @@ class sss
 		date_default_timezone_set($this->timezone);
 
 		/**
-		 * Read options from the command line. Print the manual on invalid input.
+		 * Read options from the command line. Print a hint on invalid input.
 		 */
 		$options = getopt('b:c:e:i:n:o:qs');
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
 		if (!preg_match('/^(bc?i?oq?|cq?|c?(e|i|i?o|n)q?|c?s)$/', $options_keys)) {
-			$this->print_manual();
+			$this->print_hint();
 		}
 
 		/**
@@ -593,7 +593,7 @@ class sss
 		}
 	}
 
-	private function print_manual(): void
+	private function print_hint(): void
 	{
 		$man = 'usage:  php sss.php [-c <file>] [-i <file|directory>]'."\n"
 			. '                    [-o <file> [-b <numbits>]] [-q]'."\n\n"
