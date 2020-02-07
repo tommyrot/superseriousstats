@@ -73,29 +73,34 @@ class maintenance
 	 */
 	private function deactivate_fqdns(object $sqlite3): void
 	{
-		if (($tlds = file(__DIR__.'/tlds-alpha-by-domain.txt')) === false) {
-			output::output('notice', __METHOD__.'(): failed to open file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
-		} else {
-			$sqlite3->exec('UPDATE fqdns SET active = 1') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if (($rp = realpath('tlds-alpha-by-domain.txt')) === false) {
+			output::output('notice', __METHOD__.'(): no such file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
+			return;
+		}
 
-			foreach ($tlds as $tld) {
-				$tld = trim($tld);
+		if (($fp = fopen($rp, 'rb')) === false) {
+			output::output('notice', __METHOD__.'(): failed to open file: \''.$rp.'\', skipping tld validation');
+			return;
+		}
 
-				if ($tld !== '' && strpos($tld, '#') === false) {
-					$tlds_active[] = '\''.strtolower($tld).'\'';
-				}
+		while (($line = fgets($fp)) !== false) {
+			if (preg_match('/^(?<tld>[^#\s]+)/', $line, $matches)) {
+				$tlds_active[] = '\''.strtolower($matches['tld']).'\'';
+			}
+		}
+
+		fclose($fp);
+		$sqlite3->exec('UPDATE fqdns SET active = 1') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+		if (!empty($tlds_active)) {
+			$sqlite3->exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+			if (($changes = $sqlite3->querySingle('SELECT CHANGES()')) === false) {
+				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 
-			if (!empty($tlds_active)) {
-				$sqlite3->exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-				if (($changes = $sqlite3->querySingle('SELECT CHANGES()')) === false) {
-					output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-				}
-
-				if (!is_null($changes)) {
-					output::output('debug', __METHOD__.'(): deactivated '.$changes.' fqdn'.($changes !== 1 ? 's' : ''));
-				}
+			if (!is_null($changes)) {
+				output::output('debug', __METHOD__.'(): deactivated '.$changes.' fqdn'.($changes !== 1 ? 's' : ''));
 			}
 		}
 	}
