@@ -94,13 +94,18 @@ class sss
 		}
 
 		/**
-		 * Read the config file and have settings take effect.
+		 * Read the config file.
 		 */
 		if (array_key_exists('c', $options)) {
 			$this->read_config($options['c']);
 		} else {
 			$this->read_config(__DIR__.'/sss.conf');
 		}
+
+		/**
+		 * Apply settings from the config file.
+		 */
+		$this->apply_settings($this->config);
 
 		/**
 		 * After reading the config file we can now update the timezone.
@@ -602,8 +607,8 @@ class sss
 	}
 
 	/**
-	 * Read and apply settings from the config file and put them into $config[] so
-	 * they can be passed along to other classes.
+	 * Put settings from the config file into $config[] so they can be passed along
+	 * to other classes.
 	 */
 	private function read_config(string $file): void
 	{
@@ -616,7 +621,7 @@ class sss
 		}
 
 		while (($line = fgets($fp)) !== false) {
-			if (preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>([^\s"]+( [^\s"]+)*))"/', $line, $matches)) {
+			if (preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>.+?)"/', $line, $matches)) {
 				$this->config[$matches['setting']] = $matches['value'];
 			}
 		}
@@ -631,11 +636,6 @@ class sss
 				output::output('critical', __METHOD__.'(): missing required setting: \''.$setting.'\'');
 			}
 		}
-
-		/**
-		 * Apply settings from the config file.
-		 */
-		$this->apply_settings($this->config);
 	}
 }
 
