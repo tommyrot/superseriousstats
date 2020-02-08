@@ -66,19 +66,21 @@ class sss
 		setlocale(LC_ALL, 'C');
 
 		/**
-		 * Use the default value until a user specified timezone is loaded.
+		 * Use the default value until config specified timezone is loaded.
 		 */
 		date_default_timezone_set($this->timezone);
 
 		/**
 		 * Read options from the command line. Print a hint on invalid input.
 		 */
-		$options = getopt('b:c:e:i:n:o:qs');
+		$options = getopt('c:e:i:n:o:qs');
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
-		if (!preg_match('/^(bc?i?oq?|cq?|c?(e|i|i?o|n)q?|c?s)$/', $options_keys)) {
-			$this->print_hint();
+		if (!preg_match('/^(c?(e|i|i?o|n)q?|c?q?s)$/', $options_keys)) {
+			$man = 'Usage: php sss.php [-ensq] [-c config] [-i logfile|directory] [-o html]'."\n\n"
+				 . 'See the MANUAL for an overview of all available options and their purpose.'."\n";
+			exit($man);
 		}
 
 		/**
@@ -116,7 +118,7 @@ class sss
 
 		/**
 		 * Up until this point the value of $verbosity didn't matter as there could
-		 * have been only critical messages which always display (even in quiet mode).
+		 * only have been critical messages which always display (even in quiet mode).
 		 */
 		if (array_key_exists('q', $options)) {
 			output::set_verbosity(0);
@@ -161,29 +163,20 @@ class sss
 
 		output::output('notice', __METHOD__.'(): succesfully connected to database: \''.$this->database.'\'');
 
-		/**
-		 * The following options are listed in order of execution. Ie. "i" before "o",
-		 * "b" before "o".
-		 */
-		if (array_key_exists('b', $options) && preg_match('/^\d+$/', $options['b'])) {
-			$this->config['sectionbits'] = (int) $options['b'];
-		}
-
 		if (array_key_exists('e', $options)) {
 			$this->export_nicks($sqlite3, $options['e']);
 		}
 
-		if (array_key_exists('i', $options)) {
-			$this->parse_log($sqlite3, $options['i']);
-		}
-
 		if (array_key_exists('n', $options)) {
 			$this->import_nicks($sqlite3, $options['n']);
-
-			/**
-			 * Run maintenance after import.
-			 */
 			$this->maintenance($sqlite3);
+		}
+
+		/**
+		 * Below, "i" should execute before "o".
+		 */
+		if (array_key_exists('i', $options)) {
+			$this->parse_log($sqlite3, $options['i']);
 		}
 
 		if (array_key_exists('o', $options)) {
@@ -596,14 +589,6 @@ class sss
 		if ($needmaintenance) {
 			$this->maintenance($sqlite3);
 		}
-	}
-
-	private function print_hint(): void
-	{
-		$man = 'usage:  php sss.php [-c <file>] [-i <file|directory>]'."\n"
-			. '                    [-o <file> [-b <numbits>]] [-q]'."\n\n"
-			. 'See the MANUAL file for an overview of all available options.'."\n";
-		exit($man);
 	}
 
 	/**
