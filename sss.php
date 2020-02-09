@@ -48,14 +48,14 @@ class sss
 	 * overridden through the config file.
 	 */
 	private array $config = [];
-	private array $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'verbosity', 'parser', 'timezone'];
-	private array $settings_required = [];
+	private array $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'parser', 'timezone', 'verbosity'];
+	private array $settings_required = ['channel', 'database', 'logfile_dateformat', 'parser', 'timezone'];
 	private bool $autolink_nicks = true;
 	private int $verbosity = 1;
-	private string $database = 'sss.db3';
+	private string $database = '';
 	private string $logfile_dateformat = '';
 	private string $parser = '';
-	private string $timezone = 'UTC';
+	private string $timezone = '';
 
 	public function __construct()
 	{
@@ -66,9 +66,9 @@ class sss
 		setlocale(LC_ALL, 'C');
 
 		/**
-		 * Use the default value until config specified timezone is loaded.
+		 * Use UTC until config specified timezone is loaded.
 		 */
-		date_default_timezone_set($this->timezone);
+		date_default_timezone_set('UTC');
 
 		/**
 		 * Read options from the command line. Print a hint on invalid input.
@@ -81,18 +81,6 @@ class sss
 			$man = 'Usage: php sss.php [-ensq] [-c config] [-i logfile|directory] [-o html]'."\n\n"
 				 . 'See the MANUAL for an overview of all available options and their purpose.'."\n";
 			exit($man);
-		}
-
-		/**
-		 * Some options require additional settings to be set in the config file.
-		 * Add those to $settings_required[].
-		 */
-		if (array_key_exists('i', $options)) {
-			array_push($this->settings_required, 'parser', 'logfile_dateformat');
-		}
-
-		if (array_key_exists('o', $options) || array_key_exists('s', $options)) {
-			$this->settings_required[] = 'channel';
 		}
 
 		/**
@@ -110,15 +98,14 @@ class sss
 		$this->apply_settings($this->config);
 
 		/**
-		 * After reading the config file we can now update the timezone.
+		 * Set the timezone.
 		 */
 		if (!date_default_timezone_set($this->timezone)) {
 			output::output('critical', __METHOD__.'(): invalid timezone: \''.$this->timezone.'\'');
 		}
 
 		/**
-		 * Up until this point the value of $verbosity didn't matter as there could
-		 * only have been critical messages which always display (even in quiet mode).
+		 * Set the level of output verbosity.
 		 */
 		if (array_key_exists('q', $options)) {
 			output::set_verbosity(0);
@@ -131,10 +118,11 @@ class sss
 		 */
 		if (array_key_exists('s', $options)) {
 			$this->export_settings();
+			exit;
 		}
 
 		/**
-		 * Open the database connection. Always needed from this point forward.
+		 * Open the database connection.
 		 */
 		try {
 			$sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
@@ -144,12 +132,12 @@ class sss
 		}
 
 		/**
-		 * Set SQLite3 PRAGMAs:
-		 *  journal_mode = OFF - Disable the rollback journal completely.
-		 *  synchronous = OFF - Continue without syncing as soon as data is handed off
-		 *                       to the operating system.
-		 *  temp_store = MEMORY - Temporary tables and indices are kept in memory.
-		 *  foreign_keys = ON - Enable foreign key constraints.
+		 * Setup the SQLite3 connection:
+		 *  - Disable the rollback journal.
+		 *  - Continue without syncing as soon as data is handed off to the operating
+		 *    system.
+		 *  - Temporary tables and indices are kept in memory.
+		 *  - Enable foreign key constraints.
 		 */
 		$pragmas = [
 			'journal_mode' => 'OFF',
