@@ -71,6 +71,14 @@ class sss
 		date_default_timezone_set('UTC');
 
 		/**
+		 * Launch main function.
+		 */
+		$this->main();
+	}
+
+	private function main(): void
+	{
+		/**
 		 * Read options from the command line. Print a hint on invalid input.
 		 */
 		$options = getopt('c:e:i:n:o:qs');
