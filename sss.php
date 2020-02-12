@@ -183,8 +183,7 @@ class sss
 	}
 
 	/**
-	 * The maintenance routines ensure that all relevant user data is accumulated
-	 * properly.
+	 * Maintenance routines should always be run after writing data to the database.
 	 */
 	private function maintenance(object $sqlite3): void
 	{
@@ -261,18 +260,10 @@ class sss
 		$settings_allow_override = [
 			'channel' => 'string',
 			'database' => 'string',
-			'mainpage' => 'string',
-			'maxrows_people_month' => 'integer',
-			'maxrows_people_timeofday' => 'integer',
-			'maxrows_people_year' => 'integer',
-			'rankings' => 'boolean',
+			'main_page' => 'string',
 			'stylesheet' => 'string',
-			'timezone' => 'string',
-			'userstats' => 'boolean',
-			'userpics' => 'boolean',
-			'userpics_dir' => 'string',
-			'userpics_default' => 'string'];
-		$vars = '$settings[\''.($this->config['cid'] ?? $this->config['channel']).'\'] = [';
+			'timezone' => 'string'];
+		$settings = '$settings[\''.$this->config['channel'].'\'] = [';
 
 		foreach ($settings_allow_override as $setting => $type) {
 			if (!array_key_exists($setting, $this->config)) {
@@ -280,19 +271,19 @@ class sss
 			}
 
 			if ($type === 'string') {
-				$vars .= "\n\t".'\''.$setting.'\' => \''.$this->config[$setting].'\',';
+				$settings .= "\n\t".'\''.$setting.'\' => \''.$this->config[$setting].'\',';
 			} elseif ($type === 'integer') {
 				if (preg_match('/^\d+$/', $this->config[$setting])) {
-					$vars .= "\n\t".'\''.$setting.'\' => '.$this->config[$setting].',';
+					$settings .= "\n\t".'\''.$setting.'\' => '.$this->config[$setting].',';
 				}
 			} elseif ($type === 'boolean') {
 				if (preg_match('/^(true|false)$/i', $this->config[$setting])) {
-					$vars .= "\n\t".'\''.$setting.'\' => '.strtolower($this->config[$setting]).',';
+					$settings .= "\n\t".'\''.$setting.'\' => '.strtolower($this->config[$setting]).',';
 				}
 			}
 		}
 
-		exit(rtrim($vars, ',').'];'."\n");
+		exit(rtrim($settings, ',').'];'."\n");
 	}
 
 	private function import_nicks(object $sqlite3, string $file): void
