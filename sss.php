@@ -86,9 +86,7 @@ class sss
 		$options_keys = implode('', array_keys($options));
 
 		if (!preg_match('/^(c?(e|i|i?o|n)q?|c?q?s)$/', $options_keys)) {
-			$man = 'Usage: php sss.php [-ensq] [-c config] [-i logfile|directory] [-o html]'."\n\n"
-				 . 'See the MANUAL for an overview of all available options and their purpose.'."\n";
-			exit($man);
+			exit('Usage: php sss.php [-ensq] [-c config] [-i logfile|directory] [-o html]'."\n\n".'See the MANUAL for an overview of all available options.'."\n");
 		}
 
 		/**
