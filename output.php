@@ -66,8 +66,8 @@ class output
 
 	/**
 	 * Set the level of output verbosity. All message types with a lower numeric
-	 * value will also be displayed. Default value is 1 and can be overridden in the
-	 * config file and/or by using the command line argument -q.
+	 * value will also be displayed. Default value is 1 and can be overridden by
+	 * using the command line flag -q for quiet (0) or -v for debug (2).
 	 *
 	 *  0  Critical events (these will always display)
 	 *  1  Notices
