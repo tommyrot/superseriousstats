@@ -48,10 +48,9 @@ class sss
 	 * overridden through the config file.
 	 */
 	private array $config = [];
-	private array $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'parser', 'timezone', 'verbosity'];
+	private array $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'parser', 'timezone'];
 	private array $settings_required = ['channel', 'database', 'logfile_dateformat', 'parser', 'timezone'];
 	private bool $autolink_nicks = true;
-	private int $verbosity = 1;
 	private string $database = '';
 	private string $logfile_dateformat = '';
 	private string $parser = '';
@@ -81,12 +80,12 @@ class sss
 		/**
 		 * Read options from the command line. Print a hint on invalid input.
 		 */
-		$options = getopt('c:e:i:n:o:qs');
+		$options = getopt('c:e:i:n:o:qsv');
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
-		if (!preg_match('/^(c?(e|i|i?o|n)q?|c?q?s)$/', $options_keys)) {
-			exit('Usage: php sss.php [-ensq] [-c config] [-i logfile|directory] [-o html]'."\n\n".'See the MANUAL for an overview of all available options.'."\n");
+		if (!preg_match('/^(c?(e|i|i?o|n)q?v?|c?q?sv?)$/', $options_keys)) {
+			exit('Usage: php sss.php [-ensqv] [-c config] [-i logfile|directory] [-o html]'."\n\n".'See the MANUAL for an overview of all available options.'."\n");
 		}
 
 		/**
@@ -115,8 +114,8 @@ class sss
 		 */
 		if (array_key_exists('q', $options)) {
 			output::set_verbosity(0);
-		} else {
-			output::set_verbosity($this->verbosity);
+		} elseif (array_key_exists('v', $options)) {
+			output::set_verbosity(2);
 		}
 
 		/**
@@ -174,7 +173,7 @@ class sss
 		}
 
 		if (array_key_exists('o', $options)) {
-			$this->html($sqlite3, $options['o']);
+			$this->create_html($sqlite3, $options['o']);
 		}
 
 		$sqlite3->exec('PRAGMA optimize');
