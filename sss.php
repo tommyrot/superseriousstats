@@ -80,12 +80,12 @@ class sss
 		/**
 		 * Read options from the command line. Print a hint on invalid input.
 		 */
-		$options = getopt('c:e:i:n:o:qsv');
+		$options = getopt('c:e:i:n:o:qv');
 		ksort($options);
 		$options_keys = implode('', array_keys($options));
 
-		if (!preg_match('/^(c?(e|i|i?o|n)q?v?|c?q?sv?)$/', $options_keys)) {
-			exit('Usage: php sss.php [-ensqv] [-c config] [-i logfile|directory] [-o html]'."\n\n".'See the MANUAL for an overview of all available options.'."\n");
+		if (!preg_match('/^c?(e|i|i?o|n)[qv]?$/', $options_keys)) {
+			exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n\n".'See the MANUAL for an overview of all available options.'."\n");
 		}
 
 		/**
@@ -116,14 +116,6 @@ class sss
 			output::set_verbosity(0);
 		} elseif (array_key_exists('v', $options)) {
 			output::set_verbosity(2);
-		}
-
-		/**
-		 * Export settings from the config file in the format vars.php accepts them.
-		 */
-		if (array_key_exists('s', $options)) {
-			$this->export_settings();
-			exit;
 		}
 
 		/**
@@ -248,41 +240,6 @@ class sss
 		fwrite($fp, $output);
 		fclose($fp);
 		output::output('notice', __METHOD__.'(): '.number_format($i).' nicks exported');
-	}
-
-	private function export_settings(): void
-	{
-		/**
-		 * The following is a list of settings accepted by history.php and/or user.php
-		 * along with their type.
-		 */
-		$settings_allow_override = [
-			'channel' => 'string',
-			'database' => 'string',
-			'main_page' => 'string',
-			'stylesheet' => 'string',
-			'timezone' => 'string'];
-		$settings = '$settings[\''.$this->config['channel'].'\'] = [';
-
-		foreach ($settings_allow_override as $setting => $type) {
-			if (!array_key_exists($setting, $this->config)) {
-				continue;
-			}
-
-			if ($type === 'string') {
-				$settings .= "\n\t".'\''.$setting.'\' => \''.$this->config[$setting].'\',';
-			} elseif ($type === 'integer') {
-				if (preg_match('/^\d+$/', $this->config[$setting])) {
-					$settings .= "\n\t".'\''.$setting.'\' => '.$this->config[$setting].',';
-				}
-			} elseif ($type === 'boolean') {
-				if (preg_match('/^(true|false)$/i', $this->config[$setting])) {
-					$settings .= "\n\t".'\''.$setting.'\' => '.strtolower($this->config[$setting]).',';
-				}
-			}
-		}
-
-		exit(rtrim($settings, ',').'];'."\n");
 	}
 
 	private function import_nicks(object $sqlite3, string $file): void
