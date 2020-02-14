@@ -15,7 +15,7 @@ class user
 	 */
 	private $channel = '';
 	private $database = 'sss.db3';
-	private $mainpage = './';
+	private $main_page = './';
 	private $stylesheet = 'sss.css';
 	private $timezone = 'UTC';
 	private $userpics = false;

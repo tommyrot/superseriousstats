@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2010-2015, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -15,10 +15,7 @@ class history
 	 */
 	private $channel = '';
 	private $database = 'sss.db3';
-	private $mainpage = './';
-	private $maxrows_people_month = 10;
-	private $maxrows_people_timeofday = 10;
-	private $maxrows_people_year = 10;
+	private $main_page = './';
 	private $stylesheet = 'sss.css';
 	private $timezone = 'UTC';
 	private $userstats = false;
