@@ -70,7 +70,7 @@ class sss
 		date_default_timezone_set('UTC');
 
 		/**
-		 * Launch main function.
+		 * Start main function.
 		 */
 		$this->main();
 	}
@@ -190,56 +190,37 @@ class sss
 
 	private function export_nicks(object $sqlite3, string $file): void
 	{
-		output::output('notice', __METHOD__.'(): exporting nicks');
-		$query = $sqlite3->query('SELECT csnick, ruid, status FROM uid_details ORDER BY csnick ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		if (($total = $sqlite3->querySingle('SELECT COUNT(*) FROM uid_details')) === false) {
+			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		}
 
-		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
+		if ($total === 0) {
 			output::output('critical', __METHOD__.'(): database is empty');
 		}
 
-		$query->reset();
+		output::output('notice', __METHOD__.'(): exporting nicks');
+		$query = $sqlite3->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		$contents = '';
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			if ($result['status'] === 1 || $result['status'] === 3 || $result['status'] === 4) {
-				$registered_nicks[$result['ruid']] = strtolower($result['csnick']);
-				$statuses[$result['ruid']] = $result['status'];
-			} elseif ($result['status'] === 2) {
-				$aliases[$result['ruid']][] = strtolower($result['csnick']);
-			} else {
-				$unlinked[] = strtolower($result['csnick']);
-			}
+			$contents .= $result['status'].','.$result['csnick'].(!is_null($result['aliases']) ? ','.$result['aliases'] : '')."\n";
 		}
 
-		$i = 0;
-		$output = '';
-
-		if (isset($registered_nicks)) {
-			$i += count($registered_nicks);
-
-			foreach ($registered_nicks as $ruid => $nick) {
-				$output .= $statuses[$ruid].','.$nick;
-
-				if (isset($aliases[$ruid])) {
-					$i += count($aliases[$ruid]);
-					$output .= ','.implode(',', $aliases[$ruid]);
-				}
-
-				$output .= "\n";
-			}
+		if (($aliases = $sqlite3->querySingle('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0')) === false) {
+			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		if (isset($unlinked)) {
-			$i += count($unlinked);
-			$output .= '*,'.implode(',', $unlinked)."\n";
+		if (!is_null($aliases)) {
+			$contents .= '*,'.$aliases."\n";
 		}
 
 		if (($fp = fopen($file, 'wb')) === false) {
 			output::output('critical', __METHOD__.'(): failed to open file: \''.$file.'\'');
 		}
 
-		fwrite($fp, $output);
+		fwrite($fp, $contents);
 		fclose($fp);
-		output::output('notice', __METHOD__.'(): '.number_format($i).' nicks exported');
+		output::output('notice', __METHOD__.'(): '.$total.' nick'.($total !== 1 ? 's' : '').' exported');
 	}
 
 	private function import_nicks(object $sqlite3, string $file): void
