@@ -190,6 +190,8 @@ class sss
 
 	private function export_nicks(object $sqlite3, string $file): void
 	{
+		output::output('notice', __METHOD__.'(): exporting nicks');
+
 		if (($total = $sqlite3->querySingle('SELECT COUNT(*) FROM uid_details')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
@@ -198,7 +200,6 @@ class sss
 			output::output('critical', __METHOD__.'(): database is empty');
 		}
 
-		output::output('notice', __METHOD__.'(): exporting nicks');
 		$query = $sqlite3->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$contents = '';
 
@@ -220,23 +221,12 @@ class sss
 
 		fwrite($fp, $contents);
 		fclose($fp);
-		output::output('notice', __METHOD__.'(): '.$total.' nick'.($total !== 1 ? 's' : '').' exported');
+		output::output('debug', __METHOD__.'(): '.$total.' nick'.($total !== 1 ? 's' : '').' exported');
 	}
 
 	private function import_nicks(object $sqlite3, string $file): void
 	{
 		output::output('notice', __METHOD__.'(): importing nicks');
-		$query = $sqlite3->query('SELECT uid, csnick FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-		if (($result = $query->fetchArray(SQLITE3_ASSOC)) === false) {
-			output::output('critical', __METHOD__.'(): database is empty');
-		}
-
-		$query->reset();
-
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$uids[strtolower($result['csnick'])] = $result['uid'];
-		}
 
 		if (($rp = realpath($file)) === false) {
 			output::output('critical', __METHOD__.'(): no such file: \''.$file.'\'');
@@ -246,45 +236,6 @@ class sss
 			output::output('critical', __METHOD__.'(): failed to open file: \''.$rp.'\'');
 		}
 
-		while (($line = fgets($fp)) !== false) {
-			$line = preg_replace('/\s+/', '', $line);
-
-			/**
-			 * Skip lines we can't work with.
-			 */
-			if (!preg_match('/^[134],\S+(,\S+)*$/', $line)) {
-				continue;
-			}
-
-			$lineparts = explode(',', strtolower($line));
-			$status = (int) $lineparts[0];
-
-			/**
-			 * The first nick on each line will be the initial registered nick and its uid
-			 * will become the ruid to which aliases are linked. If the nick is not in the
-			 * database we skip the line.
-			 */
-			if (array_key_exists($lineparts[1], $uids)) {
-				$ruid = $uids[$lineparts[1]];
-				$ruids[] = $ruid;
-				$statuses[$ruid] = $status;
-
-				for ($i = 2, $j = count($lineparts); $i < $j; ++$i) {
-					if (isset($lineparts[$i]) && array_key_exists($lineparts[$i], $uids)) {
-						$aliases[$ruid][] = $uids[$lineparts[$i]];
-					}
-				}
-			}
-		}
-
-		fclose($fp);
-
-		if (!isset($ruids)) {
-			output::output('critical', __METHOD__.'(): no user relations found to import');
-		}
-
-		$i = count($ruids);
-
 		/**
 		 * Set all nicks to their default status before updating them according to
 		 * imported data.
@@ -292,17 +243,25 @@ class sss
 		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		$sqlite3->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
-		foreach ($ruids as $ruid) {
-			$sqlite3->exec('UPDATE uid_details SET status = '.$statuses[$ruid].' WHERE uid = '.$ruid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+		while (($line = fgets($fp)) !== false) {
+			$line = preg_replace('/\s+/', '', $line);
 
-			if (isset($aliases[$ruid])) {
-				$i += count($aliases[$ruid]);
-				$sqlite3->exec('UPDATE uid_details SET ruid = '.$ruid.', status = 2 WHERE uid IN ('.implode(',', $aliases[$ruid]).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+			/**
+			 * Skip lines we can't work with.
+			 */
+			if (!preg_match('/^(?<status>[134]),(?<registered_nick>[^,*\s]+)(,(?<aliases>[^,*\s]+(,[^,*\s]+)*))?$/', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
+				continue;
+			}
+
+			$sqlite3->exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
+
+			if (!is_null($matches['aliases'])) {
+				$sqlite3->exec('UPDATE OR IGNORE uid_details SET status = 2, ruid = (SELECT uid FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\') WHERE csnick IN (\''.preg_replace('/,/', '\',\'', $matches['aliases']).'\')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 			}
 		}
 
+		fclose($fp);
 		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		output::output('notice', __METHOD__.'(): '.number_format($i).' nicks imported');
 	}
 
 	/**
