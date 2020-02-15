@@ -94,14 +94,7 @@ class maintenance
 
 		if (!empty($tlds_active)) {
 			$sqlite3->exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-			if (($changes = $sqlite3->querySingle('SELECT CHANGES()')) === false) {
-				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-
-			if (!is_null($changes)) {
-				output::output('debug', __METHOD__.'(): deactivated '.$changes.' fqdn'.($changes !== 1 ? 's' : ''));
-			}
+			output::output('debug', __METHOD__.'(): deactivated '.$sqlite3->changes().' fqdn'.($sqlite3->changes() !== 1 ? 's' : ''));
 		}
 	}
 
