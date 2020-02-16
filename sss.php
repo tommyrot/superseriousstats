@@ -275,35 +275,35 @@ class sss
 	{
 		output::output('notice', __METHOD__.'(): looking for possible aliases');
 		$query = $this->sqlite3->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-		$strippednicks = [];
+		$nicks_stripped = [];
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$nicks[$result['uid']] = [
 				'nick' => $result['csnick'],
 				'ruid' => $result['ruid'],
 				'status' => $result['status']];
-			$strippednick = preg_replace(['/[^a-z0-9]/', '/[0-9]+$/'], '', strtolower($result['csnick']));
+			$nick_stripped = preg_replace(['/[^a-z0-9]/', '/[0-9]+$/'], '', strtolower($result['csnick']));
 
 			/**
 			 * The stripped nick must consist of at least two characters.
 			 */
-			if (strlen($strippednick) >= 2) {
+			if (strlen($nick_stripped) >= 2) {
 				/**
 				 * Maintain an array for each stripped nick, containing the uids of every nick
 				 * that matches it. Put the uid of the matching nick at the start of the array
 				 * if the nick is already linked (status != 0), otherwise put it at the end.
 				 */
-				if ($result['status'] !== 0 && isset($strippednicks[$strippednick])) {
-					array_unshift($strippednicks[$strippednick], $result['uid']);
+				if ($result['status'] !== 0 && isset($nicks_stripped[$nick_stripped])) {
+					array_unshift($nicks_stripped[$nick_stripped], $result['uid']);
 				} else {
-					$strippednicks[$strippednick][] = $result['uid'];
+					$nicks_stripped[$nick_stripped][] = $result['uid'];
 				}
 			}
 		}
 
 		$this->sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
-		foreach ($strippednicks as $uids) {
+		foreach ($nicks_stripped as $uids) {
 			/**
 			 * If there is only one match for the stripped nick, there is nothing to link.
 			 */
@@ -311,7 +311,7 @@ class sss
 				continue;
 			}
 
-			$newalias = false;
+			$new_alias = false;
 
 			for ($i = 1, $j = count($uids); $i < $j; ++$i) {
 				/**
@@ -319,7 +319,7 @@ class sss
 				 * succeeding _unlinked_ nicks to.
 				 */
 				if ($nicks[$uids[$i]]['status'] === 0) {
-					$newalias = true;
+					$new_alias = true;
 					$this->sqlite3->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 					output::output('debug', __METHOD__.'(): linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
 				}
@@ -329,7 +329,7 @@ class sss
 			 * If there are aliases found, and the first nick in the array is unlinked
 			 * (status = 0), make it a registered nick (status = 1).
 			 */
-			if ($newalias && $nicks[$uids[0]]['status'] === 0) {
+			if ($new_alias && $nicks[$uids[0]]['status'] === 0) {
 				$this->sqlite3->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 		}
