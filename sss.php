@@ -48,12 +48,12 @@ class sss
 	 * overridden through the config file.
 	 */
 	private array $config = [];
-	private array $settings_allow_override = ['autolink_nicks', 'database', 'logfile_dateformat', 'parser', 'timezone'];
-	private array $settings_required = ['channel', 'database', 'logfile_dateformat', 'parser', 'timezone'];
-	private bool $autolink_nicks = true;
+	private array $settings_allow_override = ['auto_link_nicks', 'database', 'logfile_date_format', 'parser', 'timezone'];
+	private array $settings_required = ['channel', 'database', 'logfile_date_format', 'parser', 'timezone'];
+	private bool $auto_link_nicks = true;
 	private object $sqlite3;
 	private string $database = '';
-	private string $logfile_dateformat = '';
+	private string $logfile_date_format = '';
 	private string $parser = '';
 	private string $timezone = '';
 
@@ -180,9 +180,9 @@ class sss
 	private function maintenance(): void
 	{
 		/**
-		 * Search for new aliases if $autolink_nicks is true.
+		 * Search for new aliases if $auto_link_nicks is true.
 		 */
-		if ($this->autolink_nicks) {
+		if ($this->auto_link_nicks) {
 			$this->link_nicks();
 		}
 
@@ -373,15 +373,15 @@ class sss
 
 		foreach ($files as $file) {
 			/**
-			 * The filenames should match the pattern provided by $logfile_dateformat.
+			 * The filenames should match the pattern provided by $logfile_date_format.
 			 */
-			if (($date = date_create_from_format($this->logfile_dateformat, basename($file))) !== false) {
+			if (($date = date_create_from_format($this->logfile_date_format, basename($file))) !== false) {
 				$logfiles[date_format($date, 'Y-m-d')] = $file;
 			}
 		}
 
 		if (!isset($logfiles)) {
-			output::output('critical', __METHOD__.'(): no logfiles found matching \'logfile_dateformat\' setting');
+			output::output('critical', __METHOD__.'(): no logfiles found matching \'logfile_date_format\' setting');
 		}
 
 		/**
