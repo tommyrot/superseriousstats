@@ -270,7 +270,7 @@ class sss
 	 * any position in the nick) and trailing numerics. The results are compared in
 	 * a case insensitive manner.
 	 */
-	private function link_nicks()
+	private function link_nicks(): void
 	{
 		output::output('notice', __METHOD__.'(): looking for possible aliases');
 		$query = $this->sqlite3->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
