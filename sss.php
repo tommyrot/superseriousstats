@@ -349,7 +349,7 @@ class sss
 		fclose($fp);
 	}
 
-	private function parse_log($filedir)
+	private function parse_log(string $filedir): void
 	{
 		if (($rp = realpath($filedir)) === false) {
 			output::output('critical', __METHOD__.'(): no such file or directory: \''.$filedir.'\'');
