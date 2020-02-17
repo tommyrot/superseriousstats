@@ -24,6 +24,9 @@ class topic
 		$this->uses[] = [$datetime, $nick];
 	}
 
+	/**
+	 * Store everything in the database.
+	 */
 	public function write_data(object $sqlite3): void
 	{
 		/**

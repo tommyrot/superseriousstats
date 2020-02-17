@@ -69,13 +69,12 @@ class sss
 		 * Use UTC until config specified timezone is loaded.
 		 */
 		date_default_timezone_set('UTC');
-
-		/**
-		 * Start main function.
-		 */
 		$this->main();
 	}
 
+	/**
+	 * Upon class instantiation automatically start the main function below.
+	 */
 	private function main(): void
 	{
 		/**

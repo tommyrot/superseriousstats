@@ -104,11 +104,11 @@ class parser
 	private int $l_morning = 0;
 	private int $l_night = 0;
 	private int $l_total = 0;
-	private int $linenum_lastnonempty = 0;
+	private int $linenum_last_nonempty = 0;
 	private int $streak = 0;
 	private string $date = '';
-	private string $hex_latin1supplement = '[\x80-\xFF]';
-	private string $hex_validutf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
+	private string $hex_latin1_supplement = '[\x80-\xFF]';
+	private string $hex_valid_utf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private string $line_new = '';
 	private string $nick_prev = '';
 	protected int $linenum = 0;
@@ -224,7 +224,7 @@ class parser
 			 * Pass on the non-empty normalized line to the logfile format specific parser
 			 * class extending this class. Remember the number of said line.
 			 */
-			$this->linenum_lastnonempty = $this->linenum;
+			$this->linenum_last_nonempty = $this->linenum;
 			$this->parse_line($line);
 			$this->line_prev = $line;
 		}
@@ -238,7 +238,7 @@ class parser
 	 */
 	private function normalize_line(string $line): string
 	{
-		if (!preg_match('/^'.$this->hex_validutf8.'+$/', $line)) {
+		if (!preg_match('/^'.$this->hex_valid_utf8.'+$/', $line)) {
 			$this->line_new = '';
 
 			while ($line !== '') {
@@ -248,7 +248,7 @@ class parser
 				 *    string effectively making $line shorter.
 				 * 3. Continue until $line is zero bytes in length.
 				 */
-				$line = preg_replace_callback('/^('.$this->hex_validutf8.'|.)/s', [$this, 'rebuild_line'], $line);
+				$line = preg_replace_callback('/^('.$this->hex_valid_utf8.'|.)/s', [$this, 'rebuild_line'], $line);
 			}
 
 			/**
@@ -299,7 +299,7 @@ class parser
 			 * Pass on the non-empty normalized line to the logfile format specific parser
 			 * class extending this class. Remember the number of said line.
 			 */
-			$this->linenum_lastnonempty = $this->linenum;
+			$this->linenum_last_nonempty = $this->linenum;
 			$this->parse_line($line);
 			$this->line_prev = $line;
 		}
@@ -320,10 +320,10 @@ class parser
 		 *    multibyte unicode.
 		 * 3. Everything else is converted to the unicode replacement character.
 		 */
-		if (preg_match('/^'.$this->hex_validutf8.'$/', $char)) {
+		if (preg_match('/^'.$this->hex_valid_utf8.'$/', $char)) {
 			$this->line_new .= $char;
-		} elseif (preg_match('/^'.$this->hex_latin1supplement.'$/', $char)) {
-			$char = preg_replace_callback('/^'.$this->hex_latin1supplement.'$/', function (array $matches): string {
+		} elseif (preg_match('/^'.$this->hex_latin1_supplement.'$/', $char)) {
+			$char = preg_replace_callback('/^'.$this->hex_latin1_supplement.'$/', function (array $matches): string {
 				return pack('C*', (ord($matches[0]) >> 6) | 0xC0, (ord($matches[0]) & 0x3F) | 0x80);
 			}, $char);
 			$this->line_new .= $char;
@@ -663,6 +663,9 @@ class parser
 		}
 	}
 
+	/**
+	 * Store everything in the database.
+	 */
 	public function write_data(object $sqlite3): bool
 	{
 		/**

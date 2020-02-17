@@ -45,7 +45,7 @@ class maintenance
 
 	/**
 	 * Create materialized views, which are actual stored copies of virtual tables
-	 * (views).
+	 * (simply called views).
 	 */
 	private function create_materialized_views(): void
 	{
@@ -101,6 +101,9 @@ class maintenance
 		}
 	}
 
+	/**
+	 * Upon class instantiation automatically start the main function below.
+	 */
 	private function main(): void
 	{
 		output::output('notice', __METHOD__.'(): performing database maintenance routines');
