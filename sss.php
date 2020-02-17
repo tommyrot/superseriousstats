@@ -391,17 +391,17 @@ class sss
 		/**
 		 * Get the date of the last log parsed.
 		 */
-		if (($date_lastlogparsed = $this->sqlite3->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
+		if (($date_last_log_parsed = $this->sqlite3->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		}
 
-		$needmaintenance = false;
+		$need_maintenance = false;
 
 		foreach ($logfiles as $date => $logfile) {
 			/**
 			 * Skip logs that have already been processed.
 			 */
-			if (!is_null($date_lastlogparsed) && strtotime($date) < strtotime($date_lastlogparsed)) {
+			if (!is_null($date_last_log_parsed) && strtotime($date) < strtotime($date_last_log_parsed)) {
 				continue;
 			}
 
@@ -422,16 +422,16 @@ class sss
 
 			/**
 			 * Get the parse history and set the line number on which to start parsing the
-			 * log.
+			 * log. This would be 1 for a fresh log and +1 for a log with a parse history.
 			 */
-			if (($firstline = $this->sqlite3->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
+			if (($linenum_start = $this->sqlite3->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 
-			if (!is_null($firstline)) {
-				++$firstline;
+			if (!is_null($linenum_start)) {
+				++$linenum_start;
 			} else {
-				$firstline = 1;
+				$linenum_start = 1;
 			}
 
 			/**
@@ -442,23 +442,23 @@ class sss
 					output::output('critical', __METHOD__.'(): zlib extension isn\'t loaded: can\'t parse gzipped logs'."\n");
 				}
 
-				$parser->gzparse_log($logfile, $firstline);
+				$parser->gzparse_log($logfile, $linenum_start);
 			} else {
-				$parser->parse_log($logfile, $firstline);
+				$parser->parse_log($logfile, $linenum_start);
 			}
 
 			/**
 			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
-			if ($parser->get_num('linenum_last_nonempty') >= $firstline) {
+			if ($parser->get_num('linenum_last_nonempty') >= $linenum_start) {
 				$this->sqlite3->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
 				/**
-				 * Write data to database and set $needmaintenance to true if there was any data
+				 * Write data to database and set $need_maintenance to true if there was any data
 				 * stored.
 				 */
 				if ($parser->write_data($this->sqlite3)) {
-					$needmaintenance = true;
+					$need_maintenance = true;
 				}
 			}
 		}
@@ -466,7 +466,7 @@ class sss
 		/**
 		 * Finally, call maintenance if needed.
 		 */
-		if ($needmaintenance) {
+		if ($need_maintenance) {
 			$this->maintenance();
 		}
 	}

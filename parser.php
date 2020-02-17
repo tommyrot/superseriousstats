@@ -199,18 +199,18 @@ class parser
 	/**
 	 * Parser function for gzipped logs. This function requires the zlib extension.
 	 */
-	public function gzparse_log(string $logfile, int $firstline): void
+	public function gzparse_log(string $logfile, int $linenum_start): void
 	{
 		if (($zp = gzopen($logfile, 'rb')) === false) {
 			output::output('critical', __METHOD__.'(): failed to open gzip file: \''.$logfile.'\'');
 		}
 
-		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
+		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$linenum_start);
 
 		while (($line = gzgets($zp)) !== false) {
 			++$this->linenum;
 
-			if ($this->linenum < $firstline) {
+			if ($this->linenum < $linenum_start) {
 				continue;
 			}
 
@@ -274,18 +274,18 @@ class parser
 	/**
 	 * Parser function for normal (uncompressed) logs.
 	 */
-	public function parse_log(string $logfile, int $firstline): void
+	public function parse_log(string $logfile, int $linenum_start): void
 	{
 		if (($fp = fopen($logfile, 'rb')) === false) {
 			output::output('critical', __METHOD__.'(): failed to open file: \''.$logfile.'\'');
 		}
 
-		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$firstline);
+		output::output('notice', __METHOD__.'(): parsing logfile: \''.$logfile.'\' from line '.$linenum_start);
 
 		while (($line = fgets($fp)) !== false) {
 			++$this->linenum;
 
-			if ($this->linenum < $firstline) {
+			if ($this->linenum < $linenum_start) {
 				continue;
 			}
 
