@@ -19,7 +19,6 @@ class parser
 	 * overridden through the config file.
 	 */
 	private array $nick_objs = [];
-	private array $settings_allow_override = ['word_tracking'];
 	private array $smileys = [
 		':)' => 's_01',
 		';)' => 's_02',
@@ -74,7 +73,6 @@ class parser
 	private array $topic_objs = [];
 	private array $url_objs = [];
 	private array $word_objs = [];
-	private bool $word_tracking = true;
 	private int $l_00 = 0;
 	private int $l_01 = 0;
 	private int $l_02 = 0;
@@ -511,7 +509,7 @@ class parser
 			 * letters, no adjacent combination marks. This method of finding words is not
 			 * 100% accurate but it's good enough for our use case.
 			 */
-			if ($this->word_tracking && preg_match('/^["\'(]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;]?$/u', $csword, $matches)) {
+			if (preg_match('/^["\'(]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;]?$/u', $csword, $matches)) {
 				$csword = $matches['csword_trimmed'];
 				$word_length = mb_strlen($csword, 'UTF-8');
 
