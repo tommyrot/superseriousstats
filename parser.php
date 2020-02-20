@@ -111,11 +111,6 @@ class parser
 	public function __construct(string $date, array $config)
 	{
 		$this->date = $date;
-
-		/**
-		 * Apply settings from the config file.
-		 */
-		$this->apply_settings($config);
 	}
 
 	/**
