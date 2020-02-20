@@ -30,7 +30,7 @@ class parser
 		'=)' => 's_12',
 		':-)' => 's_13',
 		':x' => 's_14',
-		':\\' => 's_15',
+		'=d' => 's_15',
 		'd:' => 's_16',
 		':|' => 's_17',
 		';-)' => 's_18',
@@ -41,31 +41,31 @@ class parser
 		':<' => 's_23',
 		':>' => 's_24',
 		'=p' => 's_25',
-		';x' => 's_26',
+		':-p' => 's_26',
 		':-d' => 's_27',
-		';))' => 's_28',
+		':-(' => 's_28',
 		':]' => 's_29',
-		';d' => 's_30',
+		'=(' => 's_30',
 		'-_-' => 's_31',
 		':s' => 's_32',
-		'=/' => 's_33',
-		'=\\' => 's_34',
+		':[' => 's_33',
+		':\'(' => 's_34',
 		':((' => 's_35',
-		'=d' => 's_36',
-		':-/' => 's_37',
-		':-p' => 's_38',
-		';_;' => 's_39',
-		';/' => 's_40',
-		';]' => 's_41',
-		':-(' => 's_42',
-		':\'(' => 's_43',
-		'=(' => 's_44',
-		'-.-' => 's_45',
-		';((' => 's_46',
-		'=x' => 's_47',
-		':[' => 's_48',
-		'>:(' => 's_49',
-		';o' => 's_50'];
+		'o_o' => 's_36',
+		';_;' => 's_37',
+		'hehe' => 's_38',
+		'heh' => 's_39',
+		'haha' => 's_40',
+		'lol' => 's_41',
+		'hmm' => 's_42',
+		'wow' => 's_43',
+		'meh' => 's_44',
+		'ugh' => 's_45',
+		'pff' => 's_46',
+		'xd' => 's_47',
+		'rofl' => 's_48',
+		'lmao' => 's_49',
+		'huh' => 's_50'];
 	private array $topic_objs = [];
 	private array $url_objs = [];
 	private array $word_objs = [];
@@ -511,12 +511,25 @@ class parser
 					$this->add_word($csword, $word_length);
 				}
 
+				/**
+				 * Catch textual user expressions. Take special care of "D:".
+				 */
+				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|xd|rofl|lmao)$/i', $csword)) {
+					$smiley = strtolower($csword);
+					$smiley = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], $smiley);
+					$this->nick_objs[$nick]->add_num($this->smileys[$smiley], 1);
+				} elseif (preg_match('/^d:$/i', $matches[0])) {
+					$this->nick_objs[$nick]->add_num($this->smileys['d:'], 1);
+				}
+
 			/**
-			 * 50 smileys, 1 regular expression. These should not be able to match the
-			 * regular expression above.
+			 * Regular expression to catch all possible smileys we're interested in. Take
+			 * note: these should not match the previous regular expression (for words).
 			 */
-			} elseif (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(]|\'\()|;([])(pxd\/o]|-\)|_;)|[:;](\)\)|\(\()|\\\o\/|<3|=[])p\/\\\d(x]|d:|8\)|-[_.]-|>:\()$/i', $csword)) {
-				$this->nick_objs[$nick]->add_num($this->smileys[strtolower($csword)], 1);
+			} elseif (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(\\\]|\'\()|;([)(pd]|-\)|_;)|[:;](\)\)+|\(\(+)|\\\o\/|<3|=[])p\/\\\d(]|8\)|-[_.]-|o[_.]o)$/i', $csword)) {
+				$smiley = strtolower($csword);
+				$smiley = preg_replace(['/^(:-?|=)[\/\\\]$/', '/^:\)\)\)+$/', '/^:\(\(\(+$/', '/^;\)\)+$/', '/^;\(\(+$/', '/^;d$/', '/^o\.o$/', '/^-\.-$/'], [':/', ':))', ':((', ';)', ';(', ':d', 'o_o', '-_-'], $smiley);
+				$this->nick_objs[$nick]->add_num($this->smileys[$smiley], 1);
 
 			/**
 			 * Only catch URLs which were intended to be clicked on. Most clients can handle
