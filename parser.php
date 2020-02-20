@@ -12,12 +12,8 @@ declare(strict_types=1);
  */
 class parser
 {
-	use base, config, queryparts;
+	use base, queryparts;
 
-	/**
-	 * Variables listed in $settings_allow_override[] can have their default value
-	 * overridden through the config file.
-	 */
 	private array $nick_objs = [];
 	private array $smileys = [
 		':)' => 's_01',
