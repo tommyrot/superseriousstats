@@ -29,6 +29,12 @@ class table
 		$this->minrows = $minrows;
 	}
 
+	//temp
+	public function set_value($var, $value)
+	{
+		$this->$var = $value;
+	}
+
 	/**
 	 * Check if there are URLs in the string and if so, make hyperlinks out of them.
 	 */
