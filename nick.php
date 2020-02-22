@@ -198,14 +198,14 @@ class nick
 		/**
 		 * Check if current nick already exists in the database.
 		 */
-		if (($result = $sqlite3->querySingle('SELECT uid, csnick FROM uid_details WHERE csnick = \''.$this->csnick.'\'', true)) === false) {
+		if (($uid = $sqlite3->querySingle('SELECT uid FROM uid_details WHERE csnick = \''.$this->csnick.'\'')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
 		 * Current nick does NOT exist in the database.
 		 */
-		if (empty($result)) {
+		if (is_null($uid)) {
 			if ($this->firstseen === '') {
 				/**
 				 * If $firstseen is empty there have been no lines, actions or events for this
@@ -228,8 +228,6 @@ class nick
 		 * Current nick DOES exist in the database.
 		 */
 		} else {
-			$uid = $result['uid'];
-
 			if ($this->firstseen === '') {
 				/**
 				 * If $firstseen is empty there have been no lines, actions or events for this
@@ -257,11 +255,9 @@ class nick
 			}
 
 			/**
-			 * Update $csnick if needed.
+			 * Write data to database table "uid_details".
 			 */
-			if ($result['csnick'] !== $this->csnick) {
-				$sqlite3->exec('UPDATE uid_details SET csnick = \''.$this->csnick.'\' WHERE uid = '.$uid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
+			$sqlite3->exec('UPDATE uid_details SET csnick = \''.$this->csnick.'\', lastseen = DATETIME(\''.$this->lastseen.'\') WHERE uid = '.$uid) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
 		/**
