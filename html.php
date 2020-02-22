@@ -4,6 +4,8 @@
  * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
+declare(strict_types=1);
+
 /**
  * Class for creating the main stats page.
  */
@@ -65,29 +67,23 @@ class html
 	/**
 	 * Calculate how many days ago a given $datetime is.
 	 */
-	private function daysago($datetime)
+	private function ago(string $datetime): string
 	{
-		/**
-		 * Because the amount of seconds in a day can vary due to DST we have to round
-		 * the value of $daysago.
-		 */
-		$daysago = round((strtotime('today') - strtotime(substr($datetime, 0, 10))) / 86400);
+		$diff = date_diff(date_create('today'), date_create(substr($datetime, 0, 10)));
 
-		if ($daysago / 365 >= 1) {
-			$daysago = str_replace('.0', '', number_format($daysago / 365, 1));
-			$daysago .= ' Year'.((float) $daysago > 1 ? 's' : '').' Ago';
-		} elseif ($daysago / 30.42 >= 1) {
-			$daysago = str_replace('.0', '', number_format($daysago / 30.42, 1));
-			$daysago .= ' Month'.((float) $daysago > 1 ? 's' : '').' Ago';
-		} elseif ($daysago > 1) {
-			$daysago .= ' Days Ago';
-		} elseif ($daysago === (float) 1) {
-			$daysago = 'Yesterday';
-		} elseif ($daysago === (float) 0) {
-			$daysago = 'Today';
+		if ($diff->y > 0) {
+			$ago = $diff->y.' Year'.($diff->y !== 1 ? 's' : '').' Ago';
+		} elseif ($diff->m > 0) {
+			$ago = $diff->m.' Month'.($diff->m !== 1 ? 's' : '').' Ago';
+		} elseif ($diff->d === 0) {
+			$ago = 'Today';
+		} elseif ($diff->d === 1) {
+			$ago = 'Yesterday';
+		} else {
+			$ago = $diff->d.' Days Ago';
 		}
 
-		return $daysago;
+		return $ago;
 	}
 
 	/**
@@ -1222,7 +1218,7 @@ class html
 				$pos = '<span class="red">&#x25BC;'.$i.'</span>';
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$pos.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.$result['csnick'].'</a>' : $result['csnick']).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->daysago($result['lasttalked']).'<td class="v6">'.htmlspecialchars($result['quote']);
+			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$pos.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.$result['csnick'].'</a>' : $result['csnick']).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.htmlspecialchars($result['quote']);
 
 			/**
 			 * It's important to unset $width_remainders so the next iteration won't try to
