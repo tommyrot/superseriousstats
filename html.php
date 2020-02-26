@@ -691,7 +691,7 @@ class html
 				'k2' => 'TLD',
 				'v1' => 'int',
 				'v2' => 'string']);
-			$t->set_value('queries', ['main' => 'SELECT COUNT(*) AS v1, tld AS v2 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY tld ORDER BY v1 DESC, v2 ASC LIMIT '.$this->rows_domains_tlds]);
+			$t->set_value('queries', ['main' => 'SELECT COUNT(*) AS v1, \'.\' || tld AS v2 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY tld ORDER BY v1 DESC, v2 ASC LIMIT '.$this->rows_domains_tlds]);
 			$output .= $t->make_table($this->sqlite3);
 
 			if ($this->recenturls_type !== 0) {
