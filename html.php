@@ -247,40 +247,23 @@ class html
 		/**
 		 * Modes section.
 		 */
-		if ($this->sectionbits & 4) {
-		    /*
-			$output = '';
+		$section = '';
+		$modes = [
+			'm_op' => 'Ops \'+o\' Given',
+			'm_opped' => 'Ops \'+o\' Received',
+			'm_deop' => 'deOps \'-o\' Given',
+			'm_deopped' => 'deOps \'-o\' Received',
+			'm_voice' => 'Voices \'+v\' Given',
+			'm_voiced' => 'Voices \'+v\' Received',
+			'm_devoice' => 'deVoices \'-v\' Given',
+			'm_devoiced' => 'deVoices \'-v\' Received'];
 
-			/**
-			 * Display mode tables in fixed order.
-			 *
-			$modes = [
-				'm_op' => 'Ops \'+o\' Given',
-				'm_opped' => 'Ops \'+o\' Received',
-				'm_deop' => 'deOps \'-o\' Given',
-				'm_deopped' => 'deOps \'-o\' Received',
-				'm_voice' => 'Voices \'+v\' Given',
-				'm_voiced' => 'Voices \'+v\' Received',
-				'm_devoice' => 'deVoices \'-v\' Given',
-				'm_devoiced' => 'deVoices \'-v\' Received'];
+		foreach ($modes as $mode => $title) {
+			$section .= $this->create_table($title, ['Total', 'User'], ['num', 'str'], ['SELECT '.$mode.' AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND '.$mode.' != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM('.$mode.') FROM ruid_events']);
+		}
 
-			foreach ($modes as $key => $value) {
-				$t = new table($value, $this->minrows, $this->maxrows);
-				$t->set_value('keys', [
-					'k1' => 'Total',
-					'k2' => 'User',
-					'v1' => 'int',
-					'v2' => 'string']);
-				$t->set_value('queries', [
-					'main' => 'SELECT '.$key.' AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND '.$key.' != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$this->maxrows,
-					'total' => 'SELECT SUM('.$key.') FROM ruid_events']);
-				$output .= $t->make_table($this->sqlite3);
-			}
-
-			if ($output !== '') {
-				$html .= '<div class="section">Modes</div>'."\n".$output;
-			}
-			*/
+		if ($section !== '') {
+			$html .= '<div class="section">Modes</div>'."\n".$section;
 		}
 
 		/**
