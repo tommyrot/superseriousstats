@@ -574,7 +574,7 @@ class html
 						//find_urls()
 						break;
 					case 'str-userstats':
-						${'v'.$col} = '<a href="user.php?cid='.rawurlencode($this->cid.'&nick='.${'v'.$col}).'">'.htmlspecialchars(${'v'.$col}).'</a>';
+						${'v'.$col} = '<a href="user.php?cid='.rawurlencode($this->cid).'&amp;nick='.rawurlencode(${'v'.$col}).'">'.htmlspecialchars(${'v'.$col}).'</a>';
 						break;
 					case 'date':
 						${'v'.$col} = date('j M \'y', strtotime(${'v'.$col}));
