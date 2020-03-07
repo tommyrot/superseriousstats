@@ -362,31 +362,15 @@ class html
 		/**
 		 * Words section.
 		 */
-		if ($this->sectionbits & 64) {
-			/*
-			$output = '';
+		$section = '';
+		$query = $this->sqlite3->query('SELECT * FROM (SELECT length, COUNT(*) AS total FROM words GROUP BY length ORDER BY total DESC, length DESC LIMIT 9) ORDER BY length ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
-			/**
-			 * Display the top 9 word tables ordered by totals.
-			 *
-			$query = $this->sqlite3->query('SELECT * FROM (SELECT length, COUNT(*) AS total FROM words GROUP BY length ORDER BY total DESC, length DESC LIMIT 9) ORDER BY length ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$section .= $this->create_table('Words of '.$result['length'].' Characters', ['Times Used', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words WHERE length = '.$result['length'].' ORDER BY v1 DESC, v2 ASC LIMIT 5', $result['total']]);
+		}
 
-			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-				$t = new table('Words of '.$result['length'].' Characters', $this->minrows, $this->maxrows);
-				$t->set_value('keys', [
-					'k1' => 'Times Used',
-					'k2' => 'Word',
-					'v1' => 'int',
-					'v2' => 'string']);
-				$t->set_value('queries', ['main' => 'SELECT total AS v1, word AS v2 FROM words WHERE length = '.$result['length'].' ORDER BY v1 DESC, v2 ASC LIMIT '.$this->maxrows]);
-				$t->set_value('total', $result['total']);
-				$output .= $t->make_table($this->sqlite3);
-			}
-
-			if ($output !== '') {
-				$html .= '<div class="section">Words</div>'."\n".$output;
-			}
-			*/
+		if ($section !== '') {
+			$html .= '<div class="section">Words</div>'."\n".$section;
 		}
 
 		/**
@@ -434,7 +418,9 @@ class html
 		 * Retrieve the total for the data set.
 		 */
 		if (!empty($queries[1])) {
-			if (($total = $this->sqlite3->querySingle($queries[1])) === false) {
+			if (is_int($queries[1])) {
+				$total = $queries[1];
+			} elseif (($total = $this->sqlite3->querySingle($queries[1])) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 
