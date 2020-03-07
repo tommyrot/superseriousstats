@@ -269,118 +269,19 @@ class html
 		/**
 		 * Events section.
 		 */
-		if ($this->sectionbits & 8) {
-			/*
-			$output = '';
+		$section = '';
+		$section .= $this->create_table('Kicks Given', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT kicks AS v1, csnick AS v2, ex_kicks AS v3 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND kicks != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(kicks) FROM ruid_events']);
+		$section .= $this->create_table('Kicks Received', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT kicked AS v1, csnick AS v2, ex_kicked AS v3 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND kicked != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(kicked) FROM ruid_events']);
+		$section .= $this->create_table('Channel Joins', ['Total', 'User'], ['num', 'str'], ['SELECT joins AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND joins != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(joins) FROM ruid_events']);
+		$section .= $this->create_table('Channel Parts', ['Total', 'User'], ['num', 'str'], ['SELECT parts AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND parts != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(parts) FROM ruid_events']);
+		$section .= $this->create_table('IRC Quits', ['Total', 'User'], ['num', 'str'], ['SELECT quits AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND quits != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(quits) FROM ruid_events']);
+		$section .= $this->create_table('Nick Changes', ['Total', 'User'], ['num', 'str'], ['SELECT nickchanges AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND nickchanges != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(nickchanges) FROM ruid_events']);
+		$section .= $this->create_table('Aliases', ['Total', 'User'], ['num', 'str'], ['SELECT COUNT(*) - 1 AS v1, (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS v2 FROM uid_details AS t1 WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 1) GROUP BY ruid HAVING v1 > 0 ORDER BY v1 DESC, ruid ASC LIMIT 5', 'SELECT COUNT(*) FROM uid_details WHERE status = 2']);
+		$section .= $this->create_table('Topics Set', ['Total', 'User'], ['num', 'str'], ['SELECT topics AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND topics != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(topics) FROM ruid_events']);
+		$section .= $this->create_table('Most Recent Topics', ['Date', 'User', 'Topic'], ['date', 'str', 'str-url'], ['SELECT datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE uid = uid_topics.uid)) AS v2, topic AS v3 FROM uid_topics JOIN topics ON uid_topics.tid = topics.tid WHERE uid NOT IN (SELECT uid FROM uid_details WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 4)) ORDER BY v1 DESC LIMIT 5']);
 
-			$t = new table('Kicks Given', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'User',
-				'k3' => 'Example',
-				'v1' => 'int',
-				'v2' => 'string',
-				'v3' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT kicks AS v1, csnick AS v2, ex_kicks AS v3 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND kicks != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(kicks) FROM ruid_events']);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('Kicks Received', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'User',
-				'k3' => 'Example',
-				'v1' => 'int',
-				'v2' => 'string',
-				'v3' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT kicked AS v1, csnick AS v2, ex_kicked AS v3 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND kicked != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(kicked) FROM ruid_events']);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('Channel Joins', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'User',
-				'v1' => 'int',
-				'v2' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT joins AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND joins != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(joins) FROM ruid_events']);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('Channel Parts', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'User',
-				'v1' => 'int',
-				'v2' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT parts AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND parts != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(parts) FROM ruid_events']);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('IRC Quits', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'User',
-				'v1' => 'int',
-				'v2' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT quits AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND quits != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(quits) FROM ruid_events']);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('Nick Changes', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'User',
-				'v1' => 'int',
-				'v2' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT nickchanges AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND nickchanges != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(nickchanges) FROM ruid_events']);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('Aliases', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'User',
-				'v1' => 'int',
-				'v2' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT COUNT(*) AS v1, (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS v2 FROM uid_details AS t1 WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 1) GROUP BY ruid HAVING v1 > 1 ORDER BY v1 DESC, ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT COUNT(*) FROM uid_details']);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('Topics Set', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'User',
-				'v1' => 'int',
-				'v2' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT topics AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND topics != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(topics) FROM ruid_events']);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('Most Recent Topics', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Date',
-				'k2' => 'User',
-				'k3' => 'Topic',
-				'v1' => 'date',
-				'v2' => 'string',
-				'v3' => 'string-url']);
-			$t->set_value('queries', ['main' => 'SELECT datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE uid = uid_topics.uid)) AS v2, topic AS v3 FROM uid_topics JOIN topics ON uid_topics.tid = topics.tid WHERE uid NOT IN (SELECT uid FROM uid_details WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 4)) ORDER BY v1 DESC LIMIT '.$this->maxrows]);
-			$t->set_value('v3a', true);
-			$output .= $t->make_table($this->sqlite3);
-
-			if ($output !== '') {
-				$html .= '<div class="section">Events</div>'."\n".$output;
-			}
-			*/
+		if ($section !== '') {
+			$html .= '<div class="section">Events</div>'."\n".$section;
 		}
 
 		/**
@@ -571,7 +472,18 @@ class html
 						${'v'.$col} = htmlspecialchars(${'v'.$col});
 						break;
 					case 'str-url':
-						//find_urls()
+						$words = explode(' ', ${'v'.$col});
+						$line = '';
+
+						foreach ($words as $word) {
+							if (preg_match('/^(www\.|https?:\/\/).+/i', $word) && ($url_components = url_tools::get_components($word)) !== false) {
+								$line .= '<a href="'.htmlspecialchars($url_components['url']).'">'.htmlspecialchars($url_components['url']).'</a> ';
+							} else {
+								$line .= htmlspecialchars($word).' ';
+							}
+						}
+
+						${'v'.$col} = rtrim($line);
 						break;
 					case 'str-userstats':
 						${'v'.$col} = '<a href="user.php?cid='.rawurlencode($this->cid).'&amp;nick='.rawurlencode(${'v'.$col}).'">'.htmlspecialchars(${'v'.$col}).'</a>';
@@ -611,7 +523,7 @@ class html
 				}
 			}
 
-			$table .= '<tr><td class="v1">'.$v1.'<td class="pos">'.$row.'<td class="v2">'.$v2.($cols === 3 ? '<td class="v3">'.$v3 : '');
+			$table .= '<tr><td class="v1">'.$v1.'<td class="pos">'.$row.'<td class="v2">'.$v2.($cols === 3 ? '<td class="'.($types[2] === 'str-url' ? 'v3a' : 'v3').'">'.$v3 : '');
 		}
 
 		if ($row === 0) {

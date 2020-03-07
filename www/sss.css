@@ -454,6 +454,9 @@ th {
 	text-overflow:ellipsis;
 	white-space:nowrap;
 }
+.large td.v3a {
+	overflow-wrap:break-word;
+}
 /**
  * Specific table styling: rankings
  */
