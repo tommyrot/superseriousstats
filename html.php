@@ -179,7 +179,7 @@ class html
 			. '<html>'."\n\n"
 			. '<head>'."\n"
 			. '<meta charset="utf-8">'."\n"
-			. '<title>'.htmlspecialchars($this->channel).', seriously.</title>'."\n"
+			. '<title>'.htmlspecialchars($this->channel, ENT_QUOTES | ENT_HTML5, 'UTF-8').', seriously.</title>'."\n"
 			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
 			. '<meta name="referrer" content="no-referrer">'."\n"
 			. '<style type="text/css">'."\n"
@@ -187,7 +187,7 @@ class html
 			. '</style>'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
-			. '<div class="info">'.($this->search_user ? '<form action="user.php"><input type="hidden" name="cid" value="'.urlencode($this->cid).'"><input type="text" name="nick" placeholder="Search User.."></form>' : '').htmlspecialchars($this->channel).', seriously.<br><br>'
+			. '<div class="info">'.($this->search_user ? '<form action="user.php"><input type="hidden" name="cid" value="'.htmlspecialchars(rawurlencode($this->cid), ENT_QUOTES | ENT_HTML5, 'UTF-8').'"><input type="text" name="nick" placeholder="Search User.."></form>' : '').htmlspecialchars($this->channel, ENT_QUOTES | ENT_HTML5, 'UTF-8').', seriously.<br><br>'
 			. number_format($dayslogged).' day'.($dayslogged > 1 ? 's logged from '.date('M j, Y', strtotime($date_first)).' to '.date('M j, Y', strtotime($date_last)) : ' logged on '.date('M j, Y', strtotime($date_first))).'.<br><br>'
 			. 'Logs contain '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($date_l_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
@@ -394,7 +394,7 @@ class html
 
 				switch ($type) {
 					case 'str':
-						${'v'.$col} = htmlspecialchars(${'v'.$col});
+						${'v'.$col} = htmlspecialchars(${'v'.$col}, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 						break;
 					case 'str-url':
 						$words = explode(' ', ${'v'.$col});
@@ -402,16 +402,16 @@ class html
 
 						foreach ($words as $word) {
 							if (preg_match('/^(www\.|https?:\/\/).+/i', $word) && ($url_components = url_tools::get_components($word)) !== false) {
-								$line .= '<a href="'.htmlspecialchars($url_components['url']).'">'.htmlspecialchars($url_components['url']).'</a> ';
+								$line .= '<a href="'.htmlspecialchars($url_components['url'], ENT_QUOTES | ENT_HTML5, 'UTF-8').'">'.htmlspecialchars($url_components['url'], ENT_QUOTES | ENT_HTML5, 'UTF-8').'</a> ';
 							} else {
-								$line .= htmlspecialchars($word).' ';
+								$line .= htmlspecialchars($word, ENT_QUOTES | ENT_HTML5, 'UTF-8').' ';
 							}
 						}
 
 						${'v'.$col} = rtrim($line);
 						break;
 					case 'str-userstats':
-						${'v'.$col} = '<a href="user.php?cid='.rawurlencode($this->cid).'&amp;nick='.rawurlencode(${'v'.$col}).'">'.htmlspecialchars(${'v'.$col}).'</a>';
+						${'v'.$col} = '<a href="user.php?cid='.htmlspecialchars(rawurlencode($this->cid), ENT_QUOTES | ENT_HTML5, 'UTF-8').'&amp;nick='.htmlspecialchars(rawurlencode(${'v'.$col}), ENT_QUOTES | ENT_HTML5, 'UTF-8').'">'.htmlspecialchars(${'v'.$col}, ENT_QUOTES | ENT_HTML5, 'UTF-8').'</a>';
 						break;
 					case 'date':
 						${'v'.$col} = date('j M \'y', strtotime(${'v'.$col}));
@@ -427,7 +427,7 @@ class html
 
 						break;
 					case 'url':
-						${'v'.$col} = '<a href="'.htmlspecialchars(${'v'.$col}).'">'.htmlspecialchars(${'v'.$col}).'</a>';
+						${'v'.$col} = '<a href="'.htmlspecialchars(${'v'.$col}, ENT_QUOTES | ENT_HTML5, 'UTF-8').'">'.htmlspecialchars(${'v'.$col}, ENT_QUOTES | ENT_HTML5, 'UTF-8').'</a>';
 						break;
 					default:
 						preg_match('/^num(?<decimals>[0-9])?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
@@ -809,7 +809,7 @@ class html
 
 		if ($type === 'alltime') {
 			$head = 'Most Talkative People &ndash; All-Time';
-			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'">History</a>';
+			$historylink = '<a href="history.php?cid='.htmlspecialchars(rawurlencode($this->cid), ENT_QUOTES | ENT_HTML5, 'UTF-8').'">History</a>';
 
 			/**
 			 * Don't try to calculate changes in rankings if we're dealing with the first
@@ -822,11 +822,11 @@ class html
 			}
 		} elseif ($type === 'month') {
 			$head = 'Most Talkative People &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'];
-			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->datetime['year'].'&amp;month='.$this->datetime['month'].'">History</a>';
+			$historylink = '<a href="history.php?cid='.htmlspecialchars(rawurlencode($this->cid), ENT_QUOTES | ENT_HTML5, 'UTF-8').'&amp;year='.$this->datetime['year'].'&amp;month='.$this->datetime['month'].'">History</a>';
 			$query = $this->sqlite3->query('SELECT csnick, ruid_activity_by_month.l_total AS l_total, ruid_activity_by_month.l_night AS l_night, ruid_activity_by_month.l_morning AS l_morning, ruid_activity_by_month.l_afternoon AS l_afternoon, ruid_activity_by_month.l_evening AS l_evening, quote, lasttalked FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_month.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\' ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_month) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		} elseif ($type === 'year') {
 			$head = 'Most Talkative People &ndash; '.$this->datetime['year'];
-			$historylink = '<a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$this->datetime['year'].'">History</a>';
+			$historylink = '<a href="history.php?cid='.htmlspecialchars(rawurlencode($this->cid), ENT_QUOTES | ENT_HTML5, 'UTF-8').'&amp;year='.$this->datetime['year'].'">History</a>';
 			$query = $this->sqlite3->query('SELECT csnick, ruid_activity_by_year.l_total AS l_total, ruid_activity_by_year.l_night AS l_night, ruid_activity_by_year.l_morning AS l_morning, ruid_activity_by_year.l_afternoon AS l_afternoon, ruid_activity_by_year.l_evening AS l_evening, quote, lasttalked FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_year.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\' ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_year) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		}
 
@@ -881,7 +881,7 @@ class html
 				$pos = '<span class="red">&#x25BC;'.$i.'</span>';
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$pos.'<td class="v3">'.($this->user_stats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.$result['csnick'].'</a>' : $result['csnick']).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.htmlspecialchars($result['quote']);
+			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$pos.'<td class="v3">'.($this->user_stats ? '<a href="user.php?cid='.htmlspecialchars(rawurlencode($this->cid), ENT_QUOTES | ENT_HTML5, 'UTF-8').'&amp;nick='.htmlspecialchars(rawurlencode($result['csnick']), ENT_QUOTES | ENT_HTML5, 'UTF-8').'">'.$result['csnick'].'</a>' : $result['csnick']).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.htmlspecialchars($result['quote'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
 			/**
 			 * It's important to unset $width_remainders so the next iteration won't try to
@@ -950,7 +950,7 @@ class html
 			$trx .= '<tr>';
 
 			for ($j = 1; $j <= 4; ++$j) {
-				$trx .= '<td class="v1">'.number_format($columns[$j][$i]['l_total']).'<td class="pos">'.$columns[$j][$i]['pos'].'<td class="v2">'.($this->user_stats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($columns[$j][$i]['csnick']).'">'.$columns[$j][$i]['csnick'].'</a>' : $columns[$j][$i]['csnick']);
+				$trx .= '<td class="v1">'.number_format($columns[$j][$i]['l_total']).'<td class="pos">'.$columns[$j][$i]['pos'].'<td class="v2">'.($this->user_stats ? '<a href="user.php?cid='.htmlspecialchars(rawurlencode($this->cid), ENT_QUOTES | ENT_HTML5, 'UTF-8').'&amp;nick='.htmlspecialchars(rawurlencode($columns[$j][$i]['csnick']), ENT_QUOTES | ENT_HTML5, 'UTF-8').'">'.$columns[$j][$i]['csnick'].'</a>' : $columns[$j][$i]['csnick']);
 			}
 		}
 
