@@ -287,76 +287,15 @@ class html
 		/**
 		 * URLs section.
 		 */
-		if ($this->sectionbits & 32) {
-			/*
-			$output = '';
+		$section = '';
+		$section .= $this->create_table('Most Referenced Domain Names', ['Total', 'Domain', 'First Used'], ['num', 'url', 'date'], ['SELECT COUNT(*) AS v1, \'http://\' || fqdn AS v2, MIN(datetime) AS v3 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY urls.fid ORDER BY v1 DESC, v3 ASC LIMIT 10'], 10);
+		$section .= $this->create_table('Most Referenced TLDs', ['Total', 'TLD'], ['num', 'str'], ['SELECT COUNT(*) AS v1, \'.\' || tld AS v2 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY tld ORDER BY v1 DESC, v2 ASC LIMIT 10'], 10);
+		$section .= $this->create_table('Most Recent URLs', ['Date', 'User', 'URL'], ['date-norepeat', 'str', 'url'], ['SELECT uid_urls.datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE uid = uid_urls.uid)) AS v2, url AS v3 FROM uid_urls JOIN (SELECT MAX(datetime) AS datetime, lid FROM uid_urls WHERE uid NOT IN (SELECT uid FROM uid_details WHERE ruid IN (SELECT ruid FROM uid_details WHERE status IN (3,4))) GROUP BY lid) AS t1 ON uid_urls.datetime = t1.datetime AND uid_urls.lid = t1.lid, urls ON uid_urls.lid = urls.lid ORDER BY v1 DESC LIMIT 30'], 30);
+		$section .= $this->create_table('URLs by Users', ['Total', 'User'], ['num', 'str'], ['SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status != 3']);
+		$section .= $this->create_table('URLs by Bots', ['Total', 'Bot'], ['num', 'str'], ['SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3 AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3']);
 
-			$t = new table('Most Referenced Domain Names', $this->rows_domains_tlds, $this->rows_domains_tlds);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'Domain',
-				'k3' => 'First Used',
-				'v1' => 'int',
-				'v2' => 'url',
-				'v3' => 'date']);
-			$t->set_value('medium', true);
-			$t->set_value('queries', ['main' => 'SELECT COUNT(*) AS v1, \'http://\' || fqdn AS v2, MIN(datetime) AS v3 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY urls.fid ORDER BY v1 DESC, v3 ASC LIMIT '.$this->rows_domains_tlds]);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('Most Referenced TLDs', $this->rows_domains_tlds, $this->rows_domains_tlds);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'TLD',
-				'v1' => 'int',
-				'v2' => 'string']);
-			$t->set_value('queries', ['main' => 'SELECT COUNT(*) AS v1, \'.\' || tld AS v2 FROM uid_urls JOIN urls ON uid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid GROUP BY tld ORDER BY v1 DESC, v2 ASC LIMIT '.$this->rows_domains_tlds]);
-			$output .= $t->make_table($this->sqlite3);
-
-			if ($this->recenturls_type !== 0) {
-				$t = new table('Most Recent URLs', $this->minrows, $this->maxrows_recenturls);
-				$t->set_value('keys', [
-					'k1' => 'Date',
-					'k2' => 'User',
-					'k3' => 'URL',
-					'v1' => 'date-norepeat',
-					'v2' => 'string',
-					'v3' => 'url']);
-
-				if ($this->recenturls_type === 1) {
-					$t->set_value('queries', ['main' => 'SELECT uid_urls.datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE uid = uid_urls.uid)) AS v2, url AS v3 FROM uid_urls JOIN (SELECT MAX(datetime) AS datetime, lid FROM uid_urls WHERE uid NOT IN (SELECT uid FROM uid_details WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 4)) GROUP BY lid) AS t1 ON uid_urls.datetime = t1.datetime AND uid_urls.lid = t1.lid, urls ON uid_urls.lid = urls.lid ORDER BY v1 DESC LIMIT '.$this->maxrows_recenturls]);
-				} elseif ($this->recenturls_type === 2) {
-					$t->set_value('queries', ['main' => 'SELECT uid_urls.datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE uid = uid_urls.uid)) AS v2, url AS v3 FROM uid_urls JOIN (SELECT MAX(datetime) AS datetime, lid FROM uid_urls WHERE uid NOT IN (SELECT uid FROM uid_details WHERE ruid IN (SELECT ruid FROM uid_details WHERE status IN (3,4))) GROUP BY lid) AS t1 ON uid_urls.datetime = t1.datetime AND uid_urls.lid = t1.lid, urls ON uid_urls.lid = urls.lid ORDER BY v1 DESC LIMIT '.$this->maxrows_recenturls]);
-				}
-
-				$output .= $t->make_table($this->sqlite3);
-			}
-
-			$t = new table('URLs by Users', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'User',
-				'v1' => 'int',
-				'v2' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status != 3']);
-			$output .= $t->make_table($this->sqlite3);
-
-			$t = new table('URLs by Bots', $this->minrows, $this->maxrows);
-			$t->set_value('keys', [
-				'k1' => 'Total',
-				'k2' => 'Bot',
-				'v1' => 'int',
-				'v2' => 'string']);
-			$t->set_value('queries', [
-				'main' => 'SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3 AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows,
-				'total' => 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3']);
-			$output .= $t->make_table($this->sqlite3);
-
-			if ($output !== '') {
-				$html .= '<div class="section">URLs</div>'."\n".$output;
-			}
-			*/
+		if ($section !== '') {
+			$html .= '<div class="section">URLs</div>'."\n".$section;
 		}
 
 		/**
@@ -433,7 +372,7 @@ class html
 			}
 		}
 
-		$table = '<table class="'.($cols === 3 ? 'large' : 'small').'">';
+		$table = '<table class="'.($title === 'Most Referenced Domain Names' ? 'medium' : ($cols === 3 ? 'large' : 'small')).'">';
 		$table .= '<colgroup><col class="c1"><col class="pos"><col class="c2">'.($cols === 3 ? '<col class="c3">' : '');
 		$table .= '<tr><th colspan="'.($cols + 1).'">'.(isset($total) ? '<span class="title">'.$title.'</span><span class="title-right">'.number_format($total).' Total</span>' : $title);
 		$table .= '<tr><td class="k1">'.$keys[0].'<td class="pos"><td class="k2">'.$keys[1].($cols === 3 ? '<td class="k3">'.$keys[2] : '');
@@ -488,7 +427,7 @@ class html
 
 						break;
 					case 'url':
-						//${'v'.$col} = '<a href="'.htmlspecialchars(${'v'.$col}).'">'.htmlspecialchars(${'v'.$col}).'</a>';
+						${'v'.$col} = '<a href="'.htmlspecialchars(${'v'.$col}).'">'.htmlspecialchars(${'v'.$col}).'</a>';
 						break;
 					default:
 						preg_match('/^num(?<decimals>[0-9])?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
@@ -514,8 +453,8 @@ class html
 
 		if ($row === 0) {
 			return null;
-		} elseif ($row < 5) {
-			for (; $row < 5; ++$row) {
+		} elseif ($row < $rows && $title !== 'Most Recent URLs') {
+			for (; $row < $rows; ++$row) {
 				$table .= '<tr><td class="v1"><td class="pos">&nbsp;<td class="v2">'.($cols === 3 ? '<td class="v3">' : '');
 			}
 		}
