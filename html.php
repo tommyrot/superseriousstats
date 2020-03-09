@@ -315,27 +315,15 @@ class html
 		/**
 		 * Milestones section.
 		 */
-		if ($this->sectionbits & 128) {
-			/*
-			$output = '';
-			$query = $this->sqlite3->query('SELECT milestone, COUNT(*) AS total FROM ruid_milestones GROUP BY milestone ORDER BY milestone ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		$section = '';
+		$query = $this->sqlite3->query('SELECT milestone, COUNT(*) AS total FROM ruid_milestones GROUP BY milestone ORDER BY milestone ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
-			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-				$t = new table(number_format($result['milestone']).' Lines Milestone', 1, $this->maxrows);
-				$t->set_value('keys', [
-					'k1' => 'Date',
-					'k2' => 'User',
-					'v1' => 'date',
-					'v2' => 'string']);
-				$t->set_value('queries', ['main' => 'SELECT date AS v1, csnick AS v2 FROM ruid_milestones JOIN uid_details ON ruid_milestones.ruid = uid_details.uid WHERE milestone = '.$result['milestone'].' ORDER BY v1 ASC, ruid_milestones.ruid ASC LIMIT '.$this->maxrows]);
-				$t->set_value('total', $result['total']);
-				$output .= $t->make_table($this->sqlite3);
-			}
+		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+			$section .= $this->create_table(number_format($result['milestone']).' Lines Milestone', ['Date', 'User'], ['date', 'str'], ['SELECT date AS v1, csnick AS v2 FROM ruid_milestones JOIN uid_details ON ruid_milestones.ruid = uid_details.uid WHERE milestone = '.$result['milestone'].' ORDER BY v1 ASC, ruid_milestones.ruid ASC LIMIT 5']);
+		}
 
-			if ($output !== '') {
-				$html .= '<div class="section">Milestones</div>'."\n".$output;
-			}
-			*/
+		if ($section !== '') {
+			$html .= '<div class="section">Milestones</div>'."\n".$section;
 		}
 
 		/**
