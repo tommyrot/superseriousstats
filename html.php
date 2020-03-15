@@ -234,7 +234,7 @@ class html
 		$section .= $this->create_table('UPPERCASED Lines', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT uppercased AS v1, csnick AS v2, ex_uppercased AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND uppercased != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(uppercased) FROM ruid_lines']);
 		$section .= $this->create_table('Monologues', ['Total', 'User'], ['num', 'str'], ['SELECT monologues AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND monologues != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(monologues) FROM ruid_lines']);
 		$section .= $this->create_table('Longest Monologue', ['Lines', 'User'], ['num', 'str'], ['SELECT topmonologue AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND topmonologue != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Moodiest People', ['Smileys', 'User'], ['num', 'str'], ['SELECT s_01 + s_02 + s_03 + s_04 + s_05 + s_06 + s_07 + s_08 + s_09 + s_10 + s_11 + s_12 + s_13 + s_14 + s_15 + s_16 + s_17 + s_18 + s_19 + s_20 + s_21 + s_22 + s_23 + s_24 + s_25 + s_26 + s_27 + s_28 + s_29 + s_30 + s_31 + s_32 + s_33 + s_34 + s_35 + s_36 + s_37 + s_47 AS v1, csnick AS v2 FROM ruid_smileys JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', 'SELECT SUM(s_01) + SUM(s_02) + SUM(s_03) + SUM(s_04) + SUM(s_05) + SUM(s_06) + SUM(s_07) + SUM(s_08) + SUM(s_09) + SUM(s_10) + SUM(s_11) + SUM(s_12) + SUM(s_13) + SUM(s_14) + SUM(s_15) + SUM(s_16) + SUM(s_17) + SUM(s_18) + SUM(s_19) + SUM(s_20) + SUM(s_21) + SUM(s_22) + SUM(s_23) + SUM(s_24) + SUM(s_25) + SUM(s_26) + SUM(s_27) + SUM(s_28) + SUM(s_29) + SUM(s_30) + SUM(s_31) + SUM(s_32) + SUM(s_33) + SUM(s_34) + SUM(s_35) + SUM(s_36) + SUM(s_37) + SUM(s_47) FROM ruid_smileys']);
+		$section .= $this->create_table('Moodiest People', ['Smileys', 'User'], ['num', 'str'], ['SELECT smile + wink + sad + cry + silly + big_smile + cheer + concerned + happy + kiss + cool + very_sad + stunned + distressed + heart + confused + surprised + neutral + cute + annoyed AS v1, csnick AS v2 FROM ruid_smileys JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', 'SELECT SUM(smile) + SUM(wink) + SUM(sad) + SUM(cry) + SUM(silly) + SUM(big_smile) + SUM(cheer) + SUM(concerned) + SUM(happy) + SUM(kiss) + SUM(cool) + SUM(very_sad) + SUM(stunned) + SUM(distressed) + SUM(heart) + SUM(confused) + SUM(surprised) + SUM(neutral) + SUM(cute) + SUM(annoyed) FROM ruid_smileys']);
 		$section .= $this->create_table('Slaps Given', ['Total', 'User'], ['num', 'str'], ['SELECT slaps AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND slaps != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(slaps) FROM ruid_lines']);
 		$section .= $this->create_table('Slaps Received', ['Total', 'User'], ['num', 'str'], ['SELECT slapped AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND slapped != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(slapped) FROM ruid_lines']);
 		$section .= $this->create_table('Most Lively Bots', ['Lines', 'Bot'], ['num', ($this->user_stats ? 'str-userstats' : 'str')], ['SELECT l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3 AND l_total != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
@@ -282,6 +282,84 @@ class html
 
 		if ($section !== '') {
 			$html .= '<div class="section">Events</div>'."\n".$section;
+		}
+
+		/**
+		 * Smileys section.
+		 */
+		$section = '';
+
+		/**
+		 * Display the top 9 smileys and top 6 textual user expressions.
+		 */
+		if (($result = $this->sqlite3->querySingle('SELECT SUM(smile) AS smile, SUM(wink) AS wink, SUM(sad) AS sad, SUM(cry) AS cry, SUM(silly) AS silly, SUM(big_smile) AS big_smile, SUM(cheer) AS cheer, SUM(concerned) AS concerned, SUM(happy) AS happy, SUM(kiss) AS kiss, SUM(cool) AS cool, SUM(very_sad) AS very_sad, SUM(stunned) AS stunned, SUM(distressed) AS distressed, SUM(heart) AS heart, SUM(confused) AS confused, SUM(surprised) AS surprised, SUM(neutral) AS neutral, SUM(cute) AS cute, SUM(annoyed) AS annoyed, SUM(hehe) AS hehe, SUM(heh) AS heh, SUM(haha) AS haha, SUM(lol) AS lol, SUM(hmm) AS hmm, SUM(wow) AS wow, SUM(meh) AS meh, SUM(ugh) AS ugh, SUM(pff) AS pff, SUM(rofl) AS rofl, SUM(lmao) AS lmao, SUM(huh) AS huh FROM ruid_smileys', true)) === false) {
+			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		}
+
+		$smileys = [
+			'smile' => [':)', ':-)', '=]', '=)', ':]', ':>'],
+			'wink' => [';)', ';-)'],
+			'sad' => [':(', ':<', ':[', '=(', ':-('],
+			'cry' => [';(', ';_;', ':\'('],
+			'silly' => [':P', ';p', '=p', ':-P'],
+			'big_smile' => [':))'],
+			'cheer' => ['\o/'],
+			'concerned' => [':/', ':-/', '=/'],
+			'happy' => [':D', ':-D', '=D', 'xD'],
+			'kiss' => [':x'],
+			'cool' => ['8)'],
+			'very_sad' => [':(('],
+			'stunned' => ['o_O'],
+			'distressed' => ['D:'],
+			'heart' => ['<3'],
+			'confused' => [':S'],
+			'surprised' => [':o'],
+			'neutral' => [':|'],
+			'cute' => [':3'],
+			'annoyed' => ['-_-'],
+			'hehe' => [],
+			'heh' => [],
+			'haha' => [],
+			'lol' => [],
+			'hmm' => [],
+			'wow' => [],
+			'meh' => [],
+			'ugh' => [],
+			'pff' => [],
+			'rofl' => [],
+			'lmao' => [],
+			'huh' => []];
+
+		if (!empty($result)) {
+			arsort($result);
+			$count_smileys = 0;
+			$count_textual = 0;
+
+			foreach ($result as $key => $value) {
+				if ($value === 0) {
+					continue;
+				}
+
+				if (in_array($key, ['smile', 'wink', 'sad', 'cry', 'silly', 'big_smile', 'cheer', 'concerned', 'happy', 'kiss', 'cool', 'very_sad', 'stunned', 'distressed', 'heart', 'confused', 'surprised', 'neutral', 'cute', 'annoyed'])) {
+					if (++$count_smileys > 9) {
+						continue;
+					}
+
+					$title = ucwords(preg_replace('/_/', ' ', $key)).' '.htmlspecialchars($smileys[$key][rand(0, count($smileys[$key]) - 1)]);
+				} else {
+					if (++$count_textual > 6) {
+						continue;
+					}
+
+					$title = '<i>"'.$key.'"</i>';
+				}
+
+				$section .= $this->create_table($title, ['Total', 'User'], ['num', 'str'], ['SELECT '.$key.' AS v1, csnick AS v2 FROM ruid_smileys JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND '.$key.' != 0 ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5']);
+			}
+		}
+
+		if ($section !== '') {
+			$html .= '<div class="section">Smileys</div>'."\n".$section;
 		}
 
 		/**
