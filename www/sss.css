@@ -91,19 +91,19 @@ input {
 	width:80px;
 }
 /**
- * Graph colors
+ * Graph colors; (n)ight, (m)orning, (a)fternoon, (e)vening
  */
-.b {
+.n {
 	background-color:#416D9C;
 }
-.g {
+.m {
 	background-color:#70A35E;
 }
-.r {
-	background-color:#C74243;
-}
-.y {
+.a {
 	background-color:#EBB056;
+}
+.e {
+	background-color:#C74243;
 }
 /**
  * Global table styling
@@ -161,18 +161,18 @@ th {
 	text-align:center;
 	width:34px;
 }
-.act li.b,
-.act li.g,
-.act li.r,
-.act li.y,
-.act-day li.b,
-.act-day li.g,
-.act-day li.r,
-.act-day li.y,
-.act-year li.b,
-.act-year li.g,
-.act-year li.r,
-.act-year li.y {
+.act li.n,
+.act li.m,
+.act li.a,
+.act li.e,
+.act-day li.n,
+.act-day li.m,
+.act-day li.a,
+.act-day li.e,
+.act-year li.n,
+.act-year li.m,
+.act-year li.a,
+.act-year li.e {
 	margin-left:9px;
 	width:16px;
 }

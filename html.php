@@ -18,11 +18,6 @@ class html
 	 * overridden through the config file.
 	 */
 	private string $channel = '';
-	private $color = [
-		'night' => 'b',
-		'morning' => 'g',
-		'afternoon' => 'y',
-		'evening' => 'r'];
 	private $columns_act_year = 0;
 	private $datetime = [];
 	private $estimate = false;
@@ -655,7 +650,7 @@ class html
 							$height_li = $height_int['night'];
 						}
 
-						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px">';
+						$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
 					}
 				}
 
@@ -761,7 +756,7 @@ class html
 							$height_li = $height_int['night'];
 						}
 
-						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'">';
+						$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'">';
 					}
 				}
 
@@ -828,7 +823,7 @@ class html
 						$time = 'evening';
 					}
 
-					$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height.'px" title="'.number_format($value).'">';
+					$tr2 .= '<li class="'.$time[0].'" style="height:'.$height.'px" title="'.number_format($value).'">';
 				}
 
 				$tr2 .= '</ul>';
@@ -926,7 +921,7 @@ class html
 
 			foreach ($times as $time) {
 				if ($width_int[$time] !== 0) {
-					$when .= '<li class="'.$this->color[$time].'" style="width:'.$width_int[$time].'px">';
+					$when .= '<li class="'.$time[0].'" style="width:'.$width_int[$time].'px">';
 				}
 			}
 
@@ -1066,7 +1061,7 @@ class html
 					$width = round((${$time}[$i]['lines'] / $high_value) * 190);
 
 					if ($width !== (float) 0) {
-						$trx .= '<td class="v">'.${$time}[$i]['csnick'].' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div>';
+						$trx .= '<td class="v">'.${$time}[$i]['csnick'].' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>';
 					} else {
 						$trx .= '<td class="v">'.${$time}[$i]['csnick'].' - '.number_format(${$time}[$i]['lines']);
 					}
