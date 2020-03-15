@@ -17,27 +17,22 @@ class html
 	 * Variables listed in $settings_allow_override[] can have their default value
 	 * overridden through the config file.
 	 */
+	private array $settings_allow_override = ['channel', 'history', 'search_user', 'user_stats'];
 	private string $channel = '';
+	private object $sqlite3;
 	private $columns_act_year = 0;
 	private $datetime = [];
 	private $estimate = false;
 	private $history = false;
 	private $l_total = 0;
-	private $maxrows = 5;
 	private $maxrows_people2 = 10;
 	private $maxrows_people_alltime = 30;
 	private $maxrows_people_month = 10;
 	private $maxrows_people_timeofday = 10;
 	private $maxrows_people_year = 10;
 	private $maxrows_recenturls = 25;
-	private $minrows = 3;
 	private $rankings = false;
-	private $recenturls_type = 1;
-	private $rows_domains_tlds = 10;
 	private $search_user = false;
-	private $sectionbits = 255;
-	private $settings_allow_override = ['channel', 'history', 'recenturls_type', 'search_user', 'stylesheet', 'user_stats'];
-	private $sqlite3;
 	private $stylesheet = 'sss.css';
 	private $user_stats = true;
 
@@ -181,26 +176,24 @@ class html
 		/**
 		 * Activity section.
 		 */
-		if ($this->sectionbits & 1) {
-			$html .= '<div class="section">Activity</div>'."\n";
-			$html .= $this->make_table_activity_distribution_hour();
-			$html .= $this->make_table_activity('day');
-			$html .= $this->make_table_activity('month');
-			$html .= $this->make_table_activity('year');
-			$html .= $this->make_table_activity_distribution_day();
-			$html .= $this->make_table_people('alltime');
-			$html .= $this->make_table_people2();
+		$html .= '<div class="section">Activity</div>'."\n";
+		$html .= $this->make_table_activity_distribution_hour();
+		$html .= $this->make_table_activity('day');
+		$html .= $this->make_table_activity('month');
+		$html .= $this->make_table_activity('year');
+		$html .= $this->make_table_activity_distribution_day();
+		$html .= $this->make_table_people('alltime');
+		$html .= $this->make_table_people2();
 
-			/**
-			 * In January, don't display the year table if it's identical to the month one.
-			 */
-			if ($this->datetime['month'] !== 1 || ($this->datetime['month'] === 1 && $this->maxrows_people_year !== $this->maxrows_people_month)) {
-				$html .= $this->make_table_people('year');
-			}
-
-			$html .= $this->make_table_people('month');
-			$html .= $this->make_table_people_timeofday();
+		/**
+		 * In January, don't display the year table if it's identical to the month one.
+		 */
+		if ($this->datetime['month'] !== 1 || ($this->datetime['month'] === 1 && $this->maxrows_people_year !== $this->maxrows_people_month)) {
+			$html .= $this->make_table_people('year');
 		}
+
+		$html .= $this->make_table_people('month');
+		$html .= $this->make_table_people_timeofday();
 
 		/**
 		 * General Chat section.
