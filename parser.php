@@ -256,8 +256,7 @@ class parser
 		 *    space, and the line and paragraph separators) with a single space.
 		 * 5. Finally, remove spaces at the beginning and end of a line.
 		 */
-		$line = preg_replace(['/\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09+/', '/\p{C}+/u', '/( |\xC2\xA0|\xE2\x80[\xA8\xA9])+/', '/^ | $/'], ['', ' ', '', ' ', ''], $line);
-		return $line;
+		return preg_replace(['/\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09+/', '/\p{C}+/u', '/( |\xC2\xA0|\xE2\x80[\xA8\xA9])+/', '/^ | $/'], ['', ' ', '', ' ', ''], $line);
 	}
 
 	/**
