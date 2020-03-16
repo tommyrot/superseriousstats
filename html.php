@@ -38,9 +38,6 @@ class html
 
 	public function __construct(array $config, object $sqlite3)
 	{
-		/**
-		 * Apply settings from the config file.
-		 */
 		$this->apply_settings($config);
 		$this->sqlite3 = $sqlite3;
 	}
