@@ -67,7 +67,7 @@ class html
 	/**
 	 * Generate the HTML page.
 	 */
-	public function get_contents()
+	public function get_contents(): string
 	{
 		output::output('notice', __METHOD__.'(): creating stats page');
 
