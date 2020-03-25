@@ -18,13 +18,17 @@ class html
 	 * overridden through the config file.
 	 */
 	private array $settings_allow_override = ['channel', 'history', 'search_user', 'user_stats'];
-	private string $channel = '';
+	private bool $estimate = false;
+	private int $days_left = 0;
+	private int $days_logged = 0;
+	private int $l_total = 0;
+	private object $date_first_activity;
+	private object $date_last_activity;
+	private object $date_last_log_parsed;
 	private object $sqlite3;
+	private string $channel = '';
 	private $columns_act_year = 0;
-	private $datetime = [];
-	private $estimate = false;
 	private $history = false;
-	private $l_total = 0;
 	private $maxrows_people2 = 10;
 	private $maxrows_people_alltime = 30;
 	private $maxrows_people_month = 10;
@@ -75,58 +79,39 @@ class html
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		}
 
-		/**
-		 * All queries from this point forward require that there has at least been one
-		 * line typed in the channel.
-		 */
 		if (is_null($this->l_total)) {
 			output::output('debug', __METHOD__.'(): database is empty');
 			return '<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">There is not enough data to create statistics, yet.</div></div></body></html>'."\n";
 		}
 
-		if (($result = $this->sqlite3->querySingle('SELECT MIN(date) AS date_first, MAX(date) AS date_last FROM channel_activity', true)) === false) {
+		if (($result = $this->sqlite3->querySingle('SELECT MIN(date) AS date_first_activity, MAX(date) AS date_last_activity FROM channel_activity', true)) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		}
 
-		$date_first = $result['date_first'];
-		$date_last = $result['date_last'];
+		$this->date_first_activity = date_create($result['date_first_activity']);
+		$this->date_last_activity = date_create($result['date_last_activity']);
 
-		if (($result = $this->sqlite3->querySingle('SELECT COUNT(*) AS dayslogged, MAX(date) AS date FROM parse_history', true)) === false) {
+		if (($result = $this->sqlite3->querySingle('SELECT COUNT(*) AS days_logged, MAX(date) AS date FROM parse_history', true)) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		}
 
-		$date_lastlogparsed = $result['date'];
-		$dayslogged = $result['dayslogged'];
-		$l_avg = (int) round($this->l_total / $dayslogged);
+		$this->date_last_log_parsed = date_create($result['date']);
+		$this->days_logged = $result['days_logged'];
 
 		/**
-		 * Date and time variables used throughout the script. These are based on the
-		 * date of the last logfile parsed, and are used to define our scope.
+		 * Display an additional column in the Activity by Year table showing the
+		 * estimated line count for the current year (real time). The estimate is based
+		 * on activity during the last 90 days. The column won't be shown if there
+		 * hasn't been any activity in the current year yet, there hasn't been any
+		 * activity in the last 90 days, or if it's the last day of the year.
 		 */
-		$this->datetime['dayofmonth'] = (int) date('j', strtotime($date_lastlogparsed));
-		$this->datetime['firstyearmonth'] = substr($date_first, 0, 7);
-		$this->datetime['month'] = (int) date('n', strtotime($date_lastlogparsed));
-		$this->datetime['monthname'] = date('F', strtotime($date_lastlogparsed));
-		$this->datetime['year'] = (int) date('Y', strtotime($date_lastlogparsed));
+		if ($this->date_last_activity->format('Y') === date('Y')) {
+			$diff = date_diff($this->date_last_log_parsed, date_create(date('Y-12-31')));
+			$this->days_left = $diff->days;
+			$diff = date_diff($this->date_last_activity, $this->date_last_log_parsed);
 
-		/**
-		 * If the date of the last logfile parsed is in the current year and there are
-		 * one or more days to come until the end of the year, display an additional
-		 * column in the Activity by Year table with an estimated line count for said
-		 * year. The estimation is based on the activity in the last 90 days logged and
-		 * won't be shown if there has been no activity in the current year yet.
-		 */
-		if ($this->datetime['year'] === (int) date('Y')) {
-			$this->datetime['daysleft'] = (int) date('z', strtotime('last day of December '.$this->datetime['year'])) - (int) date('z', strtotime($date_lastlogparsed));
-
-			if ($this->datetime['daysleft'] !== 0) {
-				if (($date_lastactivity = $this->sqlite3->querySingle('SELECT MAX(date) FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'')) === false) {
-					output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-				}
-
-				if ((int) substr($date_lastactivity, 0, 4) === $this->datetime['year']) {
-					$this->estimate = true;
-				}
+			if ($this->days_left !== 0 && $diff->days < 90) {
+				$this->estimate = true;
 			}
 		}
 
@@ -134,9 +119,9 @@ class html
 		 * Show a minimum of 3 and maximum of 24 columns in the Activity by Year table.
 		 * In case the data allows for more than 16 columns there won't be any room for
 		 * the Activity Distribution by Day table to be adjacent to the right so we pad
-		 * the Activity by Year table up to 24 columns so it looks neat.
+		 * the Activity by Year table up to 24 columns making it look neat.
 		 */
-		$this->columns_act_year = $this->datetime['year'] - (int) date('Y', strtotime($date_first)) + ($this->estimate ? 1 : 0) + 1;
+		$this->columns_act_year = $this->date_last_log_parsed->format('Y') - (int) $this->date_first_activity->format('Y') + ($this->estimate ? 1 : 0) + 1;
 
 		if ($this->columns_act_year < 3) {
 			$this->columns_act_year = 3;
@@ -166,8 +151,8 @@ class html
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
 			. '<div class="info">'.($this->search_user ? '<form action="user.php"><input type="text" name="nick" placeholder="Search User.."></form>' : '').htmlspecialchars($this->channel, ENT_QUOTES | ENT_HTML5, 'UTF-8').', seriously.<br><br>'
-			. number_format($dayslogged).' day'.($dayslogged > 1 ? 's logged from '.date('M j, Y', strtotime($date_first)).' to '.date('M j, Y', strtotime($date_last)) : ' logged on '.date('M j, Y', strtotime($date_first))).'.<br><br>'
-			. 'Logs contain '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
+			. number_format($this->days_logged).' day'.($this->days_logged > 1 ? 's logged from '.$this->date_first_activity->format('M j, Y').' to '.$this->date_last_activity->format('M j, Y') : ' logged on '.$this->date_first_activity->format('M j, Y')).'.<br><br>'
+			. 'Logs contain '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' &ndash; an average of '.number_format(intdiv($this->l_total, $this->days_logged)).' line'.(intdiv($this->l_total, $this->days_logged) !== 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($date_l_max)).' with a total of '.number_format($l_max).' line'.($l_max > 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
@@ -185,7 +170,7 @@ class html
 		/**
 		 * In January, don't display the year table if it's identical to the month one.
 		 */
-		if ($this->datetime['month'] !== 1 || ($this->datetime['month'] === 1 && $this->maxrows_people_year !== $this->maxrows_people_month)) {
+		if ((int) $this->date_last_log_parsed->format('n') !== 1 || ((int) $this->date_last_log_parsed->format('n') === 1 && $this->maxrows_people_year !== $this->maxrows_people_month)) {
 			$html .= $this->make_table_people('year');
 		}
 
@@ -196,15 +181,15 @@ class html
 		 * General Chat section.
 		 */
 		$section = '';
-		$section .= $this->create_table('Most Talkative Chatters', ['Lines/Day', 'User'], ['num1', 'str'], ['SELECT CAST(l_total AS REAL) / activedays AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 30, $this->datetime['year'])).'\' ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Most Fluent Chatters', ['Words/Line', 'User'], ['num1', 'str'], ['SELECT CAST(words AS REAL) / l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 30, $this->datetime['year'])).'\' ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Most Tedious Chatters', ['Chars/Line', 'User'], ['num1', 'str'], ['SELECT CAST(characters AS REAL) / l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 30, $this->datetime['year'])).'\' ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Most Talkative Chatters', ['Lines/Day', 'User'], ['num1', 'str'], ['SELECT CAST(l_total AS REAL) / activedays AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - 30, (int) $this->date_last_log_parsed->format('Y'))).'\' ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Most Fluent Chatters', ['Words/Line', 'User'], ['num1', 'str'], ['SELECT CAST(words AS REAL) / l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - 30, (int) $this->date_last_log_parsed->format('Y'))).'\' ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Most Tedious Chatters', ['Chars/Line', 'User'], ['num1', 'str'], ['SELECT CAST(characters AS REAL) / l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= \''.date('Y-m-d 00:00:00', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - 30, (int) $this->date_last_log_parsed->format('Y'))).'\' ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
 		$section .= $this->create_table('Individual Top Days &ndash; All-Time', ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Individual Top Days &ndash; '.$this->datetime['year'], ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.$this->datetime['year'].'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Individual Top Days &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'], ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.date('Y-m', strtotime($date_lastlogparsed)).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Most Active Chatters &ndash; All-Time', ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(activedays AS REAL) / '.$dayslogged.') * 100 AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Most Active Chatters &ndash; '.$this->datetime['year'], ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.$this->datetime['year'].'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.$this->datetime['year'].'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Most Active Chatters &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'], ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.date('Y-m', strtotime($date_lastlogparsed)).'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.date('Y-m', strtotime($date_lastlogparsed)).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Individual Top Days &ndash; '.$this->date_last_log_parsed->format('Y'), ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.$this->date_last_log_parsed->format('Y').'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Individual Top Days &ndash; '.$this->date_last_log_parsed->format('F').' '.$this->date_last_log_parsed->format('Y'), ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.$this->date_last_log_parsed->format('Y-m').'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Most Active Chatters &ndash; All-Time', ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(activedays AS REAL) / '.$this->days_logged.') * 100 AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Most Active Chatters &ndash; '.$this->date_last_log_parsed->format('Y'), ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.$this->date_last_log_parsed->format('Y').'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.$this->date_last_log_parsed->format('Y').'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Most Active Chatters &ndash; '.$this->date_last_log_parsed->format('F').' '.$this->date_last_log_parsed->format('Y'), ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.$this->date_last_log_parsed->format('Y-m').'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.$this->date_last_log_parsed->format('Y-m').'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
 		$section .= $this->create_table('Exclamations', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT exclamations AS v1, csnick AS v2, ex_exclamations AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND exclamations != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(exclamations) FROM ruid_lines']);
 		$section .= $this->create_table('Questions', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT questions AS v1, csnick AS v2, ex_questions AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND questions != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(questions) FROM ruid_lines']);
 		$section .= $this->create_table('UPPERCASED Lines', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT uppercased AS v1, csnick AS v2, ex_uppercased AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND uppercased != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(uppercased) FROM ruid_lines']);
@@ -511,28 +496,28 @@ class html
 			$class = 'act';
 			$columns = 24;
 			$head = 'Activity by Day';
-			$query = $this->sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 24, $this->datetime['year'])).'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			$query = $this->sqlite3->query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - 24, (int) $this->date_last_log_parsed->format('Y'))).'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
 			for ($i = $columns - 1; $i >= 0; --$i) {
-				$dates[] = date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - $i, $this->datetime['year']));
+				$dates[] = date('Y-m-d', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - $i, (int) $this->date_last_log_parsed->format('Y')));
 			}
 		} elseif ($type === 'month') {
 			$class = 'act';
 			$columns = 24;
 			$head = 'Activity by Month';
-			$query = $this->sqlite3->query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) > \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 24, 1, $this->datetime['year'])).'\' GROUP BY SUBSTR(date, 1, 7)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			$query = $this->sqlite3->query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) > \''.date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n') - 24, 1, (int) $this->date_last_log_parsed->format('Y'))).'\' GROUP BY SUBSTR(date, 1, 7)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
 			for ($i = $columns - 1; $i >= 0; --$i) {
-				$dates[] = date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - $i, 1, $this->datetime['year']));
+				$dates[] = date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n') - $i, 1, (int) $this->date_last_log_parsed->format('Y')));
 			}
 		} elseif ($type === 'year') {
 			$class = 'act-year';
 			$columns = $this->columns_act_year;
 			$head = 'Activity by Year';
-			$query = $this->sqlite3->query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) > \''.($this->datetime['year'] - 24).'\' GROUP BY SUBSTR(date, 1, 4)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			$query = $this->sqlite3->query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) > \''.($this->date_last_log_parsed->format('Y') - 24).'\' GROUP BY SUBSTR(date, 1, 4)') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
 			for ($i = $columns - ($this->estimate ? 1 : 0) - 1; $i >= 0; --$i) {
-				$dates[] = $this->datetime['year'] - $i;
+				$dates[] = $this->date_last_log_parsed->format('Y') - $i;
 			}
 
 			if ($this->estimate) {
@@ -562,14 +547,14 @@ class html
 		}
 
 		if ($type === 'year' && $this->estimate) {
-			if (($result = $this->sqlite3->querySingle('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, $this->datetime['month'], $this->datetime['dayofmonth'] - 90, $this->datetime['year'])).'\'', true)) === false) {
+			if (($result = $this->sqlite3->querySingle('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - 90, (int) $this->date_last_log_parsed->format('Y'))).'\'', true)) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 
-			$l_afternoon['estimate'] = $l_afternoon[$this->datetime['year']] + round($result['l_afternoon_avg'] * $this->datetime['daysleft']);
-			$l_evening['estimate'] = $l_evening[$this->datetime['year']] + round($result['l_evening_avg'] * $this->datetime['daysleft']);
-			$l_morning['estimate'] = $l_morning[$this->datetime['year']] + round($result['l_morning_avg'] * $this->datetime['daysleft']);
-			$l_night['estimate'] = $l_night[$this->datetime['year']] + round($result['l_night_avg'] * $this->datetime['daysleft']);
+			$l_afternoon['estimate'] = $l_afternoon[$this->date_last_log_parsed->format('Y')] + round($result['l_afternoon_avg'] * $this->days_left);
+			$l_evening['estimate'] = $l_evening[$this->date_last_log_parsed->format('Y')] + round($result['l_evening_avg'] * $this->days_left);
+			$l_morning['estimate'] = $l_morning[$this->date_last_log_parsed->format('Y')] + round($result['l_morning_avg'] * $this->days_left);
+			$l_night['estimate'] = $l_night[$this->date_last_log_parsed->format('Y')] + round($result['l_night_avg'] * $this->days_left);
 			$l_total['estimate'] = $l_afternoon['estimate'] + $l_evening['estimate'] + $l_morning['estimate'] + $l_night['estimate'];
 
 			if ($l_total['estimate'] > $high_value) {
@@ -836,11 +821,11 @@ class html
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 		} elseif ($type === 'month') {
-			if (($total = $this->sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\'')) === false) {
+			if (($total = $this->sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), 1, (int) $this->date_last_log_parsed->format('Y'))).'\'')) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 		} elseif ($type === 'year') {
-			if (($total = $this->sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\'')) === false) {
+			if (($total = $this->sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->date_last_log_parsed->format('Y').'\'')) === false) {
 				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 		}
@@ -857,19 +842,19 @@ class html
 			 * Don't try to calculate changes in rankings if we're dealing with the first
 			 * month of activity.
 			 */
-			if (!$this->rankings || date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
+			if (!$this->rankings || date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), 1, (int) $this->date_last_log_parsed->format('Y'))) === $this->date_first_activity->format('Y-m')) {
 				$query = $this->sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, lasttalked FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			} else {
-				$query = $this->sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, lasttalked, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 1, 1, $this->datetime['year'])).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+				$query = $this->sqlite3->query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, quote, lasttalked, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n') - 1, 1, (int) $this->date_last_log_parsed->format('Y'))).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 		} elseif ($type === 'month') {
-			$head = 'Most Talkative People &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'];
-			$historylink = '<a href="history.php?year='.$this->datetime['year'].'&amp;month='.$this->datetime['month'].'">History</a>';
-			$query = $this->sqlite3->query('SELECT csnick, ruid_activity_by_month.l_total AS l_total, ruid_activity_by_month.l_night AS l_night, ruid_activity_by_month.l_morning AS l_morning, ruid_activity_by_month.l_afternoon AS l_afternoon, ruid_activity_by_month.l_evening AS l_evening, quote, lasttalked FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_month.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\' ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_month) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			$head = 'Most Talkative People &ndash; '.$this->date_last_log_parsed->format('F').' '.$this->date_last_log_parsed->format('Y');
+			$historylink = '<a href="history.php?year='.$this->date_last_log_parsed->format('Y').'&amp;month='.(int) $this->date_last_log_parsed->format('n').'">History</a>';
+			$query = $this->sqlite3->query('SELECT csnick, ruid_activity_by_month.l_total AS l_total, ruid_activity_by_month.l_night AS l_night, ruid_activity_by_month.l_morning AS l_morning, ruid_activity_by_month.l_afternoon AS l_afternoon, ruid_activity_by_month.l_evening AS l_evening, quote, lasttalked FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_month.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), 1, (int) $this->date_last_log_parsed->format('Y'))).'\' ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_month) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		} elseif ($type === 'year') {
-			$head = 'Most Talkative People &ndash; '.$this->datetime['year'];
-			$historylink = '<a href="history.php?year='.$this->datetime['year'].'">History</a>';
-			$query = $this->sqlite3->query('SELECT csnick, ruid_activity_by_year.l_total AS l_total, ruid_activity_by_year.l_night AS l_night, ruid_activity_by_year.l_morning AS l_morning, ruid_activity_by_year.l_afternoon AS l_afternoon, ruid_activity_by_year.l_evening AS l_evening, quote, lasttalked FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_year.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\' ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_year) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			$head = 'Most Talkative People &ndash; '.$this->date_last_log_parsed->format('Y');
+			$historylink = '<a href="history.php?year='.$this->date_last_log_parsed->format('Y').'">History</a>';
+			$query = $this->sqlite3->query('SELECT csnick, ruid_activity_by_year.l_total AS l_total, ruid_activity_by_year.l_night AS l_night, ruid_activity_by_year.l_morning AS l_morning, ruid_activity_by_year.l_afternoon AS l_afternoon, ruid_activity_by_year.l_evening AS l_evening, quote, lasttalked FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_year.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->date_last_log_parsed->format('Y').'\' ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_year) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		}
 
 		$i = 0;
@@ -941,10 +926,10 @@ class html
 		 * Don't try to calculate changes in rankings if we're dealing with the first
 		 * month of activity.
 		 */
-		if (!$this->rankings || date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])) === $this->datetime['firstyearmonth']) {
+		if (!$this->rankings || date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), 1, (int) $this->date_last_log_parsed->format('Y'))) === $this->date_first_activity->format('Y-m')) {
 			$query = $this->sqlite3->query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		} else {
-			$query = $this->sqlite3->query('SELECT csnick, l_total, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'] - 1, 1, $this->datetime['year'])).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			$query = $this->sqlite3->query('SELECT csnick, l_total, (SELECT rank FROM ruid_rankings WHERE ruid = ruid_lines.ruid AND date = \''.date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n') - 1, 1, (int) $this->date_last_log_parsed->format('Y'))).'\') AS prevrank FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$this->maxrows_people_alltime.', '.($this->maxrows_people2 * 4)) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		}
 
 		$current_column = 1;
