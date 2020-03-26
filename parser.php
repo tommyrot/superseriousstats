@@ -500,32 +500,32 @@ class parser
 			 * 100% accurate but it's good enough for our use case.
 			 */
 			if (preg_match('/^["\'(]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;]?$/u', $csword, $matches)) {
-				$csword = $matches['csword_trimmed'];
-				$word_length = mb_strlen($csword, 'UTF-8');
+				$csword_trimmed = $matches['csword_trimmed'];
+				$word_length = mb_strlen($csword_trimmed, 'UTF-8');
 
 				/**
 				 * Words consisting of 30+ characters are most likely not real words.
 				 */
 				if ($word_length <= 30) {
-					$this->add_word($csword, $word_length);
+					$this->add_word($csword_trimmed, $word_length);
 				}
 
 				/**
-				 * Catch textual user expressions. Take special care of "D:".
+				 * Check for textual user expressions and a couple of smileys.
 				 */
-				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|xd|rofl|lmao)$/i', $csword)) {
-					$smiley = strtolower($csword);
+				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|rofl|lmao)$/i', $csword_trimmed)) {
+					$smiley = strtolower($csword_trimmed);
 					$smiley = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], $smiley);
 					$this->nick_objs[$nick]->add_num($this->smileys[$smiley], 1);
-				} elseif (preg_match('/^d:$/i', $matches[0])) {
-					$this->nick_objs[$nick]->add_num($this->smileys['d:'], 1);
+				} elseif (preg_match('/^[xX]D|D:$/', $csword)) {
+					$this->nick_objs[$nick]->add_num($this->smileys[strtolower($csword)], 1);
 				}
 
 			/**
 			 * Regular expression to catch all possible smileys we're interested in. Take
 			 * note: these should not match the previous regular expression (for words).
 			 */
-			} elseif (preg_match('/^(:([][)(pd\/ox\\\|3<>s]|-[)d\/p(\\\]|\'\()|;([)(pd]|-\)|_;)|[:;](\)\)+|\(\(+)|\\\o\/|<3|=[])p\/\\\d(]|8\)|-[_.]-|o[_.]o)$/i', $csword)) {
+			} elseif (preg_match('/^(:([][)(pPD\/oOxX\\\|3<>sS]|-[)D\/pP(\\\]|\'\()|;([)(pPD]|-\)|_;)|[:;](\)\)+|\(\(+)|\\\[oO]\/|<3|=[])pP\/\\\D(]|8\)|-[_.]-|[oO][_.][oO])$/', $csword)) {
 				$smiley = strtolower($csword);
 				$smiley = preg_replace(['/^(:-?|=)[\/\\\]$/', '/^:\)\)\)+$/', '/^:\(\(\(+$/', '/^;\)\)+$/', '/^;\(\(+$/', '/^;d$/', '/^o\.o$/', '/^-\.-$/'], [':/', ':))', ':((', ';)', ';(', ':d', 'o_o', '-_-'], $smiley);
 				$this->nick_objs[$nick]->add_num($this->smileys[$smiley], 1);
