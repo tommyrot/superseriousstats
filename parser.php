@@ -517,7 +517,7 @@ class parser
 					$smiley_textual = strtolower($csword_trimmed);
 					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], $smiley_textual);
 					$this->nick_objs[$nick]->add_num($this->smileys[$smiley_textual], 1);
-				} elseif (preg_match('/^[xX]D|D:$/', $csword)) {
+				} elseif (preg_match('/^([xX]D|D:)$/', $csword)) {
 					$this->nick_objs[$nick]->add_num($this->smileys[strtolower($csword)], 1);
 				}
 
