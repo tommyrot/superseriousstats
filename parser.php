@@ -522,8 +522,7 @@ class parser
 				}
 
 			/**
-			 * Regular expression to catch all possible smileys we're interested in. Take
-			 * note: these should not match the previous regular expression (for words).
+			 * Regular expression to check for all remaining smileys we're interested in.
 			 */
 			} elseif (preg_match('/^(:([][)(pPD\/oOxX\\\|3<>sS]|-[)D\/pP(\\\]|\'\()|;([)(pPD]|-\)|_;)|[:;](\)\)+|\(\(+)|\\\[oO]\/|<3|=[])pP\/\\\D(]|8\)|-[_.]-|[oO][_.][oO])$/', $csword)) {
 				$smiley = strtolower($csword);
