@@ -514,9 +514,9 @@ class parser
 				 * Check for textual user expressions and a couple of smileys.
 				 */
 				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|rofl|lmao)$/i', $csword_trimmed)) {
-					$smiley = strtolower($csword_trimmed);
-					$smiley = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], $smiley);
-					$this->nick_objs[$nick]->add_num($this->smileys[$smiley], 1);
+					$smiley_textual = strtolower($csword_trimmed);
+					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], $smiley_textual);
+					$this->nick_objs[$nick]->add_num($this->smileys[$smiley_textual], 1);
 				} elseif (preg_match('/^[xX]D|D:$/', $csword)) {
 					$this->nick_objs[$nick]->add_num($this->smileys[strtolower($csword)], 1);
 				}
