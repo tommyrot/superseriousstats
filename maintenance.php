@@ -77,12 +77,12 @@ class maintenance
 	private function deactivate_fqdns(): void
 	{
 		if (($rp = realpath('tlds-alpha-by-domain.txt')) === false) {
-			output::output('notice', __METHOD__.'(): no such file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
+			output::output('notice', 'no such file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
 			return;
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::output('notice', __METHOD__.'(): failed to open file: \''.$rp.'\', skipping tld validation');
+			output::output('notice', 'failed to open file: \''.$rp.'\', skipping tld validation');
 			return;
 		}
 
@@ -97,7 +97,7 @@ class maintenance
 
 		if (!empty($tlds_active)) {
 			$this->sqlite3->exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-			output::output('debug', __METHOD__.'(): deactivated '.$this->sqlite3->changes().' fqdn'.($this->sqlite3->changes() !== 1 ? 's' : ''));
+			output::output('debug', 'deactivated '.$this->sqlite3->changes().' fqdn'.($this->sqlite3->changes() !== 1 ? 's' : ''));
 		}
 	}
 
@@ -106,17 +106,17 @@ class maintenance
 	 */
 	private function main(): void
 	{
-		output::output('notice', __METHOD__.'(): performing database maintenance routines');
+		output::output('notice', 'performing database maintenance routines');
 		$this->sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-		output::output('notice', __METHOD__.'(): (1/4) registering most active aliases');
+		output::output('debug', '(1/4) registering most active aliases');
 		$this->register_most_active_aliases();
-		output::output('notice', __METHOD__.'(): (2/4) creating materialized views');
+		output::output('debug', '(2/4) creating materialized views');
 		$this->create_materialized_views();
-		output::output('notice', __METHOD__.'(): (3/4) calculating milestones');
+		output::output('debug', '(3/4) calculating milestones');
 		$this->calculate_milestones();
-		output::output('notice', __METHOD__.'(): (4/4) deactivating invalid fqdns');
+		output::output('debug', '(4/4) deactivating invalid fqdns');
 		$this->deactivate_fqdns();
-		output::output('notice', __METHOD__.'(): committing data');
+		output::output('notice', 'committing data');
 		$this->sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 	}
 
@@ -137,7 +137,7 @@ class maintenance
 
 			$this->sqlite3->exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = '.$result['status'].' WHERE uid = '.$result['new_ruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			$this->sqlite3->exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = 2 WHERE ruid = '.$result['ruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-			output::output('debug', __METHOD__.'(): \''.$new_registered_nick.'\' new registered nick for \''.$old_registered_nick.'\'');
+			output::output('debug', '\''.$new_registered_nick.'\' new registered nick for \''.$old_registered_nick.'\'');
 		}
 	}
 }

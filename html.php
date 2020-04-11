@@ -73,14 +73,14 @@ class html
 	 */
 	public function get_contents(): string
 	{
-		output::output('notice', __METHOD__.'(): creating stats page');
+		output::output('notice', 'creating stats page');
 
 		if (($this->l_total = $this->sqlite3->querySingle('SELECT SUM(l_total) FROM channel_activity')) === false) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		}
 
 		if (is_null($this->l_total)) {
-			output::output('debug', __METHOD__.'(): database is empty');
+			output::output('debug', 'database is empty');
 			return '<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">There is not enough data to create statistics, yet.</div></div></body></html>'."\n";
 		}
 

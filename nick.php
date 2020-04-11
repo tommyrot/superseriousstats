@@ -214,7 +214,7 @@ class nick
 				 * database that rules out a streak. We won't add the nick to the database just
 				 * because of a slap to avoid abuse.
 				 */
-				output::output('debug', __METHOD__.'(): skipping nick: \''.$this->csnick.'\'');
+				output::output('debug', 'skipping nick: \''.$this->csnick.'\'');
 				return;
 			}
 
