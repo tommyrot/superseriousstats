@@ -108,7 +108,7 @@ class parser
 	protected int $linenum = 0;
 	protected string $line_prev = '';
 
-	public function __construct(string $date, array $config)
+	public function __construct(string $date)
 	{
 		$this->date = $date;
 	}
