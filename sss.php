@@ -124,6 +124,7 @@ class sss
 		try {
 			$this->sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
 			$this->sqlite3->busyTimeout(60000);
+			output::output('notice', 'succesfully connected to database: \''.$this->database.'\'');
 		} catch (Exception $e) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
 		}
@@ -146,7 +147,7 @@ class sss
 			$this->sqlite3->exec('PRAGMA '.$pragma.' = '.$value);
 		}
 
-		output::output('notice', 'succesfully connected to database: \''.$this->database.'\'');
+		$this->sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
 		if (array_key_exists('e', $options)) {
 			$this->export_nicks($options['e']);
@@ -168,6 +169,7 @@ class sss
 			$this->create_html($options['o']);
 		}
 
+		$this->sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		$this->sqlite3->exec('PRAGMA optimize');
 		$this->sqlite3->close();
 		output::output('notice', 'kthxbye');
@@ -240,7 +242,6 @@ class sss
 		 * Set all nicks to their default status before updating them according to
 		 * imported data.
 		 */
-		$this->sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		$this->sqlite3->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
 		while (($line = fgets($fp)) !== false) {
@@ -261,7 +262,6 @@ class sss
 		}
 
 		fclose($fp);
-		$this->sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 	}
 
 	/**
@@ -300,8 +300,6 @@ class sss
 			}
 		}
 
-		$this->sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-
 		foreach ($nicks_stripped as $uids) {
 			/**
 			 * If there is only one match for the stripped nick, there is nothing to link.
@@ -332,8 +330,6 @@ class sss
 				$this->sqlite3->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 		}
-
-		$this->sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 	}
 
 	private function create_html(string $file): void

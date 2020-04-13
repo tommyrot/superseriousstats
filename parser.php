@@ -676,7 +676,6 @@ class parser
 		}
 
 		output::output('notice', __METHOD__.'(): writing data to database');
-		$sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 
 		/**
 		 * Write channel totals to database.
@@ -723,7 +722,6 @@ class parser
 			$sqlite3->exec('INSERT INTO streak_history (nick_prev, streak) VALUES (\''.$this->nick_prev.'\', '.$this->streak.')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		}
 
-		$sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
 		return true;
 	}
 }

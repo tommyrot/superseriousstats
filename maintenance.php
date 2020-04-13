@@ -107,7 +107,6 @@ class maintenance
 	private function main(): void
 	{
 		output::output('notice', 'performing database maintenance routines');
-		$this->sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 		output::output('debug', '(1/4) registering most active aliases');
 		$this->register_most_active_aliases();
 		output::output('debug', '(2/4) creating materialized views');
@@ -116,8 +115,6 @@ class maintenance
 		$this->calculate_milestones();
 		output::output('debug', '(4/4) deactivating invalid fqdns');
 		$this->deactivate_fqdns();
-		output::output('notice', 'committing data');
-		$this->sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 	}
 
 	/**
