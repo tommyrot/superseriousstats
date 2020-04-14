@@ -401,7 +401,7 @@ class sss
 				continue;
 			}
 
-			$parser = new $this->parser($date);
+			$parser = new $this->parser($date, $this->sqlite3);
 
 			/**
 			 * Get the streak history. This will assume logs are parsed in chronological
@@ -453,7 +453,7 @@ class sss
 				 * Write data to database and set $need_maintenance to true if there was any data
 				 * stored.
 				 */
-				if ($parser->write_data($this->sqlite3)) {
+				if ($parser->write_data()) {
 					$need_maintenance = true;
 				}
 			}
