@@ -100,16 +100,16 @@ class parser
 	private int $l_total = 0;
 	private int $linenum_last_nonempty = 0;
 	private int $streak = 0;
-	private object $sqlite3;
 	private string $date = '';
 	private string $hex_latin1_supplement = '[\x80-\xFF]';
 	private string $hex_valid_utf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private string $line_new = '';
 	private string $nick_prev = '';
+	private SQLite3 $sqlite3;
 	protected int $linenum = 0;
 	protected string $line_prev = '';
 
-	public function __construct(string $date, object $sqlite3)
+	public function __construct(string $date, SQLite3 $sqlite3)
 	{
 		$this->date = $date;
 		$this->sqlite3 = $sqlite3;

@@ -15,10 +15,10 @@ class word
 
 	private int $length = 0;
 	private int $total = 0;
-	private object $sqlite3;
 	private string $word = '';
+	private SQLite3 $sqlite3;
 
-	public function __construct(string $word, object $sqlite3)
+	public function __construct(string $word, SQLite3 $sqlite3)
 	{
 		$this->word = $word;
 		$this->sqlite3 = $sqlite3;

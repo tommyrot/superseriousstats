@@ -12,10 +12,10 @@ declare(strict_types=1);
 class topic
 {
 	private array $uses = [];
-	private object $sqlite3;
 	private string $topic = '';
+	private SQLite3 $sqlite3;
 
-	public function __construct(string $topic, object $sqlite3)
+	public function __construct(string $topic, SQLite3 $sqlite3)
 	{
 		$this->topic = $topic;
 		$this->sqlite3 = $sqlite3;

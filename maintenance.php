@@ -11,9 +11,9 @@ declare(strict_types=1);
  */
 class maintenance
 {
-	private object $sqlite3;
+	private SQLite3 $sqlite3;
 
-	public function __construct(object $sqlite3)
+	public function __construct(SQLite3 $sqlite3)
 	{
 		$this->sqlite3 = $sqlite3;
 		$this->main();

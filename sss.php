@@ -51,11 +51,11 @@ class sss
 	private array $settings_allow_override = ['auto_link_nicks', 'database', 'logfile_date_format', 'parser', 'timezone'];
 	private array $settings_required = ['channel', 'database', 'logfile_date_format', 'parser', 'timezone'];
 	private bool $auto_link_nicks = true;
-	private object $sqlite3;
 	private string $database = '';
 	private string $logfile_date_format = '';
 	private string $parser = '';
 	private string $timezone = '';
+	private SQLite3 $sqlite3;
 
 	public function __construct()
 	{

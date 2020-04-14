@@ -12,12 +12,12 @@ declare(strict_types=1);
 class url
 {
 	private array $uses = [];
-	private object $sqlite3;
 	private string $fqdn = '';
 	private string $tld = '';
 	private string $url = '';
+	private SQLite3 $sqlite3;
 
-	public function __construct(array $url_components, object $sqlite3)
+	public function __construct(array $url_components, SQLite3 $sqlite3)
 	{
 		$this->fqdn = $url_components['fqdn'];
 		$this->tld = $url_components['tld'];

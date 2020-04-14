@@ -151,7 +151,6 @@ class nick
 	private int $uppercased = 0;
 	private int $urls = 0;
 	private int $words = 0;
-	private object $sqlite3;
 	private string $csnick = '';
 	private string $ex_actions = '';
 	private string $ex_exclamations = '';
@@ -163,8 +162,9 @@ class nick
 	private string $lastseen = '';
 	private string $lasttalked = '';
 	private string $quote = '';
+	private SQLite3 $sqlite3;
 
-	public function __construct(string $csnick, object $sqlite3)
+	public function __construct(string $csnick, SQLite3 $sqlite3)
 	{
 		$this->csnick = $csnick;
 		$this->sqlite3 = $sqlite3;

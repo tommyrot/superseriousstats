@@ -25,8 +25,8 @@ class html
 	private object $date_first_activity;
 	private object $date_last_activity;
 	private object $date_last_log_parsed;
-	private object $sqlite3;
 	private string $channel = '';
+	private SQLite3 $sqlite3;
 	private $columns_act_year = 0;
 	private $history = false;
 	private $maxrows_people2 = 10;
@@ -40,7 +40,7 @@ class html
 	private $stylesheet = 'sss.css';
 	private $user_stats = true;
 
-	public function __construct(array $config, object $sqlite3)
+	public function __construct(array $config, SQLite3 $sqlite3)
 	{
 		$this->apply_settings($config);
 		$this->sqlite3 = $sqlite3;
