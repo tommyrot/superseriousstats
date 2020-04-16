@@ -72,6 +72,18 @@ class sss
 		$this->main();
 	}
 
+	private function create_html(string $file): void
+	{
+		$html = new html($this->config, $this->sqlite3);
+
+		if (($fp = fopen($file, 'wb')) === false) {
+			output::output('critical', 'failed to open file: \''.$file.'\'');
+		}
+
+		fwrite($fp, $html->get_contents());
+		fclose($fp);
+	}
+
 	/**
 	 * Upon class instantiation automatically start the main function below.
 	 */
@@ -330,18 +342,6 @@ class sss
 				$this->sqlite3->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 			}
 		}
-	}
-
-	private function create_html(string $file): void
-	{
-		$html = new html($this->config, $this->sqlite3);
-
-		if (($fp = fopen($file, 'wb')) === false) {
-			output::output('critical', 'failed to open file: \''.$file.'\'');
-		}
-
-		fwrite($fp, $html->get_contents());
-		fclose($fp);
 	}
 
 	private function parse_log(string $filedir): void
