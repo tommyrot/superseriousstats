@@ -315,7 +315,7 @@ class html
 					$title = '<i>"'.$key.'"</i>';
 				}
 
-				$section .= $this->create_table($title, ['Total', 'User'], ['num', 'str'], ['SELECT '.$key.' AS v1, csnick AS v2 FROM ruid_smileys JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND '.$key.' != 0 ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5']);
+				$section .= $this->create_table($title, ['Total', 'User'], ['num', 'str'], ['SELECT '.$key.' AS v1, csnick AS v2 FROM ruid_smileys JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND '.$key.' != 0 ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', 'SELECT SUM('.$key.') FROM ruid_smileys']);
 			}
 		}
 
