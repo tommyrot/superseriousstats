@@ -542,7 +542,7 @@ class parser
 				 */
 				$skip_quote = true;
 
-				if (($url_components = url_tools::get_components($csword)) !== false) {
+				if (!is_null($url_components = url_tools::get_components($csword))) {
 					/**
 					 * Track URLs of up to a sensible limit of 512 characters in length.
 					 */

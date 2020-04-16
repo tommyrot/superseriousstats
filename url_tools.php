@@ -35,7 +35,7 @@ class url_tools
 	/**
 	 * Validate a given URL.
 	 */
-	public static function get_components(string $url)
+	public static function get_components(string $url): ?array
 	{
 		/**
 		 * Assemble the regular expression if not already done so.
@@ -70,21 +70,21 @@ class url_tools
 		 * Validate the URL.
 		 */
 		if (!preg_match(self::$regexp_complete, $url, $matches)) {
-			return false;
+			return null;
 		}
 
 		/**
 		 * The TLD may not consist of all digits.
 		 */
 		if (!empty($matches['tld']) && preg_match('/^\d+$/', $matches['tld'])) {
-			return false;
+			return null;
 		}
 
 		/**
 		 * The FQDN (excluding trailing dot) may not exceed 253 characters.
 		 */
 		if (!empty($matches['fqdn']) && strlen($matches['fqdn']) > 253) {
-			return false;
+			return null;
 		}
 
 		/**

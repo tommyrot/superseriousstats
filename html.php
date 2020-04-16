@@ -428,7 +428,7 @@ class html
 						$line = '';
 
 						foreach ($words as $word) {
-							if (preg_match('/^(www\.|https?:\/\/).+/i', $word) && ($url_components = url_tools::get_components($word)) !== false) {
+							if (preg_match('/^(www\.|https?:\/\/).+/i', $word) && !is_null($url_components = url_tools::get_components($word))) {
 								$line .= '<a href="'.htmlspecialchars($url_components['url'], ENT_QUOTES | ENT_HTML5, 'UTF-8').'">'.htmlspecialchars($url_components['url'], ENT_QUOTES | ENT_HTML5, 'UTF-8').'</a> ';
 							} else {
 								$line .= htmlspecialchars($word, ENT_QUOTES | ENT_HTML5, 'UTF-8').' ';
