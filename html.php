@@ -22,10 +22,10 @@ class html
 	private int $days_left = 0;
 	private int $days_logged = 0;
 	private int $l_total = 0;
-	private object $date_first_activity;
-	private object $date_last_activity;
-	private object $date_last_log_parsed;
 	private string $channel = '';
+	private DateTime $date_first_activity;
+	private DateTime $date_last_activity;
+	private DateTime $date_last_log_parsed;
 	private SQLite3 $sqlite3;
 	private $columns_act_year = 0;
 	private $history = false;
