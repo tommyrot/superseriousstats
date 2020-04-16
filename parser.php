@@ -120,7 +120,7 @@ class parser
 	 * $csnick. Return the lower case nick for further referencing by the calling
 	 * function.
 	 */
-	private function add_nick(string $time, string $csnick, bool $real = true): string
+	private function create_nick(string $time, string $csnick, bool $real = true): string
 	{
 		$nick = strtolower($csnick);
 
@@ -148,7 +148,7 @@ class parser
 	 * Keep track of every topic set. These are handled (and stored) while
 	 * preserving case.
 	 */
-	private function add_topic(string $time, string $nick, string $topic): void
+	private function create_topic(string $time, string $nick, string $topic): void
 	{
 		if (!array_key_exists($topic, $this->topic_objs)) {
 			$this->topic_objs[$topic] = new topic($topic, $this->sqlite3);
@@ -161,7 +161,7 @@ class parser
 	 * Keep track of every URL. These are handled (and stored) while preserving
 	 * case (for the parts where it matters, otherwise lower case).
 	 */
-	private function add_url(string $time, string $nick, array $url_components): void
+	private function create_url(string $time, string $nick, array $url_components): void
 	{
 		$url = $url_components['url'];
 
@@ -175,7 +175,7 @@ class parser
 	/**
 	 * Words are stored in lower case.
 	 */
-	private function add_word(string $csword, int $length): void
+	private function create_word(string $csword, int $length): void
 	{
 		$word = mb_strtolower($csword, 'UTF-8');
 
@@ -331,7 +331,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($time, $csnick);
+		$nick = $this->create_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_num('actions', 1);
 		$this->nick_objs[$nick]->add_quote('ex_actions', $line, mb_strlen($line, 'UTF-8'));
 	}
@@ -343,7 +343,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($time, $csnick);
+		$nick = $this->create_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_num('joins', 1);
 	}
 
@@ -357,8 +357,8 @@ class parser
 			return;
 		}
 
-		$nick_performing = $this->add_nick($time, $csnick_performing);
-		$nick_undergoing = $this->add_nick($time, $csnick_undergoing);
+		$nick_performing = $this->create_nick($time, $csnick_performing);
+		$nick_undergoing = $this->create_nick($time, $csnick_undergoing);
 		$this->nick_objs[$nick_performing]->add_num('kicks', 1);
 		$this->nick_objs[$nick_undergoing]->add_num('kicked', 1);
 		$this->nick_objs[$nick_performing]->set_str('ex_kicks', $line);
@@ -375,8 +375,8 @@ class parser
 			return;
 		}
 
-		$nick_performing = $this->add_nick($time, $csnick_performing);
-		$nick_undergoing = $this->add_nick($time, $csnick_undergoing);
+		$nick_performing = $this->create_nick($time, $csnick_performing);
+		$nick_undergoing = $this->create_nick($time, $csnick_undergoing);
 
 		switch ($mode) {
 			case '+o':
@@ -408,8 +408,8 @@ class parser
 			return;
 		}
 
-		$nick_performing = $this->add_nick($time, $csnick_performing);
-		$nick_undergoing = $this->add_nick($time, $csnick_undergoing);
+		$nick_performing = $this->create_nick($time, $csnick_performing);
+		$nick_undergoing = $this->create_nick($time, $csnick_undergoing);
 		$this->nick_objs[$nick_performing]->add_num('nickchanges', 1);
 	}
 
@@ -420,7 +420,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($time, $csnick);
+		$nick = $this->create_nick($time, $csnick);
 		$line_length = mb_strlen($line, 'UTF-8');
 		$this->nick_objs[$nick]->add_num('characters', $line_length);
 		$this->nick_objs[$nick]->set_str('lasttalked', $this->date.' '.$time);
@@ -441,7 +441,7 @@ class parser
 				 * so the streak data can be added.
 				 */
 				if ($this->l_total === 0) {
-					$this->add_nick($time, $this->nick_prev, false);
+					$this->create_nick($time, $this->nick_prev, false);
 				}
 
 				$this->nick_objs[$this->nick_prev]->add_num('monologues', 1);
@@ -509,7 +509,7 @@ class parser
 				 * Words consisting of 30+ characters are most likely not real words.
 				 */
 				if ($word_length <= 30) {
-					$this->add_word($csword_trimmed, $word_length);
+					$this->create_word($csword_trimmed, $word_length);
 				}
 
 				/**
@@ -547,7 +547,7 @@ class parser
 					 * Track URLs of up to a sensible limit of 512 characters in length.
 					 */
 					if (strlen($url_components['url']) <= 512) {
-						$this->add_url($time, $nick, $url_components);
+						$this->create_url($time, $nick, $url_components);
 						$this->nick_objs[$nick]->add_num('urls', 1);
 					}
 				} else {
@@ -596,7 +596,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($time, $csnick);
+		$nick = $this->create_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_num('parts', 1);
 	}
 
@@ -607,7 +607,7 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($time, $csnick);
+		$nick = $this->create_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_num('quits', 1);
 	}
 
@@ -618,7 +618,7 @@ class parser
 			return;
 		}
 
-		$nick_performing = $this->add_nick($time, $csnick_performing);
+		$nick_performing = $this->create_nick($time, $csnick_performing);
 		$this->nick_objs[$nick_performing]->add_num('slaps', 1);
 
 		/**
@@ -637,7 +637,7 @@ class parser
 		/**
 		 * The "undergoing" nick is only referenced and might not be real.
 		 */
-		$nick_undergoing = $this->add_nick($time, $csnick_undergoing, false);
+		$nick_undergoing = $this->create_nick($time, $csnick_undergoing, false);
 		$this->nick_objs[$nick_undergoing]->add_num('slapped', 1);
 	}
 
@@ -648,9 +648,9 @@ class parser
 			return;
 		}
 
-		$nick = $this->add_nick($time, $csnick);
+		$nick = $this->create_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_num('topics', 1);
-		$this->add_topic($time, $nick, $line);
+		$this->create_topic($time, $nick, $line);
 	}
 
 	/**
