@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-class parser_mirc6 extends parser
+class parser_mirc extends parser
 {
 	protected function parse_line(string $line): void
 	{
