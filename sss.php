@@ -30,7 +30,7 @@ if (!extension_loaded('mbstring')) {
  */
 spl_autoload_register(function (string $class): void {
 	if (strpos($class, 'parser_') === 0) {
-		require_once(__DIR__.'/parsers/'.$class.'.php');
+		require_once(__DIR__.'/parsers/'.substr($class, 7).'.php');
 	} else {
 		require_once(__DIR__.'/'.$class.'.php');
 	}
