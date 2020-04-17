@@ -84,124 +84,6 @@ class sss
 		fclose($fp);
 	}
 
-	/**
-	 * Upon class instantiation automatically start the main function below.
-	 */
-	private function main(): void
-	{
-		/**
-		 * Read options from the command line. Print a hint on invalid input.
-		 */
-		$options = getopt('c:e:i:n:o:qv');
-		ksort($options);
-		$options_keys = implode('', array_keys($options));
-
-		if (!preg_match('/^c?(e|i|i?o|n)[qv]?$/', $options_keys)) {
-			exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n\n".'See the MANUAL for an overview of all available options.'."\n");
-		}
-
-		/**
-		 * Read the config file.
-		 */
-		if (array_key_exists('c', $options)) {
-			$this->read_config($options['c']);
-		} else {
-			$this->read_config(__DIR__.'/sss.conf');
-		}
-
-		/**
-		 * Apply settings from the config file.
-		 */
-		$this->apply_settings($this->config);
-
-		/**
-		 * Set the timezone.
-		 */
-		if (!date_default_timezone_set($this->timezone)) {
-			output::output('critical', 'invalid timezone: \''.$this->timezone.'\'');
-		}
-
-		/**
-		 * Set the level of output verbosity.
-		 */
-		if (array_key_exists('q', $options)) {
-			output::set_verbosity(0);
-		} elseif (array_key_exists('v', $options)) {
-			output::set_verbosity(2);
-		}
-
-		/**
-		 * Open the database connection.
-		 */
-		try {
-			$this->sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
-			$this->sqlite3->busyTimeout(60000);
-			output::output('notice', 'succesfully connected to database: \''.$this->database.'\'');
-		} catch (Exception $e) {
-			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
-		}
-
-		/**
-		 * Setup the SQLite3 connection:
-		 *  - Disable the rollback journal.
-		 *  - Continue without syncing as soon as data is handed off to the operating
-		 *    system.
-		 *  - Temporary tables and indices are kept in memory.
-		 *  - Enable foreign key constraints.
-		 */
-		$pragmas = [
-			'journal_mode' => 'OFF',
-			'synchronous' => 'OFF',
-			'temp_store' => 'MEMORY',
-			'foreign_keys' => 'ON'];
-
-		foreach ($pragmas as $pragma => $value) {
-			$this->sqlite3->exec('PRAGMA '.$pragma.' = '.$value);
-		}
-
-		$this->sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-
-		if (array_key_exists('e', $options)) {
-			$this->export_nicks($options['e']);
-		}
-
-		if (array_key_exists('n', $options)) {
-			$this->import_nicks($options['n']);
-			$this->maintenance();
-		}
-
-		/**
-		 * Below, "i" should execute before "o".
-		 */
-		if (array_key_exists('i', $options)) {
-			$this->parse_log($options['i']);
-		}
-
-		if (array_key_exists('o', $options)) {
-			$this->create_html($options['o']);
-		}
-
-		$this->sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-		$this->sqlite3->exec('PRAGMA optimize');
-		$this->sqlite3->close();
-		output::output('notice', 'kthxbye');
-	}
-
-	/**
-	 * Maintenance routines should always be run after writing data to the database.
-	 */
-	private function maintenance(): void
-	{
-		/**
-		 * Search for new aliases if $auto_link_nicks is true.
-		 */
-		if ($this->auto_link_nicks) {
-			$this->link_nicks();
-		}
-
-		$maintenance = new maintenance($this->sqlite3);
-	}
-
 	private function export_nicks(string $file): void
 	{
 		output::output('notice', 'exporting nicks');
@@ -344,6 +226,124 @@ class sss
 		}
 	}
 
+	/**
+	 * Upon class instantiation automatically start the main function below.
+	 */
+	private function main(): void
+	{
+		/**
+		 * Read options from the command line. Print a hint on invalid input.
+		 */
+		$options = getopt('c:e:i:n:o:qv');
+		ksort($options);
+		$options_keys = implode('', array_keys($options));
+
+		if (!preg_match('/^c?(e|i|i?o|n)[qv]?$/', $options_keys)) {
+			exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n\n".'See the MANUAL for an overview of all available options.'."\n");
+		}
+
+		/**
+		 * Read the config file.
+		 */
+		if (array_key_exists('c', $options)) {
+			$this->read_config($options['c']);
+		} else {
+			$this->read_config(__DIR__.'/sss.conf');
+		}
+
+		/**
+		 * Apply settings from the config file.
+		 */
+		$this->apply_settings($this->config);
+
+		/**
+		 * Set the timezone.
+		 */
+		if (!date_default_timezone_set($this->timezone)) {
+			output::output('critical', 'invalid timezone: \''.$this->timezone.'\'');
+		}
+
+		/**
+		 * Set the level of output verbosity.
+		 */
+		if (array_key_exists('q', $options)) {
+			output::set_verbosity(0);
+		} elseif (array_key_exists('v', $options)) {
+			output::set_verbosity(2);
+		}
+
+		/**
+		 * Open the database connection.
+		 */
+		try {
+			$this->sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
+			$this->sqlite3->busyTimeout(60000);
+			output::output('notice', 'succesfully connected to database: \''.$this->database.'\'');
+		} catch (Exception $e) {
+			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
+		}
+
+		/**
+		 * Setup the SQLite3 connection:
+		 *  - Disable the rollback journal.
+		 *  - Continue without syncing as soon as data is handed off to the operating
+		 *    system.
+		 *  - Temporary tables and indices are kept in memory.
+		 *  - Enable foreign key constraints.
+		 */
+		$pragmas = [
+			'journal_mode' => 'OFF',
+			'synchronous' => 'OFF',
+			'temp_store' => 'MEMORY',
+			'foreign_keys' => 'ON'];
+
+		foreach ($pragmas as $pragma => $value) {
+			$this->sqlite3->exec('PRAGMA '.$pragma.' = '.$value);
+		}
+
+		$this->sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+
+		if (array_key_exists('e', $options)) {
+			$this->export_nicks($options['e']);
+		}
+
+		if (array_key_exists('n', $options)) {
+			$this->import_nicks($options['n']);
+			$this->maintenance();
+		}
+
+		/**
+		 * Below, "i" should execute before "o".
+		 */
+		if (array_key_exists('i', $options)) {
+			$this->parse_log($options['i']);
+		}
+
+		if (array_key_exists('o', $options)) {
+			$this->create_html($options['o']);
+		}
+
+		$this->sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		$this->sqlite3->exec('PRAGMA optimize');
+		$this->sqlite3->close();
+		output::output('notice', 'kthxbye');
+	}
+
+	/**
+	 * Maintenance ensures we have a usable, consistent dataset.
+	 */
+	private function maintenance(): void
+	{
+		/**
+		 * Search for new aliases if $auto_link_nicks is true.
+		 */
+		if ($this->auto_link_nicks) {
+			$this->link_nicks();
+		}
+
+		$maintenance = new maintenance($this->sqlite3);
+	}
+
 	private function parse_log(string $filedir): void
 	{
 		if (($rp = realpath($filedir)) === false) {
@@ -450,8 +450,7 @@ class sss
 				$this->sqlite3->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
 
 				/**
-				 * Write data to database and set $need_maintenance to true if there was any data
-				 * stored.
+				 * Write data to database. Remember if we need maintenance later.
 				 */
 				if ($parser->write_data()) {
 					$need_maintenance = true;
@@ -460,7 +459,7 @@ class sss
 		}
 
 		/**
-		 * Finally, call maintenance if needed.
+		 * Finally, call maintenance if there has been any data written to the database.
 		 */
 		if ($need_maintenance) {
 			$this->maintenance();
