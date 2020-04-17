@@ -105,14 +105,12 @@ class parser
 	private string $hex_valid_utf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private string $line_new = '';
 	private string $nick_prev = '';
-	private SQLite3 $sqlite3;
 	protected int $linenum = 0;
 	protected string $line_prev = '';
 
-	public function __construct(string $date, SQLite3 $sqlite3)
+	public function __construct(string $date)
 	{
 		$this->date = $date;
-		$this->sqlite3 = $sqlite3;
 	}
 
 	/**
@@ -125,7 +123,7 @@ class parser
 		$nick = strtolower($csnick);
 
 		if (!array_key_exists($nick, $this->nick_objs)) {
-			$this->nick_objs[$nick] = new nick($csnick, $this->sqlite3);
+			$this->nick_objs[$nick] = new nick($csnick, sss::$db);
 		} else {
 			$this->nick_objs[$nick]->set_str('csnick', $csnick);
 		}
@@ -151,7 +149,7 @@ class parser
 	private function create_topic(string $time, string $nick, string $topic): void
 	{
 		if (!array_key_exists($topic, $this->topic_objs)) {
-			$this->topic_objs[$topic] = new topic($topic, $this->sqlite3);
+			$this->topic_objs[$topic] = new topic($topic, sss::$db);
 		}
 
 		$this->topic_objs[$topic]->add_uses($this->date.' '.$time, $nick);
@@ -166,7 +164,7 @@ class parser
 		$url = $url_components['url'];
 
 		if (!array_key_exists($url, $this->url_objs)) {
-			$this->url_objs[$url] = new url($url_components, $this->sqlite3);
+			$this->url_objs[$url] = new url($url_components, sss::$db);
 		}
 
 		$this->url_objs[$url]->add_uses($this->date.' '.$time, $nick);
@@ -180,7 +178,7 @@ class parser
 		$word = mb_strtolower($csword, 'UTF-8');
 
 		if (!array_key_exists($word, $this->word_objs)) {
-			$this->word_objs[$word] = new word($word, $this->sqlite3);
+			$this->word_objs[$word] = new word($word, sss::$db);
 			$this->word_objs[$word]->set_num('length', $length);
 		}
 
@@ -684,7 +682,7 @@ class parser
 		 */
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts(['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
-			$this->sqlite3->exec('INSERT INTO channel_activity (date, '.$queryparts['insert_columns'].') VALUES (\''.$this->date.'\', '.$queryparts['insert_values'].') ON CONFLICT (date) DO UPDATE SET '.$queryparts['update_assignments']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			sss::$db->exec('INSERT INTO channel_activity (date, '.$queryparts['insert_columns'].') VALUES (\''.$this->date.'\', '.$queryparts['insert_values'].') ON CONFLICT (date) DO UPDATE SET '.$queryparts['update_assignments']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 		}
 
 		/**
@@ -720,8 +718,8 @@ class parser
 		 * Write streak history to database.
 		 */
 		if ($this->l_total !== 0) {
-			$this->sqlite3->exec('DELETE FROM streak_history') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-			$this->sqlite3->exec('INSERT INTO streak_history (nick_prev, streak) VALUES (\''.$this->nick_prev.'\', '.$this->streak.')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			sss::$db->exec('DELETE FROM streak_history') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
+			sss::$db->exec('INSERT INTO streak_history (nick_prev, streak) VALUES (\''.$this->nick_prev.'\', '.$this->streak.')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 		}
 
 		return true;

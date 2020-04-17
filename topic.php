@@ -13,12 +13,10 @@ class topic
 {
 	private array $uses = [];
 	private string $topic = '';
-	private SQLite3 $sqlite3;
 
-	public function __construct(string $topic, SQLite3 $sqlite3)
+	public function __construct(string $topic)
 	{
 		$this->topic = $topic;
-		$this->sqlite3 = $sqlite3;
 	}
 
 	public function add_uses(string $datetime, string $nick): void
@@ -34,17 +32,17 @@ class topic
 		/**
 		 * Write data to database tables "topics" and "uid_topics".
 		 */
-		if (($tid = $this->sqlite3->querySingle('SELECT tid FROM topics WHERE topic = \''.preg_replace('/\'/', '\'\'', $this->topic).'\'')) === false) {
-			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		if (($tid = sss::$db->querySingle('SELECT tid FROM topics WHERE topic = \''.preg_replace('/\'/', '\'\'', $this->topic).'\'')) === false) {
+			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 		}
 
 		if (is_null($tid)) {
-			$this->sqlite3->exec('INSERT INTO topics (tid, topic) VALUES (NULL, \''.preg_replace('/\'/', '\'\'', $this->topic).'\')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-			$tid = $this->sqlite3->lastInsertRowID();
+			sss::$db->exec('INSERT INTO topics (tid, topic) VALUES (NULL, \''.preg_replace('/\'/', '\'\'', $this->topic).'\')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
+			$tid = sss::$db->lastInsertRowID();
 		}
 
 		foreach ($this->uses as [$datetime, $nick]) {
-			$this->sqlite3->exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$tid.', DATETIME(\''.$datetime.'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			sss::$db->exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$tid.', DATETIME(\''.$datetime.'\'))') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 		}
 	}
 }

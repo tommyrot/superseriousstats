@@ -55,7 +55,7 @@ class sss
 	private string $logfile_date_format = '';
 	private string $parser = '';
 	private string $timezone = '';
-	private SQLite3 $sqlite3;
+	public static SQLite3 $db;
 
 	public function __construct()
 	{
@@ -74,7 +74,7 @@ class sss
 
 	private function create_html(string $file): void
 	{
-		$html = new html($this->config, $this->sqlite3);
+		$html = new html($this->config);
 
 		if (($fp = fopen($file, 'wb')) === false) {
 			output::output('critical', 'failed to open file: \''.$file.'\'');
@@ -88,23 +88,23 @@ class sss
 	{
 		output::output('notice', 'exporting nicks');
 
-		if (($total = $this->sqlite3->querySingle('SELECT COUNT(*) FROM uid_details')) === false) {
-			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		if (($total = self::$db->querySingle('SELECT COUNT(*) FROM uid_details')) === false) {
+			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 		}
 
 		if ($total === 0) {
 			output::output('critical', 'database is empty');
 		}
 
-		$query = $this->sqlite3->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		$query = self::$db->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 		$contents = '';
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$contents .= $result['status'].','.$result['csnick'].(!is_null($result['aliases']) ? ','.$result['aliases'] : '')."\n";
 		}
 
-		if (($aliases = $this->sqlite3->querySingle('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0')) === false) {
-			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		if (($aliases = self::$db->querySingle('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0')) === false) {
+			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 		}
 
 		if (!is_null($aliases)) {
@@ -136,7 +136,7 @@ class sss
 		 * Set all nicks to their default status before updating them according to
 		 * imported data.
 		 */
-		$this->sqlite3->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		self::$db->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 
 		while (($line = fgets($fp)) !== false) {
 			$line = preg_replace('/\s+/', '', $line);
@@ -148,10 +148,10 @@ class sss
 				continue;
 			}
 
-			$this->sqlite3->exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			self::$db->exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 
 			if (!is_null($matches['aliases'])) {
-				$this->sqlite3->exec('UPDATE OR IGNORE uid_details SET status = 2, ruid = (SELECT uid FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\') WHERE csnick IN (\''.preg_replace('/,/', '\',\'', $matches['aliases']).'\')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+				self::$db->exec('UPDATE OR IGNORE uid_details SET status = 2, ruid = (SELECT uid FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\') WHERE csnick IN (\''.preg_replace('/,/', '\',\'', $matches['aliases']).'\')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 			}
 		}
 
@@ -167,7 +167,7 @@ class sss
 	private function link_nicks(): void
 	{
 		output::output('notice', 'looking for possible aliases');
-		$query = $this->sqlite3->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		$query = self::$db->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 		$nicks_stripped = [];
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -211,7 +211,7 @@ class sss
 				 */
 				if ($nicks[$uids[$i]]['status'] === 0) {
 					$new_alias = true;
-					$this->sqlite3->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+					self::$db->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 					output::output('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
 				}
 			}
@@ -221,7 +221,7 @@ class sss
 			 * (status = 0), make it a registered nick (status = 1).
 			 */
 			if ($new_alias && $nicks[$uids[0]]['status'] === 0) {
-				$this->sqlite3->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+				self::$db->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 			}
 		}
 	}
@@ -276,8 +276,8 @@ class sss
 		 * Open the database connection.
 		 */
 		try {
-			$this->sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
-			$this->sqlite3->busyTimeout(60000);
+			self::$db = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
+			self::$db->busyTimeout(60000);
 			output::output('notice', 'succesfully connected to database: \''.$this->database.'\'');
 		} catch (Exception $e) {
 			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
@@ -298,10 +298,10 @@ class sss
 			'foreign_keys' => 'ON'];
 
 		foreach ($pragmas as $pragma => $value) {
-			$this->sqlite3->exec('PRAGMA '.$pragma.' = '.$value);
+			self::$db->exec('PRAGMA '.$pragma.' = '.$value);
 		}
 
-		$this->sqlite3->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		self::$db->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 
 		if (array_key_exists('e', $options)) {
 			$this->export_nicks($options['e']);
@@ -323,9 +323,9 @@ class sss
 			$this->create_html($options['o']);
 		}
 
-		$this->sqlite3->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-		$this->sqlite3->exec('PRAGMA optimize');
-		$this->sqlite3->close();
+		self::$db->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+		self::$db->exec('PRAGMA optimize');
+		self::$db->close();
 		output::output('notice', 'kthxbye');
 	}
 
@@ -341,7 +341,7 @@ class sss
 			$this->link_nicks();
 		}
 
-		$maintenance = new maintenance($this->sqlite3);
+		$maintenance = new maintenance();
 	}
 
 	private function parse_log(string $filedir): void
@@ -387,8 +387,8 @@ class sss
 		/**
 		 * Get the date of the last log parsed.
 		 */
-		if (($date_last_log_parsed = $this->sqlite3->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
-			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		if (($date_last_log_parsed = self::$db->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
+			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 		}
 
 		$need_maintenance = false;
@@ -401,14 +401,14 @@ class sss
 				continue;
 			}
 
-			$parser = new $this->parser($date, $this->sqlite3);
+			$parser = new $this->parser($date);
 
 			/**
 			 * Get the streak history. This will assume logs are parsed in chronological
 			 * order with no gaps.
 			 */
-			if (($result = $this->sqlite3->querySingle('SELECT nick_prev, streak FROM streak_history', true)) === false) {
-				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			if (($result = self::$db->querySingle('SELECT nick_prev, streak FROM streak_history', true)) === false) {
+				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 			}
 
 			if (!empty($result)) {
@@ -420,8 +420,8 @@ class sss
 			 * Get the parse history and set the line number on which to start parsing the
 			 * log. This would be 1 for a fresh log and +1 for a log with a parse history.
 			 */
-			if (($linenum_start = $this->sqlite3->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
-				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			if (($linenum_start = self::$db->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
+				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 			}
 
 			if (!is_null($linenum_start)) {
@@ -447,7 +447,7 @@ class sss
 			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
 			if ($parser->get_num('linenum_last_nonempty') >= $linenum_start) {
-				$this->sqlite3->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+				self::$db->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
 
 				/**
 				 * Write data to database. Remember if we need maintenance later.

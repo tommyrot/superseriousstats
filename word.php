@@ -16,12 +16,10 @@ class word
 	private int $length = 0;
 	private int $total = 0;
 	private string $word = '';
-	private SQLite3 $sqlite3;
 
-	public function __construct(string $word, SQLite3 $sqlite3)
+	public function __construct(string $word)
 	{
 		$this->word = $word;
-		$this->sqlite3 = $sqlite3;
 	}
 
 	/**
@@ -32,6 +30,6 @@ class word
 		/**
 		 * Write data to database table "words".
 		 */
-		$this->sqlite3->exec('INSERT INTO words (word, length, total) VALUES (\''.$this->word.'\', '.$this->length.', '.$this->total.') ON CONFLICT (word) DO UPDATE SET total = total + '.$this->total) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		sss::$db->exec('INSERT INTO words (word, length, total) VALUES (\''.$this->word.'\', '.$this->length.', '.$this->total.') ON CONFLICT (word) DO UPDATE SET total = total + '.$this->total) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 	}
 }

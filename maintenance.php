@@ -11,11 +11,8 @@ declare(strict_types=1);
  */
 class maintenance
 {
-	private SQLite3 $sqlite3;
-
-	public function __construct(SQLite3 $sqlite3)
+	public function __construct()
 	{
-		$this->sqlite3 = $sqlite3;
 		$this->main();
 	}
 
@@ -24,8 +21,8 @@ class maintenance
 	 */
 	private function calculate_milestones(): void
 	{
-		$this->sqlite3->exec('DELETE FROM ruid_milestones') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-		$query = $this->sqlite3->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		sss::$db->exec('DELETE FROM ruid_milestones') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
+		$query = sss::$db->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			if (!isset($l_total[$result['ruid']])) {
@@ -37,7 +34,7 @@ class maintenance
 			}
 
 			while (!is_null($milestone) && $l_total[$result['ruid']] >= $milestone) {
-				$this->sqlite3->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES ('.$result['ruid'].', '.$milestone.', \''.$result['date'].'\')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+				sss::$db->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES ('.$result['ruid'].', '.$milestone.', \''.$result['date'].'\')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 				$milestone = array_shift($milestones);
 			}
 		}
@@ -63,8 +60,8 @@ class maintenance
 			'v_ruid_lines' => 'ruid_lines'];
 
 		foreach ($views as $view => $table) {
-			$this->sqlite3->exec('DELETE FROM '.$table) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-			$this->sqlite3->exec('INSERT INTO '.$table.' SELECT * FROM '.$view) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			sss::$db->exec('DELETE FROM '.$table) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
+			sss::$db->exec('INSERT INTO '.$table.' SELECT * FROM '.$view) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 		}
 	}
 
@@ -93,11 +90,11 @@ class maintenance
 		}
 
 		fclose($fp);
-		$this->sqlite3->exec('UPDATE fqdns SET active = 1') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		sss::$db->exec('UPDATE fqdns SET active = 1') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 
 		if (!empty($tlds_active)) {
-			$this->sqlite3->exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-			output::output('debug', 'deactivated '.$this->sqlite3->changes().' fqdn'.($this->sqlite3->changes() !== 1 ? 's' : ''));
+			sss::$db->exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
+			output::output('debug', 'deactivated '.sss::$db->changes().' fqdn'.(sss::$db->changes() !== 1 ? 's' : ''));
 		}
 	}
 
@@ -123,17 +120,17 @@ class maintenance
 	 */
 	private function register_most_active_aliases(): void
 	{
-		$query = $this->sqlite3->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS new_ruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND new_ruid IS NOT NULL AND ruid != new_ruid') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+		$query = sss::$db->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS new_ruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND new_ruid IS NOT NULL AND ruid != new_ruid') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$old_registered_nick = $result['csnick'];
 
-			if (($new_registered_nick = $this->sqlite3->querySingle('SELECT csnick FROM uid_details WHERE uid = '.$result['new_ruid'])) === false) {
-				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			if (($new_registered_nick = sss::$db->querySingle('SELECT csnick FROM uid_details WHERE uid = '.$result['new_ruid'])) === false) {
+				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 			}
 
-			$this->sqlite3->exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = '.$result['status'].' WHERE uid = '.$result['new_ruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
-			$this->sqlite3->exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = 2 WHERE ruid = '.$result['ruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$this->sqlite3->lastErrorMsg());
+			sss::$db->exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = '.$result['status'].' WHERE uid = '.$result['new_ruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
+			sss::$db->exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = 2 WHERE ruid = '.$result['ruid']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
 			output::output('debug', '\''.$new_registered_nick.'\' new registered nick for \''.$old_registered_nick.'\'');
 		}
 	}
