@@ -191,10 +191,8 @@ class parser
 	public function gzparse_log(string $logfile, int $linenum_start): void
 	{
 		if (($zp = gzopen($logfile, 'rb')) === false) {
-			output::output('critical', 'failed to open gzip file: \''.$logfile.'\'');
+			output::msg('critical', 'failed to open gzip file: \''.$logfile.'\'');
 		}
-
-		output::output('notice', 'parsing logfile: \''.$logfile.'\' from line '.$linenum_start);
 
 		while (($line = gzgets($zp)) !== false) {
 			++$this->linenum;
@@ -265,10 +263,8 @@ class parser
 	public function parse_log(string $logfile, int $linenum_start): void
 	{
 		if (($fp = fopen($logfile, 'rb')) === false) {
-			output::output('critical', 'failed to open file: \''.$logfile.'\'');
+			output::msg('critical', 'failed to open file: \''.$logfile.'\'');
 		}
-
-		output::output('notice', 'parsing logfile: \''.$logfile.'\' from line '.$linenum_start);
 
 		while (($line = fgets($fp)) !== false) {
 			++$this->linenum;
@@ -325,7 +321,6 @@ class parser
 	protected function set_action(string $time, string $csnick, string $line): void
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return;
 		}
 
@@ -337,7 +332,6 @@ class parser
 	protected function set_join(string $time, string $csnick): void
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return;
 		}
 
@@ -347,11 +341,7 @@ class parser
 
 	protected function set_kick(string $time, string $csnick_performing, string $csnick_undergoing, string $line): void
 	{
-		if (!$this->validate_nick($csnick_performing)) {
-			output::output('debug', 'invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
-			return;
-		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			output::output('debug', 'invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+		if (!$this->validate_nick($csnick_performing) || !$this->validate_nick($csnick_undergoing)) {
 			return;
 		}
 
@@ -365,11 +355,7 @@ class parser
 
 	protected function set_mode(string $time, string $csnick_performing, string $csnick_undergoing, string $mode): void
 	{
-		if (!$this->validate_nick($csnick_performing)) {
-			output::output('debug', 'invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
-			return;
-		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			output::output('debug', 'invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+		if (!$this->validate_nick($csnick_performing) || !$this->validate_nick($csnick_undergoing)) {
 			return;
 		}
 
@@ -398,11 +384,7 @@ class parser
 
 	protected function set_nickchange(string $time, string $csnick_performing, string $csnick_undergoing): void
 	{
-		if (!$this->validate_nick($csnick_performing)) {
-			output::output('debug', 'invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
-			return;
-		} elseif (!$this->validate_nick($csnick_undergoing)) {
-			output::output('debug', 'invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+		if (!$this->validate_nick($csnick_performing) || !$this->validate_nick($csnick_undergoing)) {
 			return;
 		}
 
@@ -414,7 +396,6 @@ class parser
 	protected function set_normal(string $time, string $csnick, string $line): void
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return;
 		}
 
@@ -549,7 +530,7 @@ class parser
 						$this->nick_objs[$nick]->add_num('urls', 1);
 					}
 				} else {
-					output::output('debug', 'invalid url: \''.$csword.'\' on line '.$this->linenum);
+					output::msg('debug', 'invalid url: \''.$csword.'\' on line '.$this->linenum);
 				}
 			}
 		}
@@ -590,7 +571,6 @@ class parser
 	protected function set_part(string $time, string $csnick): void
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return;
 		}
 
@@ -601,7 +581,6 @@ class parser
 	protected function set_quit(string $time, string $csnick): void
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return;
 		}
 
@@ -612,7 +591,6 @@ class parser
 	protected function set_slap(string $time, string $csnick_performing, string $csnick_undergoing): void
 	{
 		if (!$this->validate_nick($csnick_performing)) {
-			output::output('debug', 'invalid "performing" nick: \''.$csnick_performing.'\' on line '.$this->linenum);
 			return;
 		}
 
@@ -623,12 +601,11 @@ class parser
 		 * Strip possible network prefix (psyBNC) from the "undergoing" nick.
 		 */
 		if (preg_match('/^.+?[~\'](?<nick_trimmed>.+)$/', $csnick_undergoing, $matches)) {
-			output::output('debug', 'cleaning "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			output::msg('debug', 'cleaning nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			$csnick_undergoing = $matches['nick_trimmed'];
 		}
 
 		if (!$this->validate_nick($csnick_undergoing)) {
-			output::output('debug', 'invalid "undergoing" nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			return;
 		}
 
@@ -642,7 +619,6 @@ class parser
 	protected function set_topic(string $time, string $csnick, string $line): void
 	{
 		if (!$this->validate_nick($csnick)) {
-			output::output('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return;
 		}
 
@@ -657,6 +633,7 @@ class parser
 	private function validate_nick(string $csnick): bool
 	{
 		if (preg_match('/^[0-9-]|[\x21-\x2C\x2E\x2F\x3A-\x40\x7E]/', $csnick)) {
+			output::msg('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return false;
 		} else {
 			return true;
@@ -675,14 +652,12 @@ class parser
 			return false;
 		}
 
-		output::output('notice', __METHOD__.'(): writing data to database');
-
 		/**
 		 * Write channel totals to database.
 		 */
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts(['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
-			sss::$db->exec('INSERT INTO channel_activity (date, '.$queryparts['insert_columns'].') VALUES (\''.$this->date.'\', '.$queryparts['insert_values'].') ON CONFLICT (date) DO UPDATE SET '.$queryparts['update_assignments']) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
+			sss::$db->exec('INSERT INTO channel_activity (date, '.$queryparts['insert_columns'].') VALUES (\''.$this->date.'\', '.$queryparts['insert_values'].') ON CONFLICT (date) DO UPDATE SET '.$queryparts['update_assignments']) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.sss::$db->lastErrorMsg());
 		}
 
 		/**
@@ -718,8 +693,8 @@ class parser
 		 * Write streak history to database.
 		 */
 		if ($this->l_total !== 0) {
-			sss::$db->exec('DELETE FROM streak_history') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
-			sss::$db->exec('INSERT INTO streak_history (nick_prev, streak) VALUES (\''.$this->nick_prev.'\', '.$this->streak.')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.sss::$db->lastErrorMsg());
+			sss::$db->exec('DELETE FROM streak_history') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.sss::$db->lastErrorMsg());
+			sss::$db->exec('INSERT INTO streak_history (nick_prev, streak) VALUES (\''.$this->nick_prev.'\', '.$this->streak.')') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.sss::$db->lastErrorMsg());
 		}
 
 		return true;

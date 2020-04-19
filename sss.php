@@ -24,6 +24,10 @@ if (!extension_loaded('mbstring')) {
 	exit('>> php\'s mbstring extension isn\'t loaded <<'."\n");
 }
 
+if (!extension_loaded('zlib')) {
+	exit('>> php\'s zlib extension isn\'t loaded <<'."\n");
+}
+
 /**
  * Autoloader. This code handles on the fly inclusion of classes and traits at
  * time of instantiation.
@@ -77,7 +81,7 @@ class sss
 		$html = new html($this->config);
 
 		if (($fp = fopen($file, 'wb')) === false) {
-			output::output('critical', 'failed to open file: \''.$file.'\'');
+			output::msg('critical', 'failed to open file: \''.$file.'\'');
 		}
 
 		fwrite($fp, $html->get_contents());
@@ -86,17 +90,16 @@ class sss
 
 	private function export_nicks(string $file): void
 	{
-		output::output('notice', 'exporting nicks');
-
 		if (($total = self::$db->querySingle('SELECT COUNT(*) FROM uid_details')) === false) {
-			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 		}
 
 		if ($total === 0) {
-			output::output('critical', 'database is empty');
+			output::msg('notice', 'database is empty, nothing to export');
+			return;
 		}
 
-		$query = self::$db->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+		$query = self::$db->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 		$contents = '';
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -104,7 +107,7 @@ class sss
 		}
 
 		if (($aliases = self::$db->querySingle('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0')) === false) {
-			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 		}
 
 		if (!is_null($aliases)) {
@@ -112,31 +115,29 @@ class sss
 		}
 
 		if (($fp = fopen($file, 'wb')) === false) {
-			output::output('critical', 'failed to open file: \''.$file.'\'');
+			output::msg('critical', 'failed to open file: \''.$file.'\'');
 		}
 
 		fwrite($fp, $contents);
 		fclose($fp);
-		output::output('debug', ''.$total.' nick'.($total !== 1 ? 's' : '').' exported');
+		output::msg('debug', $total.' nick'.($total !== 1 ? 's' : '').' exported');
 	}
 
 	private function import_nicks(string $file): void
 	{
-		output::output('notice', 'importing nicks');
-
 		if (($rp = realpath($file)) === false) {
-			output::output('critical', 'no such file: \''.$file.'\'');
+			output::msg('critical', 'no such file: \''.$file.'\'');
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::output('critical', 'failed to open file: \''.$rp.'\'');
+			output::msg('critical', 'failed to open file: \''.$rp.'\'');
 		}
 
 		/**
 		 * Set all nicks to their default status before updating them according to
 		 * imported data.
 		 */
-		self::$db->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+		self::$db->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 
 		while (($line = fgets($fp)) !== false) {
 			$line = preg_replace('/\s+/', '', $line);
@@ -148,10 +149,10 @@ class sss
 				continue;
 			}
 
-			self::$db->exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+			self::$db->exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 
 			if (!is_null($matches['aliases'])) {
-				self::$db->exec('UPDATE OR IGNORE uid_details SET status = 2, ruid = (SELECT uid FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\') WHERE csnick IN (\''.preg_replace('/,/', '\',\'', $matches['aliases']).'\')') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+				self::$db->exec('UPDATE OR IGNORE uid_details SET status = 2, ruid = (SELECT uid FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\') WHERE csnick IN (\''.preg_replace('/,/', '\',\'', $matches['aliases']).'\')') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 			}
 		}
 
@@ -166,8 +167,7 @@ class sss
 	 */
 	private function link_nicks(): void
 	{
-		output::output('notice', 'looking for possible aliases');
-		$query = self::$db->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+		$query = self::$db->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 		$nicks_stripped = [];
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -211,8 +211,8 @@ class sss
 				 */
 				if ($nicks[$uids[$i]]['status'] === 0) {
 					$new_alias = true;
-					self::$db->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
-					output::output('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
+					self::$db->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+					output::msg('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
 				}
 			}
 
@@ -221,7 +221,7 @@ class sss
 			 * (status = 0), make it a registered nick (status = 1).
 			 */
 			if ($new_alias && $nicks[$uids[0]]['status'] === 0) {
-				self::$db->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+				self::$db->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 			}
 		}
 	}
@@ -260,7 +260,7 @@ class sss
 		 * Set the timezone.
 		 */
 		if (!date_default_timezone_set($this->timezone)) {
-			output::output('critical', 'invalid timezone: \''.$this->timezone.'\'');
+			output::msg('critical', 'invalid timezone: \''.$this->timezone.'\'');
 		}
 
 		/**
@@ -278,9 +278,9 @@ class sss
 		try {
 			self::$db = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
 			self::$db->busyTimeout(60000);
-			output::output('notice', 'succesfully connected to database: \''.$this->database.'\'');
+			output::msg('notice', 'succesfully connected to database: \''.$this->database.'\'');
 		} catch (Exception $e) {
-			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
+			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.$e->getMessage());
 		}
 
 		/**
@@ -301,13 +301,15 @@ class sss
 			self::$db->exec('PRAGMA '.$pragma.' = '.$value);
 		}
 
-		self::$db->exec('BEGIN TRANSACTION') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+		self::$db->exec('BEGIN TRANSACTION') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 
 		if (array_key_exists('e', $options)) {
+			output::msg('notice', 'exporting nicks');
 			$this->export_nicks($options['e']);
 		}
 
 		if (array_key_exists('n', $options)) {
+			output::msg('notice', 'importing nicks');
 			$this->import_nicks($options['n']);
 			$this->maintenance();
 		}
@@ -320,13 +322,15 @@ class sss
 		}
 
 		if (array_key_exists('o', $options)) {
+			output::msg('notice', 'creating stats page');
 			$this->create_html($options['o']);
 		}
 
-		self::$db->exec('COMMIT') or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+		output::msg('notice', 'writing data to database');
+		self::$db->exec('COMMIT') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 		self::$db->exec('PRAGMA optimize');
 		self::$db->close();
-		output::output('notice', 'kthxbye');
+		output::msg('notice', 'kthxbye');
 	}
 
 	/**
@@ -338,23 +342,25 @@ class sss
 		 * Search for new aliases if $auto_link_nicks is true.
 		 */
 		if ($this->auto_link_nicks) {
+			output::msg('notice', 'looking for possible aliases');
 			$this->link_nicks();
 		}
 
+		output::msg('notice', 'performing database maintenance routines');
 		$maintenance = new maintenance();
 	}
 
 	private function parse_log(string $filedir): void
 	{
 		if (($rp = realpath($filedir)) === false) {
-			output::output('critical', 'no such file or directory: \''.$filedir.'\'');
+			output::msg('critical', 'no such file or directory: \''.$filedir.'\'');
 		}
 
 		$files = [];
 
 		if (is_dir($rp)) {
 			if (($dh = opendir($rp)) === false) {
-				output::output('critical', 'failed to open directory: \''.$rp.'\'');
+				output::msg('critical', 'failed to open directory: \''.$rp.'\'');
 			}
 
 			while (($file = readdir($dh)) !== false) {
@@ -376,7 +382,7 @@ class sss
 		}
 
 		if (!isset($logfiles)) {
-			output::output('critical', 'no logfiles found matching \'logfile_date_format\' setting');
+			output::msg('critical', 'no logfiles found matching \'logfile_date_format\' setting');
 		}
 
 		/**
@@ -388,7 +394,7 @@ class sss
 		 * Get the date of the last log parsed.
 		 */
 		if (($date_last_log_parsed = self::$db->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
-			output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 		}
 
 		$need_maintenance = false;
@@ -408,7 +414,7 @@ class sss
 			 * order with no gaps.
 			 */
 			if (($result = self::$db->querySingle('SELECT nick_prev, streak FROM streak_history', true)) === false) {
-				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+				output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 			}
 
 			if (!empty($result)) {
@@ -421,7 +427,7 @@ class sss
 			 * log. This would be 1 for a fresh log and +1 for a log with a parse history.
 			 */
 			if (($linenum_start = self::$db->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
-				output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+				output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 			}
 
 			if (!is_null($linenum_start)) {
@@ -430,14 +436,12 @@ class sss
 				$linenum_start = 1;
 			}
 
+			output::msg('notice', 'parsing logfile: \''.$logfile.'\' from line '.$linenum_start);
+
 			/**
 			 * Check if the log is gzipped and call the appropriate parser.
 			 */
 			if (preg_match('/\.gz$/', $logfile)) {
-				if (!extension_loaded('zlib')) {
-					output::output('critical', 'zlib extension isn\'t loaded: can\'t parse gzipped logs'."\n");
-				}
-
 				$parser->gzparse_log($logfile, $linenum_start);
 			} else {
 				$parser->parse_log($logfile, $linenum_start);
@@ -447,7 +451,7 @@ class sss
 			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
 			if ($parser->get_num('linenum_last_nonempty') >= $linenum_start) {
-				self::$db->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::output('critical', basename(__FILE__).':'.__LINE__.', sqlite3 says: '.self::$db->lastErrorMsg());
+				self::$db->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 
 				/**
 				 * Write data to database. Remember if we need maintenance later.
@@ -473,11 +477,11 @@ class sss
 	private function read_config(string $file): void
 	{
 		if (($rp = realpath($file)) === false) {
-			output::output('critical', 'no such file: \''.$file.'\'');
+			output::msg('critical', 'no such file: \''.$file.'\'');
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::output('critical', 'failed to open file: \''.$rp.'\'');
+			output::msg('critical', 'failed to open file: \''.$rp.'\'');
 		}
 
 		while (($line = fgets($fp)) !== false) {
@@ -493,7 +497,7 @@ class sss
 		 */
 		foreach ($this->settings_required as $setting) {
 			if (!array_key_exists($setting, $this->config)) {
-				output::output('critical', 'missing required setting: \''.$setting.'\'');
+				output::msg('critical', 'missing required setting: \''.$setting.'\'');
 			}
 		}
 	}

@@ -24,7 +24,7 @@ class output
 	/**
 	 * Output a given message to the console.
 	 */
-	public static function output(string $type, string $message): void
+	public static function msg(string $type, string $message): void
 	{
 		$datetime = date('M d H:i:s');
 
@@ -37,7 +37,7 @@ class output
 		 * the program.
 		 */
 		if ($type === 'critical') {
-			exit($datetime.' [C] '.$message."\n");
+			exit($datetime.' [!] '.$message."\n");
 		}
 
 		/**
@@ -54,7 +54,7 @@ class output
 			}
 		} elseif ($type === 'debug') {
 			if (self::$verbosity >= 2) {
-				echo $datetime.' [D] '.$message."\n";
+				echo $datetime.' [?] '.$message."\n";
 			}
 		}
 
