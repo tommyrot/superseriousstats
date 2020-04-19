@@ -55,6 +55,7 @@ class sss
 	private array $settings_allow_override = ['auto_link_nicks', 'database', 'logfile_date_format', 'parser', 'timezone'];
 	private array $settings_required = ['channel', 'database', 'logfile_date_format', 'parser', 'timezone'];
 	private bool $auto_link_nicks = true;
+	private bool $need_maintenance = false;
 	private string $database = '';
 	private string $logfile_date_format = '';
 	private string $parser = '';
@@ -314,11 +315,12 @@ class sss
 			$this->maintenance();
 		}
 
-		/**
-		 * Below, "i" should execute before "o".
-		 */
 		if (array_key_exists('i', $options)) {
 			$this->parse_log($options['i']);
+
+			if ($this->need_maintenance) {
+				$this->maintenance();
+			}
 		}
 
 		if (array_key_exists('o', $options)) {
@@ -397,8 +399,6 @@ class sss
 			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 		}
 
-		$need_maintenance = false;
-
 		foreach ($logfiles as $date => $logfile) {
 			/**
 			 * Skip logs that have already been processed.
@@ -454,19 +454,13 @@ class sss
 				self::$db->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 
 				/**
-				 * Write data to database. Remember if we need maintenance later.
+				 * Write data to database. Set $need_maintenance to true if there has been any
+				 * data written to the database.
 				 */
 				if ($parser->write_data()) {
-					$need_maintenance = true;
+					$this->need_maintenance = true;
 				}
 			}
-		}
-
-		/**
-		 * Finally, call maintenance if there has been any data written to the database.
-		 */
-		if ($need_maintenance) {
-			$this->maintenance();
 		}
 	}
 

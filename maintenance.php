@@ -68,8 +68,7 @@ class maintenance
 	/**
 	 * The file "tlds-alpha-by-domain.txt" contains all TLDs which are currently
 	 * active on the internet. Cross-match this list with the TLDs we have stored
-	 * in our database and deactivate those that do not match. We expect the
-	 * aforementioned file to be present, readable and up to date.
+	 * in our database and deactivate those that do not match. Optional feature.
 	 */
 	private function deactivate_fqdns(): void
 	{

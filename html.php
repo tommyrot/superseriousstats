@@ -376,7 +376,7 @@ class html
 		$cols = count($keys);
 
 		/**
-		 * Retrieve the total for the data set.
+		 * Retrieve the total for the dataset.
 		 */
 		if (!empty($queries[1])) {
 			if (is_int($queries[1])) {
@@ -400,7 +400,7 @@ class html
 		$table .= '<tr><td class="k1">'.$keys[0].'<td class="pos"><td class="k2">'.$keys[1].($cols === 3 ? '<td class="k3">'.$keys[2] : '');
 
 		/**
-		 * Retrieve the main data set.
+		 * Retrieve the main dataset.
 		 */
 		$row = 0;
 		$query = sss::$db->query($queries[0]) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.sss::$db->lastErrorMsg());
