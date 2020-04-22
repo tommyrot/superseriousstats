@@ -190,11 +190,11 @@ class parser
 	 */
 	public function gzparse_log(string $logfile, int $linenum_start): void
 	{
-		if (($zp = gzopen($logfile, 'rb')) === false) {
+		if (($fp = gzopen($logfile, 'rb')) === false) {
 			output::msg('critical', 'failed to open gzip file: \''.$logfile.'\'');
 		}
 
-		while (($line = gzgets($zp)) !== false) {
+		while (($line = gzgets($fp)) !== false) {
 			++$this->linenum;
 
 			if ($this->linenum < $linenum_start) {
@@ -216,7 +216,7 @@ class parser
 			$this->line_prev = $line;
 		}
 
-		gzclose($zp);
+		gzclose($fp);
 	}
 
 	/**
