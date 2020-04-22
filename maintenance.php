@@ -78,7 +78,8 @@ class maintenance
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::msg('critical', 'failed to open file: \''.$rp.'\'');
+			output::msg('notice', 'failed to open file: \''.$rp.'\', skipping tld validation');
+			return;
 		}
 
 		while (($line = fgets($fp)) !== false) {

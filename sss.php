@@ -79,12 +79,13 @@ class sss
 
 	private function create_html(string $file): void
 	{
-		$html = new html($this->config);
-
 		if (($fp = fopen($file, 'wb')) === false) {
-			output::msg('critical', 'failed to open file: \''.$file.'\'');
+			output::msg('notice', 'failed to open file: \''.$file.'\', cannot create stats page');
+			return;
 		}
 
+		output::msg('notice', 'creating stats page');
+		$html = new html($this->config);
 		fwrite($fp, $html->get_contents());
 		fclose($fp);
 	}
@@ -100,6 +101,7 @@ class sss
 			return;
 		}
 
+		output::msg('notice', 'exporting nicks');
 		$query = self::$db->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 		$contents = '';
 
@@ -126,6 +128,8 @@ class sss
 
 	private function import_nicks(string $file): void
 	{
+		output::msg('notice', 'importing nicks');
+
 		if (($rp = realpath($file)) === false) {
 			output::msg('critical', 'no such file: \''.$file.'\'');
 		}
@@ -305,12 +309,10 @@ class sss
 		self::$db->exec('BEGIN TRANSACTION') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 
 		if (array_key_exists('e', $options)) {
-			output::msg('notice', 'exporting nicks');
 			$this->export_nicks($options['e']);
 		}
 
 		if (array_key_exists('n', $options)) {
-			output::msg('notice', 'importing nicks');
 			$this->import_nicks($options['n']);
 			$this->maintenance();
 		}
@@ -324,7 +326,6 @@ class sss
 		}
 
 		if (array_key_exists('o', $options)) {
-			output::msg('notice', 'creating stats page');
 			$this->create_html($options['o']);
 		}
 
