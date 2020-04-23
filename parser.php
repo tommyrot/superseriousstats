@@ -511,8 +511,7 @@ class parser
 				$this->nick_objs[$nick]->add_num($this->smileys[$smiley], 1);
 
 			/**
-			 * Only catch URLs which were intended to be clicked on. Most clients can handle
-			 * URLs that begin with "www." or a scheme like "http://".
+			 * Only catch URLs which start with "www.", "http://" or "https://".
 			 */
 			} elseif (preg_match('/^(www\.|https?:\/\/).+/i', $csword)) {
 				/**
