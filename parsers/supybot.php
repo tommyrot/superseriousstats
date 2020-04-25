@@ -66,7 +66,7 @@ class parser_supybot extends parser
 
 		// Skip everything else.
 		} elseif ($line !== '') {
-			output::output('debug', __METHOD__.'(): skipping line '.$this->linenum.': \''.$line.'\'');
+			output::msg('debug', 'skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}
 }

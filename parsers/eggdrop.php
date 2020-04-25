@@ -80,7 +80,7 @@ class parser_eggdrop extends parser
 
 			--$this->linenum;
 			$this->repeat_lock = true;
-			output::output('debug', __METHOD__.'(): repeating line '.$this->linenum.': '.$matches['num'].' time'.($matches['num'] !== '1' ? 's' : ''));
+			output::msg('debug', 'repeating line '.$this->linenum.': '.$matches['num'].' time'.($matches['num'] !== '1' ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; ++$i) {
 				$this->parse_line($this->line_prev);
@@ -91,7 +91,7 @@ class parser_eggdrop extends parser
 
 		// Skip everything else.
 		} elseif ($line !== '') {
-			output::output('debug', __METHOD__.'(): skipping line '.$this->linenum.': \''.$line.'\'');
+			output::msg('debug', 'skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}
 }
