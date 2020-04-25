@@ -381,15 +381,15 @@ class sss
 
 		foreach ($files as $file) {
 			/**
-			 * The filenames should match the pattern provided by $logfile_date_format.
+			 * Each filename must contain a date formatted like "Ymd" or "Y-m-d".
 			 */
-			if (($date = date_create_from_format($this->logfile_date_format, basename($file))) !== false) {
-				$logfiles[date_format($date, 'Y-m-d')] = $file;
+			if (preg_match('/(?<!\d)(?<year>\d{4})-?(?<month>\d{2})-?(?<day>\d{2})(?!\d)/', $file, $matches)) {
+				$logfiles[$matches['year'].'-'.$matches['month'].'-'.$matches['day']] = $file;
 			}
 		}
 
 		if (!isset($logfiles)) {
-			output::msg('critical', 'no logfiles found matching \'logfile_date_format\' setting');
+			output::msg('critical', 'no logfiles found having a date in their name (e.g. #chatroom.'.date('Ymd').'.log)');
 		}
 
 		/**
