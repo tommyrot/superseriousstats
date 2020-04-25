@@ -366,8 +366,12 @@ class sss
 				output::msg('critical', 'failed to open directory: \''.$rp.'\'');
 			}
 
-			while (($file = readdir($dh)) !== false) {
-				$files[] = realpath($rp.'/'.$file);
+			while (($entry = readdir($dh)) !== false) {
+				$entry = realpath($rp.'/'.$entry);
+
+				if (!is_dir($entry)) {
+					$files[] = $entry;
+				}
 			}
 
 			closedir($dh);
