@@ -306,6 +306,10 @@ class sss
 			self::$db->exec('PRAGMA '.$pragma.' = '.$value);
 		}
 
+		/**
+		 * Note that we are making use of one big transaction during the full course of
+		 * the program. This means everything happens in memory until we commit.
+		 */
 		self::$db->exec('BEGIN TRANSACTION') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 
 		if (array_key_exists('e', $options)) {
