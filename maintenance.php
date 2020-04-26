@@ -91,7 +91,7 @@ class maintenance
 		fclose($fp);
 		sss::$db->exec('UPDATE fqdns SET active = 1') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.sss::$db->lastErrorMsg());
 
-		if (!empty($tlds_active)) {
+		if (isset($tlds_active)) {
 			sss::$db->exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.sss::$db->lastErrorMsg());
 			output::msg('debug', 'deactivated '.sss::$db->changes().' invalid fqdn'.(sss::$db->changes() !== 1 ? 's' : ''));
 		}
