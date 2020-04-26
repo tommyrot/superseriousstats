@@ -329,7 +329,7 @@ class sss
 			$this->create_html($options['o']);
 		}
 
-		output::msg('notice', 'writing data to database');
+		output::msg('notice', 'updating database');
 		self::$db->exec('COMMIT') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
 		self::$db->exec('PRAGMA optimize');
 		self::$db->close();
