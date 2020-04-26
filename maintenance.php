@@ -83,7 +83,7 @@ class maintenance
 		}
 
 		while (($line = fgets($fp)) !== false) {
-			if (preg_match('/^(?<tld>[^#\s]+)/', $line, $matches)) {
+			if (preg_match('/^(?<tld>[a-z0-9-]+)$/i', $line, $matches)) {
 				$tlds_active[] = '\''.strtolower($matches['tld']).'\'';
 			}
 		}
