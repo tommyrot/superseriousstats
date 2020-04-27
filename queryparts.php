@@ -30,7 +30,7 @@ trait queryparts
 			}
 		}
 
-		if (empty($insert_columns)) {
+		if (!isset($insert_columns)) {
 			return null;
 		}
 
