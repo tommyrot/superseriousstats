@@ -7,7 +7,7 @@
 declare(strict_types=1);
 
 /**
- * Class handling URL validation. Returns false if a URL fails the syntax check.
+ * Class handling URL validation. Returns null if a URL fails the syntax check.
  * Returns an array with the URLs components on success. Missing components are
  * represented by an empty string, a missing port component by (int) 0.
  *
@@ -69,28 +69,28 @@ class url_tools
 		/**
 		 * Validate the URL.
 		 */
-		if (!preg_match(self::$regexp_complete, $url, $matches)) {
+		if (!preg_match(self::$regexp_complete, $url, $matches, PREG_UNMATCHED_AS_NULL)) {
 			return null;
 		}
 
 		/**
 		 * The TLD may not consist of all digits.
 		 */
-		if (!empty($matches['tld']) && preg_match('/^\d+$/', $matches['tld'])) {
+		if (!is_null($matches['tld']) && preg_match('/^\d+$/', $matches['tld'])) {
 			return null;
 		}
 
 		/**
 		 * The FQDN (excluding trailing dot) may not exceed 253 characters.
 		 */
-		if (!empty($matches['fqdn']) && strlen($matches['fqdn']) > 253) {
+		if (!is_null($matches['fqdn']) && strlen($matches['fqdn']) > 253) {
 			return null;
 		}
 
 		/**
 		 * If the URL has no scheme, http is assumed.
 		 */
-		if (empty($matches['scheme'])) {
+		if (is_null($matches['scheme'])) {
 			$matches['scheme'] = 'http';
 			$matches['url'] = 'http://'.$matches['url'];
 		}
@@ -101,7 +101,7 @@ class url_tools
 		$components = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
 
 		foreach ($components as $component) {
-			if (empty($matches[$component])) {
+			if (is_null($matches[$component])) {
 				/**
 				 * Nonexistent components are returned as an empty string.
 				 */
@@ -114,7 +114,7 @@ class url_tools
 		/**
 		 * The port component should be of type integer. 0 means no port.
 		 */
-		if (empty($matches['port'])) {
+		if (is_null($matches['port'])) {
 			$url_components['port'] = 0;
 		} else {
 			$url_components['port'] = (int) $matches['port'];
