@@ -120,7 +120,7 @@ class parser
 	 */
 	private function create_nick(string $time, string $csnick, bool $real = true): string
 	{
-		$nick = strtolower($csnick);
+		$nick = mb_strtolower($csnick);
 
 		if (!array_key_exists($nick, $this->nick_objs)) {
 			$this->nick_objs[$nick] = new nick($csnick, sss::$db);
