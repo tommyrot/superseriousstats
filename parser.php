@@ -628,6 +628,8 @@ class parser
 
 	/**
 	 * Syntax check a given nick. Leave unicode constraints mostly up to the server.
+	 * Removing characters from the disallowed ones in the regular expression below
+	 * can have serious implications throughout the program. (E.g. 0x27).
 	 */
 	private function validate_nick(string $csnick): bool
 	{
