@@ -123,7 +123,7 @@ class parser
 		$nick = mb_strtolower($csnick);
 
 		if (!array_key_exists($nick, $this->nick_objs)) {
-			$this->nick_objs[$nick] = new nick($csnick, sss::$db);
+			$this->nick_objs[$nick] = new nick($csnick);
 		} else {
 			$this->nick_objs[$nick]->set_str('csnick', $csnick);
 		}
@@ -149,7 +149,7 @@ class parser
 	private function create_topic(string $time, string $nick, string $topic): void
 	{
 		if (!array_key_exists($topic, $this->topic_objs)) {
-			$this->topic_objs[$topic] = new topic($topic, sss::$db);
+			$this->topic_objs[$topic] = new topic($topic);
 		}
 
 		$this->topic_objs[$topic]->add_uses($this->date.' '.$time, $nick);
@@ -164,7 +164,7 @@ class parser
 		$url = $url_components['url'];
 
 		if (!array_key_exists($url, $this->url_objs)) {
-			$this->url_objs[$url] = new url($url_components, sss::$db);
+			$this->url_objs[$url] = new url($url_components);
 		}
 
 		$this->url_objs[$url]->add_uses($this->date.' '.$time, $nick);
@@ -178,7 +178,7 @@ class parser
 		$word = mb_strtolower($csword, 'UTF-8');
 
 		if (!array_key_exists($word, $this->word_objs)) {
-			$this->word_objs[$word] = new word($word, sss::$db);
+			$this->word_objs[$word] = new word($word);
 			$this->word_objs[$word]->set_num('length', $length);
 		}
 
