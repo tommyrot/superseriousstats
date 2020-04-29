@@ -96,8 +96,8 @@ class html
 		$this->days_logged = $result['days_logged'];
 
 		/**
-		 * Display an additional column in the Activity by Year table showing the
-		 * estimated line count for the current year (real time). The estimate is based
+		 * Display an additional column in the "Activity by Year" table showing the
+		 * estimated line count for the current year (now). The estimate is based
 		 * on activity during the last 90 days. The column won't be shown if there
 		 * hasn't been any activity in the current year yet, there hasn't been any
 		 * activity in the last 90 days, or if it's the last day of the year.
@@ -113,10 +113,11 @@ class html
 		}
 
 		/**
-		 * Show a minimum of 3 and maximum of 24 columns in the Activity by Year table.
-		 * In case the data allows for more than 16 columns there won't be any room for
-		 * the Activity Distribution by Day table to be adjacent to the right so we pad
-		 * the Activity by Year table up to 24 columns making it look neat.
+		 * Show a minimum of 3 and maximum of 24 columns in the "Activity by Year"
+		 * table. In case the data allows for more than 16 columns there won't be any
+		 * room for the "Activity Distribution by Day" table to be adjacent to the
+		 * right so we pad the "Activity by Year" table up to 24 columns making it look
+		 * neat again.
 		 */
 		$this->columns_act_year = $this->date_last_log_parsed->format('Y') - (int) $this->date_first_activity->format('Y') + ($this->estimate ? 1 : 0) + 1;
 
@@ -143,7 +144,7 @@ class html
 			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
 			. '<meta name="referrer" content="no-referrer">'."\n"
 			. '<style type="text/css">'."\n"
-			. '  .act-year { width:'.(2 + ($this->columns_act_year * 34)).'px }'."\n"
+			. '.act-year { width:'.(2 + ($this->columns_act_year * 34)).'px }'."\n"
 			. '</style>'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
