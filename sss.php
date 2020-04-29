@@ -52,12 +52,11 @@ class sss
 	 * overridden through the config file.
 	 */
 	private array $config = [];
-	private array $settings_allow_override = ['auto_link_nicks', 'database', 'logfile_date_format', 'parser', 'timezone'];
-	private array $settings_required = ['channel', 'database', 'logfile_date_format', 'parser', 'timezone'];
+	private array $settings_allow_override = ['auto_link_nicks', 'database', 'parser', 'timezone'];
+	private array $settings_required = ['channel', 'database', 'parser', 'timezone'];
 	private bool $auto_link_nicks = true;
 	private bool $need_maintenance = false;
 	private string $database = '';
-	private string $logfile_date_format = '';
 	private string $parser = '';
 	private string $timezone = '';
 	public static SQLite3 $db;
