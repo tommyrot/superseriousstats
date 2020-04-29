@@ -71,13 +71,15 @@ class html
 	 */
 	public function get_contents(): string
 	{
-		if (($this->l_total = sss::$db->querySingle('SELECT SUM(l_total) FROM channel_activity')) === false) {
+		if (($l_total = sss::$db->querySingle('SELECT SUM(l_total) FROM channel_activity')) === false) {
 			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.sss::$db->lastErrorMsg());
 		}
 
-		if (is_null($this->l_total)) {
+		if (is_null($l_total)) {
 			return '<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">There is not enough data to create statistics, yet.</div></div></body></html>'."\n";
 		}
+
+		$this->l_total = $l_total;
 
 		if (($result = sss::$db->querySingle('SELECT MIN(date) AS date_first_activity, MAX(date) AS date_last_activity FROM channel_activity', true)) === false) {
 			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.sss::$db->lastErrorMsg());
