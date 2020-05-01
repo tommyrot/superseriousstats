@@ -1,10 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Copyright (c) 2009-2020, Jos de Ruijter <jos@dutnie.nl>
  */
-
-declare(strict_types=1);
 
 /**
  * Override php.ini directives.

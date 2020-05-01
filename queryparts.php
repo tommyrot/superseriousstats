@@ -1,10 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Copyright (c) 2020, Jos de Ruijter <jos@dutnie.nl>
  */
-
-declare(strict_types=1);
 
 /**
  * Trait to create parts of the SQLite3 query.
