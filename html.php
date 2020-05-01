@@ -119,7 +119,7 @@ class html
 		 * right so we pad the "Activity by Year" table up to 24 columns making it look
 		 * neat again.
 		 */
-		$this->columns_act_year = $this->date_last_log_parsed->format('Y') - (int) $this->date_first_activity->format('Y') + ($this->estimate ? 1 : 0) + 1;
+		$this->columns_act_year = 1 + (int) $this->date_last_log_parsed->format('Y') - (int) $this->date_first_activity->format('Y') + ($this->estimate ? 1 : 0);
 
 		if ($this->columns_act_year < 3) {
 			$this->columns_act_year = 3;
