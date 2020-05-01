@@ -91,8 +91,8 @@ class sss
 
 	private function export_nicks(string $file): void
 	{
-		if (($total = self::$db->querySingle('SELECT COUNT(*) FROM uid_details')) === false) {
-			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+		if (($total = db::$conn->querySingle('SELECT COUNT(*) FROM uid_details')) === false) {
+			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 		}
 
 		if ($total === 0) {
@@ -101,15 +101,15 @@ class sss
 		}
 
 		output::msg('notice', 'exporting nicks');
-		$query = self::$db->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+		$query = db::$conn->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 		$contents = '';
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
 			$contents .= $result['status'].','.$result['csnick'].(!is_null($result['aliases']) ? ','.$result['aliases'] : '')."\n";
 		}
 
-		if (($aliases = self::$db->querySingle('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0')) === false) {
-			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+		if (($aliases = db::$conn->querySingle('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0')) === false) {
+			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 		}
 
 		if (!is_null($aliases)) {
@@ -141,7 +141,7 @@ class sss
 		 * Set all nicks to their default status before updating them according to
 		 * imported data.
 		 */
-		self::$db->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+		db::$conn->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 
 		while (($line = fgets($fp)) !== false) {
 			$line = preg_replace('/\s+/', '', $line);
@@ -154,10 +154,10 @@ class sss
 				continue;
 			}
 
-			self::$db->exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+			db::$conn->exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 
 			if (!is_null($matches['aliases'])) {
-				self::$db->exec('UPDATE OR IGNORE uid_details SET status = 2, ruid = (SELECT uid FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\') WHERE csnick IN (\''.preg_replace('/,/', '\',\'', $matches['aliases']).'\')') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+				db::$conn->exec('UPDATE OR IGNORE uid_details SET status = 2, ruid = (SELECT uid FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\') WHERE csnick IN (\''.preg_replace('/,/', '\',\'', $matches['aliases']).'\')') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 			}
 		}
 
@@ -172,7 +172,7 @@ class sss
 	 */
 	private function link_nicks(): void
 	{
-		$query = self::$db->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+		$query = db::$conn->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 		$nicks_stripped = [];
 
 		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
@@ -216,7 +216,7 @@ class sss
 				 */
 				if ($nicks[$uids[$i]]['status'] === 0) {
 					$new_alias = true;
-					self::$db->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+					db::$conn->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 					output::msg('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
 				}
 			}
@@ -226,7 +226,7 @@ class sss
 			 * (status = 0), make it a registered nick (status = 1).
 			 */
 			if ($new_alias && $nicks[$uids[0]]['status'] === 0) {
-				self::$db->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+				db::$conn->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 			}
 		}
 	}
@@ -280,37 +280,8 @@ class sss
 		/**
 		 * Open the database connection.
 		 */
-		try {
-			self::$db = new SQLite3($this->database, SQLITE3_OPEN_READWRITE);
-			self::$db->busyTimeout(60000);
-			output::msg('notice', 'succesfully connected to database: \''.$this->database.'\'');
-		} catch (Exception $e) {
-			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.$e->getMessage());
-		}
-
-		/**
-		 * Setup the SQLite3 connection:
-		 *  - Disable the rollback journal.
-		 *  - Continue without syncing as soon as data is handed off to the operating
-		 *    system.
-		 *  - Temporary tables and indices are kept in memory.
-		 *  - Enable foreign key constraints.
-		 */
-		$pragmas = [
-			'journal_mode' => 'OFF',
-			'synchronous' => 'OFF',
-			'temp_store' => 'MEMORY',
-			'foreign_keys' => 'ON'];
-
-		foreach ($pragmas as $pragma => $value) {
-			self::$db->exec('PRAGMA '.$pragma.' = '.$value);
-		}
-
-		/**
-		 * Note that we are making use of one big transaction during the full course of
-		 * the program. This means everything happens in memory until we commit.
-		 */
-		self::$db->exec('BEGIN TRANSACTION') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+		db::set_database($this->database);
+		db::begin();
 
 		if (array_key_exists('e', $options)) {
 			$this->export_nicks($options['e']);
@@ -333,10 +304,7 @@ class sss
 			$this->create_html($options['o']);
 		}
 
-		output::msg('notice', 'updating database');
-		self::$db->exec('COMMIT') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
-		self::$db->exec('PRAGMA optimize');
-		self::$db->close();
+		db::commit();
 		output::msg('notice', 'kthxbye');
 	}
 
@@ -404,8 +372,8 @@ class sss
 		/**
 		 * Get the date of the last log parsed.
 		 */
-		if (($date_last_log_parsed = self::$db->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
-			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+		if (($date_last_log_parsed = db::$conn->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
+			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 		}
 
 		foreach ($logfiles as $date => $logfile) {
@@ -422,8 +390,8 @@ class sss
 			 * Get the streak history. This will assume logs are parsed in chronological
 			 * order with no gaps.
 			 */
-			if (($result = self::$db->querySingle('SELECT nick_prev, streak FROM streak_history', true)) === false) {
-				output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+			if (($result = db::$conn->querySingle('SELECT nick_prev, streak FROM streak_history', true)) === false) {
+				output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 			}
 
 			if (!empty($result)) {
@@ -435,8 +403,8 @@ class sss
 			 * Get the parse history and set the line number on which to start parsing the
 			 * log. This would be 1 for a fresh log and +1 for a log with a parse history.
 			 */
-			if (($linenum_start = self::$db->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
-				output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+			if (($linenum_start = db::$conn->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
+				output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 			}
 
 			if (!is_null($linenum_start)) {
@@ -460,7 +428,7 @@ class sss
 			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
 			if ($parser->get_num('linenum_last_nonempty') >= $linenum_start) {
-				self::$db->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.self::$db->lastErrorMsg());
+				db::$conn->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
 
 				/**
 				 * Write data to database. Set $need_maintenance to true if there has been any
