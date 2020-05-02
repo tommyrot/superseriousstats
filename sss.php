@@ -77,11 +77,11 @@ class sss
 	private function create_html(string $file): void
 	{
 		if (($fp = fopen($file, 'wb')) === false) {
-			output::msg('notice', 'failed to open file: \''.$file.'\', cannot create stats page');
+			out::put('notice', 'failed to open file: \''.$file.'\', cannot create stats page');
 			return;
 		}
 
-		output::msg('notice', 'creating stats page');
+		out::put('notice', 'creating stats page');
 		$html = new html($this->config);
 		fwrite($fp, $html->get_contents());
 		fclose($fp);
@@ -92,11 +92,11 @@ class sss
 		$total = db::query_single_col('SELECT COUNT(*) FROM uid_details');
 
 		if ($total === 0) {
-			output::msg('notice', 'database is empty, nothing to export');
+			out::put('notice', 'database is empty, nothing to export');
 			return;
 		}
 
-		output::msg('notice', 'exporting nicks');
+		out::put('notice', 'exporting nicks');
 		$results = db::query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC');
 		$contents = '';
 
@@ -111,24 +111,24 @@ class sss
 		}
 
 		if (($fp = fopen($file, 'wb')) === false) {
-			output::msg('critical', 'failed to open file: \''.$file.'\'');
+			out::put('critical', 'failed to open file: \''.$file.'\'');
 		}
 
 		fwrite($fp, $contents);
 		fclose($fp);
-		output::msg('debug', $total.' nick'.($total !== 1 ? 's' : '').' exported');
+		out::put('debug', $total.' nick'.($total !== 1 ? 's' : '').' exported');
 	}
 
 	private function import_nicks(string $file): void
 	{
-		output::msg('notice', 'importing nicks');
+		out::put('notice', 'importing nicks');
 
 		if (($rp = realpath($file)) === false) {
-			output::msg('critical', 'no such file: \''.$file.'\'');
+			out::put('critical', 'no such file: \''.$file.'\'');
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::msg('critical', 'failed to open file: \''.$rp.'\'');
+			out::put('critical', 'failed to open file: \''.$rp.'\'');
 		}
 
 		/**
@@ -211,7 +211,7 @@ class sss
 				if ($nicks[$uids[$i]]['status'] === 0) {
 					$new_alias = true;
 					db::query_exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]);
-					output::msg('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
+					out::put('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
 				}
 			}
 
@@ -259,7 +259,7 @@ class sss
 		 * Set the timezone.
 		 */
 		if (!date_default_timezone_set($this->timezone)) {
-			output::msg('critical', 'invalid timezone: \''.$this->timezone.'\'');
+			out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
 		}
 
 		/**
@@ -299,7 +299,7 @@ class sss
 		}
 
 		db::disconnect();
-		output::msg('notice', 'kthxbye');
+		out::put('notice', 'kthxbye');
 	}
 
 	/**
@@ -311,25 +311,25 @@ class sss
 		 * Search for new aliases if $auto_link_nicks is true.
 		 */
 		if ($this->auto_link_nicks) {
-			output::msg('notice', 'looking for possible aliases');
+			out::put('notice', 'looking for possible aliases');
 			$this->link_nicks();
 		}
 
-		output::msg('notice', 'performing database maintenance routines');
+		out::put('notice', 'performing database maintenance routines');
 		$maintenance = new maintenance();
 	}
 
 	private function parse_log(string $filedir): void
 	{
 		if (($rp = realpath($filedir)) === false) {
-			output::msg('critical', 'no such file or directory: \''.$filedir.'\'');
+			out::put('critical', 'no such file or directory: \''.$filedir.'\'');
 		}
 
 		$files = [];
 
 		if (is_dir($rp)) {
 			if (($dh = opendir($rp)) === false) {
-				output::msg('critical', 'failed to open directory: \''.$rp.'\'');
+				out::put('critical', 'failed to open directory: \''.$rp.'\'');
 			}
 
 			while (($entry = readdir($dh)) !== false) {
@@ -355,7 +355,7 @@ class sss
 		}
 
 		if (!isset($logfiles)) {
-			output::msg('critical', 'no logfiles found having a date in their name (e.g. #chatroom.'.date('Ymd').'.log)');
+			out::put('critical', 'no logfiles found having a date in their name (e.g. #chatroom.'.date('Ymd').'.log)');
 		}
 
 		/**
@@ -401,7 +401,7 @@ class sss
 				$linenum_start = 1;
 			}
 
-			output::msg('notice', 'parsing logfile: \''.$logfile.'\' from line '.$linenum_start);
+			out::put('notice', 'parsing logfile: \''.$logfile.'\' from line '.$linenum_start);
 
 			/**
 			 * Check if the log is gzipped and call the appropriate parser.
@@ -436,11 +436,11 @@ class sss
 	private function read_config(string $file): void
 	{
 		if (($rp = realpath($file)) === false) {
-			output::msg('critical', 'no such file: \''.$file.'\'');
+			out::put('critical', 'no such file: \''.$file.'\'');
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::msg('critical', 'failed to open file: \''.$rp.'\'');
+			out::put('critical', 'failed to open file: \''.$rp.'\'');
 		}
 
 		while (($line = fgets($fp)) !== false) {
@@ -456,7 +456,7 @@ class sss
 		 */
 		foreach ($this->settings_required as $setting) {
 			if (!array_key_exists($setting, $this->config)) {
-				output::msg('critical', 'missing required setting: \''.$setting.'\'');
+				out::put('critical', 'missing required setting: \''.$setting.'\'');
 			}
 		}
 	}

@@ -189,7 +189,7 @@ class parser
 	public function gzparse_log(string $logfile, int $linenum_start): void
 	{
 		if (($fp = gzopen($logfile, 'rb')) === false) {
-			output::msg('critical', 'failed to open gzip file: \''.$logfile.'\'');
+			out::put('critical', 'failed to open gzip file: \''.$logfile.'\'');
 		}
 
 		while (($line = gzgets($fp)) !== false) {
@@ -261,7 +261,7 @@ class parser
 	public function parse_log(string $logfile, int $linenum_start): void
 	{
 		if (($fp = fopen($logfile, 'rb')) === false) {
-			output::msg('critical', 'failed to open file: \''.$logfile.'\'');
+			out::put('critical', 'failed to open file: \''.$logfile.'\'');
 		}
 
 		while (($line = fgets($fp)) !== false) {
@@ -527,7 +527,7 @@ class parser
 						$this->nick_objs[$nick]->add_num('urls', 1);
 					}
 				} else {
-					output::msg('debug', 'invalid url: \''.$csword.'\' on line '.$this->linenum);
+					out::put('debug', 'invalid url: \''.$csword.'\' on line '.$this->linenum);
 				}
 			}
 		}
@@ -598,7 +598,7 @@ class parser
 		 * Strip possible network prefix (psyBNC) from the "undergoing" nick.
 		 */
 		if (preg_match('/^.+?[~\'](?<nick_trimmed>.+)$/', $csnick_undergoing, $matches)) {
-			output::msg('debug', 'cleaning nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			out::put('debug', 'cleaning nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			$csnick_undergoing = $matches['nick_trimmed'];
 		}
 
@@ -632,7 +632,7 @@ class parser
 	private function validate_nick(string $csnick): bool
 	{
 		if (preg_match('/^[0-9-]|[\x21-\x2C\x2E\x2F\x3A-\x40\x7E]/', $csnick)) {
-			output::msg('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
+			out::put('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return false;
 		} else {
 			return true;

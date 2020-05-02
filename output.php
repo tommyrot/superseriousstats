@@ -7,7 +7,7 @@
 /**
  * Class for handling output messages.
  */
-class output
+class out
 {
 	private static int $verbosity = 1;
 	private static string $message_prev = '';
@@ -22,7 +22,7 @@ class output
 	/**
 	 * Output a given message to the console.
 	 */
-	public static function msg(string $type, string $message): void
+	public static function put(string $type, string $message): void
 	{
 		$datetime = date('M d H:i:s');
 

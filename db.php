@@ -37,9 +37,9 @@ class db
 		try {
 			self::$conn = new SQLite3(self::$database, SQLITE3_OPEN_READWRITE);
 			self::$conn->busyTimeout(60000);
-			output::msg('notice', 'succesfully connected to database: \''.self::$database.'\'');
+			out::put('notice', 'succesfully connected to database: \''.self::$database.'\'');
 		} catch (Exception $e) {
-			output::msg('critical', 'sqlite fail: '.$e->getMessage());
+			out::put('critical', 'sqlite fail: '.$e->getMessage());
 		}
 
 		/**
@@ -73,7 +73,7 @@ class db
 	 */
 	public static function disconnect(): void
 	{
-		output::msg('notice', 'updating database');
+		out::put('notice', 'updating database');
 		self::$conn->exec('COMMIT') or self::error();
 		self::$conn->exec('PRAGMA optimize');
 		self::$conn->close();
@@ -84,7 +84,7 @@ class db
 	 */
 	private static function error(): void
 	{
-		output::msg('critical', 'sqlite fail: '.self::$conn->lastErrorMsg());
+		out::put('critical', 'sqlite fail: '.self::$conn->lastErrorMsg());
 	}
 
 	/**

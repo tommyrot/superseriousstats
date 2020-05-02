@@ -71,12 +71,12 @@ class maintenance
 	private function deactivate_fqdns(): void
 	{
 		if (($rp = realpath('tlds-alpha-by-domain.txt')) === false) {
-			output::msg('debug', 'no such file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
+			out::put('debug', 'no such file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
 			return;
 		}
 
 		if (($fp = fopen($rp, 'rb')) === false) {
-			output::msg('notice', 'failed to open file: \''.$rp.'\', skipping tld validation');
+			out::put('notice', 'failed to open file: \''.$rp.'\', skipping tld validation');
 			return;
 		}
 
@@ -91,7 +91,7 @@ class maintenance
 
 		if (isset($tlds_active)) {
 			db::query_exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')');
-			output::msg('debug', 'deactivated '.db::changes().' invalid fqdn'.(db::changes() !== 1 ? 's' : ''));
+			out::put('debug', 'deactivated '.db::changes().' invalid fqdn'.(db::changes() !== 1 ? 's' : ''));
 		}
 	}
 
@@ -119,7 +119,7 @@ class maintenance
 			$new_registered_nick = db::query_single_col('SELECT csnick FROM uid_details WHERE uid = '.$result['new_ruid']);
 			db::query_exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = '.$result['status'].' WHERE uid = '.$result['new_ruid']);
 			db::query_exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = 2 WHERE ruid = '.$result['ruid']);
-			output::msg('debug', '\''.$new_registered_nick.'\' new registered nick for \''.$old_registered_nick.'\'');
+			out::put('debug', '\''.$new_registered_nick.'\' new registered nick for \''.$old_registered_nick.'\'');
 		}
 	}
 }
