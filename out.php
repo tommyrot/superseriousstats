@@ -22,11 +22,7 @@ class out
 	 */
 	public static function put(string $type, string $message): void
 	{
-		$datetime = date('M d H:i:s');
-
-		if (substr($datetime, 4, 1) === '0') {
-			$datetime = substr_replace($datetime, ' ', 4, 1);
-		}
+		$datetime = preg_replace('/(?<=[a-z] )0/', ' ', date('M d H:i:s'));
 
 		/**
 		 * Critical messages will always display and are followed by the termination of
