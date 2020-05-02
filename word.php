@@ -26,7 +26,7 @@ class word
 	public function write_data(): void
 	{
 		/**
-		 * Write data to database table "words".
+		 * Store data in database table "words".
 		 */
 		db::query_exec('INSERT INTO words (word, length, total) VALUES (\''.$this->word.'\', '.$this->length.', '.$this->total.') ON CONFLICT (word) DO UPDATE SET total = total + '.$this->total);
 	}

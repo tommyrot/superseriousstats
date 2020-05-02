@@ -21,6 +21,9 @@ class url
 		$this->url = $url_components['url'];
 	}
 
+	/**
+	 * Record each and every use of this URL.
+	 */
 	public function add_uses(string $datetime, string $nick): void
 	{
 		$this->uses[] = [$datetime, $nick];
@@ -32,7 +35,7 @@ class url
 	public function write_data(): void
 	{
 		/**
-		 * Write data to database table "fqdns".
+		 * Store data in database table "fqdns".
 		 */
 		if ($this->fqdn !== '') {
 			$fid = db::query_single_col('SELECT fid FROM fqdns WHERE fqdn = \''.$this->fqdn.'\'');
@@ -43,7 +46,7 @@ class url
 		}
 
 		/**
-		 * Write data to database tables "urls" and "uid_urls".
+		 * Store data in database tables "urls" and "uid_urls".
 		 */
 		$lid = db::query_single_col('SELECT lid FROM urls WHERE url = \''.preg_replace('/\'/', '\'\'', $this->url).'\'');
 

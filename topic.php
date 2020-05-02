@@ -17,6 +17,9 @@ class topic
 		$this->topic = $topic;
 	}
 
+	/**
+	 * Record each and every use of this topic.
+	 */
 	public function add_uses(string $datetime, string $nick): void
 	{
 		$this->uses[] = [$datetime, $nick];
@@ -28,7 +31,7 @@ class topic
 	public function write_data(): void
 	{
 		/**
-		 * Write data to database tables "topics" and "uid_topics".
+		 * Store data in database tables "topics" and "uid_topics".
 		 */
 		$tid = db::query_single_col('SELECT tid FROM topics WHERE topic = \''.preg_replace('/\'/', '\'\'', $this->topic).'\'');
 
