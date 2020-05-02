@@ -12,12 +12,10 @@ class out
 	private static int $verbosity = 1;
 	private static string $message_prev = '';
 
-	private function __construct()
-	{
-		/**
-		 * This is a static class and should not be instantiated.
-		 */
-	}
+	/**
+	 * This is a static class and should not be instantiated.
+	 */
+	private function __construct() {}
 
 	/**
 	 * Output a given message to the console.
