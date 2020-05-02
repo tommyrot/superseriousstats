@@ -30,17 +30,14 @@ class topic
 		/**
 		 * Write data to database tables "topics" and "uid_topics".
 		 */
-		if (($tid = db::$conn->querySingle('SELECT tid FROM topics WHERE topic = \''.preg_replace('/\'/', '\'\'', $this->topic).'\'')) === false) {
-			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-		}
+		$tid = db::query_single_col('SELECT tid FROM topics WHERE topic = \''.preg_replace('/\'/', '\'\'', $this->topic).'\'');
 
 		if (is_null($tid)) {
-			db::$conn->exec('INSERT INTO topics (tid, topic) VALUES (NULL, \''.preg_replace('/\'/', '\'\'', $this->topic).'\')') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-			$tid = db::$conn->lastInsertRowID();
+			$tid = db::query_exec('INSERT INTO topics (tid, topic) VALUES (NULL, \''.preg_replace('/\'/', '\'\'', $this->topic).'\')');
 		}
 
 		foreach ($this->uses as [$datetime, $nick]) {
-			db::$conn->exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$tid.', DATETIME(\''.$datetime.'\'))') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+			db::query_exec('INSERT INTO uid_topics (uid, tid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$tid.', DATETIME(\''.$datetime.'\'))');
 		}
 	}
 }

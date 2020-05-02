@@ -19,10 +19,10 @@ class maintenance
 	 */
 	private function calculate_milestones(): void
 	{
-		db::$conn->exec('DELETE FROM ruid_milestones') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-		$query = db::$conn->query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+		db::query_exec('DELETE FROM ruid_milestones');
+		$results = db::query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC');
 
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			if (!isset($l_total[$result['ruid']])) {
 				$l_total[$result['ruid']] = $result['l_total'];
 				$milestones = [1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000];
@@ -32,7 +32,7 @@ class maintenance
 			}
 
 			while (!is_null($milestone) && $l_total[$result['ruid']] >= $milestone) {
-				db::$conn->exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES ('.$result['ruid'].', '.$milestone.', \''.$result['date'].'\')') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+				db::query_exec('INSERT INTO ruid_milestones (ruid, milestone, date) VALUES ('.$result['ruid'].', '.$milestone.', \''.$result['date'].'\')');
 				$milestone = array_shift($milestones);
 			}
 		}
@@ -58,8 +58,8 @@ class maintenance
 			'v_ruid_lines' => 'ruid_lines'];
 
 		foreach ($views as $view => $table) {
-			db::$conn->exec('DELETE FROM '.$table) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-			db::$conn->exec('INSERT INTO '.$table.' SELECT * FROM '.$view) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+			db::query_exec('DELETE FROM '.$table);
+			db::query_exec('INSERT INTO '.$table.' SELECT * FROM '.$view);
 		}
 	}
 
@@ -87,11 +87,11 @@ class maintenance
 		}
 
 		fclose($fp);
-		db::$conn->exec('UPDATE fqdns SET active = 1') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+		db::query_exec('UPDATE fqdns SET active = 1');
 
 		if (isset($tlds_active)) {
-			db::$conn->exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-			output::msg('debug', 'deactivated '.db::$conn->changes().' invalid fqdn'.(db::$conn->changes() !== 1 ? 's' : ''));
+			db::query_exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')');
+			output::msg('debug', 'deactivated '.db::changes().' invalid fqdn'.(db::changes() !== 1 ? 's' : ''));
 		}
 	}
 
@@ -112,17 +112,13 @@ class maintenance
 	 */
 	private function register_most_active_aliases(): void
 	{
-		$query = db::$conn->query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS new_ruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND new_ruid IS NOT NULL AND ruid != new_ruid') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+		$results = db::query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS new_ruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND new_ruid IS NOT NULL AND ruid != new_ruid');
 
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			$old_registered_nick = $result['csnick'];
-
-			if (($new_registered_nick = db::$conn->querySingle('SELECT csnick FROM uid_details WHERE uid = '.$result['new_ruid'])) === false) {
-				output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-			}
-
-			db::$conn->exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = '.$result['status'].' WHERE uid = '.$result['new_ruid']) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-			db::$conn->exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = 2 WHERE ruid = '.$result['ruid']) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+			$new_registered_nick = db::query_single_col('SELECT csnick FROM uid_details WHERE uid = '.$result['new_ruid']);
+			db::query_exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = '.$result['status'].' WHERE uid = '.$result['new_ruid']);
+			db::query_exec('UPDATE uid_details SET ruid = '.$result['new_ruid'].', status = 2 WHERE ruid = '.$result['ruid']);
 			output::msg('debug', '\''.$new_registered_nick.'\' new registered nick for \''.$old_registered_nick.'\'');
 		}
 	}

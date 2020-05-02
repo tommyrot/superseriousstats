@@ -89,9 +89,7 @@ class sss
 
 	private function export_nicks(string $file): void
 	{
-		if (($total = db::$conn->querySingle('SELECT COUNT(*) FROM uid_details')) === false) {
-			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-		}
+		$total = db::query_single_col('SELECT COUNT(*) FROM uid_details');
 
 		if ($total === 0) {
 			output::msg('notice', 'database is empty, nothing to export');
@@ -99,16 +97,14 @@ class sss
 		}
 
 		output::msg('notice', 'exporting nicks');
-		$query = db::$conn->query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+		$results = db::query('SELECT status, csnick, (SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = t1.ruid AND status = 2) AS aliases FROM uid_details AS t1 WHERE status IN (1,3,4) ORDER BY csnick ASC');
 		$contents = '';
 
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			$contents .= $result['status'].','.$result['csnick'].(!is_null($result['aliases']) ? ','.$result['aliases'] : '')."\n";
 		}
 
-		if (($aliases = db::$conn->querySingle('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0')) === false) {
-			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-		}
+		$aliases = db::query_single_col('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0');
 
 		if (!is_null($aliases)) {
 			$contents .= '*,'.$aliases."\n";
@@ -139,7 +135,7 @@ class sss
 		 * Set all nicks to their default status before updating them according to
 		 * imported data.
 		 */
-		db::$conn->exec('UPDATE uid_details SET ruid = uid, status = 0') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+		db::query_exec('UPDATE uid_details SET ruid = uid, status = 0');
 
 		while (($line = fgets($fp)) !== false) {
 			$line = preg_replace('/\s+/', '', $line);
@@ -152,10 +148,10 @@ class sss
 				continue;
 			}
 
-			db::$conn->exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+			db::query_exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'');
 
 			if (!is_null($matches['aliases'])) {
-				db::$conn->exec('UPDATE OR IGNORE uid_details SET status = 2, ruid = (SELECT uid FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\') WHERE csnick IN (\''.preg_replace('/,/', '\',\'', $matches['aliases']).'\')') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+				db::query_exec('UPDATE OR IGNORE uid_details SET status = 2, ruid = (SELECT uid FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\') WHERE csnick IN (\''.preg_replace('/,/', '\',\'', $matches['aliases']).'\')');
 			}
 		}
 
@@ -170,10 +166,10 @@ class sss
 	 */
 	private function link_nicks(): void
 	{
-		$query = db::$conn->query('SELECT uid, csnick, ruid, status FROM uid_details') or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+		$results = db::query('SELECT uid, csnick, ruid, status FROM uid_details');
 		$nicks_stripped = [];
 
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			$nicks[$result['uid']] = [
 				'nick' => $result['csnick'],
 				'ruid' => $result['ruid'],
@@ -214,7 +210,7 @@ class sss
 				 */
 				if ($nicks[$uids[$i]]['status'] === 0) {
 					$new_alias = true;
-					db::$conn->exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+					db::query_exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]);
 					output::msg('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
 				}
 			}
@@ -224,7 +220,7 @@ class sss
 			 * (status = 0), make it a registered nick (status = 1).
 			 */
 			if ($new_alias && $nicks[$uids[0]]['status'] === 0) {
-				db::$conn->exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+				db::query_exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]);
 			}
 		}
 	}
@@ -279,7 +275,7 @@ class sss
 		 * Open the database connection.
 		 */
 		db::set_database($this->database);
-		db::begin();
+		db::connect();
 
 		if (array_key_exists('e', $options)) {
 			$this->export_nicks($options['e']);
@@ -302,7 +298,7 @@ class sss
 			$this->create_html($options['o']);
 		}
 
-		db::commit();
+		db::disconnect();
 		output::msg('notice', 'kthxbye');
 	}
 
@@ -370,9 +366,7 @@ class sss
 		/**
 		 * Get the date of the last log parsed.
 		 */
-		if (($date_last_log_parsed = db::$conn->querySingle('SELECT MAX(date) FROM parse_history')) === false) {
-			output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-		}
+		$date_last_log_parsed = db::query_single_col('SELECT MAX(date) FROM parse_history');
 
 		foreach ($logfiles as $date => $logfile) {
 			/**
@@ -388,11 +382,9 @@ class sss
 			 * Get the streak history. This will assume logs are parsed in chronological
 			 * order with no gaps.
 			 */
-			if (($result = db::$conn->querySingle('SELECT nick_prev, streak FROM streak_history', true)) === false) {
-				output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-			}
+			$result = db::query_single_row('SELECT nick_prev, streak FROM streak_history');
 
-			if (!empty($result)) {
+			if (!is_null($result)) {
 				$parser->set_str('nick_prev', $result['nick_prev']);
 				$parser->set_num('streak', $result['streak']);
 			}
@@ -401,9 +393,7 @@ class sss
 			 * Get the parse history and set the line number on which to start parsing the
 			 * log. This would be 1 for a fresh log and +1 for a log with a parse history.
 			 */
-			if (($linenum_start = db::$conn->querySingle('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'')) === false) {
-				output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
-			}
+			$linenum_start = db::query_single_col('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'');
 
 			if (!is_null($linenum_start)) {
 				++$linenum_start;
@@ -426,7 +416,7 @@ class sss
 			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
 			if ($parser->get_num('linenum_last_nonempty') >= $linenum_start) {
-				db::$conn->exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty')) or output::msg('critical', 'fail in '.basename(__FILE__).'#'.__LINE__.': '.db::$conn->lastErrorMsg());
+				db::query_exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty'));
 
 				/**
 				 * Write data to database. Set $need_maintenance to true if there has been any
