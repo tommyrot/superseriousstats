@@ -10,7 +10,7 @@
 class db
 {
 	private static string $database = '';
-	private static SQLite3 $conn;
+	private static SQLite3 $db;
 
 	/**
 	 * This is a static class and should not be instantiated.
@@ -23,7 +23,7 @@ class db
 	 */
 	public static function changes(): int
 	{
-		return self::$conn->changes();
+		return self::$db->changes();
 	}
 
 	/**
@@ -35,8 +35,8 @@ class db
 		 * Fail if we encounter an exception.
 		 */
 		try {
-			self::$conn = new SQLite3(self::$database, SQLITE3_OPEN_READWRITE);
-			self::$conn->busyTimeout(60000);
+			self::$db = new SQLite3(self::$database, SQLITE3_OPEN_READWRITE);
+			self::$db->busyTimeout(60000);
 			out::put('notice', 'succesfully connected to database: \''.self::$database.'\'');
 		} catch (Exception $e) {
 			out::put('critical', 'sqlite fail: '.$e->getMessage());
@@ -57,14 +57,14 @@ class db
 			'foreign_keys' => 'ON'];
 
 		foreach ($pragmas as $pragma => $value) {
-			self::$conn->exec('PRAGMA '.$pragma.' = '.$value);
+			self::$db->exec('PRAGMA '.$pragma.' = '.$value);
 		}
 
 		/**
 		 * Begin a database transaction that lasts until we COMMIT. All database
-		 * related actions will be happen in memory during this time.
+		 * related actions will happen in memory during this time.
 		 */
-		self::$conn->exec('BEGIN TRANSACTION') or self::error();
+		self::$db->exec('BEGIN TRANSACTION') or self::fail();
 	}
 
 	/**
@@ -74,17 +74,17 @@ class db
 	public static function disconnect(): void
 	{
 		out::put('notice', 'updating database');
-		self::$conn->exec('COMMIT') or self::error();
-		self::$conn->exec('PRAGMA optimize');
-		self::$conn->close();
+		self::$db->exec('COMMIT') or self::fail();
+		self::$db->exec('PRAGMA optimize');
+		self::$db->close();
 	}
 
 	/**
 	 * Output the text describing the most recent failed SQLite request and exit.
 	 */
-	private static function error(): void
+	private static function fail(): void
 	{
-		out::put('critical', 'sqlite fail: '.self::$conn->lastErrorMsg());
+		out::put('critical', 'sqlite fail: '.self::$db->lastErrorMsg());
 	}
 
 	/**
@@ -92,8 +92,8 @@ class db
 	 */
 	public static function query(string $query): SQLite3Result
 	{
-		if (($results = self::$conn->query($query)) === false) {
-			self::error();
+		if (($results = self::$db->query($query)) === false) {
+			self::fail();
 		}
 
 		return $results;
@@ -104,14 +104,14 @@ class db
 	 */
 	public static function query_exec(string $query): ?int
 	{
-		self::$conn->exec($query) or self::error();
+		self::$db->exec($query) or self::fail();
 
 		/**
 		 * Return the row id of the most recent INSERT (logic in the calling function
 		 * should decide if this value has meaning or purpose).
 		 */
 		if (strpos($query, 'INSERT') === 0) {
-			return self::$conn->lastInsertRowID();
+			return self::$db->lastInsertRowID();
 		}
 
 		return null;
@@ -122,8 +122,8 @@ class db
 	 */
 	public static function query_single_col(string $query)#: int|float|string|null (see PHP8 union types)
 	{
-		if (($result = self::$conn->querySingle($query)) === false) {
-			self::error();
+		if (($result = self::$db->querySingle($query)) === false) {
+			self::fail();
 		}
 
 		return $result;
@@ -134,8 +134,8 @@ class db
 	 */
 	public static function query_single_row(string $query): ?array
 	{
-		if (($result = self::$conn->querySingle($query, true)) === false) {
-			self::error();
+		if (($result = self::$db->querySingle($query, true)) === false) {
+			self::fail();
 		}
 
 		/**
