@@ -58,7 +58,7 @@ class parser_hexchat extends parser
 
 		// Skip everything else.
 		} elseif ($line !== '') {
-			output::msg('debug', 'skipping line '.$this->linenum.': \''.$line.'\'');
+			out::put('debug', 'skipping line '.$this->linenum.': \''.$line.'\'');
 		}
 	}
 }

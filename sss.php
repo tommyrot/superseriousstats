@@ -266,9 +266,9 @@ class sss
 		 * Set the level of output verbosity.
 		 */
 		if (array_key_exists('q', $options)) {
-			output::set_verbosity(0);
+			out::set_verbosity(0);
 		} elseif (array_key_exists('v', $options)) {
-			output::set_verbosity(2);
+			out::set_verbosity(2);
 		}
 
 		/**
