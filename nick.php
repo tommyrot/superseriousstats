@@ -172,12 +172,12 @@ class nick
 	public function write_data(): void
 	{
 		/**
-		 * Check if current nick already exists in the database.
+		 * Store data in database table "uid_details" and update "uid_lines" if needed.
 		 */
 		$uid = db::query_single_col('SELECT uid FROM uid_details WHERE csnick = \''.$this->csnick.'\'');
 
 		/**
-		 * Current nick does NOT exist in the database.
+		 * This nick does NOT already exist in the database.
 		 */
 		if (is_null($uid)) {
 			if ($this->firstseen === '') {
@@ -192,13 +192,10 @@ class nick
 				return;
 			}
 
-			/**
-			 * Write data to database table "uid_details".
-			 */
 			$uid = db::query_exec('INSERT INTO uid_details (uid, csnick, firstseen, lastseen) VALUES (NULL, \''.$this->csnick.'\', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\'))');
 
 		/**
-		 * Current nick DOES exist in the database.
+		 * This nick DOES already exist in the database.
 		 */
 		} else {
 			if ($this->firstseen === '') {
@@ -212,10 +209,6 @@ class nick
 				if ($this->topmonologue !== 0) {
 					$topmonologue = db::query_single_col('SELECT topmonologue FROM uid_lines WHERE uid = '.$uid);
 
-					/**
-					 * The query above always returns an integer as there must have been lines typed
-					 * in a previous parse run at this stage.
-					 */
 					if ($this->topmonologue > $topmonologue) {
 						$queryparts['update_assignments'] .= ', topmonologue = '.$this->topmonologue;
 					}
@@ -225,14 +218,11 @@ class nick
 				return;
 			}
 
-			/**
-			 * Write data to database table "uid_details".
-			 */
 			db::query_exec('UPDATE uid_details SET csnick = \''.$this->csnick.'\', lastseen = DATETIME(\''.$this->lastseen.'\') WHERE uid = '.$uid);
 		}
 
 		/**
-		 * Write data to database table "uid_events".
+		 * Store data in database table "uid_events".
 		 */
 		if (!is_null($queryparts = $this->get_queryparts(['m_op', 'm_opped', 'm_voice', 'm_voiced', 'm_deop', 'm_deopped', 'm_devoice', 'm_devoiced', 'joins', 'parts', 'quits', 'kicks', 'kicked', 'nickchanges', 'topics', 'ex_kicks', 'ex_kicked']))) {
 			db::query_exec('INSERT INTO uid_events (uid, '.$queryparts['insert_columns'].') VALUES ('.$uid.', '.$queryparts['insert_values'].') ON CONFLICT (uid) DO UPDATE SET '.$queryparts['update_assignments']);
@@ -257,16 +247,12 @@ class nick
 			db::query_exec('INSERT INTO uid_lines (uid, '.$queryparts['insert_columns'].($this->lasttalked !== '' ? ', lasttalked' : '').') VALUES ('.$uid.', '.$queryparts['insert_values'].($this->lasttalked !== '' ? ', DATETIME(\''.$this->lasttalked.'\')' : '').') ON CONFLICT (uid) DO UPDATE SET '.$queryparts['update_assignments'].($this->lasttalked !== '' ? ', lasttalked = DATETIME(\''.$this->lasttalked.'\')' : ''));
 
 			/**
-			* Insert (update) $topmonologue separately as we want to keep the highest value
-			* instead of the sum.
+			* Update $topmonologue separately as we want to keep the highest value instead
+			* of the sum.
 			*/
 			if ($this->topmonologue !== 0) {
 				$topmonologue = db::query_single_col('SELECT topmonologue FROM uid_lines WHERE uid = '.$uid);
 
-				/**
-				* The query above always returns an integer as we just inserted a row into
-				* "uid_lines" a moment ago.
-				*/
 				if ($this->topmonologue > $topmonologue) {
 					db::query_exec('UPDATE uid_lines SET topmonologue = '.$this->topmonologue.' WHERE uid = '.$uid);
 				}
