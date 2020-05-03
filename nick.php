@@ -169,7 +169,7 @@ class nick
 	/**
 	 * Store everything in the database.
 	 */
-	public function write_data(): void
+	public function store_data(): void
 	{
 		/**
 		 * Store data in database table "uid_details" and update "uid_lines" if needed.

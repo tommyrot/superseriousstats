@@ -652,7 +652,7 @@ class parser
 	/**
 	 * Store everything in the database.
 	 */
-	public function write_data(): bool
+	public function store_data(): bool
 	{
 		/**
 		 * If there are no nicks there is no data.
@@ -662,7 +662,7 @@ class parser
 		}
 
 		/**
-		 * Write channel totals to database.
+		 * Store channel totals.
 		 */
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts(['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
@@ -670,36 +670,35 @@ class parser
 		}
 
 		/**
-		 * Write user data to database. User data should be written prior to topic and
-		 * URL data.
+		 * Store user data. MUST be done before storing topic and URL data.
 		 */
 		foreach ($this->nick_objs as $nick) {
-			$nick->write_data();
+			$nick->store_data();
 		}
 
 		/**
-		 * Write topic data to database.
+		 * Store topic data.
 		 */
 		foreach ($this->topic_objs as $topic) {
-			$topic->write_data();
+			$topic->store_data();
 		}
 
 		/**
-		 * Write URL data to database.
+		 * Store URL data.
 		 */
 		foreach ($this->url_objs as $url) {
-			$url->write_data();
+			$url->store_data();
 		}
 
 		/**
-		 * Write word data to database.
+		 * Store word data.
 		 */
 		foreach ($this->word_objs as $word) {
-			$word->write_data();
+			$word->store_data();
 		}
 
 		/**
-		 * Write streak history to database.
+		 * Store streak history.
 		 */
 		if ($this->l_total !== 0) {
 			db::query_exec('DELETE FROM streak_history');

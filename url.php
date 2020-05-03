@@ -32,7 +32,7 @@ class url
 	/**
 	 * Store everything in the database.
 	 */
-	public function write_data(): void
+	public function store_data(): void
 	{
 		/**
 		 * Store data in database table "fqdns".

@@ -422,7 +422,7 @@ class sss
 				 * Write data to database. Set $need_maintenance to true if there has been any
 				 * data written to the database.
 				 */
-				if ($parser->write_data()) {
+				if ($parser->store_data()) {
 					$this->need_maintenance = true;
 				}
 			}
