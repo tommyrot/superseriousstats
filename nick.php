@@ -11,13 +11,12 @@ class nick
 {
 	use base, queryparts;
 
-	private array $ex_actions_stack = [];
-	private array $ex_exclamations_stack = [];
-	private array $ex_questions_stack = [];
-	private array $ex_uppercased_stack = [];
-	private array $quote_stack = [];
 	private int $actions = 0;
 	private int $characters = 0;
+	private int $ex_actions_length = 0;
+	private int $ex_exclamations_length = 0;
+	private int $ex_questions_length = 0;
+	private int $ex_uppercased_length = 0;
 	private int $exclamations = 0;
 	private int $joins = 0;
 	private int $kicked = 0;
@@ -92,6 +91,7 @@ class nick
 	private int $parts = 0;
 	private int $questions = 0;
 	private int $quits = 0;
+	private int $quote_length = 0;
 	private int $s_01 = 0;
 	private int $s_02 = 0;
 	private int $s_03 = 0;
@@ -167,28 +167,6 @@ class nick
 	}
 
 	/**
-	 * Keep a stack of the 10 most recent quotes of each type along with their
-	 * length.
-	 */
-	public function add_quote(string $type, string $line, int $line_length): void
-	{
-		/**
-		 * $line_length should be the first value in each array since we sort on this
-		 * column with rsort() later.
-		 */
-		$this->{$type.'_stack'}[] = [
-			'length' => $line_length,
-			'line' => $line];
-
-		if (count($this->{$type.'_stack'}) > 10) {
-			/**
-			 * Shift the first (oldest) entry off the stack.
-			 */
-			array_shift($this->{$type.'_stack'});
-		}
-	}
-
-	/**
 	 * Store everything in the database.
 	 */
 	public function write_data(): void
@@ -261,69 +239,19 @@ class nick
 		}
 
 		/**
-		 * Write data to database table "uid_activity".
+		 * Store data in database tables "uid_activity" and "uid_smileys".
 		 */
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts(['l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
 			db::query_exec('INSERT INTO uid_activity (uid, date, '.$queryparts['insert_columns'].') VALUES ('.$uid.', \''.substr($this->firstseen, 0, 10).'\', '.$queryparts['insert_values'].') ON CONFLICT (uid, date) DO UPDATE SET '.$queryparts['update_assignments']);
 
-			/**
-			 * Write data to database table "uid_smileys".
-			 */
 			if (!is_null($queryparts = $this->get_queryparts(['s_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19', 's_20', 's_21', 's_22', 's_23', 's_24', 's_25', 's_26', 's_27', 's_28', 's_29', 's_30', 's_31', 's_32', 's_33', 's_34', 's_35', 's_36', 's_37', 's_38', 's_39', 's_40', 's_41', 's_42', 's_43', 's_44', 's_45', 's_46', 's_47', 's_48', 's_49', 's_50']))) {
 				db::query_exec('INSERT INTO uid_smileys (uid, '.$queryparts['insert_columns'].') VALUES ('.$uid.', '.$queryparts['insert_values'].') ON CONFLICT (uid) DO UPDATE SET '.$queryparts['update_assignments']);
 			}
 		}
 
 		/**
-		 * Try to pick the longest unique line from each of the quote stacks. Don't
-		 * change the order of this array.
-		 */
-		$columns = ['ex_actions', 'ex_uppercased', 'ex_exclamations', 'ex_questions', 'quote'];
-
-		foreach ($columns as $var) {
-			if (empty($this->{$var.'_stack'})) {
-				continue;
-			}
-
-			/**
-			 * rsort() sorts a multidimensional array on the first value of each contained
-			 * array, highest to lowest.
-			 */
-			rsort($this->{$var.'_stack'});
-			$this->$var = $this->{$var.'_stack'}[0]['line'];
-
-			/**
-			 * Try to move away from duplicate quotes. The order of the if/else statement
-			 * aims to cover most possible cases.
-			 */
-			if ($var === 'ex_uppercased' || $var === 'ex_actions' || count($this->{$var.'_stack'}) === 1) {
-				continue;
-			}
-
-			if ($var === 'ex_questions' || $var === 'ex_exclamations') {
-				if ($this->$var === $this->ex_uppercased) {
-					for ($i = 1, $j = count($this->{$var.'_stack'}); $i < $j; ++$i) {
-						if ($this->{$var.'_stack'}[$i]['line'] !== $this->ex_uppercased) {
-							$this->$var = $this->{$var.'_stack'}[$i]['line'];
-							break;
-						}
-					}
-				}
-			} elseif ($var === 'quote') {
-				if ($this->quote === $this->ex_uppercased || $this->quote === $this->ex_exclamations || $this->quote === $this->ex_questions) {
-					for ($i = 1, $j = count($this->quote_stack); $i < $j; ++$i) {
-						if ($this->quote_stack[$i]['line'] !== $this->ex_uppercased && $this->quote_stack[$i]['line'] !== $this->ex_exclamations && $this->quote_stack[$i]['line'] !== $this->ex_questions) {
-							$this->quote = $this->quote_stack[$i]['line'];
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		/**
-		 * Write data to database table "uid_lines".
+		 * Store data in database tables "uid_lines".
 		 */
 		if (!is_null($queryparts = $this->get_queryparts(['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total', 'l_mon_night', 'l_mon_morning', 'l_mon_afternoon', 'l_mon_evening', 'l_tue_night', 'l_tue_morning', 'l_tue_afternoon', 'l_tue_evening', 'l_wed_night', 'l_wed_morning', 'l_wed_afternoon', 'l_wed_evening', 'l_thu_night', 'l_thu_morning', 'l_thu_afternoon', 'l_thu_evening', 'l_fri_night', 'l_fri_morning', 'l_fri_afternoon', 'l_fri_evening', 'l_sat_night', 'l_sat_morning', 'l_sat_afternoon', 'l_sat_evening', 'l_sun_night', 'l_sun_morning', 'l_sun_afternoon', 'l_sun_evening', 'urls', 'words', 'characters', 'monologues', 'slaps', 'slapped', 'exclamations', 'questions', 'actions', 'uppercased', 'quote', 'ex_exclamations', 'ex_questions', 'ex_actions', 'ex_uppercased']))) {
 			db::query_exec('INSERT INTO uid_lines (uid, '.$queryparts['insert_columns'].($this->lasttalked !== '' ? ', lasttalked' : '').') VALUES ('.$uid.', '.$queryparts['insert_values'].($this->lasttalked !== '' ? ', DATETIME(\''.$this->lasttalked.'\')' : '').') ON CONFLICT (uid) DO UPDATE SET '.$queryparts['update_assignments'].($this->lasttalked !== '' ? ', lasttalked = DATETIME(\''.$this->lasttalked.'\')' : ''));

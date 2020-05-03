@@ -469,6 +469,13 @@ class parser
 		 */
 		$words = explode(' ', $line);
 		$this->nick_objs[$nick]->add_num('words', count($words));
+
+		/**
+		 * $skip_quote controls whether a line may be used as a quote. We flip this
+		 * variable to true when a line contains a URL (because those look bad) and when
+		 * a line has already been used as a quote of different type (to avoid duplicate
+		 * quotes on the stats page).
+		 */
 		$skip_quote = false;
 
 		foreach ($words as $csword) {
@@ -512,10 +519,6 @@ class parser
 			 * Only catch URLs which start with "www.", "http://" or "https://".
 			 */
 			} elseif (preg_match('/^(www\.|https?:\/\/).+/i', $csword)) {
-				/**
-				 * Regardless of validity set $skip_quote to true which ensures that lines
-				 * containing a URL are not used as a quote. Such quotes often look awful.
-				 */
 				$skip_quote = true;
 
 				if (!is_null($url_components = url_tools::get_components($csword))) {
@@ -532,10 +535,6 @@ class parser
 			}
 		}
 
-		if (!$skip_quote) {
-			$this->nick_objs[$nick]->add_quote('quote', $line, $line_length);
-		}
-
 		/**
 		 * Upper cased lines may not contain any lower cased characters and must consist
 		 * of more than 50% upper cased characters.
@@ -544,24 +543,35 @@ class parser
 			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line), 'UTF-8') * 2 > $line_length) {
 				$this->nick_objs[$nick]->add_num('uppercased', 1);
 
-				if (!$skip_quote) {
-					$this->nick_objs[$nick]->add_quote('ex_uppercased', $line, $line_length);
+				if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_num('ex_uppercased_length')) {
+					$this->nick_objs[$nick]->set_str('ex_uppercased', $line);
+					$this->nick_objs[$nick]->set_num('ex_uppercased_length', $line_length);
+					$skip_quote = true;
 				}
 			}
 		}
 
-		if (preg_match('/!$/', $line)) {
-			$this->nick_objs[$nick]->add_num('exclamations', 1);
-
-			if (!$skip_quote) {
-				$this->nick_objs[$nick]->add_quote('ex_exclamations', $line, $line_length);
-			}
-		} elseif (preg_match('/\?$/', $line)) {
+		if (preg_match('/\?$/', $line)) {
 			$this->nick_objs[$nick]->add_num('questions', 1);
 
-			if (!$skip_quote) {
-				$this->nick_objs[$nick]->add_quote('ex_questions', $line, $line_length);
+			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_num('ex_questions_length')) {
+				$this->nick_objs[$nick]->set_str('ex_questions', $line);
+				$this->nick_objs[$nick]->set_num('ex_questions_length', $line_length);
+				$skip_quote = true;
 			}
+		} elseif (preg_match('/!$/', $line)) {
+			$this->nick_objs[$nick]->add_num('exclamations', 1);
+
+			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_num('ex_exclamations_length')) {
+				$this->nick_objs[$nick]->set_str('ex_exclamations', $line);
+				$this->nick_objs[$nick]->set_num('ex_exclamations_length', $line_length);
+				$skip_quote = true;
+			}
+		}
+
+		if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_num('quote_length')) {
+			$this->nick_objs[$nick]->set_str('quote', $line);
+			$this->nick_objs[$nick]->set_num('quote_length', $line_length);
 		}
 	}
 
