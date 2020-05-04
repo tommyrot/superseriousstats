@@ -324,7 +324,7 @@ class parser
 
 		$nick = $this->create_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_int('actions', 1);
-		$this->nick_objs[$nick]->add_quote('ex_actions', $line, mb_strlen($line, 'UTF-8'));
+		$this->nick_objs[$nick]->set_string('ex_actions', $line);
 	}
 
 	protected function set_join(string $time, string $csnick): void
