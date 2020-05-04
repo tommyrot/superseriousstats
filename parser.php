@@ -180,7 +180,7 @@ class parser
 			$this->word_objs[$word]->set_int('length', $length);
 		}
 
-		$this->word_objs[$word]->add_num('total', 1);
+		$this->word_objs[$word]->add_int('total', 1);
 	}
 
 	/**
@@ -323,7 +323,7 @@ class parser
 		}
 
 		$nick = $this->create_nick($time, $csnick);
-		$this->nick_objs[$nick]->add_num('actions', 1);
+		$this->nick_objs[$nick]->add_int('actions', 1);
 		$this->nick_objs[$nick]->add_quote('ex_actions', $line, mb_strlen($line, 'UTF-8'));
 	}
 
@@ -334,7 +334,7 @@ class parser
 		}
 
 		$nick = $this->create_nick($time, $csnick);
-		$this->nick_objs[$nick]->add_num('joins', 1);
+		$this->nick_objs[$nick]->add_int('joins', 1);
 	}
 
 	protected function set_kick(string $time, string $csnick_performing, string $csnick_undergoing, string $line): void
@@ -345,8 +345,8 @@ class parser
 
 		$nick_performing = $this->create_nick($time, $csnick_performing);
 		$nick_undergoing = $this->create_nick($time, $csnick_undergoing);
-		$this->nick_objs[$nick_performing]->add_num('kicks', 1);
-		$this->nick_objs[$nick_undergoing]->add_num('kicked', 1);
+		$this->nick_objs[$nick_performing]->add_int('kicks', 1);
+		$this->nick_objs[$nick_undergoing]->add_int('kicked', 1);
 		$this->nick_objs[$nick_performing]->set_string('ex_kicks', $line);
 		$this->nick_objs[$nick_undergoing]->set_string('ex_kicked', $line);
 	}
@@ -362,20 +362,20 @@ class parser
 
 		switch ($mode) {
 			case '+o':
-				$this->nick_objs[$nick_performing]->add_num('m_op', 1);
-				$this->nick_objs[$nick_undergoing]->add_num('m_opped', 1);
+				$this->nick_objs[$nick_performing]->add_int('m_op', 1);
+				$this->nick_objs[$nick_undergoing]->add_int('m_opped', 1);
 				break;
 			case '+v':
-				$this->nick_objs[$nick_performing]->add_num('m_voice', 1);
-				$this->nick_objs[$nick_undergoing]->add_num('m_voiced', 1);
+				$this->nick_objs[$nick_performing]->add_int('m_voice', 1);
+				$this->nick_objs[$nick_undergoing]->add_int('m_voiced', 1);
 				break;
 			case '-o':
-				$this->nick_objs[$nick_performing]->add_num('m_deop', 1);
-				$this->nick_objs[$nick_undergoing]->add_num('m_deopped', 1);
+				$this->nick_objs[$nick_performing]->add_int('m_deop', 1);
+				$this->nick_objs[$nick_undergoing]->add_int('m_deopped', 1);
 				break;
 			case '-v':
-				$this->nick_objs[$nick_performing]->add_num('m_devoice', 1);
-				$this->nick_objs[$nick_undergoing]->add_num('m_devoiced', 1);
+				$this->nick_objs[$nick_performing]->add_int('m_devoice', 1);
+				$this->nick_objs[$nick_undergoing]->add_int('m_devoiced', 1);
 				break;
 		}
 	}
@@ -388,7 +388,7 @@ class parser
 
 		$nick_performing = $this->create_nick($time, $csnick_performing);
 		$nick_undergoing = $this->create_nick($time, $csnick_undergoing);
-		$this->nick_objs[$nick_performing]->add_num('nickchanges', 1);
+		$this->nick_objs[$nick_performing]->add_int('nickchanges', 1);
 	}
 
 	protected function set_normal(string $time, string $csnick, string $line): void
@@ -399,7 +399,7 @@ class parser
 
 		$nick = $this->create_nick($time, $csnick);
 		$line_length = mb_strlen($line, 'UTF-8');
-		$this->nick_objs[$nick]->add_num('characters', $line_length);
+		$this->nick_objs[$nick]->add_int('characters', $line_length);
 		$this->nick_objs[$nick]->set_string('lasttalked', $this->date.' '.$time);
 
 		/**
@@ -421,7 +421,7 @@ class parser
 					$this->create_nick($time, $this->nick_prev, false);
 				}
 
-				$this->nick_objs[$this->nick_prev]->add_num('monologues', 1);
+				$this->nick_objs[$this->nick_prev]->add_int('monologues', 1);
 
 				if ($this->streak > $this->nick_objs[$this->nick_prev]->get_int('topmonologue')) {
 					$this->nick_objs[$this->nick_prev]->set_int('topmonologue', $this->streak);
@@ -443,24 +443,24 @@ class parser
 
 		if ($hour >= 0 && $hour <= 5) {
 			++$this->l_night;
-			$this->nick_objs[$nick]->add_num('l_'.$day.'_night', 1);
-			$this->nick_objs[$nick]->add_num('l_night', 1);
+			$this->nick_objs[$nick]->add_int('l_'.$day.'_night', 1);
+			$this->nick_objs[$nick]->add_int('l_night', 1);
 		} elseif ($hour >= 6 && $hour <= 11) {
 			++$this->l_morning;
-			$this->nick_objs[$nick]->add_num('l_'.$day.'_morning', 1);
-			$this->nick_objs[$nick]->add_num('l_morning', 1);
+			$this->nick_objs[$nick]->add_int('l_'.$day.'_morning', 1);
+			$this->nick_objs[$nick]->add_int('l_morning', 1);
 		} elseif ($hour >= 12 && $hour <= 17) {
 			++$this->l_afternoon;
-			$this->nick_objs[$nick]->add_num('l_'.$day.'_afternoon', 1);
-			$this->nick_objs[$nick]->add_num('l_afternoon', 1);
+			$this->nick_objs[$nick]->add_int('l_'.$day.'_afternoon', 1);
+			$this->nick_objs[$nick]->add_int('l_afternoon', 1);
 		} elseif ($hour >= 18 && $hour <= 23) {
 			++$this->l_evening;
-			$this->nick_objs[$nick]->add_num('l_'.$day.'_evening', 1);
-			$this->nick_objs[$nick]->add_num('l_evening', 1);
+			$this->nick_objs[$nick]->add_int('l_'.$day.'_evening', 1);
+			$this->nick_objs[$nick]->add_int('l_evening', 1);
 		}
 
-		$this->nick_objs[$nick]->add_num('l_'.$hour_leadingzero, 1);
-		$this->nick_objs[$nick]->add_num('l_total', 1);
+		$this->nick_objs[$nick]->add_int('l_'.$hour_leadingzero, 1);
+		$this->nick_objs[$nick]->add_int('l_total', 1);
 		++$this->{'l_'.$hour_leadingzero};
 		++$this->l_total;
 
@@ -468,7 +468,7 @@ class parser
 		 * Words are simply considered character groups separated by whitespace.
 		 */
 		$words = explode(' ', $line);
-		$this->nick_objs[$nick]->add_num('words', count($words));
+		$this->nick_objs[$nick]->add_int('words', count($words));
 
 		/**
 		 * $skip_quote controls whether a line may be used as a quote. We flip this
@@ -502,9 +502,9 @@ class parser
 				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|rofl|lmao)$/i', $csword_trimmed)) {
 					$smiley_textual = strtolower($csword_trimmed);
 					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], $smiley_textual);
-					$this->nick_objs[$nick]->add_num($this->smileys[$smiley_textual], 1);
+					$this->nick_objs[$nick]->add_int($this->smileys[$smiley_textual], 1);
 				} elseif (preg_match('/^([xX]D|D:)$/', $csword)) {
-					$this->nick_objs[$nick]->add_num($this->smileys[strtolower($csword)], 1);
+					$this->nick_objs[$nick]->add_int($this->smileys[strtolower($csword)], 1);
 				}
 
 			/**
@@ -513,7 +513,7 @@ class parser
 			} elseif (preg_match('/^(:([][)(pPD\/oOxX\\\|3<>sS]|-[)D\/pP(\\\]|\'\()|;([)(pPD]|-\)|_;)|[:;](\)\)+|\(\(+)|\\\[oO]\/|<3|=[])pP\/\\\D(]|8\)|-[_.]-|[oO][_.][oO])$/', $csword)) {
 				$smiley = strtolower($csword);
 				$smiley = preg_replace(['/^(:-?|=)[\/\\\]$/', '/^:\)\)\)+$/', '/^:\(\(\(+$/', '/^;\)\)+$/', '/^;\(\(+$/', '/^;d$/', '/^o\.o$/', '/^-\.-$/'], [':/', ':))', ':((', ';)', ';(', ':d', 'o_o', '-_-'], $smiley);
-				$this->nick_objs[$nick]->add_num($this->smileys[$smiley], 1);
+				$this->nick_objs[$nick]->add_int($this->smileys[$smiley], 1);
 
 			/**
 			 * Only catch URLs which start with "www.", "http://" or "https://".
@@ -527,7 +527,7 @@ class parser
 					 */
 					if (strlen($url_components['url']) <= 512) {
 						$this->create_url($time, $nick, $url_components);
-						$this->nick_objs[$nick]->add_num('urls', 1);
+						$this->nick_objs[$nick]->add_int('urls', 1);
 					}
 				} else {
 					out::put('debug', 'invalid url: \''.$csword.'\' on line '.$this->linenum);
@@ -541,7 +541,7 @@ class parser
 		 */
 		if (!preg_match('/\p{Ll}/u', $line)) {
 			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line), 'UTF-8') * 2 > $line_length) {
-				$this->nick_objs[$nick]->add_num('uppercased', 1);
+				$this->nick_objs[$nick]->add_int('uppercased', 1);
 
 				if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('ex_uppercased_length')) {
 					$this->nick_objs[$nick]->set_string('ex_uppercased', $line);
@@ -551,16 +551,16 @@ class parser
 			}
 		}
 
-		if (preg_match('/\?$/', $line)) {
-			$this->nick_objs[$nick]->add_num('questions', 1);
+		if (preg_match('/!$/', $line)) {
+			$this->nick_objs[$nick]->add_int('exclamations', 1);
 
 			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('ex_questions_length')) {
 				$this->nick_objs[$nick]->set_string('ex_questions', $line);
 				$this->nick_objs[$nick]->set_int('ex_questions_length', $line_length);
 				$skip_quote = true;
 			}
-		} elseif (preg_match('/!$/', $line)) {
-			$this->nick_objs[$nick]->add_num('exclamations', 1);
+		} elseif (preg_match('/\?$/', $line)) {
+			$this->nick_objs[$nick]->add_int('questions', 1);
 
 			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('ex_exclamations_length')) {
 				$this->nick_objs[$nick]->set_string('ex_exclamations', $line);
@@ -582,7 +582,7 @@ class parser
 		}
 
 		$nick = $this->create_nick($time, $csnick);
-		$this->nick_objs[$nick]->add_num('parts', 1);
+		$this->nick_objs[$nick]->add_int('parts', 1);
 	}
 
 	protected function set_quit(string $time, string $csnick): void
@@ -592,7 +592,7 @@ class parser
 		}
 
 		$nick = $this->create_nick($time, $csnick);
-		$this->nick_objs[$nick]->add_num('quits', 1);
+		$this->nick_objs[$nick]->add_int('quits', 1);
 	}
 
 	protected function set_slap(string $time, string $csnick_performing, string $csnick_undergoing): void
@@ -602,7 +602,7 @@ class parser
 		}
 
 		$nick_performing = $this->create_nick($time, $csnick_performing);
-		$this->nick_objs[$nick_performing]->add_num('slaps', 1);
+		$this->nick_objs[$nick_performing]->add_int('slaps', 1);
 
 		/**
 		 * Strip possible network prefix (psyBNC) from the "undergoing" nick.
@@ -620,7 +620,7 @@ class parser
 		 * The "undergoing" nick is only referenced and might not be real.
 		 */
 		$nick_undergoing = $this->create_nick($time, $csnick_undergoing, false);
-		$this->nick_objs[$nick_undergoing]->add_num('slapped', 1);
+		$this->nick_objs[$nick_undergoing]->add_int('slapped', 1);
 	}
 
 	protected function set_topic(string $time, string $csnick, string $line): void
@@ -630,7 +630,7 @@ class parser
 		}
 
 		$nick = $this->create_nick($time, $csnick);
-		$this->nick_objs[$nick]->add_num('topics', 1);
+		$this->nick_objs[$nick]->add_int('topics', 1);
 		$this->create_topic($time, $nick, $line);
 	}
 
