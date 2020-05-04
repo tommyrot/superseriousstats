@@ -543,7 +543,7 @@ class parser
 			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line), 'UTF-8') * 2 > $line_length) {
 				$this->nick_objs[$nick]->add_int('uppercased', 1);
 
-				if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_uppercased') === '' || rand(1, 100) <= ($line_length < 30 ? 25 : 50))) {
+				if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_uppercased') === '' || rand(1, 100) <= ($line_length < 30 ? 20 : 80))) {
 					$this->nick_objs[$nick]->set_string('ex_uppercased', $line);
 					$skip_quote = true;
 				}
@@ -553,14 +553,14 @@ class parser
 		if (preg_match('/!$/', $line)) {
 			$this->nick_objs[$nick]->add_int('exclamations', 1);
 
-			if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_exclamations') === '' || rand(1, 100) <= ($line_length < 30 ? 25 : 50))) {
+			if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_exclamations') === '' || rand(1, 100) <= ($line_length < 30 ? 20 : 80))) {
 				$this->nick_objs[$nick]->set_string('ex_exclamations', $line);
 				$skip_quote = true;
 			}
 		} elseif (preg_match('/\?$/', $line)) {
 			$this->nick_objs[$nick]->add_int('questions', 1);
 
-			if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_questions') === '' || rand(1, 100) <= ($line_length < 30 ? 25 : 50))) {
+			if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_questions') === '' || rand(1, 100) <= ($line_length < 30 ? 20 : 80))) {
 				$this->nick_objs[$nick]->set_string('ex_questions', $line);
 				$skip_quote = true;
 			}
