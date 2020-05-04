@@ -57,7 +57,6 @@ class sss
 	private string $database = '';
 	private string $parser = '';
 	private string $timezone = '';
-	public static SQLite3 $db;
 
 	public function __construct()
 	{
