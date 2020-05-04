@@ -543,9 +543,8 @@ class parser
 			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line), 'UTF-8') * 2 > $line_length) {
 				$this->nick_objs[$nick]->add_int('uppercased', 1);
 
-				if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('ex_uppercased_length')) {
+				if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_uppercased') === '' || rand(1, 100) <= (intdiv($line_length, 30) === 0 ? 25 : 50))) {
 					$this->nick_objs[$nick]->set_string('ex_uppercased', $line);
-					$this->nick_objs[$nick]->set_int('ex_uppercased_length', $line_length);
 					$skip_quote = true;
 				}
 			}
@@ -554,24 +553,21 @@ class parser
 		if (preg_match('/!$/', $line)) {
 			$this->nick_objs[$nick]->add_int('exclamations', 1);
 
-			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('ex_questions_length')) {
-				$this->nick_objs[$nick]->set_string('ex_questions', $line);
-				$this->nick_objs[$nick]->set_int('ex_questions_length', $line_length);
+			if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_exclamations') === '' || rand(1, 100) <= (intdiv($line_length, 30) === 0 ? 25 : 50))) {
+				$this->nick_objs[$nick]->set_string('ex_exclamations', $line);
 				$skip_quote = true;
 			}
 		} elseif (preg_match('/\?$/', $line)) {
 			$this->nick_objs[$nick]->add_int('questions', 1);
 
-			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('ex_exclamations_length')) {
-				$this->nick_objs[$nick]->set_string('ex_exclamations', $line);
-				$this->nick_objs[$nick]->set_int('ex_exclamations_length', $line_length);
+			if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_questions') === '' || rand(1, 100) <= (intdiv($line_length, 30) === 0 ? 25 : 50))) {
+				$this->nick_objs[$nick]->set_string('ex_questions', $line);
 				$skip_quote = true;
 			}
 		}
 
-		if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('quote_length')) {
+		if (!$skip_quote && ($this->nick_objs[$nick]->get_string('quote') === '' || rand(1, 100) <= (intdiv($line_length, 30) === 0 ? 5 : 25))) {
 			$this->nick_objs[$nick]->set_string('quote', $line);
-			$this->nick_objs[$nick]->set_int('quote_length', $line_length);
 		}
 	}
 

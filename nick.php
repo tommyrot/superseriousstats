@@ -13,10 +13,6 @@ class nick
 
 	private int $actions = 0;
 	private int $characters = 0;
-	private int $ex_actions_length = 0;
-	private int $ex_exclamations_length = 0;
-	private int $ex_questions_length = 0;
-	private int $ex_uppercased_length = 0;
 	private int $exclamations = 0;
 	private int $joins = 0;
 	private int $kicked = 0;
@@ -91,7 +87,6 @@ class nick
 	private int $parts = 0;
 	private int $questions = 0;
 	private int $quits = 0;
-	private int $quote_length = 0;
 	private int $s_01 = 0;
 	private int $s_02 = 0;
 	private int $s_03 = 0;
