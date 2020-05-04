@@ -385,8 +385,8 @@ class sss
 			$result = db::query_single_row('SELECT nick_prev, streak FROM streak_history');
 
 			if (!is_null($result)) {
-				$parser->set_str('nick_prev', $result['nick_prev']);
-				$parser->set_num('streak', $result['streak']);
+				$parser->set_string('nick_prev', $result['nick_prev']);
+				$parser->set_int('streak', $result['streak']);
 			}
 
 			/**
@@ -415,8 +415,8 @@ class sss
 			/**
 			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
-			if ($parser->get_num('linenum_last_nonempty') >= $linenum_start) {
-				db::query_exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_num('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_num('linenum_last_nonempty'));
+			if ($parser->get_int('linenum_last_nonempty') >= $linenum_start) {
+				db::query_exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_int('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_int('linenum_last_nonempty'));
 
 				/**
 				 * Write data to database. Set $need_maintenance to true if there has been any

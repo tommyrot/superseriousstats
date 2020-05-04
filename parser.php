@@ -123,18 +123,18 @@ class parser
 		if (!array_key_exists($nick, $this->nick_objs)) {
 			$this->nick_objs[$nick] = new nick($csnick);
 		} else {
-			$this->nick_objs[$nick]->set_str('csnick', $csnick);
+			$this->nick_objs[$nick]->set_string('csnick', $csnick);
 		}
 
 		/**
 		 * $real is false if the nick hasn't actually been seen and was only referenced.
 		 */
 		if ($real) {
-			if ($this->nick_objs[$nick]->get_str('firstseen') === '') {
-				$this->nick_objs[$nick]->set_str('firstseen', $this->date.' '.$time);
+			if ($this->nick_objs[$nick]->get_string('firstseen') === '') {
+				$this->nick_objs[$nick]->set_string('firstseen', $this->date.' '.$time);
 			}
 
-			$this->nick_objs[$nick]->set_str('lastseen', $this->date.' '.$time);
+			$this->nick_objs[$nick]->set_string('lastseen', $this->date.' '.$time);
 		}
 
 		return $nick;
@@ -177,7 +177,7 @@ class parser
 
 		if (!array_key_exists($word, $this->word_objs)) {
 			$this->word_objs[$word] = new word($word);
-			$this->word_objs[$word]->set_num('length', $length);
+			$this->word_objs[$word]->set_int('length', $length);
 		}
 
 		$this->word_objs[$word]->add_num('total', 1);
@@ -347,8 +347,8 @@ class parser
 		$nick_undergoing = $this->create_nick($time, $csnick_undergoing);
 		$this->nick_objs[$nick_performing]->add_num('kicks', 1);
 		$this->nick_objs[$nick_undergoing]->add_num('kicked', 1);
-		$this->nick_objs[$nick_performing]->set_str('ex_kicks', $line);
-		$this->nick_objs[$nick_undergoing]->set_str('ex_kicked', $line);
+		$this->nick_objs[$nick_performing]->set_string('ex_kicks', $line);
+		$this->nick_objs[$nick_undergoing]->set_string('ex_kicked', $line);
 	}
 
 	protected function set_mode(string $time, string $csnick_performing, string $csnick_undergoing, string $mode): void
@@ -400,7 +400,7 @@ class parser
 		$nick = $this->create_nick($time, $csnick);
 		$line_length = mb_strlen($line, 'UTF-8');
 		$this->nick_objs[$nick]->add_num('characters', $line_length);
-		$this->nick_objs[$nick]->set_str('lasttalked', $this->date.' '.$time);
+		$this->nick_objs[$nick]->set_string('lasttalked', $this->date.' '.$time);
 
 		/**
 		 * Keep track of monologues.
@@ -423,8 +423,8 @@ class parser
 
 				$this->nick_objs[$this->nick_prev]->add_num('monologues', 1);
 
-				if ($this->streak > $this->nick_objs[$this->nick_prev]->get_num('topmonologue')) {
-					$this->nick_objs[$this->nick_prev]->set_num('topmonologue', $this->streak);
+				if ($this->streak > $this->nick_objs[$this->nick_prev]->get_int('topmonologue')) {
+					$this->nick_objs[$this->nick_prev]->set_int('topmonologue', $this->streak);
 				}
 			}
 
@@ -543,9 +543,9 @@ class parser
 			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line), 'UTF-8') * 2 > $line_length) {
 				$this->nick_objs[$nick]->add_num('uppercased', 1);
 
-				if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_num('ex_uppercased_length')) {
-					$this->nick_objs[$nick]->set_str('ex_uppercased', $line);
-					$this->nick_objs[$nick]->set_num('ex_uppercased_length', $line_length);
+				if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('ex_uppercased_length')) {
+					$this->nick_objs[$nick]->set_string('ex_uppercased', $line);
+					$this->nick_objs[$nick]->set_int('ex_uppercased_length', $line_length);
 					$skip_quote = true;
 				}
 			}
@@ -554,24 +554,24 @@ class parser
 		if (preg_match('/\?$/', $line)) {
 			$this->nick_objs[$nick]->add_num('questions', 1);
 
-			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_num('ex_questions_length')) {
-				$this->nick_objs[$nick]->set_str('ex_questions', $line);
-				$this->nick_objs[$nick]->set_num('ex_questions_length', $line_length);
+			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('ex_questions_length')) {
+				$this->nick_objs[$nick]->set_string('ex_questions', $line);
+				$this->nick_objs[$nick]->set_int('ex_questions_length', $line_length);
 				$skip_quote = true;
 			}
 		} elseif (preg_match('/!$/', $line)) {
 			$this->nick_objs[$nick]->add_num('exclamations', 1);
 
-			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_num('ex_exclamations_length')) {
-				$this->nick_objs[$nick]->set_str('ex_exclamations', $line);
-				$this->nick_objs[$nick]->set_num('ex_exclamations_length', $line_length);
+			if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('ex_exclamations_length')) {
+				$this->nick_objs[$nick]->set_string('ex_exclamations', $line);
+				$this->nick_objs[$nick]->set_int('ex_exclamations_length', $line_length);
 				$skip_quote = true;
 			}
 		}
 
-		if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_num('quote_length')) {
-			$this->nick_objs[$nick]->set_str('quote', $line);
-			$this->nick_objs[$nick]->set_num('quote_length', $line_length);
+		if (!$skip_quote && $line_length >= $this->nick_objs[$nick]->get_int('quote_length')) {
+			$this->nick_objs[$nick]->set_string('quote', $line);
+			$this->nick_objs[$nick]->set_int('quote_length', $line_length);
 		}
 	}
 

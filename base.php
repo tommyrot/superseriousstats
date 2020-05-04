@@ -9,27 +9,27 @@
  */
 trait base
 {
-	public function add_num(string $var, int $value): void
+	public function add_int(string $var, int $value): void
 	{
 		$this->$var += $value;
 	}
 
-	public function get_num(string $var): int
+	public function get_int(string $var): int
 	{
 		return $this->$var;
 	}
 
-	public function get_str(string $var): string
+	public function get_string(string $var): string
 	{
 		return $this->$var;
 	}
 
-	public function set_num(string $var, int $value): void
+	public function set_int(string $var, int $value): void
 	{
 		$this->$var = $value;
 	}
 
-	public function set_str(string $var, string $value): void
+	public function set_string(string $var, string $value): void
 	{
 		$this->$var = $value;
 	}
