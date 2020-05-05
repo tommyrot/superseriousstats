@@ -562,7 +562,7 @@ class parser
 		$this->nick_objs[$nick_performing]->add_int('slaps', 1);
 
 		/**
-		 * Strip possible network prefix (psyBNC) from the "undergoing" nick.
+		 * Strip possible network prefix (e.g. psyBNC) from the "undergoing" nick.
 		 */
 		if (preg_match('/^.+?[~\'](?<nick_trimmed>.+)$/', $csnick_undergoing, $matches)) {
 			out::put('debug', 'cleaning nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
@@ -593,8 +593,8 @@ class parser
 
 	/**
 	 * Syntax check a given nick. Leave unicode constraints mostly up to the server.
-	 * Removing characters from the disallowed ones in the regular expression below
-	 * can have serious implications throughout the program. (E.g. 0x27).
+	 * Removing characters (e.g. 0x27) from the disallowed ones in the regular
+	 * expression below can have serious implications throughout the program.
 	 */
 	private function validate_nick(string $csnick): bool
 	{
