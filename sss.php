@@ -401,15 +401,7 @@ class sss
 			}
 
 			out::put('notice', 'parsing logfile: \''.$logfile.'\' from line '.$linenum_start);
-
-			/**
-			 * Check if the log is gzipped and call the appropriate parser.
-			 */
-			if (preg_match('/\.gz$/', $logfile)) {
-				$parser->gzparse_log($logfile, $linenum_start);
-			} else {
-				$parser->parse_log($logfile, $linenum_start);
-			}
+			$parser->parse_log($logfile, $linenum_start, (preg_match('/\.gz$/', $logfile) ? true : false));
 
 			/**
 			 * Update the parse history when there are actual (non-empty) lines parsed.

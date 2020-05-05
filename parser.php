@@ -184,40 +184,6 @@ class parser
 	}
 
 	/**
-	 * Parser function for gzipped logs. This function requires the zlib extension.
-	 */
-	public function gzparse_log(string $logfile, int $linenum_start): void
-	{
-		if (($fp = gzopen($logfile, 'rb')) === false) {
-			out::put('critical', 'failed to open gzip file: \''.$logfile.'\'');
-		}
-
-		while (($line = gzgets($fp)) !== false) {
-			++$this->linenum;
-
-			if ($this->linenum < $linenum_start) {
-				continue;
-			}
-
-			$line = $this->normalize_line($line);
-
-			if ($line === '') {
-				continue;
-			}
-
-			/**
-			 * Pass on the non-empty normalized line to the logfile format specific parser
-			 * class extending this class. Remember the number of said line.
-			 */
-			$this->linenum_last_nonempty = $this->linenum;
-			$this->parse_line($line);
-			$this->line_prev = $line;
-		}
-
-		gzclose($fp);
-	}
-
-	/**
 	 * Check if a line is valid UTF-8 and convert all non-valid bytes into valid
 	 * multibyte UTF-8.
 	 */
@@ -255,16 +221,13 @@ class parser
 		return preg_replace(['/\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09+/', '/\p{C}+/u', '/( |\xC2\xA0|\xE2\x80[\xA8\xA9])+/', '/^ | $/'], ['', ' ', '', ' ', ''], $line);
 	}
 
-	/**
-	 * Parser function for normal (uncompressed) logs.
-	 */
-	public function parse_log(string $logfile, int $linenum_start): void
+	public function parse_log(string $logfile, int $linenum_start, bool $gzip = false): void
 	{
-		if (($fp = fopen($logfile, 'rb')) === false) {
-			out::put('critical', 'failed to open file: \''.$logfile.'\'');
+		if (($fp = call_user_func(($gzip ? 'gz' : 'f').'open', $logfile, 'rb')) === false) {
+			out::put('critical', 'failed to open logfile: \''.$logfile.'\'');
 		}
 
-		while (($line = fgets($fp)) !== false) {
+		while (($line = call_user_func(($gzip ? 'gz' : 'f').'gets', $fp)) !== false) {
 			++$this->linenum;
 
 			if ($this->linenum < $linenum_start) {
@@ -286,7 +249,7 @@ class parser
 			$this->line_prev = $line;
 		}
 
-		fclose($fp);
+		call_user_func(($gzip ? 'gz' : 'f').'close', $fp);
 	}
 
 	/**
