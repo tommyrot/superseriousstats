@@ -484,7 +484,7 @@ class parser
 
 				if (!is_null($url_components = url_tools::get_components($csword))) {
 					/**
-					 * Track URLs of up to a sensible limit of 512 characters in length.
+					 * Track URLs of up to a hard limit of 512 characters in length.
 					 */
 					if (strlen($url_components['url']) <= 512) {
 						$this->create_url($time, $nick, $url_components);
