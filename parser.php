@@ -141,8 +141,7 @@ class parser
 	}
 
 	/**
-	 * Keep track of every topic set. These are handled (and stored) while
-	 * preserving case.
+	 * Topics are handled (and stored) while preserving case.
 	 */
 	private function create_topic(string $time, string $nick, string $topic): void
 	{
@@ -154,8 +153,7 @@ class parser
 	}
 
 	/**
-	 * Keep track of every URL. These are handled (and stored) while preserving
-	 * case (for the parts where it matters, otherwise lower case).
+	 * URLs are handled (and stored) while (mostly) preserving case.
 	 */
 	private function create_url(string $time, string $nick, array $url_components): void
 	{
