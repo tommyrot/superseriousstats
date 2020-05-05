@@ -219,7 +219,7 @@ class parser
 		return preg_replace(['/\x03([0-9]{1,2}(,[0-9]{1,2})?)?/', '/\x09+/', '/\p{C}+/u', '/( |\xC2\xA0|\xE2\x80[\xA8\xA9])+/', '/^ | $/'], ['', ' ', '', ' ', ''], $line);
 	}
 
-	public function parse_log(string $logfile, int $linenum_start, bool $gzip = false): void
+	public function parse_log(string $logfile, int $linenum_start, bool $gzip): void
 	{
 		if (($fp = call_user_func(($gzip ? 'gz' : 'f').'open', $logfile, 'rb')) === false) {
 			out::put('critical', 'failed to open logfile: \''.$logfile.'\'');
