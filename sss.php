@@ -43,17 +43,11 @@ spl_autoload_register(function (string $class): void {
  */
 class sss
 {
-	use config;
-
-	/**
-	 * Variables listed in $settings_allow_override[] can have their default value
-	 * overridden through the config file.
-	 */
-	private array $config = [];
-	private array $settings_allow_override = ['auto_link_nicks', 'database', 'parser', 'timezone'];
+	private array $settings_optional = ['auto_link_nicks'];
 	private array $settings_required = ['channel', 'database', 'parser', 'timezone'];
 	private bool $auto_link_nicks = true;
 	private bool $need_maintenance = false;
+	private string $channel = '';
 	private string $database = '';
 	private string $parser = '';
 	private string $timezone = '';
@@ -81,7 +75,7 @@ class sss
 		}
 
 		out::put('notice', 'creating stats page');
-		$html = new html($this->config);
+		$html = new html($this->channel);
 		fwrite($fp, $html->get_contents());
 		fclose($fp);
 	}
@@ -250,11 +244,6 @@ class sss
 		}
 
 		/**
-		 * Apply settings from the config file.
-		 */
-		$this->apply_settings($this->config);
-
-		/**
 		 * Set the timezone.
 		 */
 		if (!date_default_timezone_set($this->timezone)) {
@@ -421,8 +410,7 @@ class sss
 	}
 
 	/**
-	 * Put settings from the config file into $config[] so they can be passed along
-	 * to other classes.
+	 * Read and apply settings from the config file.
 	 */
 	private function read_config(string $file): void
 	{
@@ -436,19 +424,42 @@ class sss
 
 		while (($line = fgets($fp)) !== false) {
 			if (preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>.+?)"/', $line, $matches)) {
-				$this->config[$matches['setting']] = $matches['value'];
+				$setting = $matches['setting'];
+				$value = $matches['value'];
+
+				/**
+				 * Only apply relevant settings.
+				 */
+				if (in_array($setting, array_merge($this->settings_required, $this->settings_optional))) {
+					$this->settings_required = array_diff($this->settings_required, [$setting]);
+
+					/**
+					 * Do some explicit type casting because everything is initially a string.
+					 */
+					if (is_string($this->$setting)) {
+						$this->$setting = $value;
+					} elseif (is_int($this->$setting)) {
+						if (preg_match('/^\d+$/', $value)) {
+							$this->$setting = (int) $value;
+						}
+					} elseif (is_bool($this->$setting)) {
+						if (preg_match('/^true$/i', $value)) {
+							$this->$setting = true;
+						} elseif (preg_match('/^false$/i', $value)) {
+							$this->$setting = false;
+						}
+					}
+				}
 			}
 		}
 
 		fclose($fp);
 
 		/**
-		 * Exit if any crucial setting is missing.
+		 * Exit if any crucial settings are missing.
 		 */
-		foreach ($this->settings_required as $setting) {
-			if (!array_key_exists($setting, $this->config)) {
-				out::put('critical', 'missing required setting: \''.$setting.'\'');
-			}
+		if (!empty($this->settings_required)) {
+			out::put('critical', 'missing required setting'.(count($this->settings_required) !== 1 ? 's' : '').': \''.implode('\', \'', $this->settings_required).'\'');
 		}
 	}
 }

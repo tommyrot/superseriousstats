@@ -9,13 +9,6 @@
  */
 class html
 {
-	use config;
-
-	/**
-	 * Variables listed in $settings_allow_override[] can have their default value
-	 * overridden through the config file.
-	 */
-	private array $settings_allow_override = ['channel', 'history', 'search_user', 'user_stats'];
 	private bool $estimate = false;
 	private int $days_left = 0;
 	private int $days_logged = 0;
@@ -37,9 +30,9 @@ class html
 	private $stylesheet = 'sss.css';
 	private $user_stats = true;
 
-	public function __construct(array $config)
+	public function __construct(string $channel)
 	{
-		$this->apply_settings($config);
+		$this->channel = $channel;
 	}
 
 	/**
