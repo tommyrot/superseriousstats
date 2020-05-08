@@ -244,13 +244,6 @@ class sss
 		}
 
 		/**
-		 * Set the timezone.
-		 */
-		if (!date_default_timezone_set($this->timezone)) {
-			out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
-		}
-
-		/**
 		 * Set the level of output verbosity.
 		 */
 		if (array_key_exists('q', $options)) {
@@ -431,7 +424,10 @@ class sss
 				 * Only apply relevant settings.
 				 */
 				if (in_array($setting, array_merge($this->settings_required, $this->settings_optional))) {
-					$this->settings_required = array_diff($this->settings_required, [$setting]);
+					/**
+					 * Keep track of missing required settings.
+					 */
+					$settings_missing = array_diff($settings_missing ?? $this->settings_required, [$setting]);
 
 					/**
 					 * Do some explicit type casting because everything is initially a string.
@@ -456,11 +452,16 @@ class sss
 		fclose($fp);
 
 		/**
-		 * Exit if any crucial settings are missing.
+		 * Check if all required settings were present.
 		 */
-		if (!empty($this->settings_required)) {
-			out::put('critical', 'missing required setting'.(count($this->settings_required) !== 1 ? 's' : '').': \''.implode('\', \'', $this->settings_required).'\'');
+		if (!empty($settings_missing)) {
+			out::put('critical', 'missing required setting'.(count($settings_missing) !== 1 ? 's' : '').': \''.implode('\', \'', $settings_missing).'\'');
 		}
+
+		/**
+		 * Try to set the proper timezone.
+		 */
+		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
 	}
 }
 
