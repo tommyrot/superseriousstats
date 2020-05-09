@@ -9,9 +9,9 @@
  */
 class maintenance
 {
-	public function __construct()
+	public function __construct(bool $auto_link_nicks)
 	{
-		$this->main();
+		$this->main($auto_link_nicks);
 	}
 
 	/**
@@ -161,12 +161,12 @@ class maintenance
 		}
 	}
 
-	/**
-	 * Upon class instantiation automatically start the main function below.
-	 */
-	private function main(): void
+	private function main(bool $auto_link_nicks): void
 	{
-		$this->link_nicks();
+		if ($auto_link_nicks) {
+			$this->link_nicks();
+		}
+
 		$this->register_most_active_aliases();
 		$this->create_materialized_views();
 		$this->calculate_milestones();
