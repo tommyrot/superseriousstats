@@ -115,7 +115,7 @@ class maintenance
 			/**
 			 * The stripped nick must consist of at least two characters.
 			 */
-			if (strlen($nick_stripped) >= 2) {
+			if (mb_strlen($nick_stripped) >= 2) {
 				/**
 				 * Maintain an array for each stripped nick, containing the uids of every nick
 				 * that matches it. Put the uid of a matching nick at the start of the array if
