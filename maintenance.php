@@ -107,7 +107,7 @@ class maintenance
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			$nicks[$result['uid']] = [
-				'nick' => $result['csnick'],
+				'csnick' => $result['csnick'],
 				'ruid' => $result['ruid'],
 				'status' => $result['status']];
 			$nick_stripped = preg_replace(['/[^\p{L}\p{N}]/u', '/\p{N}+$/u'], '', mb_strtolower($result['csnick']));
@@ -147,7 +147,7 @@ class maintenance
 				if ($nicks[$uids[$i]]['status'] === 0) {
 					$new_alias = true;
 					db::query_exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]);
-					out::put('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
+					out::put('debug', 'linked \''.$nicks[$uids[$i]]['csnick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['csnick'].'\'');
 				}
 			}
 
