@@ -96,10 +96,9 @@ class maintenance
 	}
 
 	/**
-	 * This function tries to link unlinked nicks to any other nick that is
-	 * identical after stripping them both from any non-letter and non-numeric
-	 * characters (at any position in the nick) and trailing numerics. The results
-	 * are compared in a case insensitive manner.
+	 * Try to link unlinked nicks to any other nick that is identical after
+	 * stripping them both from any non-letter and non-numeric characters as well as
+	 * any trailing numerics. The results are compared in a case insensitive manner.
 	 */
 	private function link_nicks(): void
 	{
@@ -119,8 +118,8 @@ class maintenance
 			if (strlen($nick_stripped) >= 2) {
 				/**
 				 * Maintain an array for each stripped nick, containing the uids of every nick
-				 * that matches it. Put the uid of the matching nick at the start of the array
-				 * if the nick is already linked (status != 0), otherwise put it at the end.
+				 * that matches it. Put the uid of a matching nick at the start of the array if
+				 * it is already linked (status != 0), otherwise put it at the end.
 				 */
 				if ($result['status'] !== 0 && isset($nicks_stripped[$nick_stripped])) {
 					array_unshift($nicks_stripped[$nick_stripped], $result['uid']);
