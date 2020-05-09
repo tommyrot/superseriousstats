@@ -96,10 +96,78 @@ class maintenance
 	}
 
 	/**
+	 * This function tries to link unlinked nicks to any other nick that is
+	 * identical after stripping them both from any non-letter and non-numeric
+	 * characters (at any position in the nick) and trailing numerics. The results
+	 * are compared in a case insensitive manner.
+	 */
+	private function link_nicks(): void
+	{
+		$results = db::query('SELECT uid, csnick, ruid, status FROM uid_details');
+		$nicks_stripped = [];
+
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+			$nicks[$result['uid']] = [
+				'nick' => $result['csnick'],
+				'ruid' => $result['ruid'],
+				'status' => $result['status']];
+			$nick_stripped = preg_replace(['/[^\p{L}\p{N}]/u', '/\p{N}+$/u'], '', mb_strtolower($result['csnick']));
+
+			/**
+			 * The stripped nick must consist of at least two characters.
+			 */
+			if (strlen($nick_stripped) >= 2) {
+				/**
+				 * Maintain an array for each stripped nick, containing the uids of every nick
+				 * that matches it. Put the uid of the matching nick at the start of the array
+				 * if the nick is already linked (status != 0), otherwise put it at the end.
+				 */
+				if ($result['status'] !== 0 && isset($nicks_stripped[$nick_stripped])) {
+					array_unshift($nicks_stripped[$nick_stripped], $result['uid']);
+				} else {
+					$nicks_stripped[$nick_stripped][] = $result['uid'];
+				}
+			}
+		}
+
+		foreach ($nicks_stripped as $uids) {
+			/**
+			 * If there is only one match for the stripped nick, there is nothing to link.
+			 */
+			if (count($uids) === 1) {
+				continue;
+			}
+
+			$new_alias = false;
+
+			for ($i = 1, $j = count($uids); $i < $j; ++$i) {
+				/**
+				 * Use the ruid that belongs to the first uid in the array to link all
+				 * succeeding _unlinked_ nicks to.
+				 */
+				if ($nicks[$uids[$i]]['status'] === 0) {
+					$new_alias = true;
+					db::query_exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]);
+					out::put('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
+				}
+			}
+
+			/**
+			 * If there are aliases found, and the first nick in the array is unlinked
+			 * (status = 0), make it a registered nick (status = 1).
+			 */
+			if ($new_alias && $nicks[$uids[0]]['status'] === 0) {
+				db::query_exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]);
+			}
+		}
+	}
+
+	/**
 	 * Upon class instantiation automatically start the main function below.
 	 */
 	private function main(): void
 	{
+		$this->link_nicks();
 		$this->register_most_active_aliases();
 		$this->create_materialized_views();
 		$this->calculate_milestones();
