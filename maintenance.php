@@ -161,8 +161,13 @@ class maintenance
 		}
 	}
 
+	/**
+	 * The following routines ensure we have a usable, consistent dataset.
+	 */
 	private function main(bool $auto_link_nicks): void
 	{
+		out::put('notice', 'performing database maintenance routines');
+
 		if ($auto_link_nicks) {
 			$this->link_nicks();
 		}

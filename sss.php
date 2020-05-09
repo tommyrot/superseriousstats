@@ -35,7 +35,7 @@ spl_autoload_register(function (string $class): void {
  */
 $options = getopt('c:e:i:m:o:qv');
 ksort($options);
-preg_match('/^c?(e|i|i?o|m)[qv]?$/', implode('', array_keys($options)) or exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n");
+preg_match('/^c?(e|i|i?o|m)[qv]?$/', implode('', array_keys($options))) or exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n");
 
 /**
  * Launch superseriousstats!
@@ -169,6 +169,9 @@ class sss
 		fclose($fp);
 	}
 
+	/**
+	 * Take actions based on given command line arguments.
+	 */
 	private function main(array $options): void
 	{
 		db::set_database($this->database);
