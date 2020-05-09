@@ -87,9 +87,9 @@ class maintenance
 		}
 
 		fclose($fp);
-		db::query_exec('UPDATE fqdns SET active = 1');
 
 		if (isset($tlds_active)) {
+			db::query_exec('UPDATE fqdns SET active = 1');
 			db::query_exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')');
 			out::put('debug', 'deactivated '.db::changes().' invalid fqdn'.(db::changes() !== 1 ? 's' : ''));
 		}
