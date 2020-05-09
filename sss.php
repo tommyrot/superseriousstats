@@ -14,16 +14,8 @@ ini_set('pcre.jit', '0');
 /**
  * Check if all required extensions are loaded.
  */
-if (!extension_loaded('sqlite3')) {
-	exit('>> php\'s sqlite3 extension isn\'t loaded <<'."\n");
-}
-
-if (!extension_loaded('mbstring')) {
-	exit('>> php\'s mbstring extension isn\'t loaded <<'."\n");
-}
-
-if (!extension_loaded('zlib')) {
-	exit('>> php\'s zlib extension isn\'t loaded <<'."\n");
+foreach (['sqlite3', 'mbstring', 'zlib'] as $module) {
+	extension_loaded($module) or exit('>> php\'s '.$module.' extension isn\'t loaded <<'."\n");
 }
 
 /**
@@ -39,6 +31,18 @@ spl_autoload_register(function (string $class): void {
 });
 
 /**
+ * Read options from the command line. Show a hint on invalid input.
+ */
+$options = getopt('c:e:i:m:o:qv');
+ksort($options);
+preg_match('/^c?(e|i|i?o|m)[qv]?$/', implode('', array_keys($options)) or exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n");
+
+/**
+ * Launch superseriousstats!
+ */
+$sss = new sss($options);
+
+/**
  * Main class.
  */
 class sss
@@ -52,7 +56,7 @@ class sss
 	private string $parser = '';
 	private string $timezone = '';
 
-	public function __construct()
+	public function __construct(array $options)
 	{
 		/**
 		 * Explicitly set the locale to C (POSIX) for all categories so there hopefully
@@ -61,10 +65,24 @@ class sss
 		setlocale(LC_ALL, 'C');
 
 		/**
-		 * Use UTC until config specified timezone is loaded.
+		 * Use UTC until config specified timezone is set.
 		 */
 		date_default_timezone_set('UTC');
-		$this->main();
+
+		/**
+		 * Read either the user provided config or the default one.
+		 */
+		$this->read_config($options['c'] ?? __DIR__.'/sss.conf');
+
+		/**
+		 * Set the proper timezone.
+		 */
+		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
+
+		/**
+		 * Init done, move to main.
+		 */
+		$this->main($options);
 	}
 
 	private function create_html(string $file): void
@@ -151,110 +169,8 @@ class sss
 		fclose($fp);
 	}
 
-	/**
-	 * This function tries to link unlinked nicks to any other nick that is
-	 * identical after stripping them both from any non-alphanumeric characters (at
-	 * any position in the nick) and trailing numerics. The results are compared in
-	 * a case insensitive manner.
-	 */
-	private function link_nicks(): void
+	private function main(array $options): void
 	{
-		$results = db::query('SELECT uid, csnick, ruid, status FROM uid_details');
-		$nicks_stripped = [];
-
-		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			$nicks[$result['uid']] = [
-				'nick' => $result['csnick'],
-				'ruid' => $result['ruid'],
-				'status' => $result['status']];
-			$nick_stripped = preg_replace(['/[^\p{L}\p{N}]/u', '/\p{N}+$/u'], '', mb_strtolower($result['csnick']));
-
-			/**
-			 * The stripped nick must consist of at least two characters.
-			 */
-			if (strlen($nick_stripped) >= 2) {
-				/**
-				 * Maintain an array for each stripped nick, containing the uids of every nick
-				 * that matches it. Put the uid of the matching nick at the start of the array
-				 * if the nick is already linked (status != 0), otherwise put it at the end.
-				 */
-				if ($result['status'] !== 0 && isset($nicks_stripped[$nick_stripped])) {
-					array_unshift($nicks_stripped[$nick_stripped], $result['uid']);
-				} else {
-					$nicks_stripped[$nick_stripped][] = $result['uid'];
-				}
-			}
-		}
-
-		foreach ($nicks_stripped as $uids) {
-			/**
-			 * If there is only one match for the stripped nick, there is nothing to link.
-			 */
-			if (count($uids) === 1) {
-				continue;
-			}
-
-			$new_alias = false;
-
-			for ($i = 1, $j = count($uids); $i < $j; ++$i) {
-				/**
-				 * Use the ruid that belongs to the first uid in the array to link all
-				 * succeeding _unlinked_ nicks to.
-				 */
-				if ($nicks[$uids[$i]]['status'] === 0) {
-					$new_alias = true;
-					db::query_exec('UPDATE uid_details SET ruid = '.$nicks[$uids[0]]['ruid'].', status = 2 WHERE uid = '.$uids[$i]);
-					out::put('debug', 'linked \''.$nicks[$uids[$i]]['nick'].'\' to \''.$nicks[$nicks[$uids[0]]['ruid']]['nick'].'\'');
-				}
-			}
-
-			/**
-			 * If there are aliases found, and the first nick in the array is unlinked
-			 * (status = 0), make it a registered nick (status = 1).
-			 */
-			if ($new_alias && $nicks[$uids[0]]['status'] === 0) {
-				db::query_exec('UPDATE uid_details SET status = 1 WHERE uid = '.$uids[0]);
-			}
-		}
-	}
-
-	/**
-	 * Upon class instantiation automatically start the main function below.
-	 */
-	private function main(): void
-	{
-		/**
-		 * Read options from the command line. Print a hint on invalid input.
-		 */
-		$options = getopt('c:e:i:n:o:qv');
-		ksort($options);
-		$options_keys = implode('', array_keys($options));
-
-		if (!preg_match('/^c?(e|i|i?o|n)[qv]?$/', $options_keys)) {
-			exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n\n".'See the MANUAL for an overview of all available options.'."\n");
-		}
-
-		/**
-		 * Read the config file.
-		 */
-		if (array_key_exists('c', $options)) {
-			$this->read_config($options['c']);
-		} else {
-			$this->read_config(__DIR__.'/sss.conf');
-		}
-
-		/**
-		 * Set the level of output verbosity.
-		 */
-		if (array_key_exists('q', $options)) {
-			out::set_verbosity(0);
-		} elseif (array_key_exists('v', $options)) {
-			out::set_verbosity(2);
-		}
-
-		/**
-		 * Open the database connection.
-		 */
 		db::set_database($this->database);
 		db::connect();
 
@@ -262,16 +178,16 @@ class sss
 			$this->export_nicks($options['e']);
 		}
 
-		if (array_key_exists('n', $options)) {
-			$this->import_nicks($options['n']);
-			$this->maintenance();
+		if (array_key_exists('m', $options)) {
+			$this->import_nicks($options['m']);
+			$maintenance = new maintenance($this->auto_link_nicks);
 		}
 
 		if (array_key_exists('i', $options)) {
 			$this->parse_log($options['i']);
 
 			if ($this->need_maintenance) {
-				$this->maintenance();
+				$maintenance = new maintenance($this->auto_link_nicks);
 			}
 		}
 
@@ -281,23 +197,6 @@ class sss
 
 		db::disconnect();
 		out::put('notice', 'kthxbye');
-	}
-
-	/**
-	 * Maintenance ensures we have a usable, consistent dataset.
-	 */
-	private function maintenance(): void
-	{
-		/**
-		 * Search for new aliases if $auto_link_nicks is true.
-		 */
-		if ($this->auto_link_nicks) {
-			out::put('notice', 'looking for possible aliases');
-			$this->link_nicks();
-		}
-
-		out::put('notice', 'performing database maintenance routines');
-		$maintenance = new maintenance();
 	}
 
 	private function parse_log(string $filedir): void
@@ -392,8 +291,7 @@ class sss
 				db::query_exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_int('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_int('linenum_last_nonempty'));
 
 				/**
-				 * Write data to database. Set $need_maintenance to true if there has been any
-				 * data written to the database.
+				 * Store data in the database. We will need maintenance if any data is stored.
 				 */
 				if ($parser->store_data()) {
 					$this->need_maintenance = true;
@@ -403,7 +301,7 @@ class sss
 	}
 
 	/**
-	 * Read and apply settings from the config file.
+	 * Read settings from the config file.
 	 */
 	private function read_config(string $file): void
 	{
@@ -457,15 +355,5 @@ class sss
 		if (!empty($settings_missing)) {
 			out::put('critical', 'missing required setting'.(count($settings_missing) !== 1 ? 's' : '').': \''.implode('\', \'', $settings_missing).'\'');
 		}
-
-		/**
-		 * Try to set the proper timezone.
-		 */
-		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
 	}
 }
-
-/**
- * Get ready for the launch.
- */
-$sss = new sss();
