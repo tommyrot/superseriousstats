@@ -33,8 +33,7 @@ spl_autoload_register(function (string $class): void {
 /**
  * Read options from the command line. Show a hint on invalid input.
  */
-$options = getopt('c:e:i:m:o:qv');
-ksort($options);
+$options = ksort(getopt('c:e:i:m:o:qv'));
 preg_match('/^c?(e|i|i?o|m)[qv]?$/', implode('', array_keys($options))) or exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n");
 
 /**
@@ -100,9 +99,7 @@ class sss
 
 	private function export_nicks(string $file): void
 	{
-		$total = db::query_single_col('SELECT COUNT(*) FROM uid_details');
-
-		if ($total === 0) {
+		if (($total = db::query_single_col('SELECT COUNT(*) FROM uid_details')) === 0) {
 			out::put('notice', 'database is empty, nothing to export');
 			return;
 		}
@@ -115,10 +112,8 @@ class sss
 			$contents .= $result['status'].','.$result['csnick'].(!is_null($result['aliases']) ? ','.$result['aliases'] : '')."\n";
 		}
 
-		$aliases = db::query_single_col('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0');
-
-		if (!is_null($aliases)) {
-			$contents .= '*,'.$aliases."\n";
+		if (!is_null($unlinked = db::query_single_col('SELECT GROUP_CONCAT(csnick) FROM uid_details WHERE status = 0'))) {
+			$contents .= '*,'.$unlinked."\n";
 		}
 
 		if (($fp = fopen($file, 'wb')) === false) {
@@ -143,7 +138,7 @@ class sss
 		}
 
 		/**
-		 * Set all nicks to their default status before updating them according to
+		 * Set all nicks to their default state before updating them according to
 		 * imported data.
 		 */
 		db::query_exec('UPDATE uid_details SET ruid = uid, status = 0');
@@ -246,16 +241,11 @@ class sss
 		 */
 		ksort($logfiles);
 
-		/**
-		 * Get the date of the last log parsed.
-		 */
-		$date_last_log_parsed = db::query_single_col('SELECT MAX(date) FROM parse_history');
-
 		foreach ($logfiles as $date => $logfile) {
 			/**
 			 * Skip logs that have already been processed.
 			 */
-			if (!is_null($date_last_log_parsed) && strtotime($date) < strtotime($date_last_log_parsed)) {
+			if (!is_null($date_last_log_parsed = db::query_single_col('SELECT MAX(date) FROM parse_history')) && strtotime($date) < strtotime($date_last_log_parsed)) {
 				continue;
 			}
 
@@ -265,9 +255,7 @@ class sss
 			 * Get the streak history. This will assume logs are parsed in chronological
 			 * order with no gaps.
 			 */
-			$result = db::query_single_row('SELECT nick_prev, streak FROM streak_history');
-
-			if (!is_null($result)) {
+			if (!is_null($result = db::query_single_row('SELECT nick_prev, streak FROM streak_history'))) {
 				$parser->set_string('nick_prev', $result['nick_prev']);
 				$parser->set_int('streak', $result['streak']);
 			}
@@ -276,9 +264,7 @@ class sss
 			 * Get the parse history and set the line number on which to start parsing the
 			 * log. This would be 1 for a fresh log and +1 for a log with a parse history.
 			 */
-			$linenum_start = db::query_single_col('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\'');
-
-			if (!is_null($linenum_start)) {
+			if (!is_null($linenum_start = db::query_single_col('SELECT lines_parsed FROM parse_history WHERE date = \''.$date.'\''))) {
 				++$linenum_start;
 			} else {
 				$linenum_start = 1;
