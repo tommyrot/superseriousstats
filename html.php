@@ -402,11 +402,11 @@ class html
 						$words = explode(' ', ${'v'.$col});
 						$line = '';
 
-						foreach ($words as $word) {
-							if (preg_match('/^(www\.|https?:\/\/).+/i', $word) && !is_null($urlparts = $this->get_urlparts($word))) {
+						foreach ($words as $csword) {
+							if (preg_match('/^(www\.|https?:\/\/).+/i', $csword) && !is_null($urlparts = $this->get_urlparts($csword))) {
 								$line .= '<a href="'.htmlspecialchars($urlparts['url'], ENT_QUOTES | ENT_HTML5, 'UTF-8').'">'.htmlspecialchars($urlparts['url'], ENT_QUOTES | ENT_HTML5, 'UTF-8').'</a> ';
 							} else {
-								$line .= htmlspecialchars($word, ENT_QUOTES | ENT_HTML5, 'UTF-8').' ';
+								$line .= htmlspecialchars($csword, ENT_QUOTES | ENT_HTML5, 'UTF-8').' ';
 							}
 						}
 
