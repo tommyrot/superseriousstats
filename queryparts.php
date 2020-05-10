@@ -5,7 +5,7 @@
  */
 
 /**
- * Trait to create parts of the SQLite query.
+ * Trait with code for creating parts of the SQLite query.
  */
 trait queryparts
 {

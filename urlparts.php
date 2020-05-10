@@ -5,9 +5,10 @@
  */
 
 /**
- * Trait handling URL validation and disassembly. Returns null if a URL fails
- * the syntax check. Returns an array with the URLs parts on success. Missing
- * parts are represented by an empty string, a missing port part by (int) 0.
+ * Trait with code handling URL validation and disassembly. Returns null if a
+ * URL fails the syntax check. Returns an array with the URLs parts on success.
+ * Missing parts are represented by an empty string, a missing port part by
+ * (int) 0.
  *
  * For reference: RFC 3986, RFC 1034 section 3.5, RFC 1123 section 2.1
  *
