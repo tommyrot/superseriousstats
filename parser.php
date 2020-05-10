@@ -10,7 +10,7 @@
  */
 class parser
 {
-	use base, queryparts;
+	use base, queryparts, urlparts;
 
 	private array $nick_objs = [];
 	private array $smileys = [
@@ -155,12 +155,12 @@ class parser
 	/**
 	 * URLs are handled (and stored) while (mostly) preserving case.
 	 */
-	private function create_url(string $time, string $nick, array $url_components): void
+	private function create_url(string $time, string $nick, array $urlparts): void
 	{
-		$url = $url_components['url'];
+		$url = $urlparts['url'];
 
 		if (!array_key_exists($url, $this->url_objs)) {
-			$this->url_objs[$url] = new url($url_components);
+			$this->url_objs[$url] = new url($urlparts);
 		}
 
 		$this->url_objs[$url]->add_uses($this->date.' '.$time, $nick);
@@ -482,12 +482,12 @@ class parser
 			} elseif (preg_match('/^(www\.|https?:\/\/).+/i', $csword)) {
 				$skip_quote = true;
 
-				if (!is_null($url_components = url_tools::get_components($csword))) {
+				if (!is_null($urlparts = $this->get_urlparts($csword))) {
 					/**
 					 * Track URLs of up to a hard limit of 512 characters in length.
 					 */
-					if (strlen($url_components['url']) <= 512) {
-						$this->create_url($time, $nick, $url_components);
+					if (strlen($urlparts['url']) <= 512) {
+						$this->create_url($time, $nick, $urlparts);
 						$this->nick_objs[$nick]->add_int('urls', 1);
 					}
 				} else {

@@ -14,11 +14,11 @@ class url
 	private string $tld = '';
 	private string $url = '';
 
-	public function __construct(array $url_components)
+	public function __construct(array $urlparts)
 	{
-		$this->fqdn = $url_components['fqdn'];
-		$this->tld = $url_components['tld'];
-		$this->url = $url_components['url'];
+		$this->fqdn = $urlparts['fqdn'];
+		$this->tld = $urlparts['tld'];
+		$this->url = $urlparts['url'];
 	}
 
 	/**

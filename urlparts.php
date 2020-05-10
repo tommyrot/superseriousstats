@@ -5,9 +5,9 @@
  */
 
 /**
- * Class handling URL validation. Returns null if a URL fails the syntax check.
- * Returns an array with the URLs components on success. Missing components are
- * represented by an empty string, a missing port component by (int) 0.
+ * Trait handling URL validation and disassembly. Returns null if a URL fails
+ * the syntax check. Returns an array with the URLs parts on success. Missing
+ * parts are represented by an empty string, a missing port part by (int) 0.
  *
  * For reference: RFC 3986, RFC 1034 section 3.5, RFC 1123 section 2.1
  *
@@ -18,27 +18,17 @@
  *  - IPv6 addresses will not validate.
  *  - Square brackets must be percent encoded.
  */
-class url_tools
+trait urlparts
 {
-	private static string $regexp_callback = '';
-	private static string $regexp_complete = '';
+	private string $regexp_callback = '';
+	private string $regexp_complete = '';
 
-	private function __construct()
-	{
-		/**
-		 * This is a static class and should not be instantiated.
-		 */
-	}
-
-	/**
-	 * Validate a given URL.
-	 */
-	public static function get_components(string $url): ?array
+	private function get_urlparts(string $url): ?array
 	{
 		/**
 		 * Assemble the regular expression if not already done so.
 		 */
-		if (self::$regexp_complete === '') {
+		if ($this->regexp_complete === '') {
 			$domain = '(?<domain>[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)';
 			$tld = '(?<tld>[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)';
 			$fqdn = '(?<fqdn>'.$domain.'\.'.$tld.')\.?';
@@ -53,21 +43,21 @@ class url_tools
 			$path = '(?<path>(\/\/?('.$pchar.'+\/?)*)?)';
 			$query = '(?<query>(\?('.$pchar.'|[\/?])*)?)';
 			$scheme = '((?<scheme>https?):\/\/)';
-			self::$regexp_callback = '/^'.$scheme.'?'.$authority.'/i';
-			self::$regexp_complete = '/^(?<url>'.$scheme.'?'.$authority.$path.$query.$fragment.')$/i';
+			$this->regexp_callback = '/^'.$scheme.'?'.$authority.'/i';
+			$this->regexp_complete = '/^(?<url>'.$scheme.'?'.$authority.$path.$query.$fragment.')$/i';
 		}
 
 		/**
 		 * Convert scheme and authority to lower case.
 		 */
-		$url = preg_replace_callback(self::$regexp_callback, function (array $matches): string {
+		$url = preg_replace_callback($this->regexp_callback, function (array $matches): string {
 			return strtolower($matches[0]);
 		}, $url);
 
 		/**
 		 * Validate the URL.
 		 */
-		if (!preg_match(self::$regexp_complete, $url, $matches, PREG_UNMATCHED_AS_NULL)) {
+		if (!preg_match($this->regexp_complete, $url, $matches, PREG_UNMATCHED_AS_NULL)) {
 			return null;
 		}
 
@@ -94,30 +84,30 @@ class url_tools
 		}
 
 		/**
-		 * Create an array with all the components of the URL.
+		 * Create an array with all parts of the URL.
 		 */
-		$components = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
+		$parts = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
 
-		foreach ($components as $component) {
-			if (is_null($matches[$component])) {
+		foreach ($parts as $part) {
+			if (is_null($matches[$part])) {
 				/**
-				 * Nonexistent components are returned as an empty string.
+				 * Nonexistent parts are returned as an empty string.
 				 */
-				$url_components[$component] = '';
+				$urlparts[$part] = '';
 			} else {
-				$url_components[$component] = $matches[$component];
+				$urlparts[$part] = $matches[$part];
 			}
 		}
 
 		/**
-		 * The port component should be of type integer. 0 means no port.
+		 * The port part should be of type integer. 0 means no port.
 		 */
 		if (is_null($matches['port'])) {
-			$url_components['port'] = 0;
+			$urlparts['port'] = 0;
 		} else {
-			$url_components['port'] = (int) $matches['port'];
+			$urlparts['port'] = (int) $matches['port'];
 		}
 
-		return $url_components;
+		return $urlparts;
 	}
 }
