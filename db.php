@@ -73,7 +73,7 @@ class db
 	 */
 	public static function disconnect(): void
 	{
-		out::put('notice', 'updating database');
+		out::put('notice', 'syncing database');
 		self::$db->exec('COMMIT') or self::fail();
 		self::$db->exec('PRAGMA optimize');
 		self::$db->close();
