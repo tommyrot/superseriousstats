@@ -226,15 +226,11 @@ class parser
 		}
 
 		while (($line = call_user_func(($gzip ? 'gz' : 'f').'gets', $fp)) !== false) {
-			++$this->linenum;
-
-			if ($this->linenum < $linenum_start) {
+			if (++$this->linenum < $linenum_start) {
 				continue;
 			}
 
-			$line = $this->normalize_line($line);
-
-			if ($line === '') {
+			if (($line = $this->normalize_line($line)) === '') {
 				continue;
 			}
 
@@ -448,12 +444,11 @@ class parser
 			 */
 			if (preg_match('/^["\'(]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;]?$/u', $csword, $matches)) {
 				$csword_trimmed = $matches['csword_trimmed'];
-				$word_length = mb_strlen($csword_trimmed, 'UTF-8');
 
 				/**
 				 * Words consisting of 30+ characters are most likely not real words.
 				 */
-				if ($word_length <= 30) {
+				if (($word_length = mb_strlen($csword_trimmed, 'UTF-8')) <= 30) {
 					$this->create_word($csword_trimmed, $word_length);
 				}
 
@@ -461,8 +456,7 @@ class parser
 				 * Check for textual user expressions and a couple of smileys.
 				 */
 				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|rofl|lmao)$/i', $csword_trimmed)) {
-					$smiley_textual = strtolower($csword_trimmed);
-					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], $smiley_textual);
+					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], strtolower($csword_trimmed));
 					$this->nick_objs[$nick]->add_int($this->smileys[$smiley_textual], 1);
 				} elseif (preg_match('/^([xX]D|D:)$/', $csword)) {
 					$this->nick_objs[$nick]->add_int($this->smileys[strtolower($csword)], 1);
@@ -472,8 +466,7 @@ class parser
 			 * Regular expression to check for all remaining smileys we're interested in.
 			 */
 			} elseif (preg_match('/^(:([][)(pPD\/oOxX\\\|3<>sS]|-[)D\/pP(\\\]|\'\()|;([)(pPD]|-\)|_;)|[:;](\)\)+|\(\(+)|\\\[oO]\/|<3|=[])pP\/\\\D(]|8\)|-[_.]-|[oO][_.][oO])$/', $csword)) {
-				$smiley = strtolower($csword);
-				$smiley = preg_replace(['/^(:-?|=)[\/\\\]$/', '/^:\)\)\)+$/', '/^:\(\(\(+$/', '/^;\)\)+$/', '/^;\(\(+$/', '/^;d$/', '/^o\.o$/', '/^-\.-$/'], [':/', ':))', ':((', ';)', ';(', ':d', 'o_o', '-_-'], $smiley);
+				$smiley = preg_replace(['/^(:-?|=)[\/\\\]$/', '/^:\)\)\)+$/', '/^:\(\(\(+$/', '/^;\)\)+$/', '/^;\(\(+$/', '/^;d$/', '/^o\.o$/', '/^-\.-$/'], [':/', ':))', ':((', ';)', ';(', ':d', 'o_o', '-_-'], strtolower($csword));
 				$this->nick_objs[$nick]->add_int($this->smileys[$smiley], 1);
 
 			/**
@@ -554,29 +547,24 @@ class parser
 
 	protected function set_slap(string $time, string $csnick_performing, string $csnick_undergoing): void
 	{
-		if (!$this->validate_nick($csnick_performing)) {
-			return;
-		}
-
-		$nick_performing = $this->create_nick($time, $csnick_performing);
-		$this->nick_objs[$nick_performing]->add_int('slaps', 1);
-
 		/**
 		 * Strip possible network prefix (e.g. psyBNC) from the "undergoing" nick.
 		 */
 		if (preg_match('/^.+?[~\'](?<nick_trimmed>.+)$/', $csnick_undergoing, $matches)) {
-			out::put('debug', 'cleaning nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
+			out::put('debug', 'trimming nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			$csnick_undergoing = $matches['nick_trimmed'];
 		}
 
-		if (!$this->validate_nick($csnick_undergoing)) {
+		if (!$this->validate_nick($csnick_performing) || !$this->validate_nick($csnick_undergoing)) {
 			return;
 		}
 
 		/**
 		 * The "undergoing" nick is only referenced and might not be real.
 		 */
+		$nick_performing = $this->create_nick($time, $csnick_performing);
 		$nick_undergoing = $this->create_nick($time, $csnick_undergoing, false);
+		$this->nick_objs[$nick_performing]->add_int('slaps', 1);
 		$this->nick_objs[$nick_undergoing]->add_int('slapped', 1);
 	}
 
