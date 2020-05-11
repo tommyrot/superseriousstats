@@ -169,12 +169,7 @@ class nick
 		/**
 		 * Store data in database table "uid_details" and update "uid_lines" if needed.
 		 */
-		$uid = db::query_single_col('SELECT uid FROM uid_details WHERE csnick = \''.$this->csnick.'\'');
-
-		/**
-		 * This nick does NOT already exist in the database.
-		 */
-		if (is_null($uid)) {
+		if (is_null($uid = db::query_single_col('SELECT uid FROM uid_details WHERE csnick = \''.$this->csnick.'\''))) {
 			if ($this->firstseen === '') {
 				/**
 				 * If $firstseen is empty there have been no lines, actions or events for this
@@ -188,25 +183,17 @@ class nick
 			}
 
 			$uid = db::query_exec('INSERT INTO uid_details (uid, csnick, firstseen, lastseen) VALUES (NULL, \''.$this->csnick.'\', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\'))');
-
-		/**
-		 * This nick DOES already exist in the database.
-		 */
 		} else {
 			if ($this->firstseen === '') {
 				/**
 				 * If $firstseen is empty there have been no lines, actions or events for this
 				 * nick. The only two possibilities left are; this nick has been slapped, or
-				 * this nick had its streak interrupted. Update these values if applicable.
+				 * this nick had its streak interrupted. Update the appropriate values.
 				 */
 				$queryparts = $this->get_queryparts(['monologues', 'slapped']);
 
-				if ($this->topmonologue !== 0) {
-					$topmonologue = db::query_single_col('SELECT topmonologue FROM uid_lines WHERE uid = '.$uid);
-
-					if ($this->topmonologue > $topmonologue) {
-						$queryparts['update_assignments'] .= ', topmonologue = '.$this->topmonologue;
-					}
+				if ($this->topmonologue !== 0 && $this->topmonologue > db::query_single_col('SELECT topmonologue FROM uid_lines WHERE uid = '.$uid)) {
+					$queryparts['update_assignments'] .= ', topmonologue = '.$this->topmonologue;
 				}
 
 				db::query_exec('UPDATE uid_lines SET '.$queryparts['update_assignments'].' WHERE uid = '.$uid);
@@ -242,15 +229,11 @@ class nick
 			db::query_exec('INSERT INTO uid_lines (uid, '.$queryparts['insert_columns'].($this->lasttalked !== '' ? ', lasttalked' : '').') VALUES ('.$uid.', '.$queryparts['insert_values'].($this->lasttalked !== '' ? ', DATETIME(\''.$this->lasttalked.'\')' : '').') ON CONFLICT (uid) DO UPDATE SET '.$queryparts['update_assignments'].($this->lasttalked !== '' ? ', lasttalked = DATETIME(\''.$this->lasttalked.'\')' : ''));
 
 			/**
-			* Update $topmonologue separately as we want to keep the highest value instead
-			* of the sum.
-			*/
-			if ($this->topmonologue !== 0) {
-				$topmonologue = db::query_single_col('SELECT topmonologue FROM uid_lines WHERE uid = '.$uid);
-
-				if ($this->topmonologue > $topmonologue) {
-					db::query_exec('UPDATE uid_lines SET topmonologue = '.$this->topmonologue.' WHERE uid = '.$uid);
-				}
+			 * Update $topmonologue separately as we want to keep the highest value instead
+			 * of the sum.
+			 */
+			if ($this->topmonologue !== 0 && $this->topmonologue > db::query_single_col('SELECT topmonologue FROM uid_lines WHERE uid = '.$uid)) {
+				db::query_exec('UPDATE uid_lines SET topmonologue = '.$this->topmonologue.' WHERE uid = '.$uid);
 			}
 		}
 	}
