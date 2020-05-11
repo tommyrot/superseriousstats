@@ -23,7 +23,7 @@ foreach (['sqlite3', 'mbstring', 'zlib'] as $module) {
  * time of instantiation.
  */
 spl_autoload_register(function (string $class): void {
-	if (strpos($class, 'parser_') === 0) {
+	if (strpos($class, 'parser_') === 0) { #str_starts_with() PHP8
 		require_once(__DIR__.'/parsers/'.substr($class, 7).'.php');
 	} else {
 		require_once(__DIR__.'/'.$class.'.php');
