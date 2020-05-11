@@ -94,7 +94,7 @@ class html
 		 * neat again.
 		 */
 		$this->columns_act_year = 1 + (int) $this->date_last_log_parsed->format('Y') - (int) $this->date_first_activity->format('Y') + ($this->estimate ? 1 : 0);
-		$this->columns_act_year = ($this->columns_act_year < 3 ? 3 : ($this->columns_act_year > 16 ? 24 : $this->columns_act_year));
+		$this->columns_act_year = ($this->columns_act_year <= 3 ? 3 : ($this->columns_act_year > 16 ? 24 : $this->columns_act_year));
 
 		/**
 		 * HTML Head.
