@@ -9,6 +9,8 @@
  */
 class history
 {
+	use common_html_user_history;
+
 	/**
 	 * Default settings for this script, which can be overridden in the
 	 * configuration file.
@@ -200,7 +202,7 @@ class history
 				$type = 'month';
 			}
 
-			$this->output .= $this->make_table_activity_distribution_hour($sqlite3, $type);
+			$this->output .= $this->create_table_activity_distribution_hour($type);
 			$this->output .= $this->make_table_people($sqlite3, $type);
 			$this->output .= $this->make_table_people_timeofday($sqlite3, $type);
 		}
@@ -237,72 +239,6 @@ class history
 		}
 
 		return '<table class="index">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
-	}
-
-	private function make_table_activity_distribution_hour($sqlite3, $type)
-	{
-		if ($type === 'month') {
-			if (($result = $sqlite3->querySingle('SELECT SUM(l_00) AS l_00, SUM(l_01) AS l_01, SUM(l_02) AS l_02, SUM(l_03) AS l_03, SUM(l_04) AS l_04, SUM(l_05) AS l_05, SUM(l_06) AS l_06, SUM(l_07) AS l_07, SUM(l_08) AS l_08, SUM(l_09) AS l_09, SUM(l_10) AS l_10, SUM(l_11) AS l_11, SUM(l_12) AS l_12, SUM(l_13) AS l_13, SUM(l_14) AS l_14, SUM(l_15) AS l_15, SUM(l_16) AS l_16, SUM(l_17) AS l_17, SUM(l_18) AS l_18, SUM(l_19) AS l_19, SUM(l_20) AS l_20, SUM(l_21) AS l_21, SUM(l_22) AS l_22, SUM(l_23) AS l_23 FROM channel_activity WHERE date LIKE \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'%\'', true)) === false) {
-				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-		} elseif ($type === 'year') {
-			if (($result = $sqlite3->querySingle('SELECT SUM(l_00) AS l_00, SUM(l_01) AS l_01, SUM(l_02) AS l_02, SUM(l_03) AS l_03, SUM(l_04) AS l_04, SUM(l_05) AS l_05, SUM(l_06) AS l_06, SUM(l_07) AS l_07, SUM(l_08) AS l_08, SUM(l_09) AS l_09, SUM(l_10) AS l_10, SUM(l_11) AS l_11, SUM(l_12) AS l_12, SUM(l_13) AS l_13, SUM(l_14) AS l_14, SUM(l_15) AS l_15, SUM(l_16) AS l_16, SUM(l_17) AS l_17, SUM(l_18) AS l_18, SUM(l_19) AS l_19, SUM(l_20) AS l_20, SUM(l_21) AS l_21, SUM(l_22) AS l_22, SUM(l_23) AS l_23 FROM channel_activity WHERE date LIKE \''.$this->datetime['year'].'%\'', true)) === false) {
-				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-		}
-
-		$high_key = '';
-		$high_value = 0;
-
-		foreach ($result as $key => $value) {
-			if ($value > $high_value) {
-				$high_key = $key;
-				$high_value = $value;
-			}
-		}
-
-		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour';
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
-
-		foreach ($result as $key => $value) {
-			$hour = (int) preg_replace('/^l_0?/', '', $key);
-
-			if ($value === 0) {
-				$tr2 .= '<td><span class="grey">n/a</span>';
-			} else {
-				$percentage = ($value / $this->l_total) * 100;
-
-				if ($percentage >= 9.95) {
-					$percentage = round($percentage).'%';
-				} else {
-					$percentage = number_format($percentage, 1).'%';
-				}
-
-				$height = round(($value / $high_value) * 100);
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage;
-
-				if ($height !== (float) 0) {
-					if ($hour >= 0 && $hour <= 5) {
-						$time = 'night';
-					} elseif ($hour >= 6 && $hour <= 11) {
-						$time = 'morning';
-					} elseif ($hour >= 12 && $hour <= 17) {
-						$time = 'afternoon';
-					} elseif ($hour >= 18 && $hour <= 23) {
-						$time = 'evening';
-					}
-
-					$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height.'px" title="'.number_format($value).'">';
-				}
-
-				$tr2 .= '</ul>';
-			}
-
-			$tr3 .= '<td'.($key === $high_key ? ' class="bold"' : '').'>'.$hour.'h';
-		}
-
-		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function make_table_people($sqlite3, $type)
