@@ -64,13 +64,10 @@ class html
 	 */
 	public function get_contents(): string
 	{
-		$l_total = db::query_single_col('SELECT SUM(l_total) FROM channel_activity');
-
-		if (is_null($l_total)) {
+		if (is_null($this->l_total = db::query_single_col('SELECT SUM(l_total) FROM channel_activity'))) {
 			return '<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">There is not enough data to create statistics, yet.</div></div></body></html>'."\n";
 		}
 
-		$this->l_total = $l_total;
 		$result = db::query_single_row('SELECT MIN(date) AS date_first_activity, MAX(date) AS date_last_activity FROM channel_activity');
 		$this->date_first_activity = date_create($result['date_first_activity']);
 		$this->date_last_activity = date_create($result['date_last_activity']);
