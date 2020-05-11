@@ -33,7 +33,8 @@ spl_autoload_register(function (string $class): void {
 /**
  * Read options from the command line. Show a hint on invalid input.
  */
-$options = ksort(getopt('c:e:i:m:o:qv'));
+$options = getopt('c:e:i:m:o:qv');
+ksort($options);
 preg_match('/^c?(e|i|i?o|m)[qv]?$/', implode('', array_keys($options))) or exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n");
 
 /**
