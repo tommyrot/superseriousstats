@@ -85,28 +85,13 @@ trait urlparts
 		}
 
 		/**
-		 * Create an array with all parts of the URL.
+		 * Create an array with all parts of the URL. Cast the port number to integer.
+		 * 0 means no port. For the other parts return an empty string instead of null.
 		 */
-		$parts = ['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'];
+		$urlparts['port'] = (is_null($matches['port']) ? 0 : (int) $matches['port']);
 
-		foreach ($parts as $part) {
-			if (is_null($matches[$part])) {
-				/**
-				 * Nonexistent parts are returned as an empty string.
-				 */
-				$urlparts[$part] = '';
-			} else {
-				$urlparts[$part] = $matches[$part];
-			}
-		}
-
-		/**
-		 * The port part should be of type integer. 0 means no port.
-		 */
-		if (is_null($matches['port'])) {
-			$urlparts['port'] = 0;
-		} else {
-			$urlparts['port'] = (int) $matches['port'];
+		foreach (['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'] as $part) {
+			$urlparts[$part] = $matches[$part] ?? '';
 		}
 
 		return $urlparts;
