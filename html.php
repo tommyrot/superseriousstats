@@ -82,14 +82,8 @@ class html
 		 * hasn't been any activity in the current year yet, there hasn't been any
 		 * activity in the last 90 days, or if it's the last day of the year.
 		 */
-		if ($this->date_last_activity->format('Y') === date('Y')) {
-			$diff = date_diff($this->date_last_log_parsed, date_create(date('Y-12-31')));
-			$this->days_left = $diff->days;
-			$diff = date_diff($this->date_last_activity, $this->date_last_log_parsed);
-
-			if ($this->days_left !== 0 && $diff->days < 90) {
-				$this->estimate = true;
-			}
+		if (date('md') !== '1231' && !is_null($days = db::query_single_col('SELECT MIN(CAST(JULIANDAY(\'now\') - JULIANDAY(date) AS INT)) FROM channel_activity WHERE date LIKE \''.date('Y').'%\'')) && $days < 90) {
+			$this->estimate = true;
 		}
 
 		/**
