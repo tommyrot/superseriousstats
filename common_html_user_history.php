@@ -56,17 +56,7 @@ trait common_html_user_history
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage;
 
 				if ($height !== 0) {
-					if ($hour >= 0 && $hour <= 5) {
-						$time = 'night';
-					} elseif ($hour >= 6 && $hour <= 11) {
-						$time = 'morning';
-					} elseif ($hour >= 12 && $hour <= 17) {
-						$time = 'afternoon';
-					} elseif ($hour >= 18 && $hour <= 23) {
-						$time = 'evening';
-					}
-
-					$tr2 .= '<li class="'.$time[0].'" style="height:'.$height.'px" title="'.number_format($lines[$hour]).'">';
+					$tr2 .= '<li class="'.($hour <= 5 ? 'n' : ($hour <= 11 ? 'm' : ($hour <= 17 ? 'a' : 'e'))).'" style="height:'.$height.'px" title="'.number_format($lines[$hour]).'">';
 				}
 
 				$tr2 .= '</ul>';
