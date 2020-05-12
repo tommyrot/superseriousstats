@@ -9,7 +9,7 @@
  */
 class user
 {
-	use common_html_user_history;
+	use common_html_user_history, common_html_user;
 
 	/**
 	 * Default settings for this script, which can be overridden in the
@@ -333,7 +333,7 @@ class user
 		$this->output .= $this->make_table_activity($sqlite3, 'day');
 		$this->output .= $this->make_table_activity($sqlite3, 'month');
 		$this->output .= $this->make_table_activity($sqlite3, 'year');
-		$this->output .= $this->make_table_activity_distribution_day($sqlite3);
+		$this->output .= $this->create_table_activity_distribution_day('user');
 
 		/**
 		 * HTML Foot.
@@ -478,81 +478,6 @@ class user
 		}
 
 		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
-	}
-
-	private function make_table_activity_distribution_day($sqlite3)
-	{
-		if (($result = $sqlite3->querySingle('SELECT l_mon_night, l_mon_morning, l_mon_afternoon, l_mon_evening, l_tue_night, l_tue_morning, l_tue_afternoon, l_tue_evening, l_wed_night, l_wed_morning, l_wed_afternoon, l_wed_evening, l_thu_night, l_thu_morning, l_thu_afternoon, l_thu_evening, l_fri_night, l_fri_morning, l_fri_afternoon, l_fri_evening, l_sat_night, l_sat_morning, l_sat_afternoon, l_sat_evening, l_sun_night, l_sun_morning, l_sun_afternoon, l_sun_evening FROM ruid_lines WHERE ruid = '.$this->ruid, true)) === false) {
-			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		$days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-		$high_day = '';
-		$high_value = 0;
-
-		foreach ($days as $day) {
-			$l_afternoon[$day] = $result['l_'.$day.'_afternoon'];
-			$l_evening[$day] = $result['l_'.$day.'_evening'];
-			$l_morning[$day] = $result['l_'.$day.'_morning'];
-			$l_night[$day] = $result['l_'.$day.'_night'];
-			$l_total[$day] = $l_night[$day] + $l_morning[$day] + $l_afternoon[$day] + $l_evening[$day];
-
-			if ($l_total[$day] > $high_value) {
-				$high_day = $day;
-				$high_value = $l_total[$day];
-			}
-		}
-
-		$times = ['evening', 'afternoon', 'morning', 'night'];
-		$tr1 = '<tr><th colspan="7">Activity Distribution by Day';
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
-
-		foreach ($days as $day) {
-			if ($l_total[$day] === 0) {
-				$tr2 .= '<td><span class="grey">n/a</span>';
-			} else {
-				$percentage = ($l_total[$day] / $this->l_total) * 100;
-
-				if ($percentage >= 9.95) {
-					$percentage = round($percentage).'%';
-				} else {
-					$percentage = number_format($percentage, 1).'%';
-				}
-
-				foreach ($times as $time) {
-					if (${'l_'.$time}[$day] !== 0) {
-						$height[$time] = round((${'l_'.$time}[$day] / $high_value) * 100);
-					} else {
-						$height[$time] = (float) 0;
-					}
-				}
-
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'] + 14).'px">'.$percentage;
-
-				foreach ($times as $time) {
-					if ($height[$time] !== (float) 0) {
-						if ($time === 'evening') {
-							$height_li = $height['night'] + $height['morning'] + $height['afternoon'] + $height['evening'];
-						} elseif ($time === 'afternoon') {
-							$height_li = $height['night'] + $height['morning'] + $height['afternoon'];
-						} elseif ($time === 'morning') {
-							$height_li = $height['night'] + $height['morning'];
-						} elseif ($time === 'night') {
-							$height_li = $height['night'];
-						}
-
-						$tr2 .= '<li class="'.$this->color[$time].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'">';
-					}
-				}
-
-				$tr2 .= '</ul>';
-			}
-
-			$tr3 .= '<td'.($day === $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
-		}
-
-		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	/**

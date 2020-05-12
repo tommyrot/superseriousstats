@@ -9,7 +9,7 @@
  */
 class html
 {
-	use urlparts, common_html_user_history;
+	use urlparts, common_html_user_history, common_html_user;
 
 	private bool $estimate = false;
 	private int $days_left = 0;
@@ -127,7 +127,7 @@ class html
 		$html .= $this->make_table_activity('day');
 		$html .= $this->make_table_activity('month');
 		$html .= $this->make_table_activity('year');
-		$html .= $this->make_table_activity_distribution_day();
+		$html .= $this->create_table_activity_distribution_day('channel');
 		$html .= $this->make_table_people('alltime');
 		$html .= $this->make_table_people2();
 
@@ -606,103 +606,6 @@ class html
 		}
 
 		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
-	}
-
-	private function make_table_activity_distribution_day()
-	{
-		$result = db::query_single_row('SELECT SUM(l_mon_night) AS l_mon_night, SUM(l_mon_morning) AS l_mon_morning, SUM(l_mon_afternoon) AS l_mon_afternoon, SUM(l_mon_evening) AS l_mon_evening, SUM(l_tue_night) AS l_tue_night, SUM(l_tue_morning) AS l_tue_morning, SUM(l_tue_afternoon) AS l_tue_afternoon, SUM(l_tue_evening) AS l_tue_evening, SUM(l_wed_night) AS l_wed_night, SUM(l_wed_morning) AS l_wed_morning, SUM(l_wed_afternoon) AS l_wed_afternoon, SUM(l_wed_evening) AS l_wed_evening, SUM(l_thu_night) AS l_thu_night, SUM(l_thu_morning) AS l_thu_morning, SUM(l_thu_afternoon) AS l_thu_afternoon, SUM(l_thu_evening) AS l_thu_evening, SUM(l_fri_night) AS l_fri_night, SUM(l_fri_morning) AS l_fri_morning, SUM(l_fri_afternoon) AS l_fri_afternoon, SUM(l_fri_evening) AS l_fri_evening, SUM(l_sat_night) AS l_sat_night, SUM(l_sat_morning) AS l_sat_morning, SUM(l_sat_afternoon) AS l_sat_afternoon, SUM(l_sat_evening) AS l_sat_evening, SUM(l_sun_night) AS l_sun_night, SUM(l_sun_morning) AS l_sun_morning, SUM(l_sun_afternoon) AS l_sun_afternoon, SUM(l_sun_evening) AS l_sun_evening FROM ruid_lines');
-		$days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-		$high_day = '';
-		$high_value = 0;
-
-		foreach ($days as $day) {
-			$l_afternoon[$day] = $result['l_'.$day.'_afternoon'];
-			$l_evening[$day] = $result['l_'.$day.'_evening'];
-			$l_morning[$day] = $result['l_'.$day.'_morning'];
-			$l_night[$day] = $result['l_'.$day.'_night'];
-			$l_total[$day] = $l_afternoon[$day] + $l_evening[$day] + $l_morning[$day] + $l_night[$day];
-
-			if ($l_total[$day] > $high_value) {
-				$high_day = $day;
-				$high_value = $l_total[$day];
-			}
-		}
-
-		$times = ['evening', 'afternoon', 'morning', 'night'];
-		$tr1 = '<tr><th colspan="7">Activity Distribution by Day';
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
-
-		foreach ($days as $day) {
-			if ($l_total[$day] === 0) {
-				$tr2 .= '<td><span class="grey">n/a</span>';
-			} else {
-				$percentage = ($l_total[$day] / $this->l_total) * 100;
-
-				if ($percentage >= 9.95) {
-					$percentage = round($percentage).'%';
-				} else {
-					$percentage = number_format($percentage, 1).'%';
-				}
-
-				$height_int['total'] = (int) round(($l_total[$day] / $high_value) * 100);
-				$height = $height_int['total'];
-
-				foreach ($times as $time) {
-					if (${'l_'.$time}[$day] !== 0) {
-						$height_float[$time] = (float) (${'l_'.$time}[$day] / $high_value) * 100;
-						$height_int[$time] = (int) floor($height_float[$time]);
-						$height_remainders[$time] = $height_float[$time] - $height_int[$time];
-						$height -= $height_int[$time];
-					} else {
-						$height_int[$time] = 0;
-					}
-				}
-
-				if ($height !== 0) {
-					arsort($height_remainders);
-
-					foreach ($height_remainders as $time => $remainder) {
-						--$height;
-						++$height_int[$time];
-
-						if ($height === 0) {
-							break;
-						}
-					}
-				}
-
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height_int['total'] + 14).'px">'.$percentage;
-
-				foreach ($times as $time) {
-					if ($height_int[$time] !== 0) {
-						if ($time === 'evening') {
-							$height_li = $height_int['night'] + $height_int['morning'] + $height_int['afternoon'] + $height_int['evening'];
-						} elseif ($time === 'afternoon') {
-							$height_li = $height_int['night'] + $height_int['morning'] + $height_int['afternoon'];
-						} elseif ($time === 'morning') {
-							$height_li = $height_int['night'] + $height_int['morning'];
-						} elseif ($time === 'night') {
-							$height_li = $height_int['night'];
-						}
-
-						$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($l_total[$day]).'">';
-					}
-				}
-
-				$tr2 .= '</ul>';
-
-				/**
-				 * It's important to unset $height_remainders so the next iteration won't try to
-				 * work with old values.
-				 */
-				unset($height_remainders);
-			}
-
-			$tr3 .= '<td'.($day === $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
-		}
-
-		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function make_table_people($type)
