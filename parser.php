@@ -393,19 +393,19 @@ class parser
 		$hour_leadingzero = substr($time, 0, 2);
 		$hour = (int) $hour_leadingzero;
 
-		if ($hour >= 0 && $hour <= 5) {
+		if ($hour <= 5) {
 			++$this->l_night;
 			$this->nick_objs[$nick]->add_int('l_'.$day.'_night', 1);
 			$this->nick_objs[$nick]->add_int('l_night', 1);
-		} elseif ($hour >= 6 && $hour <= 11) {
+		} elseif ($hour <= 11) {
 			++$this->l_morning;
 			$this->nick_objs[$nick]->add_int('l_'.$day.'_morning', 1);
 			$this->nick_objs[$nick]->add_int('l_morning', 1);
-		} elseif ($hour >= 12 && $hour <= 17) {
+		} elseif ($hour <= 17) {
 			++$this->l_afternoon;
 			$this->nick_objs[$nick]->add_int('l_'.$day.'_afternoon', 1);
 			$this->nick_objs[$nick]->add_int('l_afternoon', 1);
-		} elseif ($hour >= 18 && $hour <= 23) {
+		} elseif ($hour <= 23) {
 			++$this->l_evening;
 			$this->nick_objs[$nick]->add_int('l_'.$day.'_evening', 1);
 			$this->nick_objs[$nick]->add_int('l_evening', 1);
