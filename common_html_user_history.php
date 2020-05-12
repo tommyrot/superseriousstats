@@ -24,6 +24,10 @@ trait common_html_user_history
 			$result = db::query_single_row('SELECT SUM(l_00) AS l_00, SUM(l_01) AS l_01, SUM(l_02) AS l_02, SUM(l_03) AS l_03, SUM(l_04) AS l_04, SUM(l_05) AS l_05, SUM(l_06) AS l_06, SUM(l_07) AS l_07, SUM(l_08) AS l_08, SUM(l_09) AS l_09, SUM(l_10) AS l_10, SUM(l_11) AS l_11, SUM(l_12) AS l_12, SUM(l_13) AS l_13, SUM(l_14) AS l_14, SUM(l_15) AS l_15, SUM(l_16) AS l_16, SUM(l_17) AS l_17, SUM(l_18) AS l_18, SUM(l_19) AS l_19, SUM(l_20) AS l_20, SUM(l_21) AS l_21, SUM(l_22) AS l_22, SUM(l_23) AS l_23 FROM channel_activity WHERE date LIKE \''.$this->year.'-'.$this->month.'%\'');
 		}
 
+		/**
+		 * Arrange data in a useable format and remember the first day with the most
+		 * lines along with said amount. We use this value to scale the bar heights.
+		 */
 		$high_lines = 0;
 
 		for ($hour = 0; $hour <= 23; ++$hour) {
@@ -39,6 +43,9 @@ trait common_html_user_history
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
+		/**
+		 * Construct each individual bar.
+		 */
 		for ($hour = 0; $hour <= 23; ++$hour) {
 			if ($lines[$hour] === 0) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
