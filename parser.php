@@ -584,9 +584,9 @@ class parser
 		if (preg_match('/^[0-9-]|[\x21-\x2C\x2E\x2F\x3A-\x40\x7E]/', $csnick)) {
 			out::put('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return false;
-		} else {
-			return true;
 		}
+
+		return true;
 	}
 
 	/**
