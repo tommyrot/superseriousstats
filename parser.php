@@ -320,13 +320,13 @@ class parser
 		if ($mode === '+o') {
 			$this->nick_objs[$nick_performing]->add_int('m_op', 1);
 			$this->nick_objs[$nick_undergoing]->add_int('m_opped', 1);
-		elseif ($mode === '+v') {
+		} elseif ($mode === '+v') {
 			$this->nick_objs[$nick_performing]->add_int('m_voice', 1);
 			$this->nick_objs[$nick_undergoing]->add_int('m_voiced', 1);
-		elseif ($mode === '-o') {
+		} elseif ($mode === '-o') {
 			$this->nick_objs[$nick_performing]->add_int('m_deop', 1);
 			$this->nick_objs[$nick_undergoing]->add_int('m_deopped', 1);
-		elseif ($mode === '-v') {
+		} elseif ($mode === '-v') {
 			$this->nick_objs[$nick_performing]->add_int('m_devoice', 1);
 			$this->nick_objs[$nick_undergoing]->add_int('m_devoiced', 1);
 		}
