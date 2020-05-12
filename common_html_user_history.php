@@ -26,7 +26,6 @@ trait common_html_user_history
 				break;
 		}
 
-		$high_hour = null;
 		$high_lines = 0;
 
 		for ($hour = 0; $hour <= 23; ++$hour) {
