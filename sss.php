@@ -80,6 +80,11 @@ class sss
 		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
 
 		/**
+		 * Set the character encoding used by all mbstring functions.
+		 */
+		mb_internal_encoding('UTF-8');
+
+		/**
 		 * Init done, move to main.
 		 */
 		$this->main($options);

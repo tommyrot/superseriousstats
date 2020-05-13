@@ -171,7 +171,7 @@ class parser
 	 */
 	private function create_word(string $csword, int $length): void
 	{
-		$word = mb_strtolower($csword, 'UTF-8');
+		$word = mb_strtolower($csword);
 
 		if (!array_key_exists($word, $this->word_objs)) {
 			$this->word_objs[$word] = new word($word);
@@ -350,7 +350,7 @@ class parser
 		}
 
 		$nick = $this->create_nick($time, $csnick);
-		$line_length = mb_strlen($line, 'UTF-8');
+		$line_length = mb_strlen($line);
 		$this->nick_objs[$nick]->add_int('characters', $line_length);
 		$this->nick_objs[$nick]->set_string('lasttalked', $this->date.' '.$time);
 
@@ -443,7 +443,7 @@ class parser
 				/**
 				 * Words consisting of 30+ characters are most likely not real words.
 				 */
-				if (($word_length = mb_strlen($csword_trimmed, 'UTF-8')) <= 30) {
+				if (($word_length = mb_strlen($csword_trimmed)) <= 30) {
 					$this->create_word($csword_trimmed, $word_length);
 				}
 
@@ -489,7 +489,7 @@ class parser
 		 * of more than 50% upper cased characters.
 		 */
 		if (!preg_match('/\p{Ll}/u', $line)) {
-			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line), 'UTF-8') * 2 > $line_length) {
+			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line)) * 2 > $line_length) {
 				$this->nick_objs[$nick]->add_int('uppercased', 1);
 
 				if (!$skip_quote && ($this->nick_objs[$nick]->get_string('ex_uppercased') === '' || rand(1, 100) <= ($line_length < 30 ? 20 : 80))) {
