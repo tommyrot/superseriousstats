@@ -123,11 +123,11 @@ class html
 		 * Activity section.
 		 */
 		$html .= '<div class="section">Activity</div>'."\n";
-		$html .= $this->create_table_activity_distribution_hour('channel');
-		$html .= $this->make_table_activity('day');
-		$html .= $this->make_table_activity('month');
-		$html .= $this->make_table_activity('year');
-		$html .= $this->create_table_activity_distribution_day('channel');
+		$html .= $this->create_table_activity_distribution_hour();
+		$html .= $this->create_table_activity('day');
+		$html .= $this->create_table_activity('month');
+		$html .= $this->create_table_activity('year');
+		$html .= $this->create_table_activity_distribution_day();
 		$html .= $this->make_table_people('alltime');
 		$html .= $this->make_table_people2();
 
@@ -449,163 +449,6 @@ class html
 
 		$table .= '</table>'."\n";
 		return $table;
-	}
-
-	private function make_table_activity($type)
-	{
-		if ($type === 'day') {
-			$class = 'act';
-			$columns = 24;
-			$head = 'Activity by Day';
-			$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - 24, (int) $this->date_last_log_parsed->format('Y'))).'\'');
-
-			for ($i = $columns - 1; $i >= 0; --$i) {
-				$dates[] = date('Y-m-d', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - $i, (int) $this->date_last_log_parsed->format('Y')));
-			}
-		} elseif ($type === 'month') {
-			$class = 'act';
-			$columns = 24;
-			$head = 'Activity by Month';
-			$results = db::query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) > \''.date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n') - 24, 1, (int) $this->date_last_log_parsed->format('Y'))).'\' GROUP BY SUBSTR(date, 1, 7)');
-
-			for ($i = $columns - 1; $i >= 0; --$i) {
-				$dates[] = date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n') - $i, 1, (int) $this->date_last_log_parsed->format('Y')));
-			}
-		} elseif ($type === 'year') {
-			$class = 'act-year';
-			$columns = $this->columns_act_year;
-			$head = 'Activity by Year';
-			$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) > \''.($this->date_last_log_parsed->format('Y') - 24).'\' GROUP BY SUBSTR(date, 1, 4)');
-
-			for ($i = $columns - ($this->estimate ? 1 : 0) - 1; $i >= 0; --$i) {
-				$dates[] = $this->date_last_log_parsed->format('Y') - $i;
-			}
-
-			if ($this->estimate) {
-				$dates[] = 'estimate';
-			}
-		}
-
-		if (($result = $results->fetchArray(SQLITE3_ASSOC)) === false) {
-			return;
-		}
-
-		$high_date = '';
-		$high_value = 0;
-		$results->reset();
-
-		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			$l_afternoon[$result['date']] = $result['l_afternoon'];
-			$l_evening[$result['date']] = $result['l_evening'];
-			$l_morning[$result['date']] = $result['l_morning'];
-			$l_night[$result['date']] = $result['l_night'];
-			$l_total[$result['date']] = $result['l_total'];
-
-			if ($result['l_total'] > $high_value) {
-				$high_date = $result['date'];
-				$high_value = $result['l_total'];
-			}
-		}
-
-		if ($type === 'year' && $this->estimate) {
-			$result = db::query_single_row('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - 90, (int) $this->date_last_log_parsed->format('Y'))).'\'');
-			$l_afternoon['estimate'] = $l_afternoon[$this->date_last_log_parsed->format('Y')] + round($result['l_afternoon_avg'] * $this->days_left);
-			$l_evening['estimate'] = $l_evening[$this->date_last_log_parsed->format('Y')] + round($result['l_evening_avg'] * $this->days_left);
-			$l_morning['estimate'] = $l_morning[$this->date_last_log_parsed->format('Y')] + round($result['l_morning_avg'] * $this->days_left);
-			$l_night['estimate'] = $l_night[$this->date_last_log_parsed->format('Y')] + round($result['l_night_avg'] * $this->days_left);
-			$l_total['estimate'] = $l_afternoon['estimate'] + $l_evening['estimate'] + $l_morning['estimate'] + $l_night['estimate'];
-
-			if ($l_total['estimate'] > $high_value) {
-				/**
-				 * Don't set $high_date because we don't want "Est." to be bold. The previous
-				 * highest date will be bold instead. $high_value must be set in order to
-				 * calculate bar heights.
-				 */
-				$high_value = $l_total['estimate'];
-			}
-		}
-
-		$times = ['evening', 'afternoon', 'morning', 'night'];
-		$tr1 = '<tr><th colspan="'.$columns.'">'.$head;
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
-
-		foreach ($dates as $date) {
-			if (!array_key_exists($date, $l_total)) {
-				$tr2 .= '<td><span class="grey">n/a</span>';
-			} else {
-				if ($l_total[$date] >= 999500) {
-					$total = number_format($l_total[$date] / 1000000, 1).'M';
-				} elseif ($l_total[$date] >= 10000) {
-					$total = round($l_total[$date] / 1000).'k';
-				} else {
-					$total = $l_total[$date];
-				}
-
-				$height_int['total'] = (int) round(($l_total[$date] / $high_value) * 100);
-				$height = $height_int['total'];
-
-				foreach ($times as $time) {
-					if (${'l_'.$time}[$date] !== 0) {
-						$height_float[$time] = (float) (${'l_'.$time}[$date] / $high_value) * 100;
-						$height_int[$time] = (int) floor($height_float[$time]);
-						$height_remainders[$time] = $height_float[$time] - $height_int[$time];
-						$height -= $height_int[$time];
-					} else {
-						$height_int[$time] = 0;
-					}
-				}
-
-				if ($height !== 0) {
-					arsort($height_remainders);
-
-					foreach ($height_remainders as $time => $remainder) {
-						--$height;
-						++$height_int[$time];
-
-						if ($height === 0) {
-							break;
-						}
-					}
-				}
-
-				$tr2 .= '<td'.($date === 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height_int['total'] + 14).'px">'.$total;
-
-				foreach ($times as $time) {
-					if ($height_int[$time] !== 0) {
-						if ($time === 'evening') {
-							$height_li = $height_int['night'] + $height_int['morning'] + $height_int['afternoon'] + $height_int['evening'];
-						} elseif ($time === 'afternoon') {
-							$height_li = $height_int['night'] + $height_int['morning'] + $height_int['afternoon'];
-						} elseif ($time === 'morning') {
-							$height_li = $height_int['night'] + $height_int['morning'];
-						} elseif ($time === 'night') {
-							$height_li = $height_int['night'];
-						}
-
-						$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
-					}
-				}
-
-				$tr2 .= '</ul>';
-
-				/**
-				 * It's important to unset $height_remainders so the next iteration won't try to
-				 * work with old values.
-				 */
-				unset($height_remainders);
-			}
-
-			if ($type === 'day') {
-				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
-			} elseif ($type === 'month') {
-				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
-			} elseif ($type === 'year') {
-				$tr3 .= '<td'.($date === (int) $high_date ? ' class="bold"' : '').'>'.($date === 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
-			}
-		}
-
-		return '<table class="'.$class.'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function make_table_people($type)
