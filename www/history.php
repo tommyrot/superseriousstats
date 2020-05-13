@@ -11,6 +11,11 @@ class history
 {
 	use common_html_user_history;
 
+	//required
+	private string $month;
+	private string $year;
+	//
+
 	/**
 	 * Default settings for this script, which can be overridden in the
 	 * configuration file.
