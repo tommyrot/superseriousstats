@@ -11,6 +11,11 @@ class user
 {
 	use common_html_user_history, common_html_user;
 
+	//required
+	private int $ruid;
+	private DateTime $now; #irl y/m/d "now"
+	//
+
 	/**
 	 * Default settings for this script, which can be overridden in the
 	 * configuration file.
@@ -40,7 +45,6 @@ class user
 	private $l_total = 0;
 	private $nick = '';
 	private $output = '';
-	private $ruid = 0;
 
 	public function __construct($cid, $nick)
 	{

@@ -9,31 +9,28 @@
  */
 trait common_html_user
 {
-	private function create_table_activity(string $graph): string
+	private function create_table_activity(string $graph, bool $estimate = false): string
 	{
 		if ($graph === 'day') {
-			$columns = 24;
-			$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - 24, (int) $this->date_last_log_parsed->format('Y'))).'\'');
+			$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, (int) $this->now->format('n'), (int) $this->now->format('j') - 24, (int) $this->now->format('Y'))).'\'');
 
-			for ($i = $columns - 1; $i >= 0; --$i) {
-				$dates[] = date('Y-m-d', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - $i, (int) $this->date_last_log_parsed->format('Y')));
+			for ($i = 24 - 1; $i >= 0; --$i) {
+				$dates[] = date('Y-m-d', mktime(0, 0, 0, (int) $this->now->format('n'), (int) $this->now->format('j') - $i, (int) $this->now->format('Y')));
 			}
 		} elseif ($graph === 'month') {
-			$columns = 24;
-			$results = db::query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) > \''.date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n') - 24, 1, (int) $this->date_last_log_parsed->format('Y'))).'\' GROUP BY SUBSTR(date, 1, 7)');
+			$results = db::query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) > \''.date('Y-m', mktime(0, 0, 0, (int) $this->now->format('n') - 24, 1, (int) $this->now->format('Y'))).'\' GROUP BY SUBSTR(date, 1, 7)');
 
-			for ($i = $columns - 1; $i >= 0; --$i) {
-				$dates[] = date('Y-m', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n') - $i, 1, (int) $this->date_last_log_parsed->format('Y')));
+			for ($i = 24 - 1; $i >= 0; --$i) {
+				$dates[] = date('Y-m', mktime(0, 0, 0, (int) $this->now->format('n') - $i, 1, (int) $this->now->format('Y')));
 			}
 		} elseif ($graph === 'year') {
-			$columns = $this->columns_act_year;
-			$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) > \''.($this->date_last_log_parsed->format('Y') - 24).'\' GROUP BY SUBSTR(date, 1, 4)');
+			$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) > \''.($this->now->format('Y') - 24).'\' GROUP BY SUBSTR(date, 1, 4)');
 
-			for ($i = $columns - ($this->estimate ? 1 : 0) - 1; $i >= 0; --$i) {
-				$dates[] = $this->date_last_log_parsed->format('Y') - $i;
+			for ($i = $this->columns_act_year - ($estimate ? 1 : 0) - 1; $i >= 0; --$i) {
+				$dates[] = $this->now->format('Y') - $i;
 			}
 
-			if ($this->estimate) {
+			if ($estimate) {
 				$dates[] = 'estimate';
 			}
 		}
@@ -42,110 +39,132 @@ trait common_html_user
 			return null;
 		}
 
-		$high_date = '';
-		$high_value = 0;
 		$results->reset();
 
-		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			$l_afternoon[$result['date']] = $result['l_afternoon'];
-			$l_evening[$result['date']] = $result['l_evening'];
-			$l_morning[$result['date']] = $result['l_morning'];
-			$l_night[$result['date']] = $result['l_night'];
-			$l_total[$result['date']] = $result['l_total'];
+		/**
+		 * Arrange data in a useable format and remember the first date with the most
+		 * lines along with said amount. We use this value to scale the bar heights.
+		 */
+		$high_lines = 0;
 
-			if ($result['l_total'] > $high_value) {
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+			$lines[$result['date']]['total'] = $result['l_total'];
+
+			foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+				$lines[$result['date']][$time] = $result['l_'.$time];
+			}
+
+			if ($lines[$result['date']]['total'] > $high_lines) {
 				$high_date = $result['date'];
-				$high_value = $result['l_total'];
+				$high_lines = $lines[$result['date']]['total'];
 			}
 		}
 
-		if ($graph === 'year' && $this->estimate) {
-			$result = db::query_single_row('SELECT CAST(SUM(l_night) AS REAL) / 90 AS l_night_avg, CAST(SUM(l_morning) AS REAL) / 90 AS l_morning_avg, CAST(SUM(l_afternoon) AS REAL) / 90 AS l_afternoon_avg, CAST(SUM(l_evening) AS REAL) / 90 AS l_evening_avg FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, (int) $this->date_last_log_parsed->format('n'), (int) $this->date_last_log_parsed->format('j') - 90, (int) $this->date_last_log_parsed->format('Y'))).'\'');
-			$l_afternoon['estimate'] = $l_afternoon[$this->date_last_log_parsed->format('Y')] + round($result['l_afternoon_avg'] * $this->days_left);
-			$l_evening['estimate'] = $l_evening[$this->date_last_log_parsed->format('Y')] + round($result['l_evening_avg'] * $this->days_left);
-			$l_morning['estimate'] = $l_morning[$this->date_last_log_parsed->format('Y')] + round($result['l_morning_avg'] * $this->days_left);
-			$l_night['estimate'] = $l_night[$this->date_last_log_parsed->format('Y')] + round($result['l_night_avg'] * $this->days_left);
-			$l_total['estimate'] = $l_afternoon['estimate'] + $l_evening['estimate'] + $l_morning['estimate'] + $l_night['estimate'];
+		/**
+		 * Add the estimate bar if applicable.
+		 */
+		if ($graph === 'year' && $estimate) {
+			$lines['estimate']['total'] = 0;
 
-			if ($l_total['estimate'] > $high_value) {
+			foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+				$lastday = new DateTime('last day of december');
+
+				/**
+				 * This query consists of three subqueries which calculate the total lines per
+				 * 30 days for each time of day in the past 90 days. Each of these values is
+				 * then multiplied by a weight factor, which is lower the further back in time
+				 * we go. We end up with some artificial non-scientific average value to create
+				 * an estimate bar with. Which we totally pulled out of our ass.
+				 */
+				$subquery1 = 'IFNULL((SELECT SUM(l_'.$time.') FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-90 day', $this->now->getTimestamp())).'\' AND \''.date('Y-m-d', strtotime('-61 day', $this->now->getTimestamp())).'\'),0)';
+				$subquery2 = 'IFNULL((SELECT SUM(l_'.$time.') * 2 FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-60 day', $this->now->getTimestamp())).'\' AND \''.date('Y-m-d', strtotime('-31 day', $this->now->getTimestamp())).'\'),0)';
+				$subquery3 = 'IFNULL((SELECT SUM(l_'.$time.') * 3 FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-30 day', $this->now->getTimestamp())).'\' AND \''.date('Y-m-d', strtotime('-1 day', $this->now->getTimestamp())).'\'),0)';
+				$lines['estimate'][$time] = $lines[date('Y')][$time] + (int) round(db::query_single_col('SELECT CAST(SUM('.$subquery1.' + '.$subquery2.' + '.$subquery3.') AS REAL) / 180') * (int) $lastday->diff($this->now)->days);
+				$lines['estimate']['total'] += $lines['estimate'][$time];
+			}
+
+			if ($lines['estimate']['total'] > $high_lines) {
 				/**
 				 * Don't set $high_date because we don't want "Est." to be bold. The previous
-				 * highest date will be bold instead. $high_value must be set in order to
-				 * calculate bar heights.
+				 * highest date will be bold instead. $high_lines must be set in order to
+				 * properly calculate bar heights.
 				 */
-				$high_value = $l_total['estimate'];
+				$high_lines = $lines['estimate']['total'];
 			}
 		}
 
-		$times = ['evening', 'afternoon', 'morning', 'night'];
-		$tr1 = '<tr><th colspan="'.$columns.'">Activity by '.ucfirst($graph);
+		$tr1 = '<tr><th colspan="'.($graph === 'year' ? $this->columns_act_year : 24).'">Activity by '.ucfirst($graph);
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
+		/**
+		 * Construct each individual bar.
+		 */
 		foreach ($dates as $date) {
-			if (!array_key_exists($date, $l_total)) {
+			if (!array_key_exists($date, $lines)) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
-				if ($l_total[$date] >= 999500) {
-					$total = number_format($l_total[$date] / 1000000, 1).'M';
-				} elseif ($l_total[$date] >= 10000) {
-					$total = round($l_total[$date] / 1000).'k';
-				} else {
-					$total = $l_total[$date];
-				}
+				$total = ($lines[$date]['total'] >= 999500 ? number_format($lines[$date]['total'] / 1000000, 1).'M' : ($lines[$date]['total'] >= 10000 ? round($lines[$date]['total'] / 1000).'k' : $lines[$date]['total']));
+				$height['total'] = (int) round(($lines[$date]['total'] / $high_lines) * 100);
+				$tr2 .= '<td'.($date === 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.$total;
 
-				$height_int['total'] = (int) round(($l_total[$date] / $high_value) * 100);
-				$height = $height_int['total'];
+				if ($height['total'] !== 0) {
+					/**
+					 * Due to flooring (intval) it can happen that not all pixels of the full bar
+					 * height are used initially. Distribute the leftover pixels among the times
+					 * with highest $unclaimed_subpixels.
+					 */
+					$unclaimed_pixels = $height['total'];
+					$unclaimed_subpixels = [];
 
-				foreach ($times as $time) {
-					if (${'l_'.$time}[$date] !== 0) {
-						$height_float[$time] = (float) (${'l_'.$time}[$date] / $high_value) * 100;
-						$height_int[$time] = (int) floor($height_float[$time]);
-						$height_remainders[$time] = $height_float[$time] - $height_int[$time];
-						$height -= $height_int[$time];
-					} else {
-						$height_int[$time] = 0;
-					}
-				}
-
-				if ($height !== 0) {
-					arsort($height_remainders);
-
-					foreach ($height_remainders as $time => $remainder) {
-						--$height;
-						++$height_int[$time];
-
-						if ($height === 0) {
-							break;
+					foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+						if ($lines[$date][$time] !== 0) {
+							$height[$time] = intval(($lines[$date][$time] / $high_lines) * 100);
+							$unclaimed_pixels -= $height[$time];
+							$unclaimed_subpixels[$time] = (($lines[$date][$time] / $high_lines) * 100) - $height[$time];
+						} else {
+							$height[$time] = 0;
 						}
 					}
-				}
 
-				$tr2 .= '<td'.($date === 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height_int['total'] + 14).'px">'.$total;
+					if ($unclaimed_pixels !== 0) {
+						arsort($unclaimed_subpixels);
 
-				foreach ($times as $time) {
-					if ($height_int[$time] !== 0) {
-						if ($time === 'evening') {
-							$height_li = $height_int['night'] + $height_int['morning'] + $height_int['afternoon'] + $height_int['evening'];
-						} elseif ($time === 'afternoon') {
-							$height_li = $height_int['night'] + $height_int['morning'] + $height_int['afternoon'];
-						} elseif ($time === 'morning') {
-							$height_li = $height_int['night'] + $height_int['morning'];
-						} elseif ($time === 'night') {
-							$height_li = $height_int['night'];
+						foreach ($unclaimed_subpixels as $time => $subpixels) {
+							--$unclaimed_pixels;
+							++$height[$time];
+
+							if ($unclaimed_pixels === 0) {
+								break;
+							}
 						}
+					}
 
-						$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
+					/**
+					 * The bar sections for different times are layered on top of each other so we
+					 * need to add the overlapping parts' heights to get our final height value.
+					 */
+					foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+						if ($height[$time] !== 0) {
+							$height_li = 0;
+
+							switch ($time) {
+								case 'evening':
+									$height_li += $height['evening'];
+								case 'afternoon':
+									$height_li += $height['afternoon'];
+								case 'morning':
+									$height_li += $height['morning'];
+								case 'night':
+									$height_li += $height['night'];
+							}
+
+							$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
+						}
 					}
 				}
 
 				$tr2 .= '</ul>';
-
-				/**
-				 * It's important to unset $height_remainders so the next iteration won't try to
-				 * work with old values.
-				 */
-				unset($height_remainders);
 			}
 
 			if ($graph === 'day') {
@@ -214,7 +233,7 @@ trait common_html_user
 					/**
 					 * Due to flooring (intval) it can happen that not all pixels of the full bar
 					 * height are used initially. Distribute the leftover pixels among the times
-					 * with highest "subpixel" remainders.
+					 * with highest $unclaimed_subpixels.
 					 */
 					$unclaimed_pixels = $height['total'];
 					$unclaimed_subpixels = [];

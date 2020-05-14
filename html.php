@@ -11,7 +11,10 @@ class html
 {
 	use urlparts, common_html_user_history, common_html_user;
 
-	private bool $estimate = false;
+	//required
+	private DateTime $now; #last_log_parsed
+	//
+
 	private int $days_left = 0;
 	private int $days_logged = 0;
 	private int $l_total = 0;
@@ -73,6 +76,7 @@ class html
 		$this->date_last_activity = date_create($result['date_last_activity']);
 		$result = db::query_single_row('SELECT COUNT(*) AS days_logged, MAX(date) AS date FROM parse_history');
 		$this->date_last_log_parsed = date_create($result['date']);
+		$this->now = $this->date_last_log_parsed;
 		$this->days_logged = $result['days_logged'];
 
 		/**
@@ -83,7 +87,7 @@ class html
 		 * activity in the last 90 days, or if it's the last day of the year.
 		 */
 		if (date('md') !== '1231' && !is_null($days = db::query_single_col('SELECT MIN(CAST(JULIANDAY(\'now\') - JULIANDAY(date) AS INT)) FROM channel_activity WHERE date LIKE \''.date('Y').'%\'')) && $days < 90) {
-			$this->estimate = true;
+			$estimate = true;
 		}
 
 		/**
@@ -93,7 +97,7 @@ class html
 		 * right so we pad the "Activity by Year" table up to 24 columns making it look
 		 * neat again.
 		 */
-		$this->columns_act_year = 1 + (int) $this->date_last_log_parsed->format('Y') - (int) $this->date_first_activity->format('Y') + ($this->estimate ? 1 : 0);
+		$this->columns_act_year = 1 + (int) $this->date_last_log_parsed->format('Y') - (int) $this->date_first_activity->format('Y') + ($estimate ? 1 : 0);
 		$this->columns_act_year = ($this->columns_act_year <= 3 ? 3 : ($this->columns_act_year > 16 ? 24 : $this->columns_act_year));
 
 		/**
@@ -126,7 +130,7 @@ class html
 		$html .= $this->create_table_activity_distribution_hour();
 		$html .= $this->create_table_activity('day');
 		$html .= $this->create_table_activity('month');
-		$html .= $this->create_table_activity('year');
+		$html .= $this->create_table_activity('year', $estimate);
 		$html .= $this->create_table_activity_distribution_day();
 		$html .= $this->make_table_people('alltime');
 		$html .= $this->make_table_people2();
