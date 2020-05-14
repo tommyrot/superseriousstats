@@ -18,8 +18,8 @@ class db
 	private function __construct() {}
 
 	/**
-	 * Return the number of database rows that were changed (or inserted or deleted)
-	 * by the most recent SQL statement.
+	 * Return the number of database rows that were changed by the most recent
+	 * INSERT, UPDATE or DELETE statement.
 	 */
 	public static function changes(): int
 	{
