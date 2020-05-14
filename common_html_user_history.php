@@ -27,7 +27,7 @@ trait common_html_user_history
 		}
 
 		/**
-		 * Arrange data in a useable format and remember the first day with the most
+		 * Arrange data in a useable format and remember the first hour with the most
 		 * lines along with said amount. We use this value to scale the bar heights.
 		 */
 		$high_lines = 0;
