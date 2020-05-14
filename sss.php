@@ -251,7 +251,7 @@ class sss
 			/**
 			 * Skip logs that have already been processed.
 			 */
-			if (!is_null($date_last_log_parsed = db::query_single_col('SELECT MAX(date) FROM parse_history')) && strtotime($date) < strtotime($date_last_log_parsed)) {
+			if (!is_null($date_last_log_parsed = db::query_single_col('SELECT MAX(date) FROM parse_history')) && $date < $date_last_log_parsed) {
 				continue;
 			}
 
