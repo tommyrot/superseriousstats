@@ -9,7 +9,7 @@
  */
 trait common_html_user
 {
-	private function create_table_activity(string $graph): string
+	private function create_table_activity(string $graph): ?string
 	{
 		$times = ['evening', 'afternoon', 'morning', 'night'];
 
@@ -67,7 +67,7 @@ trait common_html_user
 		}
 
 		if (($result = $results->fetchArray(SQLITE3_ASSOC)) === false) {
-			return '';
+			return null;
 		}
 
 		$results->reset();
@@ -210,7 +210,7 @@ trait common_html_user
 		return '<table class="act'.($graph === 'year' ? '-year' : '').'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function create_table_activity_distribution_day(): string
+	private function create_table_activity_distribution_day(): ?string
 	{
 		$days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 		$times = ['evening', 'afternoon', 'morning', 'night'];
@@ -228,7 +228,7 @@ trait common_html_user
 		}
 
 		if (is_null($result)) {
-			return '';
+			return null;
 		}
 
 		/**
