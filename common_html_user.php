@@ -201,9 +201,9 @@ trait common_html_user
 			if ($graph === 'day') {
 				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
 			} elseif ($graph === 'month') {
-				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
+				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('&\ap\o\s;y', strtotime($date.'-01'));
 			} elseif ($graph === 'year') {
-				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.($date === 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
+				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.($date === 'estimate' ? 'Est.' : date('&\ap\o\s;y', strtotime($date.'-01-01')));
 			}
 		}
 

@@ -178,14 +178,14 @@ class html
 		 */
 		$section = '';
 		$modes = [
-			'm_op' => 'Ops \'+o\' Given',
-			'm_opped' => 'Ops \'+o\' Received',
-			'm_deop' => 'deOps \'-o\' Given',
-			'm_deopped' => 'deOps \'-o\' Received',
-			'm_voice' => 'Voices \'+v\' Given',
-			'm_voiced' => 'Voices \'+v\' Received',
-			'm_devoice' => 'deVoices \'-v\' Given',
-			'm_devoiced' => 'deVoices \'-v\' Received'];
+			'm_op' => 'Ops &apos;+o&apos; Given',
+			'm_opped' => 'Ops &apos;+o&apos; Received',
+			'm_deop' => 'deOps &apos;-o&apos; Given',
+			'm_deopped' => 'deOps &apos;-o&apos; Received',
+			'm_voice' => 'Voices &apos;+v&apos; Given',
+			'm_voiced' => 'Voices &apos;+v&apos; Received',
+			'm_devoice' => 'deVoices &apos;-v&apos; Given',
+			'm_devoiced' => 'deVoices &apos;-v&apos; Received'];
 
 		foreach ($modes as $mode => $title) {
 			$section .= $this->create_table($title, ['Total', 'User'], ['num', 'str'], ['SELECT '.$mode.' AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND '.$mode.' != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM('.$mode.') FROM ruid_events']);
@@ -271,13 +271,13 @@ class html
 						continue;
 					}
 
-					$title = ucwords(preg_replace('/_/', ' ', $key)).' '.htmlspecialchars($smileys[$key][rand(0, count($smileys[$key]) - 1)]);
+					$title = ucwords(preg_replace('/_/', ' ', $key)).' '.htmlspecialchars($smileys[$key][rand(0, count($smileys[$key]) - 1)], ENT_QUOTES | ENT_HTML5, 'UTF-8');
 				} else {
 					if (++$count_textual > 6) {
 						continue;
 					}
 
-					$title = '<i>"'.$key.'"</i>';
+					$title = '<i>&quot;'.$key.'&quot;</i>';
 				}
 
 				$section .= $this->create_table($title, ['Total', 'User'], ['num', 'str'], ['SELECT '.$key.' AS v1, csnick AS v2 FROM ruid_smileys JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND '.$key.' != 0 ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', 'SELECT SUM('.$key.') FROM ruid_smileys']);
@@ -341,7 +341,7 @@ class html
 	private function create_table(string $title, array $keys, array $types, array $queries, int $rows = 5): ?string
 	{
 		/**
-		 * Amount of columns the table will have.
+		 * Amount of columns the table will have (not counting the position column).
 		 */
 		$cols = count($keys);
 
@@ -349,15 +349,11 @@ class html
 		 * Retrieve the total for the dataset.
 		 */
 		if (!empty($queries[1])) {
-			if (is_int($queries[1])) {
-				$total = $queries[1];
-			} else {
-				$total = db::query_single_col($queries[1]);
-			}
+			$total = (is_int($queries[1]) ? $queries[1] : db::query_single_col($queries[1]));
 
 			/**
-			 * Check with empty() here because the returned value comes from an SQL
-			 * aggregate function which can be null as well as 0.
+			 * Check with empty() here because the returned value can be null as well as 0
+			 * depending on the query.
 			 */
 			if (empty($total)) {
 				return null;
@@ -382,9 +378,8 @@ class html
 
 			for ($col = 1; $col <= $cols; ++$col) {
 				${'v'.$col} = $result['v'.$col];
-				$type = $types[$col - 1];
 
-				switch ($type) {
+				switch ($type = $types[$col - 1]) {
 					case 'str':
 						${'v'.$col} = htmlspecialchars(${'v'.$col}, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 						break;
@@ -406,10 +401,10 @@ class html
 						${'v'.$col} = '<a href="user.php?nick='.htmlspecialchars(rawurlencode(${'v'.$col}), ENT_QUOTES | ENT_HTML5, 'UTF-8').'">'.htmlspecialchars(${'v'.$col}, ENT_QUOTES | ENT_HTML5, 'UTF-8').'</a>';
 						break;
 					case 'date':
-						${'v'.$col} = date('j M \'y', strtotime(${'v'.$col}));
+						${'v'.$col} = date('j M &\ap\o\s;y', strtotime(${'v'.$col}));
 						break;
 					case 'date-norepeat':
-						${'v'.$col} = date('j M \'y', strtotime(${'v'.$col}));
+						${'v'.$col} = date('j M &\ap\o\s;y', strtotime(${'v'.$col}));
 
 						if (isset($date_prev) && ${'v'.$col} === $date_prev) {
 							${'v'.$col} = '';
@@ -423,19 +418,8 @@ class html
 						break;
 					default:
 						preg_match('/^num(?<decimals>[0-9])?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
-
-						if (!is_null($matches['decimals'])) {
-							$decimals = (int) $matches['decimals'];
-						} else {
-							$decimals = 0;
-						}
-
-						if (!is_null($matches['percentage'])) {
-							$percentage = true;
-						} else {
-							$percentage = false;
-						}
-
+						$decimals = (!is_null($matches['decimals']) ? (int) $matches['decimals'] : 0);
+						$percentage = (!is_null($matches['percentage']) ? true : false);
 						${'v'.$col} = number_format(${'v'.$col}, $decimals).($percentage ? '%' : '');
 				}
 			}
