@@ -9,25 +9,56 @@
  */
 trait common_html_user
 {
-	private function create_table_activity(string $graph, bool $estimate = false): string
+	private function create_table_activity(string $graph): string
 	{
-		if ($graph === 'day') {
-			$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date > \''.date('Y-m-d', mktime(0, 0, 0, (int) $this->now->format('n'), (int) $this->now->format('j') - 24, (int) $this->now->format('Y'))).'\'');
+		$times = ['evening', 'afternoon', 'morning', 'night'];
 
-			for ($i = 24 - 1; $i >= 0; --$i) {
-				$dates[] = date('Y-m-d', mktime(0, 0, 0, (int) $this->now->format('n'), (int) $this->now->format('j') - $i, (int) $this->now->format('Y')));
+		/**
+		 * Execute the appropriate query and fill $dates.
+		 */
+		if ($graph === 'day') {
+			$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date >= \''.date('Y-m-d', strtotime('-23 days', strtotime($this->now))).'\'');
+
+			for ($i = 23; $i >= 0; --$i) {
+				$dates[] = date('Y-m-d', strtotime('-'.$i.' days', strtotime($this->now)));
 			}
 		} elseif ($graph === 'month') {
-			$results = db::query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) > \''.date('Y-m', mktime(0, 0, 0, (int) $this->now->format('n') - 24, 1, (int) $this->now->format('Y'))).'\' GROUP BY SUBSTR(date, 1, 7)');
+			$results = db::query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) >= \''.date('Y-m', strtotime('-23 months', strtotime(date('Y-m-01', strtotime($this->now))))).'\' GROUP BY SUBSTR(date, 1, 7)');
 
-			for ($i = 24 - 1; $i >= 0; --$i) {
-				$dates[] = date('Y-m', mktime(0, 0, 0, (int) $this->now->format('n') - $i, 1, (int) $this->now->format('Y')));
+			for ($i = 23; $i >= 0; --$i) {
+				$dates[] = date('Y-m', strtotime('-'.$i.' months', strtotime(date('Y-m-01', strtotime($this->now)))));
 			}
 		} elseif ($graph === 'year') {
-			$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) > \''.($this->now->format('Y') - 24).'\' GROUP BY SUBSTR(date, 1, 4)');
+			/**
+			 * Display an additional column with a bar depicting the estimated line count
+			 * for the year in which the last day was logged, but only if there is more than
+			 * one day left in said year. The estimate is based on activity during a 90 day
+			 * period prior to the last day logged.
+			 */
+			if (($days_left = (int) date('z', strtotime(date('Y-12-31', strtotime($this->now)))) - (int) date('z', strtotime($this->now))) !== 0 && !is_null(db::query_single_col('SELECT SUM(l_total) FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-90 days', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-1 days', strtotime($this->now))).'\''))) {
+				$estimate = true;
+			} else {
+				$estimate = false;
+			}
 
-			for ($i = $this->columns_act_year - ($estimate ? 1 : 0) - 1; $i >= 0; --$i) {
-				$dates[] = $this->now->format('Y') - $i;
+			/**
+			 * $j is how many years we go back to fill $dates, taking the estimate column
+			 * into consideration. $i will become $j.
+			 */
+			$j = ($estimate ? 22 : 23);
+
+			/**
+			 * When the leftmost 8 columns are empty we shrink the table so "Activity
+			 * Distribution by Day" fits horizontally adjacent to it.
+			 */
+			if (is_null(db::query_single_col('SELECT SUM(l_total) FROM channel_activity WHERE SUBSTR(date, 1, 4) BETWEEN \''.date('Y', strtotime('-'.$j.' years', strtotime(date('Y-01-01', strtotime($this->now))))).'\' AND \''.date('Y', strtotime('-'.($j - 8).' years', strtotime(date('Y-01-01', strtotime($this->now))))).'\' GROUP BY SUBSTR(date, 1, 4)'))) {
+				$j -= 8;
+			}
+
+			$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) >= \''.date('Y', strtotime('-'.$j.' years', strtotime(date('Y-01-01', strtotime($this->now))))).'\' GROUP BY SUBSTR(date, 1, 4)');
+
+			for ($i = $j; $i >= 0; --$i) {
+				$dates[] = date('Y', strtotime('-'.$i.' years', strtotime(date('Y-01-01', strtotime($this->now)))));
 			}
 
 			if ($estimate) {
@@ -36,7 +67,7 @@ trait common_html_user
 		}
 
 		if (($result = $results->fetchArray(SQLITE3_ASSOC)) === false) {
-			return null;
+			return '';
 		}
 
 		$results->reset();
@@ -50,23 +81,23 @@ trait common_html_user
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			$lines[$result['date']]['total'] = $result['l_total'];
 
-			foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+			foreach ($times as $time) {
 				$lines[$result['date']][$time] = $result['l_'.$time];
 			}
 
 			if ($lines[$result['date']]['total'] > $high_lines) {
-				$high_date = $result['date'];
 				$high_lines = $lines[$result['date']]['total'];
+				$high_date = $result['date'];
 			}
 		}
 
 		/**
-		 * Add the estimate bar if applicable.
+		 * Add the estimate column if applicable.
 		 */
 		if ($graph === 'year' && $estimate) {
 			$lines['estimate']['total'] = 0;
 
-			foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+			foreach ($times as $time) {
 				$lastday = new DateTime('last day of december');
 
 				/**
@@ -74,12 +105,12 @@ trait common_html_user
 				 * 30 days for each time of day in the past 90 days. Each of these values is
 				 * then multiplied by a weight factor, which is lower the further back in time
 				 * we go. We end up with some artificial non-scientific average value to create
-				 * an estimate bar with. Which we totally pulled out of our ass.
+				 * an estimate column with. Which we totally pulled out of our ass.
 				 */
-				$subquery1 = 'IFNULL((SELECT SUM(l_'.$time.') FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-90 day', $this->now->getTimestamp())).'\' AND \''.date('Y-m-d', strtotime('-61 day', $this->now->getTimestamp())).'\'),0)';
-				$subquery2 = 'IFNULL((SELECT SUM(l_'.$time.') * 2 FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-60 day', $this->now->getTimestamp())).'\' AND \''.date('Y-m-d', strtotime('-31 day', $this->now->getTimestamp())).'\'),0)';
-				$subquery3 = 'IFNULL((SELECT SUM(l_'.$time.') * 3 FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-30 day', $this->now->getTimestamp())).'\' AND \''.date('Y-m-d', strtotime('-1 day', $this->now->getTimestamp())).'\'),0)';
-				$lines['estimate'][$time] = $lines[date('Y')][$time] + (int) round(db::query_single_col('SELECT CAST(SUM('.$subquery1.' + '.$subquery2.' + '.$subquery3.') AS REAL) / 180') * (int) $lastday->diff($this->now)->days);
+				$subquery1 = 'IFNULL((SELECT SUM(l_'.$time.') FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-90 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-61 day', strtotime($this->now))).'\'), 0)';
+				$subquery2 = 'IFNULL((SELECT SUM(l_'.$time.') * 2 FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-60 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-31 day', strtotime($this->now))).'\'), 0)';
+				$subquery3 = 'IFNULL((SELECT SUM(l_'.$time.') * 3 FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-30 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-1 day', strtotime($this->now))).'\'), 0)';
+				$lines['estimate'][$time] = $lines[date('Y', strtotime($this->now))][$time] + (int) round(db::query_single_col('SELECT CAST(SUM('.$subquery1.' + '.$subquery2.' + '.$subquery3.') AS REAL) / 180') * $days_left);
 				$lines['estimate']['total'] += $lines['estimate'][$time];
 			}
 
@@ -93,7 +124,7 @@ trait common_html_user
 			}
 		}
 
-		$tr1 = '<tr><th colspan="'.($graph === 'year' ? $this->columns_act_year : 24).'">Activity by '.ucfirst($graph);
+		$tr1 = '<tr><th colspan="'.count($dates).'">Activity by '.ucfirst($graph);
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
@@ -117,7 +148,7 @@ trait common_html_user
 					$unclaimed_pixels = $height['total'];
 					$unclaimed_subpixels = [];
 
-					foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+					foreach ($times as $time) {
 						if ($lines[$date][$time] !== 0) {
 							$height[$time] = intval(($lines[$date][$time] / $high_lines) * 100);
 							$unclaimed_pixels -= $height[$time];
@@ -144,7 +175,7 @@ trait common_html_user
 					 * The bar sections for different times are layered on top of each other so we
 					 * need to add the overlapping parts' heights to get our final height value.
 					 */
-					foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+					foreach ($times as $time) {
 						if ($height[$time] !== 0) {
 							$height_li = 0;
 
@@ -172,7 +203,7 @@ trait common_html_user
 			} elseif ($graph === 'month') {
 				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('\'y', strtotime($date.'-01'));
 			} elseif ($graph === 'year') {
-				$tr3 .= '<td'.($date === (int) $high_date ? ' class="bold"' : '').'>'.($date === 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
+				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.($date === 'estimate' ? 'Est.' : date('\'y', strtotime($date.'-01-01')));
 			}
 		}
 
@@ -181,6 +212,9 @@ trait common_html_user
 
 	private function create_table_activity_distribution_day(): string
 	{
+		$days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+		$times = ['evening', 'afternoon', 'morning', 'night'];
+
 		/**
 		 * Execute the appropriate query.
 		 */
@@ -193,23 +227,30 @@ trait common_html_user
 				break;
 		}
 
+		if (is_null($result)) {
+			return '';
+		}
+
 		/**
 		 * Arrange data in a useable format and remember the first day with the most
 		 * lines along with said amount. We use this value to scale the bar heights.
 		 */
 		$high_lines = 0;
+		$l_total = 0;
 
-		foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $day) {
+		foreach ($days as $day) {
 			$lines[$day]['total'] = 0;
 
-			foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+			foreach ($times as $time) {
 				$lines[$day][$time] = $result['l_'.$day.'_'.$time];
 				$lines[$day]['total'] += $lines[$day][$time];
 			}
 
+			$l_total += $lines[$day]['total'];
+
 			if ($lines[$day]['total'] > $high_lines) {
-				$high_day = $day;
 				$high_lines = $lines[$day]['total'];
+				$high_day = $day;
 			}
 		}
 
@@ -220,11 +261,11 @@ trait common_html_user
 		/**
 		 * Construct each individual bar.
 		 */
-		foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $day) {
+		foreach ($days as $day) {
 			if ($lines[$day]['total'] === 0) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
-				$percentage = ($lines[$day]['total'] / $this->l_total) * 100;
+				$percentage = ($lines[$day]['total'] / $l_total) * 100;
 				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
 				$height['total'] = (int) round(($lines[$day]['total'] / $high_lines) * 100);
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.$percentage;
@@ -238,7 +279,7 @@ trait common_html_user
 					$unclaimed_pixels = $height['total'];
 					$unclaimed_subpixels = [];
 
-					foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+					foreach ($times as $time) {
 						if ($lines[$day][$time] !== 0) {
 							$height[$time] = intval(($lines[$day][$time] / $high_lines) * 100);
 							$unclaimed_pixels -= $height[$time];
@@ -248,24 +289,26 @@ trait common_html_user
 						}
 					}
 
-					if ($unclaimed_pixels !== 0) {
-						arsort($unclaimed_subpixels);
+					while ($unclaimed_pixels > 0) {
+						$high_subpixels = 0;
 
 						foreach ($unclaimed_subpixels as $time => $subpixels) {
-							--$unclaimed_pixels;
-							++$height[$time];
-
-							if ($unclaimed_pixels === 0) {
-								break;
+							if ($subpixels > $high_subpixels) {
+								$high_subpixels = $subpixels;
+								$high_time = $time;
 							}
 						}
+
+						++$height[$high_time];
+						$unclaimed_subpixels[$high_time] = 0;
+						--$unclaimed_pixels;
 					}
 
 					/**
 					 * The bar sections for different times are layered on top of each other so we
 					 * need to add the overlapping parts' heights to get our final height value.
 					 */
-					foreach (['evening', 'afternoon', 'morning', 'night'] as $time) {
+					foreach ($times as $time) {
 						if ($height[$time] !== 0) {
 							$height_li = 0;
 

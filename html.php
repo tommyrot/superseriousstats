@@ -12,7 +12,7 @@ class html
 	use urlparts, common_html_user_history, common_html_user;
 
 	//required
-	private DateTime $now; #last_log_parsed
+	private string $now; #last_log_parsed
 	//
 
 	private int $days_left = 0;
@@ -76,7 +76,7 @@ class html
 		$this->date_last_activity = date_create($result['date_last_activity']);
 		$result = db::query_single_row('SELECT COUNT(*) AS days_logged, MAX(date) AS date FROM parse_history');
 		$this->date_last_log_parsed = date_create($result['date']);
-		$this->now = $this->date_last_log_parsed;
+		$this->now = $this->date_last_log_parsed->format('Y-m-d');
 		$this->days_logged = $result['days_logged'];
 
 		/**
