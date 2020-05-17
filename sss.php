@@ -175,6 +175,12 @@ class sss
 	 */
 	private function main(array $options): void
 	{
+		if (array_key_exists('q', $options)) {
+			out::set_verbosity(0);
+		} elseif (array_key_exists('v', $options)) {
+			out::set_verbosity(2);
+		}
+
 		db::set_database($this->database);
 		db::connect();
 
