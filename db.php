@@ -36,11 +36,15 @@ class db
 		 */
 		try {
 			self::$db = new SQLite3(self::$database, SQLITE3_OPEN_READWRITE);
-			self::$db->busyTimeout(60000);
 			out::put('notice', 'succesfully connected to database: \''.self::$database.'\'');
 		} catch (Exception $e) {
 			out::put('critical', 'sqlite fail: '.$e->getMessage());
 		}
+
+		/**
+		 * Set the maximum amount of time the busy handler waits when a table is locked.
+		 */
+		self::$db->busyTimeout(60000);
 
 		/**
 		 * Setup the SQLite connection:
