@@ -194,39 +194,70 @@ CREATE INDEX ruid_milestones_milestone ON ruid_milestones (milestone);
 
 CREATE TABLE ruid_smileys (
 ruid INT PRIMARY KEY NOT NULL,
-smile INT NOT NULL,
-wink INT NOT NULL,
-sad INT NOT NULL,
-cry INT NOT NULL,
-silly INT NOT NULL,
-big_smile INT NOT NULL,
-cheer INT NOT NULL,
-concerned INT NOT NULL,
-happy INT NOT NULL,
-kiss INT NOT NULL,
-cool INT NOT NULL,
-very_sad INT NOT NULL,
-stunned INT NOT NULL,
-distressed INT NOT NULL,
-heart INT NOT NULL,
-confused INT NOT NULL,
-surprised INT NOT NULL,
-neutral INT NOT NULL,
-cute INT NOT NULL,
-annoyed INT NOT NULL,
-hehe INT NOT NULL,
-heh INT NOT NULL,
-haha INT NOT NULL,
-lol INT NOT NULL,
-hmm INT NOT NULL,
-wow INT NOT NULL,
-meh INT NOT NULL,
-ugh INT NOT NULL,
-pff INT NOT NULL,
-rofl INT NOT NULL,
-lmao INT NOT NULL,
-huh INT NOT NULL
+sid INT NOT NULL REFERENCES smileys (sid),
+total INT NOT NULL
 );
+CREATE INDEX ruid_smileys_sid ON ruid_smileys (sid);
+
+CREATE TABLE smileys (
+sid INT PRIMARY KEY NOT NULL,
+smiley TEXT COLLATE NOCASE UNIQUE NOT NULL, --case insensitive matching and sorting
+category TEXT NOT NULL,
+textual BOOLEAN NOT NULL CHECK (textual IN (0,1)) --column affinity NUMERIC
+);
+CREATE INDEX smileys_category ON smileys (category);
+CREATE INDEX smileys_textual ON smileys (textual);
+INSERT INTO smileys VALUES
+(1, ':)', 'smile', 0),
+(2, ';)', 'wink', 0),
+(3, ':(', 'sad', 0),
+(4, ':P', 'silly', 0),
+(5, ':D', 'happy', 0),
+(6, ';(', 'cry', 0),
+(7, ':/', 'concerned', 0),
+(8, '\o/', 'cheer', 0),
+(9, ':))', 'big smile', 0),
+(10, '<3', 'heart', 0),
+(11, ':o', 'surprised', 0),
+(12, '=)', 'smile', 0),
+(13, ':-)', 'smile', 0),
+(14, ':x', 'kiss', 0),
+(15, '=D', 'happy', 0),
+(16, 'D:', 'distressed', 0),
+(17, ':|', 'neutral', 0),
+(18, ';-)', 'wink', 0),
+(19, ';p', 'silly', 0),
+(20, '=]', 'smile', 0),
+(21, ':3', 'cute', 0),
+(22, '8)', 'cool', 0),
+(23, ':<', 'sad', 0),
+(24, ':>', 'smile', 0),
+(25, '=p', 'silly', 0),
+(26, ':-P', 'silly', 0),
+(27, ':-D', 'happy', 0),
+(28, ':-(', 'sad', 0),
+(29, ':]', 'smile', 0),
+(30, '=(', 'sad', 0),
+(31, '-_-', 'annoyed', 0),
+(32, ':S', 'confused', 0),
+(33, ':[', 'sad', 0),
+(34, ':''(', 'cry', 0),
+(35, ':((', 'very sad', 0),
+(36, 'o_O', 'stunned', 0),
+(37, ';_;', 'cry', 0),
+(38, 'hehe', 'hehe', 1),
+(39, 'heh', 'heh', 1),
+(40, 'haha', 'haha', 1),
+(41, 'lol', 'lol', 1),
+(42, 'hmm', 'hmm', 1),
+(43, 'wow', 'wow', 1),
+(44, 'meh', 'meh', 1),
+(45, 'ugh', 'ugh', 1),
+(46, 'pff', 'pff', 1),
+(47, 'xD', 'happy', 0),
+(48, 'rofl', 'rofl', 1),
+(49, 'lmao', 'lmao', 1),
+(50, 'huh', 'huh', 1);
 
 CREATE TABLE streak_history ( --single row table
 nick_prev TEXT NOT NULL,
@@ -365,57 +396,10 @@ lasttalked TEXT NOT NULL DEFAULT '0000-00-00 00:00:00'
 
 CREATE TABLE uid_smileys (
 uid INT PRIMARY KEY NOT NULL REFERENCES uid_details (uid),
-s_01 INT NOT NULL DEFAULT 0,
-s_02 INT NOT NULL DEFAULT 0,
-s_03 INT NOT NULL DEFAULT 0,
-s_04 INT NOT NULL DEFAULT 0,
-s_05 INT NOT NULL DEFAULT 0,
-s_06 INT NOT NULL DEFAULT 0,
-s_07 INT NOT NULL DEFAULT 0,
-s_08 INT NOT NULL DEFAULT 0,
-s_09 INT NOT NULL DEFAULT 0,
-s_10 INT NOT NULL DEFAULT 0,
-s_11 INT NOT NULL DEFAULT 0,
-s_12 INT NOT NULL DEFAULT 0,
-s_13 INT NOT NULL DEFAULT 0,
-s_14 INT NOT NULL DEFAULT 0,
-s_15 INT NOT NULL DEFAULT 0,
-s_16 INT NOT NULL DEFAULT 0,
-s_17 INT NOT NULL DEFAULT 0,
-s_18 INT NOT NULL DEFAULT 0,
-s_19 INT NOT NULL DEFAULT 0,
-s_20 INT NOT NULL DEFAULT 0,
-s_21 INT NOT NULL DEFAULT 0,
-s_22 INT NOT NULL DEFAULT 0,
-s_23 INT NOT NULL DEFAULT 0,
-s_24 INT NOT NULL DEFAULT 0,
-s_25 INT NOT NULL DEFAULT 0,
-s_26 INT NOT NULL DEFAULT 0,
-s_27 INT NOT NULL DEFAULT 0,
-s_28 INT NOT NULL DEFAULT 0,
-s_29 INT NOT NULL DEFAULT 0,
-s_30 INT NOT NULL DEFAULT 0,
-s_31 INT NOT NULL DEFAULT 0,
-s_32 INT NOT NULL DEFAULT 0,
-s_33 INT NOT NULL DEFAULT 0,
-s_34 INT NOT NULL DEFAULT 0,
-s_35 INT NOT NULL DEFAULT 0,
-s_36 INT NOT NULL DEFAULT 0,
-s_37 INT NOT NULL DEFAULT 0,
-s_38 INT NOT NULL DEFAULT 0,
-s_39 INT NOT NULL DEFAULT 0,
-s_40 INT NOT NULL DEFAULT 0,
-s_41 INT NOT NULL DEFAULT 0,
-s_42 INT NOT NULL DEFAULT 0,
-s_43 INT NOT NULL DEFAULT 0,
-s_44 INT NOT NULL DEFAULT 0,
-s_45 INT NOT NULL DEFAULT 0,
-s_46 INT NOT NULL DEFAULT 0,
-s_47 INT NOT NULL DEFAULT 0,
-s_48 INT NOT NULL DEFAULT 0,
-s_49 INT NOT NULL DEFAULT 0,
-s_50 INT NOT NULL DEFAULT 0
+sid INT NOT NULL REFERENCES smileys (sid),
+total INT NOT NULL CHECK (total > 0)
 );
+CREATE INDEX uid_smileys_sid ON uid_smileys (sid);
 
 CREATE TABLE uid_topics (
 uid INT NOT NULL REFERENCES uid_details (uid),
@@ -472,7 +456,7 @@ CREATE VIEW v_quote_1 AS SELECT ruid, quote, lasttalked FROM uid_lines JOIN uid_
 CREATE VIEW v_quote_2 AS SELECT ruid, MAX(lasttalked) AS lasttalked FROM v_quote_1 GROUP BY ruid;
 CREATE VIEW v_quote AS SELECT v_quote_1.ruid AS ruid, quote FROM v_quote_1 JOIN v_quote_2 ON v_quote_1.ruid = v_quote_2.ruid WHERE v_quote_1.lasttalked = v_quote_2.lasttalked GROUP BY v_quote_1.ruid;
 CREATE VIEW v_lines AS SELECT ruid, SUM(l_00) AS l_00, SUM(l_01) AS l_01, SUM(l_02) AS l_02, SUM(l_03) AS l_03, SUM(l_04) AS l_04, SUM(l_05) AS l_05, SUM(l_06) AS l_06, SUM(l_07) AS l_07, SUM(l_08) AS l_08, SUM(l_09) AS l_09, SUM(l_10) AS l_10, SUM(l_11) AS l_11, SUM(l_12) AS l_12, SUM(l_13) AS l_13, SUM(l_14) AS l_14, SUM(l_15) AS l_15, SUM(l_16) AS l_16, SUM(l_17) AS l_17, SUM(l_18) AS l_18, SUM(l_19) AS l_19, SUM(l_20) AS l_20, SUM(l_21) AS l_21, SUM(l_22) AS l_22, SUM(l_23) AS l_23, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening, SUM(l_total) AS l_total, SUM(l_mon_night) AS l_mon_night, SUM(l_mon_morning) AS l_mon_morning, SUM(l_mon_afternoon) AS l_mon_afternoon, SUM(l_mon_evening) AS l_mon_evening, SUM(l_tue_night) AS l_tue_night, SUM(l_tue_morning) AS l_tue_morning, SUM(l_tue_afternoon) AS l_tue_afternoon, SUM(l_tue_evening) AS l_tue_evening, SUM(l_wed_night) AS l_wed_night, SUM(l_wed_morning) AS l_wed_morning, SUM(l_wed_afternoon) AS l_wed_afternoon, SUM(l_wed_evening) AS l_wed_evening, SUM(l_thu_night) AS l_thu_night, SUM(l_thu_morning) AS l_thu_morning, SUM(l_thu_afternoon) AS l_thu_afternoon, SUM(l_thu_evening) AS l_thu_evening, SUM(l_fri_night) AS l_fri_night, SUM(l_fri_morning) AS l_fri_morning, SUM(l_fri_afternoon) AS l_fri_afternoon, SUM(l_fri_evening) AS l_fri_evening, SUM(l_sat_night) AS l_sat_night, SUM(l_sat_morning) AS l_sat_morning, SUM(l_sat_afternoon) AS l_sat_afternoon, SUM(l_sat_evening) AS l_sat_evening, SUM(l_sun_night) AS l_sun_night, SUM(l_sun_morning) AS l_sun_morning, SUM(l_sun_afternoon) AS l_sun_afternoon, SUM(l_sun_evening) AS l_sun_evening, SUM(urls) AS urls, SUM(words) AS words, SUM(characters) AS characters, SUM(monologues) AS monologues, MAX(topmonologue) AS topmonologue, SUM(slaps) AS slaps, SUM(slapped) AS slapped, SUM(exclamations) AS exclamations, SUM(questions) AS questions, SUM(actions) AS actions, SUM(uppercased) AS uppercased, MAX(lasttalked) AS lasttalked FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid GROUP BY ruid;
-CREATE VIEW v_ruid_smileys AS SELECT ruid, SUM(s_01) + SUM(s_12) + SUM(s_13) + SUM(s_20) + SUM(s_24) + SUM(s_29) AS smile, SUM(s_02) + SUM(s_18) AS wink, SUM(s_03) + SUM(s_23) + SUM(s_28) + SUM(s_30) + SUM(s_33) AS sad, SUM(s_06) + SUM(s_34) + SUM(s_37) AS cry, SUM(s_04) + SUM(s_19) + SUM(s_25) + SUM(s_26) AS silly, SUM(s_09) AS big_smile, SUM(s_08) AS cheer, SUM(s_07) AS concerned, SUM(s_05) + SUM(s_15) + SUM(s_27) + SUM(s_47) AS happy, SUM(s_14) AS kiss, SUM(s_22) AS cool, SUM(s_35) AS very_sad, SUM(s_36) AS stunned, SUM(s_16) AS distressed, SUM(s_10) AS heart, SUM(s_32) AS confused, SUM(s_11) AS surprised, SUM(s_17) AS neutral, SUM(s_21) AS cute, SUM(s_31) AS annoyed, SUM(s_38) AS hehe, SUM(s_39) AS heh, SUM(s_40) AS haha, SUM(s_41) AS lol, SUM(s_42) AS hmm, SUM(s_43) AS wow, SUM(s_44) AS meh, SUM(s_45) AS ugh, SUM(s_46) AS pff, SUM(s_48) AS rofl, SUM(s_49) AS lmao, SUM(s_50) AS huh FROM uid_smileys JOIN uid_details ON uid_smileys.uid = uid_details.uid GROUP BY ruid;
+CREATE VIEW v_ruid_smileys AS SELECT ruid, sid, SUM(total) AS total FROM uid_smileys JOIN uid_details ON uid_smileys.uid = uid_details.uid GROUP BY ruid, sid;
 CREATE VIEW v_ruid_events AS SELECT v_events.ruid AS ruid, m_op, m_opped, m_voice, m_voiced, m_deop, m_deopped, m_devoice, m_devoiced, joins, parts, quits, kicks, kicked, nickchanges, topics, ex_kicks, ex_kicked FROM v_events LEFT JOIN v_ex_kicks ON v_events.ruid = v_ex_kicks.ruid LEFT JOIN v_ex_kicked ON v_events.ruid = v_ex_kicked.ruid;
 CREATE VIEW v_ruid_lines AS SELECT v_lines.ruid AS ruid, l_00, l_01, l_02, l_03, l_04, l_05, l_06, l_07, l_08, l_09, l_10, l_11, l_12, l_13, l_14, l_15, l_16, l_17, l_18, l_19, l_20, l_21, l_22, l_23, l_night, l_morning, l_afternoon, l_evening, l_total, l_mon_night, l_mon_morning, l_mon_afternoon, l_mon_evening, l_tue_night, l_tue_morning, l_tue_afternoon, l_tue_evening, l_wed_night, l_wed_morning, l_wed_afternoon, l_wed_evening, l_thu_night, l_thu_morning, l_thu_afternoon, l_thu_evening, l_fri_night, l_fri_morning, l_fri_afternoon, l_fri_evening, l_sat_night, l_sat_morning, l_sat_afternoon, l_sat_evening, l_sun_night, l_sun_morning, l_sun_afternoon, l_sun_evening, urls, words, characters, monologues, topmonologue, IFNULL(activedays, 0), slaps, slapped, exclamations, questions, actions, uppercased, quote, ex_exclamations, ex_questions, ex_actions, ex_uppercased, lasttalked FROM v_lines LEFT JOIN v_activedays ON v_lines.ruid = v_activedays.ruid LEFT JOIN v_quote ON v_lines.ruid = v_quote.ruid LEFT JOIN v_ex_exclamations ON v_lines.ruid = v_ex_exclamations.ruid LEFT JOIN v_ex_questions ON v_lines.ruid = v_ex_questions.ruid LEFT JOIN v_ex_actions ON v_lines.ruid = v_ex_actions.ruid LEFT JOIN v_ex_uppercased ON v_lines.ruid = v_ex_uppercased.ruid;
 
