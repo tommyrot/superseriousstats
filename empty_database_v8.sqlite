@@ -199,6 +199,11 @@ total INT NOT NULL
 );
 CREATE INDEX ruid_smileys_sid ON ruid_smileys (sid);
 
+CREATE TABLE settings (
+setting TEXT UNIQUE NOT NULL,
+value TEXT NOT NULL
+);
+
 CREATE TABLE smileys (
 sid INT PRIMARY KEY NOT NULL,
 smiley TEXT COLLATE NOCASE UNIQUE NOT NULL, --case insensitive matching and sorting
