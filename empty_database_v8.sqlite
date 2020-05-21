@@ -286,7 +286,7 @@ csnick TEXT COLLATE NOCASE UNIQUE NOT NULL, --case insensitive matching and sort
 firstseen TEXT NOT NULL DEFAULT '0000-00-00 00:00:00',
 lastseen TEXT NOT NULL DEFAULT '0000-00-00 00:00:00',
 ruid INT NOT NULL DEFAULT 0, --defaults to uid by trigger
-status INT NOT NULL DEFAULT 0
+status INT NOT NULL DEFAULT 0 CHECK (status IN (0,1,2,3,4))
 );
 CREATE INDEX uid_details_ruid ON uid_details (ruid);
 CREATE INDEX uid_details_status ON uid_details (status);
