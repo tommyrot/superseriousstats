@@ -193,14 +193,15 @@ PRIMARY KEY (ruid, milestone)
 CREATE INDEX ruid_milestones_milestone ON ruid_milestones (milestone);
 
 CREATE TABLE ruid_smileys (
-ruid INT PRIMARY KEY NOT NULL,
-sid INT NOT NULL REFERENCES smileys (sid),
-total INT NOT NULL
+ruid INT NOT NULL,
+sid INT NOT NULL,
+total INT NOT NULL,
+PRIMARY KEY (ruid, sid)
 );
 CREATE INDEX ruid_smileys_sid ON ruid_smileys (sid);
 
 CREATE TABLE settings (
-setting TEXT UNIQUE NOT NULL,
+setting TEXT PRIMARY KEY NOT NULL,
 value TEXT NOT NULL
 );
 
@@ -400,9 +401,10 @@ lasttalked TEXT NOT NULL DEFAULT '0000-00-00 00:00:00'
 );
 
 CREATE TABLE uid_smileys (
-uid INT PRIMARY KEY NOT NULL REFERENCES uid_details (uid),
+uid INT NOT NULL REFERENCES uid_details (uid),
 sid INT NOT NULL REFERENCES smileys (sid),
-total INT NOT NULL CHECK (total > 0)
+total INT NOT NULL CHECK (total > 0),
+PRIMARY KEY (uid, sid)
 );
 CREATE INDEX uid_smileys_sid ON uid_smileys (sid);
 
