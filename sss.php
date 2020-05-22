@@ -315,34 +315,36 @@ class sss
 		}
 
 		while (($line = fgets($fp)) !== false) {
-			if (preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>.+?)"/', $line, $matches)) {
-				$setting = $matches['setting'];
-				$value = $matches['value'];
+			if (!preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>.+?)"/', $line, $matches)) {
+				continue;
+			}
+
+			$setting = $matches['setting'];
+			$value = $matches['value'];
+
+			/**
+			 * Only apply relevant settings.
+			 */
+			if (in_array($setting, array_merge($this->settings_required, $this->settings_optional))) {
+				/**
+				 * Keep track of missing required settings.
+				 */
+				$settings_missing = array_diff($settings_missing ?? $this->settings_required, [$setting]);
 
 				/**
-				 * Only apply relevant settings.
+				 * Do some explicit type casting because everything is initially a string.
 				 */
-				if (in_array($setting, array_merge($this->settings_required, $this->settings_optional))) {
-					/**
-					 * Keep track of missing required settings.
-					 */
-					$settings_missing = array_diff($settings_missing ?? $this->settings_required, [$setting]);
-
-					/**
-					 * Do some explicit type casting because everything is initially a string.
-					 */
-					if (is_string($this->$setting)) {
-						$this->$setting = $value;
-					} elseif (is_int($this->$setting)) {
-						if (preg_match('/^\d+$/', $value)) {
-							$this->$setting = (int) $value;
-						}
-					} elseif (is_bool($this->$setting)) {
-						if (preg_match('/^true$/i', $value)) {
-							$this->$setting = true;
-						} elseif (preg_match('/^false$/i', $value)) {
-							$this->$setting = false;
-						}
+				if (is_string($this->$setting)) {
+					$this->$setting = $value;
+				} elseif (is_int($this->$setting)) {
+					if (preg_match('/^\d+$/', $value)) {
+						$this->$setting = (int) $value;
+					}
+				} elseif (is_bool($this->$setting)) {
+					if (preg_match('/^true$/i', $value)) {
+						$this->$setting = true;
+					} elseif (preg_match('/^false$/i', $value)) {
+						$this->$setting = false;
 					}
 				}
 			}
