@@ -11,6 +11,7 @@ class nick
 {
 	use base, queryparts;
 
+	private array $smileys = [];
 	private int $actions = 0;
 	private int $characters = 0;
 	private int $exclamations = 0;
@@ -87,56 +88,6 @@ class nick
 	private int $parts = 0;
 	private int $questions = 0;
 	private int $quits = 0;
-	private int $s_01 = 0;
-	private int $s_02 = 0;
-	private int $s_03 = 0;
-	private int $s_04 = 0;
-	private int $s_05 = 0;
-	private int $s_06 = 0;
-	private int $s_07 = 0;
-	private int $s_08 = 0;
-	private int $s_09 = 0;
-	private int $s_10 = 0;
-	private int $s_11 = 0;
-	private int $s_12 = 0;
-	private int $s_13 = 0;
-	private int $s_14 = 0;
-	private int $s_15 = 0;
-	private int $s_16 = 0;
-	private int $s_17 = 0;
-	private int $s_18 = 0;
-	private int $s_19 = 0;
-	private int $s_20 = 0;
-	private int $s_21 = 0;
-	private int $s_22 = 0;
-	private int $s_23 = 0;
-	private int $s_24 = 0;
-	private int $s_25 = 0;
-	private int $s_26 = 0;
-	private int $s_27 = 0;
-	private int $s_28 = 0;
-	private int $s_29 = 0;
-	private int $s_30 = 0;
-	private int $s_31 = 0;
-	private int $s_32 = 0;
-	private int $s_33 = 0;
-	private int $s_34 = 0;
-	private int $s_35 = 0;
-	private int $s_36 = 0;
-	private int $s_37 = 0;
-	private int $s_38 = 0;
-	private int $s_39 = 0;
-	private int $s_40 = 0;
-	private int $s_41 = 0;
-	private int $s_42 = 0;
-	private int $s_43 = 0;
-	private int $s_44 = 0;
-	private int $s_45 = 0;
-	private int $s_46 = 0;
-	private int $s_47 = 0;
-	private int $s_48 = 0;
-	private int $s_49 = 0;
-	private int $s_50 = 0;
 	private int $slapped = 0;
 	private int $slaps = 0;
 	private int $topics = 0;
@@ -159,6 +110,15 @@ class nick
 	public function __construct(string $csnick)
 	{
 		$this->csnick = $csnick;
+	}
+
+	public function add_smiley(int $sid, int $value): void
+	{
+		if (!isset($this->smileys[$sid]) {
+			$this->smileys[$sid] = $value;
+		} else {
+			$this->smileys[$sid] += $value;
+		}
 	}
 
 	/**
@@ -217,8 +177,12 @@ class nick
 			$queryparts = $this->get_queryparts(['l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
 			db::query_exec('INSERT INTO uid_activity (uid, date, '.$queryparts['insert_columns'].') VALUES ('.$uid.', \''.substr($this->firstseen, 0, 10).'\', '.$queryparts['insert_values'].') ON CONFLICT (uid, date) DO UPDATE SET '.$queryparts['update_assignments']);
 
-			if (!is_null($queryparts = $this->get_queryparts(['s_01', 's_02', 's_03', 's_04', 's_05', 's_06', 's_07', 's_08', 's_09', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19', 's_20', 's_21', 's_22', 's_23', 's_24', 's_25', 's_26', 's_27', 's_28', 's_29', 's_30', 's_31', 's_32', 's_33', 's_34', 's_35', 's_36', 's_37', 's_38', 's_39', 's_40', 's_41', 's_42', 's_43', 's_44', 's_45', 's_46', 's_47', 's_48', 's_49', 's_50']))) {
-				db::query_exec('INSERT INTO uid_smileys (uid, '.$queryparts['insert_columns'].') VALUES ('.$uid.', '.$queryparts['insert_values'].') ON CONFLICT (uid) DO UPDATE SET '.$queryparts['update_assignments']);
+			if (!empty($this->smileys)) {
+				foreach ($this->smileys as $sid => $total) {
+					$insert_values[] = '('.$uid.', '.$sid.', '.$total.')';
+				}
+
+				db::query_exec('INSERT INTO uid_smileys (uid, sid, total) VALUES '.implode(', ', $insert_values).' ON CONFLICT (uid, sid) DO UPDATE SET total = total + excluded.total');
 			}
 		}
 

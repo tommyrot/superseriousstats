@@ -13,57 +13,7 @@ class parser
 	use base, queryparts, urlparts;
 
 	private array $nick_objs = [];
-	private array $smileys = [
-		':)' => 's_01',
-		';)' => 's_02',
-		':(' => 's_03',
-		':p' => 's_04',
-		':d' => 's_05',
-		';(' => 's_06',
-		':/' => 's_07',
-		'\\o/' => 's_08',
-		':))' => 's_09',
-		'<3' => 's_10',
-		':o' => 's_11',
-		'=)' => 's_12',
-		':-)' => 's_13',
-		':x' => 's_14',
-		'=d' => 's_15',
-		'd:' => 's_16',
-		':|' => 's_17',
-		';-)' => 's_18',
-		';p' => 's_19',
-		'=]' => 's_20',
-		':3' => 's_21',
-		'8)' => 's_22',
-		':<' => 's_23',
-		':>' => 's_24',
-		'=p' => 's_25',
-		':-p' => 's_26',
-		':-d' => 's_27',
-		':-(' => 's_28',
-		':]' => 's_29',
-		'=(' => 's_30',
-		'-_-' => 's_31',
-		':s' => 's_32',
-		':[' => 's_33',
-		':\'(' => 's_34',
-		':((' => 's_35',
-		'o_o' => 's_36',
-		';_;' => 's_37',
-		'hehe' => 's_38',
-		'heh' => 's_39',
-		'haha' => 's_40',
-		'lol' => 's_41',
-		'hmm' => 's_42',
-		'wow' => 's_43',
-		'meh' => 's_44',
-		'ugh' => 's_45',
-		'pff' => 's_46',
-		'xd' => 's_47',
-		'rofl' => 's_48',
-		'lmao' => 's_49',
-		'huh' => 's_50'];
+	private array $smileys = [];
 	private array $topic_objs = [];
 	private array $url_objs = [];
 	private array $word_objs = [];
@@ -109,6 +59,15 @@ class parser
 	public function __construct(string $date)
 	{
 		$this->date = $date;
+
+		/**
+		 * Retrieve smiley mappings from the database.
+		 */
+		$results = db::query('SELECT sid, smiley FROM smileys');
+
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+			$this->smileys[strtolower($result['smiley'])] = $result['sid'];
+		}
 	}
 
 	/**
@@ -452,9 +411,9 @@ class parser
 				 */
 				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|rofl|lmao)$/i', $csword_trimmed)) {
 					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], strtolower($csword_trimmed));
-					$this->nick_objs[$nick]->add_int($this->smileys[$smiley_textual], 1);
+					$this->nick_objs[$nick]->add_smiley($this->smileys[$smiley_textual], 1);
 				} elseif (preg_match('/^([xX]D|D:)$/', $csword)) {
-					$this->nick_objs[$nick]->add_int($this->smileys[strtolower($csword)], 1);
+					$this->nick_objs[$nick]->add_smiley($this->smileys[strtolower($csword)], 1);
 				}
 
 			/**
@@ -462,7 +421,7 @@ class parser
 			 */
 			} elseif (preg_match('/^(:([][)(pPD\/oOxX\\\|3<>sS]|-[)D\/pP(\\\]|\'\()|;([)(pPD]|-\)|_;)|[:;](\)\)+|\(\(+)|\\\[oO]\/|<3|=[])pP\/\\\D(]|8\)|-[_.]-|[oO][_.][oO])$/', $csword)) {
 				$smiley = preg_replace(['/^(:-?|=)[\/\\\]$/', '/^:\)\)\)+$/', '/^:\(\(\(+$/', '/^;\)\)+$/', '/^;\(\(+$/', '/^;d$/', '/^o\.o$/', '/^-\.-$/'], [':/', ':))', ':((', ';)', ';(', ':d', 'o_o', '-_-'], strtolower($csword));
-				$this->nick_objs[$nick]->add_int($this->smileys[$smiley], 1);
+				$this->nick_objs[$nick]->add_smiley($this->smileys[$smiley], 1);
 
 			/**
 			 * Only catch URLs which start with "www.", "http://" or "https://".
