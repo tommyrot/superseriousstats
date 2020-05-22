@@ -114,7 +114,7 @@ class nick
 
 	public function add_smiley(int $sid, int $value): void
 	{
-		if (!isset($this->smileys[$sid]) {
+		if (!isset($this->smileys[$sid])) {
 			$this->smileys[$sid] = $value;
 		} else {
 			$this->smileys[$sid] += $value;
