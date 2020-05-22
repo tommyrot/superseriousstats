@@ -42,20 +42,18 @@ class db
 		}
 
 		/**
-		 * Set the maximum amount of time the busy handler waits when a table is locked.
-		 */
-		self::$db->busyTimeout(60000);
-
-		/**
 		 * Setup the SQLite connection:
-		 *  - Disable the rollback journal ("journal_mode OFF").
+		 *  - Set the maximum amount of time the busy handler waits when a table is
+		 *    locked to 60 seconds ("busy_timeout = 60000").
+		 *  - Store the rollback journal in memory ("journal_mode = MEMORY").
 		 *  - Continue without syncing as soon as data is handed off to the operating
-		 *    system ("synchronous OFF").
-		 *  - Temporary tables and indices are kept in memory ("temp_store MEMORY").
-		 *  - Enable foreign key constraints ("foreign_keys ON").
+		 *    system ("synchronous = OFF").
+		 *  - Temporary tables and indices are kept in memory ("temp_store = MEMORY").
+		 *  - Enable foreign key constraints ("foreign_keys = ON").
 		 */
 		$pragmas = [
-			'journal_mode' => 'OFF',
+			'busy_timeout' => '60000',
+			'journal_mode' => 'MEMORY',
 			'synchronous' => 'OFF',
 			'temp_store' => 'MEMORY',
 			'foreign_keys' => 'ON'];
