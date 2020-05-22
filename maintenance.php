@@ -54,6 +54,7 @@ class maintenance
 			'v_ruid_activity_by_month' => 'ruid_activity_by_month',
 			'v_ruid_activity_by_year' => 'ruid_activity_by_year',
 			'v_ruid_smileys' => 'ruid_smileys',
+			'v_ruid_smileys_by_catetory' => 'ruid_smileys_by_category',
 			'v_ruid_events' => 'ruid_events',
 			'v_ruid_lines' => 'ruid_lines'];
 
