@@ -213,7 +213,7 @@ textual BOOLEAN NOT NULL CHECK (textual IN (0,1)) --column affinity NUMERIC
 );
 CREATE INDEX smileys_category ON smileys (category);
 CREATE INDEX smileys_textual ON smileys (textual);
-INSERT INTO smileys VALUES
+INSERT INTO smileys (sid, smiley, category, textual) VALUES
 (1, ':)', 'smile', 0),
 (2, ';)', 'wink', 0),
 (3, ':(', 'sad', 0),
