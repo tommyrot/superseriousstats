@@ -110,7 +110,7 @@ class maintenance
 				'csnick' => $result['csnick'],
 				'ruid' => $result['ruid'],
 				'status' => $result['status']];
-			$nick_stripped = preg_replace(['/[^\p{L}\p{N}]/u', '/\p{N}+$/u'], '', mb_strtolower($result['csnick']));
+			$nick_stripped = preg_replace(['/[^\p{L}\p{N}]+/u', '/\p{N}+$/u'], '', mb_strtolower($result['csnick']));
 
 			/**
 			 * The stripped nick must consist of at least two characters.
