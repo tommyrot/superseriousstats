@@ -59,14 +59,14 @@ class db
 			'foreign_keys' => 'ON'];
 
 		foreach ($pragmas as $pragma => $value) {
-			self::$db->exec('PRAGMA '.$pragma.' = '.$value);
+			self::query_exec('PRAGMA '.$pragma.' = '.$value);
 		}
 
 		/**
 		 * Begin a database transaction that lasts until we COMMIT. All database
 		 * related actions will happen in memory during this time.
 		 */
-		self::$db->exec('BEGIN TRANSACTION') or self::fail();
+		self::query_exec('BEGIN TRANSACTION');
 	}
 
 	/**
@@ -76,8 +76,8 @@ class db
 	public static function disconnect(): void
 	{
 		out::put('notice', 'syncing database');
-		self::$db->exec('COMMIT') or self::fail();
-		self::$db->exec('PRAGMA optimize');
+		self::query_exec('COMMIT');
+		self::query_exec('PRAGMA optimize');
 		self::$db->close();
 	}
 
