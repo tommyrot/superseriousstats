@@ -38,11 +38,6 @@ ksort($options);
 preg_match('/^c?(e|i|i?o|m)[qv]?$/', implode('', array_keys($options))) or exit('usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]'."\n");
 
 /**
- * Launch superseriousstats!
- */
-$sss = new sss($options);
-
-/**
  * Main class.
  */
 class sss
@@ -363,3 +358,8 @@ class sss
 		}
 	}
 }
+
+/**
+ * Launch superseriousstats!
+ */
+$sss = new sss($options);
