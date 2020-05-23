@@ -9,9 +9,22 @@
  */
 class maintenance
 {
-	public function __construct(bool $auto_link_nicks)
+	use base;
+
+	private bool $auto_link_nicks = false;
+
+	public function __construct()
 	{
-		$this->main($auto_link_nicks);
+		/**
+		 * Apply settings which are relevant for this class.
+		 */
+		foreach (['auto_link_nicks'] as $setting) {
+			if (!is_null($value = db::query_single_col('SELECT value FROM settings WHERE setting = \''.$setting.'\''))) {
+				$this->apply_setting($setting, $value);
+			}
+		}
+
+		$this->main();
 	}
 
 	/**
@@ -165,11 +178,11 @@ class maintenance
 	/**
 	 * The following routines ensure we have a usable, consistent dataset.
 	 */
-	private function main(bool $auto_link_nicks): void
+	private function main(): void
 	{
 		out::put('notice', 'performing database maintenance routines');
 
-		if ($auto_link_nicks) {
+		if ($this->auto_link_nicks) {
 			$this->link_nicks();
 		}
 

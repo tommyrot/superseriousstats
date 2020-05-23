@@ -14,6 +14,27 @@ trait base
 		$this->$var += $value;
 	}
 
+	/**
+	 * Apply given setting after doing some explicit type casting because its value
+	 * is initially a string.
+	 */
+	private function apply_setting(string $setting, string $value): void
+	{
+		if (is_string($this->$setting)) {
+			$this->$setting = $value;
+		} elseif (is_int($this->$setting)) {
+			if (preg_match('/^\d+$/', $value)) {
+				$this->$setting = (int) $value;
+			}
+		} elseif (is_bool($this->$setting)) {
+			if (preg_match('/^true$/i', $value)) {
+				$this->$setting = true;
+			} elseif (preg_match('/^false$/i', $value)) {
+				$this->$setting = false;
+			}
+		}
+	}
+
 	public function get_int(string $var): int
 	{
 		return $this->$var;

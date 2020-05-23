@@ -9,7 +9,7 @@
  */
 class html
 {
-	use urlparts, common_html_user_history, common_html_user;
+	use base, urlparts, common_html_user_history, common_html_user, common_html_history;
 
 	//required
 	private string $now; #last_log_parsed
@@ -35,9 +35,16 @@ class html
 	private $stylesheet = 'sss.css';
 	private $user_stats = true;
 
-	public function __construct(string $channel)
+	public function __construct()
 	{
-		$this->channel = $channel;
+		/**
+		 * Apply settings which are relevant for this class.
+		 */
+		foreach (['channel'] as $setting) {
+			if (!is_null($value = db::query_single_col('SELECT value FROM settings WHERE setting = \''.$setting.'\''))) {
+				$this->apply_setting($setting, $value);
+			}
+		}
 	}
 
 	/**

@@ -47,11 +47,10 @@ $sss = new sss($options);
  */
 class sss
 {
-	private array $settings_optional = ['auto_link_nicks'];
-	private array $settings_required = ['channel', 'database', 'parser', 'timezone'];
-	private bool $auto_link_nicks = true;
+	use base;
+
+	private array $config_settings = [];
 	private bool $need_maintenance = false;
-	private string $channel = '';
 	private string $database = '';
 	private string $parser = '';
 	private string $timezone = '';
@@ -70,7 +69,7 @@ class sss
 		date_default_timezone_set('UTC');
 
 		/**
-		 * Read either the user provided config or the default one.
+		 * Read either the user provided config file or the default one.
 		 */
 		$this->read_config($options['c'] ?? __DIR__.'/sss.conf');
 
@@ -184,20 +183,26 @@ class sss
 		db::set_database($this->database);
 		db::connect();
 
+		/**
+		 * Now that we have a working database connection we can store the settings we
+		 * read from the config file during init.
+		 */
+		$this->store_config();
+
 		if (array_key_exists('e', $options)) {
 			$this->export_nicks($options['e']);
 		}
 
 		if (array_key_exists('m', $options)) {
 			$this->import_nicks($options['m']);
-			$maintenance = new maintenance($this->auto_link_nicks);
+			$maintenance = new maintenance();
 		}
 
 		if (array_key_exists('i', $options)) {
 			$this->parse_log($options['i']);
 
 			if ($this->need_maintenance) {
-				$maintenance = new maintenance($this->auto_link_nicks);
+				$maintenance = new maintenance();
 			}
 		}
 
@@ -321,42 +326,40 @@ class sss
 
 			$setting = $matches['setting'];
 			$value = $matches['value'];
+			$this->config_settings[$setting] = $value;
 
 			/**
-			 * Only apply relevant settings.
+			 * Apply settings which are relevant for this class.
 			 */
-			if (in_array($setting, array_merge($this->settings_required, $this->settings_optional))) {
-				/**
-				 * Keep track of missing required settings.
-				 */
-				$settings_missing = array_diff($settings_missing ?? $this->settings_required, [$setting]);
-
-				/**
-				 * Do some explicit type casting because everything is initially a string.
-				 */
-				if (is_string($this->$setting)) {
-					$this->$setting = $value;
-				} elseif (is_int($this->$setting)) {
-					if (preg_match('/^\d+$/', $value)) {
-						$this->$setting = (int) $value;
-					}
-				} elseif (is_bool($this->$setting)) {
-					if (preg_match('/^true$/i', $value)) {
-						$this->$setting = true;
-					} elseif (preg_match('/^false$/i', $value)) {
-						$this->$setting = false;
-					}
-				}
+			if (in_array($setting, ['database', 'parser', 'timezone'])) {
+				$this->apply_setting($setting, $value);
 			}
 		}
 
 		fclose($fp);
 
 		/**
-		 * Check if all required settings were present.
+		 * If we're unable to find any settings in the config file we complain and
+		 * abort. Although we won't do extensive checks on what's in the config, we do
+		 * expect there to be some valid settings present.
 		 */
-		if (!empty($settings_missing)) {
-			out::put('critical', 'missing required setting'.(count($settings_missing) !== 1 ? 's' : '').': \''.implode('\', \'', $settings_missing).'\'');
+		if (empty($this->config_settings)) {
+			out::put('critical', 'config file empty or bad syntax');
+		}
+	}
+
+	/**
+	 * Store settings from the config file in the database.
+	 */
+	private function store_config(): void
+	{
+		/**
+		 * Out with the old, in with the new.
+		 */
+		db::query_exec('DELETE FROM settings');
+
+		foreach ($this->config_settings as $setting => $value) {
+			db::query_exec('INSERT INTO settings (setting, value) VALUES (\''.$setting.'\', \''.preg_replace('/\'/', '\'\'', $value).'\')');
 		}
 	}
 }
