@@ -188,15 +188,15 @@ class sss
 
 		if (array_key_exists('m', $options)) {
 			$this->import_nicks($options['m']);
-			$maintenance = new maintenance();
+			$this->need_maintenance = true;
 		}
 
 		if (array_key_exists('i', $options)) {
 			$this->parse_log($options['i']);
+		}
 
-			if ($this->need_maintenance) {
-				$maintenance = new maintenance();
-			}
+		if ($this->need_maintenance) {
+			$maintenance = new maintenance();
 		}
 
 		if (array_key_exists('o', $options)) {
