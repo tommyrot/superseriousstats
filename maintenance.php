@@ -9,7 +9,7 @@
  */
 class maintenance
 {
-	use base;
+	use common;
 
 	private bool $auto_link_nicks = true;
 

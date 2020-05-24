@@ -9,7 +9,7 @@
  */
 class html
 {
-	use base, urlparts, common_html_user_history, common_html_user, common_html_history;
+	use common, urlparts, common_html_user_history, common_html_user, common_html_history;
 
 	//required
 	private string $now; #last_log_parsed

@@ -7,7 +7,7 @@
 /**
  * Trait with common functions.
  */
-trait base
+trait common
 {
 	public function add_int(string $var, int $value): void
 	{

@@ -9,7 +9,7 @@
  */
 class word
 {
-	use base;
+	use common;
 
 	private int $length = 0;
 	private int $total = 0;

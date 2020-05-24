@@ -42,7 +42,7 @@ preg_match('/^c?(e|i|i?o|m)[qv]?$/', implode('', array_keys($options))) or exit(
  */
 class sss
 {
-	use base;
+	use common;
 
 	private array $config_settings = [];
 	private bool $need_maintenance = false;

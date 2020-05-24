@@ -9,7 +9,7 @@
  */
 class nick
 {
-	use base, queryparts;
+	use common, queryparts;
 
 	private array $smileys = [];
 	private int $actions = 0;

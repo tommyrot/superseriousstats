@@ -10,7 +10,7 @@
  */
 class parser
 {
-	use base, queryparts, urlparts;
+	use common, queryparts, urlparts;
 
 	private array $nick_objs = [];
 	private array $smileys = [];
