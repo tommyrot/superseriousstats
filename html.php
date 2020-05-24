@@ -37,14 +37,7 @@ class html
 
 	public function __construct()
 	{
-		/**
-		 * Apply settings which are relevant for this class.
-		 */
-		foreach (['channel'] as $setting) {
-			if (!is_null($value = db::query_single_col('SELECT value FROM settings WHERE setting = \''.$setting.'\''))) {
-				$this->apply_setting($setting, $value);
-			}
-		}
+		$this->apply_settings(['channel']);
 	}
 
 	/**

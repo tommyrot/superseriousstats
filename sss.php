@@ -314,6 +314,8 @@ class sss
 			out::put('critical', 'failed to open file: \''.$rp.'\'');
 		}
 
+		$settings_required = ['database', 'parser', 'timezone'];
+
 		while (($line = fgets($fp)) !== false) {
 			if (!preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>.+?)"/', $line, $matches)) {
 				continue;
@@ -324,22 +326,21 @@ class sss
 			$this->config_settings[$setting] = $value;
 
 			/**
-			 * Apply settings which are relevant for this class.
+			 * Apply and keep track of required settings.
 			 */
-			if (in_array($setting, ['database', 'parser', 'timezone'])) {
-				$this->apply_setting($setting, $value);
+			if (in_array($setting, $settings_required)) {
+				$settings_missing = array_diff($settings_missing ?? $settings_required, [$setting]);
+				$this->$setting = $value;
 			}
 		}
 
 		fclose($fp);
 
 		/**
-		 * If we're unable to find any settings in the config file we complain and
-		 * abort. Although we won't do extensive checks on what's in the config, we do
-		 * expect there to be some valid settings present.
+		 * Check if all required settings were present.
 		 */
-		if (empty($this->config_settings)) {
-			out::put('critical', 'config file empty or bad syntax');
+		if (!empty($settings_missing)) {
+			out::put('critical', 'missing required setting'.(count($settings_missing) !== 1 ? 's' : '').': \''.implode('\', \'', $settings_missing).'\'');
 		}
 	}
 

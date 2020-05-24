@@ -15,15 +15,7 @@ class maintenance
 
 	public function __construct()
 	{
-		/**
-		 * Apply settings which are relevant for this class.
-		 */
-		foreach (['auto_link_nicks'] as $setting) {
-			if (!is_null($value = db::query_single_col('SELECT value FROM settings WHERE setting = \''.$setting.'\''))) {
-				$this->apply_setting($setting, $value);
-			}
-		}
-
+		$this->apply_settings(['auto_link_nicks']);
 		$this->main();
 	}
 
