@@ -11,7 +11,7 @@ class maintenance
 {
 	use base;
 
-	private bool $auto_link_nicks = false;
+	private bool $auto_link_nicks = true;
 
 	public function __construct()
 	{
