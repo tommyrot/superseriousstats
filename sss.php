@@ -44,7 +44,6 @@ class sss
 {
 	use common;
 
-	private array $config_settings = [];
 	private bool $need_maintenance = false;
 	private string $database = '';
 	private string $parser = '';
@@ -62,16 +61,6 @@ class sss
 		 * Use UTC until config specified timezone is set.
 		 */
 		date_default_timezone_set('UTC');
-
-		/**
-		 * Read either the user provided config file or the default one.
-		 */
-		$this->read_config($options['c'] ?? __DIR__.'/sss.conf');
-
-		/**
-		 * Set the proper timezone.
-		 */
-		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
 
 		/**
 		 * Set the character encoding used by all mbstring functions.
@@ -177,10 +166,9 @@ class sss
 		db::connect();
 
 		/**
-		 * Now that we have a working database connection we can store the settings we
-		 * read from the config file during init.
+		 * Read either the user provided config file or the default one.
 		 */
-		$this->store_config();
+		$this->read_config($options['c'] ?? __DIR__.'/sss.conf');
 
 		if (array_key_exists('e', $options)) {
 			$this->export_nicks($options['e']);
@@ -300,7 +288,7 @@ class sss
 	}
 
 	/**
-	 * Read settings from the config file.
+	 * Read settings from the config file and store them in the database.
 	 */
 	private function read_config(string $file): void
 	{
@@ -321,7 +309,7 @@ class sss
 
 			$setting = $matches['setting'];
 			$value = $matches['value'];
-			$this->config_settings[$setting] = $value;
+			$settings[$setting] = $value;
 
 			/**
 			 * Apply and keep track of required settings.
@@ -340,19 +328,22 @@ class sss
 		if (!empty($settings_missing)) {
 			out::put('critical', 'missing required setting'.(count($settings_missing) !== 1 ? 's' : '').': \''.implode('\', \'', $settings_missing).'\'');
 		}
-	}
 
-	/**
-	 * Store settings from the config file in the database.
-	 */
-	private function store_config(): void
-	{
 		/**
-		 * Out with the old, in with the new.
+		 * Set the proper timezone.
+		 */
+		if (!date_default_timezone_set($this->timezone)) {
+			out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
+		}
+
+		out::put('debug', 'timezone set to: \''.$this->timezone.'\'');
+
+		/**
+		 * Store settings in the database.
 		 */
 		db::query_exec('DELETE FROM settings');
 
-		foreach ($this->config_settings as $setting => $value) {
+		foreach ($settings as $setting => $value) {
 			db::query_exec('INSERT INTO settings (setting, value) VALUES (\''.$setting.'\', \''.preg_replace('/\'/', '\'\'', $value).'\')');
 		}
 	}
