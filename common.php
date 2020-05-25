@@ -15,8 +15,8 @@ trait common
 	}
 
 	/**
-	 * Apply given settings after doing some explicit type casting because their
-	 * values are stored as strings in the database.
+	 * Retrieve and apply given settings after casting their values to the
+	 * appropriate type.
 	 */
 	private function apply_settings(array $settings): void
 	{
