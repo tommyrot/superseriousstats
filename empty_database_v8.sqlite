@@ -446,34 +446,146 @@ total INT NOT NULL CHECK (total > 0)
 );
 CREATE INDEX words_length ON words (length);
 
-CREATE VIEW v_ruid_activity_by_day AS SELECT ruid, date, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening, SUM(l_total) AS l_total FROM uid_activity JOIN uid_details ON uid_activity.uid = uid_details.uid GROUP BY ruid, date;
-CREATE VIEW v_ruid_activity_by_month AS SELECT ruid, SUBSTR(date, 1, 7) AS date, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening, SUM(l_total) AS l_total FROM ruid_activity_by_day GROUP BY ruid, SUBSTR(date, 1, 7);
-CREATE VIEW v_ruid_activity_by_year AS SELECT ruid, SUBSTR(date, 1, 4) AS date, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening, SUM(l_total) AS l_total FROM ruid_activity_by_month GROUP BY ruid, SUBSTR(date, 1, 4);
-CREATE VIEW v_activedays AS SELECT ruid, COUNT(DISTINCT date) AS activedays FROM ruid_activity_by_day GROUP BY ruid;
-CREATE VIEW v_events AS SELECT ruid, SUM(m_op) AS m_op, SUM(m_opped) AS m_opped, SUM(m_voice) AS m_voice, SUM(m_voiced) AS m_voiced, SUM(m_deop) AS m_deop, SUM(m_deopped) AS m_deopped, SUM(m_devoice) AS m_devoice, SUM(m_devoiced) AS m_devoiced, SUM(joins) AS joins, SUM(parts) AS parts, SUM(quits) AS quits, SUM(kicks) AS kicks, SUM(kicked) AS kicked, SUM(nickchanges) AS nickchanges, SUM(topics) AS topics FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid GROUP BY ruid;
-CREATE VIEW v_ex_actions_1 AS SELECT ruid, ex_actions, lastseen FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_actions IS NOT NULL;
-CREATE VIEW v_ex_actions_2 AS SELECT ruid, MAX(lastseen) AS lastseen FROM v_ex_actions_1 GROUP BY ruid;
-CREATE VIEW v_ex_actions AS SELECT v_ex_actions_1.ruid AS ruid, ex_actions FROM v_ex_actions_1 JOIN v_ex_actions_2 ON v_ex_actions_1.ruid = v_ex_actions_2.ruid WHERE v_ex_actions_1.lastseen = v_ex_actions_2.lastseen GROUP BY v_ex_actions_1.ruid;
-CREATE VIEW v_ex_exclamations_1 AS SELECT ruid, ex_exclamations, lasttalked FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_exclamations IS NOT NULL;
-CREATE VIEW v_ex_exclamations_2 AS SELECT ruid, MAX(lasttalked) AS lasttalked FROM v_ex_exclamations_1 GROUP BY ruid;
-CREATE VIEW v_ex_exclamations AS SELECT v_ex_exclamations_1.ruid AS ruid, ex_exclamations FROM v_ex_exclamations_1 JOIN v_ex_exclamations_2 ON v_ex_exclamations_1.ruid = v_ex_exclamations_2.ruid WHERE v_ex_exclamations_1.lasttalked = v_ex_exclamations_2.lasttalked GROUP BY v_ex_exclamations_1.ruid;
-CREATE VIEW v_ex_kicked_1 AS SELECT ruid, ex_kicked FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicked IS NOT NULL ORDER BY RANDOM();
-CREATE VIEW v_ex_kicked AS SELECT ruid, ex_kicked FROM v_ex_kicked_1 GROUP BY ruid;
-CREATE VIEW v_ex_kicks_1 AS SELECT ruid, ex_kicks FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicks IS NOT NULL ORDER BY RANDOM();
-CREATE VIEW v_ex_kicks AS SELECT ruid, ex_kicks FROM v_ex_kicks_1 GROUP BY ruid;
-CREATE VIEW v_ex_questions_1 AS SELECT ruid, ex_questions, lasttalked FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_questions IS NOT NULL;
-CREATE VIEW v_ex_questions_2 AS SELECT ruid, MAX(lasttalked) AS lasttalked FROM v_ex_questions_1 GROUP BY ruid;
-CREATE VIEW v_ex_questions AS SELECT v_ex_questions_1.ruid AS ruid, ex_questions FROM v_ex_questions_1 JOIN v_ex_questions_2 ON v_ex_questions_1.ruid = v_ex_questions_2.ruid WHERE v_ex_questions_1.lasttalked = v_ex_questions_2.lasttalked GROUP BY v_ex_questions_1.ruid;
-CREATE VIEW v_ex_uppercased_1 AS SELECT ruid, ex_uppercased, lasttalked FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_uppercased IS NOT NULL;
-CREATE VIEW v_ex_uppercased_2 AS SELECT ruid, MAX(lasttalked) AS lasttalked FROM v_ex_uppercased_1 GROUP BY ruid;
-CREATE VIEW v_ex_uppercased AS SELECT v_ex_uppercased_1.ruid AS ruid, ex_uppercased FROM v_ex_uppercased_1 JOIN v_ex_uppercased_2 ON v_ex_uppercased_1.ruid = v_ex_uppercased_2.ruid WHERE v_ex_uppercased_1.lasttalked = v_ex_uppercased_2.lasttalked GROUP BY v_ex_uppercased_1.ruid;
-CREATE VIEW v_quote_1 AS SELECT ruid, quote, lasttalked FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE quote IS NOT NULL;
-CREATE VIEW v_quote_2 AS SELECT ruid, MAX(lasttalked) AS lasttalked FROM v_quote_1 GROUP BY ruid;
-CREATE VIEW v_quote AS SELECT v_quote_1.ruid AS ruid, quote FROM v_quote_1 JOIN v_quote_2 ON v_quote_1.ruid = v_quote_2.ruid WHERE v_quote_1.lasttalked = v_quote_2.lasttalked GROUP BY v_quote_1.ruid;
-CREATE VIEW v_lines AS SELECT ruid, SUM(l_00) AS l_00, SUM(l_01) AS l_01, SUM(l_02) AS l_02, SUM(l_03) AS l_03, SUM(l_04) AS l_04, SUM(l_05) AS l_05, SUM(l_06) AS l_06, SUM(l_07) AS l_07, SUM(l_08) AS l_08, SUM(l_09) AS l_09, SUM(l_10) AS l_10, SUM(l_11) AS l_11, SUM(l_12) AS l_12, SUM(l_13) AS l_13, SUM(l_14) AS l_14, SUM(l_15) AS l_15, SUM(l_16) AS l_16, SUM(l_17) AS l_17, SUM(l_18) AS l_18, SUM(l_19) AS l_19, SUM(l_20) AS l_20, SUM(l_21) AS l_21, SUM(l_22) AS l_22, SUM(l_23) AS l_23, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening, SUM(l_total) AS l_total, SUM(l_mon_night) AS l_mon_night, SUM(l_mon_morning) AS l_mon_morning, SUM(l_mon_afternoon) AS l_mon_afternoon, SUM(l_mon_evening) AS l_mon_evening, SUM(l_tue_night) AS l_tue_night, SUM(l_tue_morning) AS l_tue_morning, SUM(l_tue_afternoon) AS l_tue_afternoon, SUM(l_tue_evening) AS l_tue_evening, SUM(l_wed_night) AS l_wed_night, SUM(l_wed_morning) AS l_wed_morning, SUM(l_wed_afternoon) AS l_wed_afternoon, SUM(l_wed_evening) AS l_wed_evening, SUM(l_thu_night) AS l_thu_night, SUM(l_thu_morning) AS l_thu_morning, SUM(l_thu_afternoon) AS l_thu_afternoon, SUM(l_thu_evening) AS l_thu_evening, SUM(l_fri_night) AS l_fri_night, SUM(l_fri_morning) AS l_fri_morning, SUM(l_fri_afternoon) AS l_fri_afternoon, SUM(l_fri_evening) AS l_fri_evening, SUM(l_sat_night) AS l_sat_night, SUM(l_sat_morning) AS l_sat_morning, SUM(l_sat_afternoon) AS l_sat_afternoon, SUM(l_sat_evening) AS l_sat_evening, SUM(l_sun_night) AS l_sun_night, SUM(l_sun_morning) AS l_sun_morning, SUM(l_sun_afternoon) AS l_sun_afternoon, SUM(l_sun_evening) AS l_sun_evening, SUM(urls) AS urls, SUM(words) AS words, SUM(characters) AS characters, SUM(monologues) AS monologues, MAX(topmonologue) AS topmonologue, SUM(slaps) AS slaps, SUM(slapped) AS slapped, SUM(exclamations) AS exclamations, SUM(questions) AS questions, SUM(actions) AS actions, SUM(uppercased) AS uppercased, MAX(lasttalked) AS lasttalked FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid GROUP BY ruid;
-CREATE VIEW v_ruid_smileys AS SELECT ruid, sid, SUM(total) AS total FROM uid_smileys JOIN uid_details ON uid_smileys.uid = uid_details.uid GROUP BY ruid, sid;
-CREATE VIEW v_ruid_smileys_by_catetory AS SELECT ruid, category, SUM(total) AS total FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid GROUP BY ruid, category;
-CREATE VIEW v_ruid_events AS SELECT v_events.ruid AS ruid, m_op, m_opped, m_voice, m_voiced, m_deop, m_deopped, m_devoice, m_devoiced, joins, parts, quits, kicks, kicked, nickchanges, topics, ex_kicks, ex_kicked FROM v_events LEFT JOIN v_ex_kicks ON v_events.ruid = v_ex_kicks.ruid LEFT JOIN v_ex_kicked ON v_events.ruid = v_ex_kicked.ruid;
-CREATE VIEW v_ruid_lines AS SELECT v_lines.ruid AS ruid, l_00, l_01, l_02, l_03, l_04, l_05, l_06, l_07, l_08, l_09, l_10, l_11, l_12, l_13, l_14, l_15, l_16, l_17, l_18, l_19, l_20, l_21, l_22, l_23, l_night, l_morning, l_afternoon, l_evening, l_total, l_mon_night, l_mon_morning, l_mon_afternoon, l_mon_evening, l_tue_night, l_tue_morning, l_tue_afternoon, l_tue_evening, l_wed_night, l_wed_morning, l_wed_afternoon, l_wed_evening, l_thu_night, l_thu_morning, l_thu_afternoon, l_thu_evening, l_fri_night, l_fri_morning, l_fri_afternoon, l_fri_evening, l_sat_night, l_sat_morning, l_sat_afternoon, l_sat_evening, l_sun_night, l_sun_morning, l_sun_afternoon, l_sun_evening, urls, words, characters, monologues, topmonologue, IFNULL(activedays, 0), slaps, slapped, exclamations, questions, actions, uppercased, quote, ex_exclamations, ex_questions, ex_actions, ex_uppercased, lasttalked FROM v_lines LEFT JOIN v_activedays ON v_lines.ruid = v_activedays.ruid LEFT JOIN v_quote ON v_lines.ruid = v_quote.ruid LEFT JOIN v_ex_exclamations ON v_lines.ruid = v_ex_exclamations.ruid LEFT JOIN v_ex_questions ON v_lines.ruid = v_ex_questions.ruid LEFT JOIN v_ex_actions ON v_lines.ruid = v_ex_actions.ruid LEFT JOIN v_ex_uppercased ON v_lines.ruid = v_ex_uppercased.ruid;
+CREATE VIEW v_ruid_activity_by_day AS
+SELECT ruid,
+date,
+SUM(l_night) AS l_night,
+SUM(l_morning) AS l_morning,
+SUM(l_afternoon) AS l_afternoon,
+SUM(l_evening) AS l_evening,
+SUM(l_total) AS l_total
+FROM uid_activity JOIN uid_details ON uid_activity.uid = uid_details.uid GROUP BY ruid, date;
+
+CREATE VIEW v_ruid_activity_by_month AS
+SELECT ruid,
+SUBSTR(date, 1, 7) AS date,
+SUM(l_night) AS l_night,
+SUM(l_morning) AS l_morning,
+SUM(l_afternoon) AS l_afternoon,
+SUM(l_evening) AS l_evening,
+SUM(l_total) AS l_total
+FROM ruid_activity_by_day GROUP BY ruid, SUBSTR(date, 1, 7);
+
+CREATE VIEW v_ruid_activity_by_year AS
+SELECT ruid,
+SUBSTR(date, 1, 4) AS date,
+SUM(l_night) AS l_night,
+SUM(l_morning) AS l_morning,
+SUM(l_afternoon) AS l_afternoon,
+SUM(l_evening) AS l_evening,
+SUM(l_total) AS l_total
+FROM ruid_activity_by_month GROUP BY ruid, SUBSTR(date, 1, 4);
+
+CREATE VIEW v_ruid_smileys AS
+SELECT ruid,
+sid,
+SUM(total) AS total
+FROM uid_smileys JOIN uid_details ON uid_smileys.uid = uid_details.uid GROUP BY ruid, sid;
+
+CREATE VIEW v_ruid_smileys_by_category AS
+SELECT ruid,
+category,
+SUM(total) AS total
+FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid GROUP BY ruid, category;
+
+CREATE VIEW v_ruid_events AS
+SELECT ruid,
+SUM(m_op) AS m_op,
+SUM(m_opped) AS m_opped,
+SUM(m_voice) AS m_voice,
+SUM(m_voiced) AS m_voiced,
+SUM(m_deop) AS m_deop,
+SUM(m_deopped) AS m_deopped,
+SUM(m_devoice) AS m_devoice,
+SUM(m_devoiced) AS m_devoiced,
+SUM(joins) AS joins,
+SUM(parts) AS parts,
+SUM(quits) AS quits,
+SUM(kicks) AS kicks,
+SUM(kicked) AS kicked,
+SUM(nickchanges) AS nickchanges,
+SUM(topics) AS topics,
+(SELECT ex_kicks FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicks IS NOT NULL AND ruid = t1.ruid ORDER BY RANDOM() LIMIT 1) AS ex_kicks,
+(SELECT ex_kicked FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicked IS NOT NULL AND ruid = t1.ruid ORDER BY RANDOM() LIMIT 1) AS ex_kicked
+FROM uid_events JOIN uid_details AS t1 ON uid_events.uid = t1.uid GROUP BY ruid;
+
+CREATE VIEW v_ruid_lines AS
+SELECT ruid,
+SUM(l_00) AS l_00,
+SUM(l_01) AS l_01,
+SUM(l_02) AS l_02,
+SUM(l_03) AS l_03,
+SUM(l_04) AS l_04,
+SUM(l_05) AS l_05,
+SUM(l_06) AS l_06,
+SUM(l_07) AS l_07,
+SUM(l_08) AS l_08,
+SUM(l_09) AS l_09,
+SUM(l_10) AS l_10,
+SUM(l_11) AS l_11,
+SUM(l_12) AS l_12,
+SUM(l_13) AS l_13,
+SUM(l_14) AS l_14,
+SUM(l_15) AS l_15,
+SUM(l_16) AS l_16,
+SUM(l_17) AS l_17,
+SUM(l_18) AS l_18,
+SUM(l_19) AS l_19,
+SUM(l_20) AS l_20,
+SUM(l_21) AS l_21,
+SUM(l_22) AS l_22,
+SUM(l_23) AS l_23,
+SUM(l_night) AS l_night,
+SUM(l_morning) AS l_morning,
+SUM(l_afternoon) AS l_afternoon,
+SUM(l_evening) AS l_evening,
+SUM(l_total) AS l_total,
+SUM(l_mon_night) AS l_mon_night,
+SUM(l_mon_morning) AS l_mon_morning,
+SUM(l_mon_afternoon) AS l_mon_afternoon,
+SUM(l_mon_evening) AS l_mon_evening,
+SUM(l_tue_night) AS l_tue_night,
+SUM(l_tue_morning) AS l_tue_morning,
+SUM(l_tue_afternoon) AS l_tue_afternoon,
+SUM(l_tue_evening) AS l_tue_evening,
+SUM(l_wed_night) AS l_wed_night,
+SUM(l_wed_morning) AS l_wed_morning,
+SUM(l_wed_afternoon) AS l_wed_afternoon,
+SUM(l_wed_evening) AS l_wed_evening,
+SUM(l_thu_night) AS l_thu_night,
+SUM(l_thu_morning) AS l_thu_morning,
+SUM(l_thu_afternoon) AS l_thu_afternoon,
+SUM(l_thu_evening) AS l_thu_evening,
+SUM(l_fri_night) AS l_fri_night,
+SUM(l_fri_morning) AS l_fri_morning,
+SUM(l_fri_afternoon) AS l_fri_afternoon,
+SUM(l_fri_evening) AS l_fri_evening,
+SUM(l_sat_night) AS l_sat_night,
+SUM(l_sat_morning) AS l_sat_morning,
+SUM(l_sat_afternoon) AS l_sat_afternoon,
+SUM(l_sat_evening) AS l_sat_evening,
+SUM(l_sun_night) AS l_sun_night,
+SUM(l_sun_morning) AS l_sun_morning,
+SUM(l_sun_afternoon) AS l_sun_afternoon,
+SUM(l_sun_evening) AS l_sun_evening,
+SUM(urls) AS urls,
+SUM(words) AS words,
+SUM(characters) AS characters,
+SUM(monologues) AS monologues,
+MAX(topmonologue) AS topmonologue,
+IFNULL((SELECT COUNT(DISTINCT date) FROM ruid_activity_by_day WHERE ruid = t1.ruid), 0) AS activedays,
+SUM(slaps) AS slaps,
+SUM(slapped) AS slapped,
+SUM(exclamations) AS exclamations,
+SUM(questions) AS questions,
+SUM(actions) AS actions,
+SUM(uppercased) AS uppercased,
+(SELECT quote FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE quote IS NOT NULL AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS quote,
+(SELECT ex_exclamations FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_exclamations IS NOT NULL AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_exclamations,
+(SELECT ex_questions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_questions IS NOT NULL AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_questions,
+(SELECT ex_actions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_actions IS NOT NULL AND ruid = t1.ruid ORDER BY lastseen DESC, uid_lines.uid ASC LIMIT 1) AS ex_actions,
+(SELECT ex_uppercased FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_uppercased IS NOT NULL AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_uppercased,
+MAX(lasttalked) AS lasttalked
+FROM uid_lines JOIN uid_details AS t1 ON uid_lines.uid = t1.uid GROUP BY ruid;
 
 COMMIT;
