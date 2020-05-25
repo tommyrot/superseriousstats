@@ -170,10 +170,7 @@ class sss
 		/**
 		 * Set the proper timezone.
 		 */
-		if (!date_default_timezone_set($this->timezone)) {
-			out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
-		}
-
+		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
 		out::put('debug', 'timezone set to: \''.$this->timezone.'\'');
 
 		/**
