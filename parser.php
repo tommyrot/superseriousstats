@@ -141,7 +141,7 @@ class parser
 	}
 
 	/**
-	 * Check if a line is valid UTF-8 and convert all non-valid bytes into valid
+	 * Check if a line is valid UTF-8 and convert all nonvalid bytes into valid
 	 * multibyte UTF-8.
 	 */
 	private function normalize_line(string $line): string
