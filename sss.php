@@ -162,14 +162,34 @@ class sss
 			out::set_verbosity(2);
 		}
 
-		db::set_database($this->database);
-		db::connect();
-
 		/**
 		 * Read either the user provided config file or the default one.
 		 */
-		$this->read_config($options['c'] ?? __DIR__.'/sss.conf');
+		$settings = $this->read_config($options['c'] ?? __DIR__.'/sss.conf');
 
+		/**
+		 * Set the proper timezone.
+		 */
+		if (!date_default_timezone_set($this->timezone)) {
+			out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
+		}
+
+		out::put('debug', 'timezone set to: \''.$this->timezone.'\'');
+
+		/**
+		 * Open the database connection and store config settings.
+		 */
+		db::set_database($this->database);
+		db::connect();
+		db::query_exec('DELETE FROM settings');
+
+		foreach ($settings as $setting => $value) {
+			db::query_exec('INSERT INTO settings (setting, value) VALUES (\''.$setting.'\', \''.preg_replace('/\'/', '\'\'', $value).'\')');
+		}
+
+		/**
+		 * Run appropriate parts of the program.
+		 */
 		if (array_key_exists('e', $options)) {
 			$this->export_nicks($options['e']);
 		}
@@ -191,6 +211,9 @@ class sss
 			$this->create_html($options['o']);
 		}
 
+		/**
+		 * Synchronize and finalize.
+		 */
 		db::disconnect();
 		out::put('notice', 'kthxbye');
 	}
@@ -288,9 +311,9 @@ class sss
 	}
 
 	/**
-	 * Read settings from the config file and store them in the database.
+	 * Read settings from the config file.
 	 */
-	private function read_config(string $file): void
+	private function read_config(string $file): array
 	{
 		if (($rp = realpath($file)) === false) {
 			out::put('critical', 'no such file: \''.$file.'\'');
@@ -329,23 +352,7 @@ class sss
 			out::put('critical', 'missing required setting'.(count($settings_missing) !== 1 ? 's' : '').': \''.implode('\', \'', $settings_missing).'\'');
 		}
 
-		/**
-		 * Set the proper timezone.
-		 */
-		if (!date_default_timezone_set($this->timezone)) {
-			out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
-		}
-
-		out::put('debug', 'timezone set to: \''.$this->timezone.'\'');
-
-		/**
-		 * Store settings in the database.
-		 */
-		db::query_exec('DELETE FROM settings');
-
-		foreach ($settings as $setting => $value) {
-			db::query_exec('INSERT INTO settings (setting, value) VALUES (\''.$setting.'\', \''.preg_replace('/\'/', '\'\'', $value).'\')');
-		}
+		return $settings;
 	}
 }
 
