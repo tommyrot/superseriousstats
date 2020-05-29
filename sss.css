@@ -144,6 +144,7 @@ th {
 	width:240px;
 }
 .act-year {
+	float:right;
 	/**
 	 * Variable width specified in HTML
 	 */
