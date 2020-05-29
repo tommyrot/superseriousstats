@@ -17,48 +17,43 @@ trait common_html_user
 		 * Execute the appropriate query and fill $dates.
 		 */
 		if ($graph === 'day') {
-			$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date >= \''.date('Y-m-d', strtotime('-23 days', strtotime($this->now))).'\'');
+			$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM '.(isset($this->ruid) ? 'ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' date >= \''.date('Y-m-d', strtotime('-23 days', strtotime($this->now))).'\'');
 
 			for ($i = 23; $i >= 0; --$i) {
 				$dates[] = date('Y-m-d', strtotime('-'.$i.' days', strtotime($this->now)));
 			}
 		} elseif ($graph === 'month') {
-			$results = db::query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) >= \''.date('Y-m', strtotime('-23 months', strtotime(date('Y-m-01', strtotime($this->now))))).'\' GROUP BY SUBSTR(date, 1, 7)');
+			$results = db::query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM '.(isset($this->ruid) ? 'ruid_activity_by_month WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' SUBSTR(date, 1, 7) >= \''.date('Y-m', strtotime('-23 months', strtotime(substr($this->now, 0, 7).'-01'))).'\' GROUP BY SUBSTR(date, 1, 7)');
 
 			for ($i = 23; $i >= 0; --$i) {
-				$dates[] = date('Y-m', strtotime('-'.$i.' months', strtotime(date('Y-m-01', strtotime($this->now)))));
+				$dates[] = date('Y-m', strtotime('-'.$i.' months', strtotime(substr($this->now, 0, 7).'-01')));
 			}
 		} elseif ($graph === 'year') {
 			/**
-			 * Display an additional column with a bar depicting the estimated line count
-			 * for the year in which the last day was logged, but only if there is more than
-			 * one day left in said year. The estimate is based on activity during a 90 day
-			 * period prior to the last day logged.
+			 * If there is more than one day left until the end of the current year, and
+			 * there has been activity during a 90 day period prior to $now, we display an
+			 * additional column with a bar depicting the estimated line count for the year.
 			 */
-			if (($days_left = (int) date('z', strtotime(date('Y-12-31', strtotime($this->now)))) - (int) date('z', strtotime($this->now))) !== 0 && !is_null(db::query_single_col('SELECT SUM(l_total) FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-90 days', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-1 days', strtotime($this->now))).'\''))) {
+			if (substr($this->now, 0, 4) === date('Y') && ($days_left = (int) date('z', strtotime(substr($this->now, 0, 4).'-12-31')) - (int) date('z', strtotime($this->now))) !== 0 && !is_null(db::query_single_col('SELECT SUM(l_total) FROM '.(isset($this->ruid) ? 'ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' date BETWEEN \''.date('Y-m-d', strtotime('-90 days', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-1 days', strtotime($this->now))).'\''))) {
 				$estimate = true;
+				$i = 22;
 			} else {
 				$estimate = false;
+				$i = 23;
 			}
-
-			/**
-			 * $j is how many years we go back to fill $dates, taking the estimate column
-			 * into consideration. $i will become $j.
-			 */
-			$j = ($estimate ? 22 : 23);
 
 			/**
 			 * When the leftmost 8 columns are empty we shrink the table so "Activity
 			 * Distribution by Day" fits horizontally adjacent to it.
 			 */
-			if (is_null(db::query_single_col('SELECT SUM(l_total) FROM channel_activity WHERE SUBSTR(date, 1, 4) BETWEEN \''.date('Y', strtotime('-'.$j.' years', strtotime(date('Y-01-01', strtotime($this->now))))).'\' AND \''.date('Y', strtotime('-'.($j - 8).' years', strtotime(date('Y-01-01', strtotime($this->now))))).'\' GROUP BY SUBSTR(date, 1, 4)'))) {
-				$j -= 8;
+			if (is_null(db::query_single_col('SELECT SUM(l_total) FROM '.(isset($this->ruid) ? 'ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' SUBSTR(date, 1, 4) BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\' GROUP BY SUBSTR(date, 1, 4)'))) {
+				$i -= 8;
 			}
 
-			$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) >= \''.date('Y', strtotime('-'.$j.' years', strtotime(date('Y-01-01', strtotime($this->now))))).'\' GROUP BY SUBSTR(date, 1, 4)');
+			$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM '.(isset($this->ruid) ? 'ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' SUBSTR(date, 1, 4) >= \''.((int) substr($this->now, 0, 4) - $i).'\' GROUP BY SUBSTR(date, 1, 4)');
 
-			for ($i = $j; $i >= 0; --$i) {
-				$dates[] = date('Y', strtotime('-'.$i.' years', strtotime(date('Y-01-01', strtotime($this->now)))));
+			for (; $i >= 0; --$i) {
+				$dates[] = (string) ((int) substr($this->now, 0, 4) - $i);
 			}
 
 			if ($estimate) {
@@ -98,19 +93,17 @@ trait common_html_user
 			$lines['estimate']['total'] = 0;
 
 			foreach ($times as $time) {
-				$lastday = new DateTime('last day of december');
-
 				/**
 				 * This query consists of three subqueries which calculate the total lines per
 				 * 30 days for each time of day in the past 90 days. Each of these values is
 				 * then multiplied by a weight factor, which is lower the further back in time
-				 * we go. We end up with some artificial non-scientific average value to create
-				 * an estimate column with. Which we totally pulled out of our ass.
+				 * we go. We end up with some arbitrary nonscientific average value to create an
+				 * estimate column with. Which we totally pulled out of our ass, btw.
 				 */
-				$subquery1 = 'IFNULL((SELECT SUM(l_'.$time.') FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-90 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-61 day', strtotime($this->now))).'\'), 0)';
-				$subquery2 = 'IFNULL((SELECT SUM(l_'.$time.') * 2 FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-60 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-31 day', strtotime($this->now))).'\'), 0)';
-				$subquery3 = 'IFNULL((SELECT SUM(l_'.$time.') * 3 FROM channel_activity WHERE date BETWEEN \''.date('Y-m-d', strtotime('-30 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-1 day', strtotime($this->now))).'\'), 0)';
-				$lines['estimate'][$time] = $lines[date('Y', strtotime($this->now))][$time] + (int) round(db::query_single_col('SELECT CAST(SUM('.$subquery1.' + '.$subquery2.' + '.$subquery3.') AS REAL) / 180') * $days_left);
+				$subquery1 = 'IFNULL((SELECT SUM(l_'.$time.') FROM '.(isset($this->ruid) ? 'ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' date BETWEEN \''.date('Y-m-d', strtotime('-90 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-61 day', strtotime($this->now))).'\'), 0)';
+				$subquery2 = 'IFNULL((SELECT SUM(l_'.$time.') * 2 FROM '.(isset($this->ruid) ? 'ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' date BETWEEN \''.date('Y-m-d', strtotime('-60 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-31 day', strtotime($this->now))).'\'), 0)';
+				$subquery3 = 'IFNULL((SELECT SUM(l_'.$time.') * 3 FROM '.(isset($this->ruid) ? 'ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' date BETWEEN \''.date('Y-m-d', strtotime('-30 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-1 day', strtotime($this->now))).'\'), 0)';
+				$lines['estimate'][$time] = $lines[substr($this->now, 0, 4)][$time] + (int) round(db::query_single_col('SELECT CAST(SUM('.$subquery1.' + '.$subquery2.' + '.$subquery3.') AS REAL) / 180') * $days_left);
 				$lines['estimate']['total'] += $lines['estimate'][$time];
 			}
 
@@ -158,17 +151,19 @@ trait common_html_user
 						}
 					}
 
-					if ($unclaimed_pixels !== 0) {
-						arsort($unclaimed_subpixels);
+					while ($unclaimed_pixels > 0) {
+						$high_subpixels = 0;
 
 						foreach ($unclaimed_subpixels as $time => $subpixels) {
-							--$unclaimed_pixels;
-							++$height[$time];
-
-							if ($unclaimed_pixels === 0) {
-								break;
+							if ($subpixels > $high_subpixels) {
+								$high_subpixels = $subpixels;
+								$high_time = $time;
 							}
 						}
+
+						++$height[$high_time];
+						$unclaimed_subpixels[$high_time] = 0;
+						--$unclaimed_pixels;
 					}
 
 					/**
@@ -198,16 +193,18 @@ trait common_html_user
 				$tr2 .= '</ul>';
 			}
 
+			$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>';
+
 			if ($graph === 'day') {
-				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
+				$tr3 .= date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
 			} elseif ($graph === 'month') {
-				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.date('M', strtotime($date.'-01')).'<br>'.date('&\ap\o\s;y', strtotime($date.'-01'));
+				$tr3 .= date('M', strtotime($date.'-01')).'<br>&apos;'.substr($date, 2, 2);
 			} elseif ($graph === 'year') {
-				$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>'.($date === 'estimate' ? 'Est.' : date('&\ap\o\s;y', strtotime($date.'-01-01')));
+				$tr3 .= ($date === 'estimate' ? 'Est.' : '&apos;'.substr($date, 2, 2));
 			}
 		}
 
-		return '<table class="act'.($graph === 'year' ? '-year' : '').'">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act'.($graph === 'year' ? '-year" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function create_table_activity_distribution_day(): ?string
@@ -218,13 +215,10 @@ trait common_html_user
 		/**
 		 * Execute the appropriate query.
 		 */
-		switch (get_class($this)) {
-			case 'html':
-				$result = db::query_single_row('SELECT SUM(l_mon_night) AS l_mon_night, SUM(l_mon_morning) AS l_mon_morning, SUM(l_mon_afternoon) AS l_mon_afternoon, SUM(l_mon_evening) AS l_mon_evening, SUM(l_tue_night) AS l_tue_night, SUM(l_tue_morning) AS l_tue_morning, SUM(l_tue_afternoon) AS l_tue_afternoon, SUM(l_tue_evening) AS l_tue_evening, SUM(l_wed_night) AS l_wed_night, SUM(l_wed_morning) AS l_wed_morning, SUM(l_wed_afternoon) AS l_wed_afternoon, SUM(l_wed_evening) AS l_wed_evening, SUM(l_thu_night) AS l_thu_night, SUM(l_thu_morning) AS l_thu_morning, SUM(l_thu_afternoon) AS l_thu_afternoon, SUM(l_thu_evening) AS l_thu_evening, SUM(l_fri_night) AS l_fri_night, SUM(l_fri_morning) AS l_fri_morning, SUM(l_fri_afternoon) AS l_fri_afternoon, SUM(l_fri_evening) AS l_fri_evening, SUM(l_sat_night) AS l_sat_night, SUM(l_sat_morning) AS l_sat_morning, SUM(l_sat_afternoon) AS l_sat_afternoon, SUM(l_sat_evening) AS l_sat_evening, SUM(l_sun_night) AS l_sun_night, SUM(l_sun_morning) AS l_sun_morning, SUM(l_sun_afternoon) AS l_sun_afternoon, SUM(l_sun_evening) AS l_sun_evening FROM ruid_lines');
-				break;
-			case 'user':
-				$result = db::query_single_row('SELECT l_mon_night, l_mon_morning, l_mon_afternoon, l_mon_evening, l_tue_night, l_tue_morning, l_tue_afternoon, l_tue_evening, l_wed_night, l_wed_morning, l_wed_afternoon, l_wed_evening, l_thu_night, l_thu_morning, l_thu_afternoon, l_thu_evening, l_fri_night, l_fri_morning, l_fri_afternoon, l_fri_evening, l_sat_night, l_sat_morning, l_sat_afternoon, l_sat_evening, l_sun_night, l_sun_morning, l_sun_afternoon, l_sun_evening FROM ruid_lines WHERE ruid = '.$this->ruid);
-				break;
+		if (isset($this->ruid)) {
+			$result = db::query_single_row('SELECT l_mon_night, l_mon_morning, l_mon_afternoon, l_mon_evening, l_tue_night, l_tue_morning, l_tue_afternoon, l_tue_evening, l_wed_night, l_wed_morning, l_wed_afternoon, l_wed_evening, l_thu_night, l_thu_morning, l_thu_afternoon, l_thu_evening, l_fri_night, l_fri_morning, l_fri_afternoon, l_fri_evening, l_sat_night, l_sat_morning, l_sat_afternoon, l_sat_evening, l_sun_night, l_sun_morning, l_sun_afternoon, l_sun_evening FROM ruid_lines WHERE ruid = '.$this->ruid);
+		} else {
+			$result = db::query_single_row('SELECT SUM(l_mon_night) AS l_mon_night, SUM(l_mon_morning) AS l_mon_morning, SUM(l_mon_afternoon) AS l_mon_afternoon, SUM(l_mon_evening) AS l_mon_evening, SUM(l_tue_night) AS l_tue_night, SUM(l_tue_morning) AS l_tue_morning, SUM(l_tue_afternoon) AS l_tue_afternoon, SUM(l_tue_evening) AS l_tue_evening, SUM(l_wed_night) AS l_wed_night, SUM(l_wed_morning) AS l_wed_morning, SUM(l_wed_afternoon) AS l_wed_afternoon, SUM(l_wed_evening) AS l_wed_evening, SUM(l_thu_night) AS l_thu_night, SUM(l_thu_morning) AS l_thu_morning, SUM(l_thu_afternoon) AS l_thu_afternoon, SUM(l_thu_evening) AS l_thu_evening, SUM(l_fri_night) AS l_fri_night, SUM(l_fri_morning) AS l_fri_morning, SUM(l_fri_afternoon) AS l_fri_afternoon, SUM(l_fri_evening) AS l_fri_evening, SUM(l_sat_night) AS l_sat_night, SUM(l_sat_morning) AS l_sat_morning, SUM(l_sat_afternoon) AS l_sat_afternoon, SUM(l_sat_evening) AS l_sat_evening, SUM(l_sun_night) AS l_sun_night, SUM(l_sun_morning) AS l_sun_morning, SUM(l_sun_afternoon) AS l_sun_afternoon, SUM(l_sun_evening) AS l_sun_evening FROM ruid_lines');
 		}
 
 		if (is_null($result)) {
