@@ -81,7 +81,7 @@ class sss
 		}
 
 		out::put('notice', 'creating stats page');
-		$html = new html($this->channel);
+		$html = new html();
 		fwrite($fp, $html->get_contents());
 		fclose($fp);
 	}
