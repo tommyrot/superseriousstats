@@ -63,46 +63,6 @@ class user
 	}
 
 	/**
-	 * Find the user $nick belongs to and create a stats page for it.
-	 */
-	private function main(string $nick): void
-	{
-		/**
-		 * Open the database connection and update our settings.
-		 */
-		db::connect();
-		$this->apply_settings(['timezone', 'channel', 'userpics', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page']);
-		out::set_stylesheet($this->stylesheet);
-
-		/**
-		 * Set the proper timezone.
-		 */
-		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
-		$this->now = date('Y-m-d');
-
-		/**
-		 * Do some input validation. Make sure the nick doesn't contain any invalid
-		 * characters and doesn't exceed 64 characters in length.
-		 */
-		if (mb_strlen($nick) > 64 || !preg_match('/^([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})+$/', $nick) || preg_match('/\p{C}+/u', $nick) || preg_match('/^[0-9-]|[\x20-\x2C\x2E\x2F\x3A-\x40\x7E]|\xC2\xA0|\xE2\x80[\xA8\xA9]/', $nick) || is_null($result = db::query_single_row('SELECT csnick, ruid FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE csnick = \''.preg_replace('/\'/', '\'\'', $nick).'\')'))) {
-			out::put('critical', 'Nonexistent and/or erroneous nickname.');
-		}
-
-		$this->csnick = $result['csnick'];
-		$this->ruid = $result['ruid'];
-
-		/**
-		 * Stats require a non-empty dataset.
-		 */
-		if (($this->l_total = db::query_single_col('SELECT l_total FROM ruid_lines WHERE ruid = '.$this->ruid) ?? 0) === 0) {
-			out::put('critical', $this->htmlify($this->csnick).' is a filthy lurker!');
-		}
-
-		echo $this->get_contents();
-		db::disconnect();
-	}
-
-	/**
 	 * Generate the HTML page.
 	 */
 	private function get_contents(): string
@@ -152,6 +112,46 @@ class user
 		$output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
 		$output .= '</div></body>'."\n\n".'</html>'."\n";
 		return $output;
+	}
+
+	/**
+	 * Find the user $nick belongs to and create a stats page for it.
+	 */
+	private function main(string $nick): void
+	{
+		/**
+		 * Open the database connection and update our settings.
+		 */
+		db::connect();
+		$this->apply_settings(['timezone', 'channel', 'userpics', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page']);
+		out::set_stylesheet($this->stylesheet);
+
+		/**
+		 * Set the proper timezone.
+		 */
+		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
+		$this->now = date('Y-m-d');
+
+		/**
+		 * Do some input validation. Make sure the nick doesn't contain any invalid
+		 * characters and doesn't exceed 64 characters in length.
+		 */
+		if (mb_strlen($nick) > 64 || !preg_match('/^([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})+$/', $nick) || preg_match('/\p{C}+/u', $nick) || preg_match('/^[0-9-]|[\x20-\x2C\x2E\x2F\x3A-\x40\x7E]|\xC2\xA0|\xE2\x80[\xA8\xA9]/', $nick) || is_null($result = db::query_single_row('SELECT csnick, ruid FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE csnick = \''.preg_replace('/\'/', '\'\'', $nick).'\')'))) {
+			out::put('critical', 'Nonexistent and/or erroneous nickname.');
+		}
+
+		$this->csnick = $result['csnick'];
+		$this->ruid = $result['ruid'];
+
+		/**
+		 * Stats require a non-empty dataset.
+		 */
+		if (($this->l_total = db::query_single_col('SELECT l_total FROM ruid_lines WHERE ruid = '.$this->ruid) ?? 0) === 0) {
+			out::put('critical', $this->htmlify($this->csnick).' is a filthy lurker!');
+		}
+
+		echo $this->get_contents();
+		db::disconnect();
 	}
 }
 
