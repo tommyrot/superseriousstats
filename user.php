@@ -26,7 +26,7 @@ class user
 {
 	use common, common_html_user_history, common_html_user;
 
-	private bool $userpics = false;
+	private bool $userpics = true;
 	private int $l_total = 0;
 	private int $ruid = 0;
 	private string $channel = 'unconfigured';
@@ -36,7 +36,7 @@ class user
 	private string $stylesheet = 'sss.css';
 	private string $timezone = '';
 	private string $userpics_default = '';
-	private string $userpics_dir = './userpics/';
+	private string $userpics_dir = 'userpics';
 
 	public function __construct(string $nick)
 	{
@@ -90,8 +90,7 @@ class user
 			. '<link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'">'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
-			//. '<div class="info">'.($this->userpics ? $this->get_userpic() : '').$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($this->mood) : '.').'<br><br>'
-			. '<div class="info">'.$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<br><br>'
+			. '<div class="info">'.($this->userpics ? $this->get_userpic() : '').$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<br><br>'
 			. 'First seen on '.$date_first_seen.' and last seen on '.$date_last_seen.'.<br><br>'
 			. $this->htmlify($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.$high_date.' with a total of '.number_format($high_lines).' line'.($high_lines > 1 ? 's' : '').' typed.</div>'."\n";
@@ -112,6 +111,47 @@ class user
 		$output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
 		$output .= '</div></body>'."\n\n".'</html>'."\n";
 		return $output;
+	}
+
+	/**
+	 * If an image exists in $userpics_dir with a filename identical to $csnick or
+	 * one of the aliases of this user, display it.
+	 */
+	private function get_userpic(): ?string
+	{
+		if (is_dir($this->userpics_dir) && ($dh = opendir($this->userpics_dir)) !== false) {
+			while (($entry = readdir($dh)) !== false) {
+				if (!is_dir($this->userpics_dir.'/'.$entry) && preg_match('/^(?<filename>\S+)\.(bmp|gif|jpe?g|png)$/i', $entry, $matches)) {
+					$files[mb_strtolower($matches['filename'])] = $entry;
+				}
+			}
+
+			closedir($dh);
+		}
+
+		if (!isset($files)) {
+			return null;
+		}
+
+		/**
+		 * Look for $csnick first before going through the list of aliases.
+		 */
+		$nicks = explode(',', mb_strtolower($this->csnick.db::query_single_col('SELECT \',\' || GROUP_CONCAT(csnick) FROM uid_details WHERE uid_details.ruid = '.$this->ruid.' AND status = 2')));
+
+		foreach ($nicks as $nick) {
+			if (array_key_exists($nick, $files)) {
+				return '<img src="'.$this->htmlify($this->userpics_dir.'/'.$files[$nick]).'" alt="" class="userpic">';
+			}
+		}
+
+		/**
+		 * Display $userpics_default if no image was found for this user.
+		 */
+		if (array_key_exists(mb_strtolower(preg_replace('/\.(bmp|gif|jpe?g|png)$/i', '', $this->userpics_default)), $files)) {
+			return '<img src="'.$this->htmlify($this->userpics_dir.'/'.$this->userpics_default).'" alt="" class="userpic">';
+		}
+
+		return null;
 	}
 
 	/**
