@@ -9,26 +9,26 @@
  */
 trait common_html_user
 {
-	private function create_table_activity(string $graph): ?string
+	private function create_table_activity(string $period): ?string
 	{
 		$times = ['evening', 'afternoon', 'morning', 'night'];
 
 		/**
 		 * Execute the appropriate query and fill $dates.
 		 */
-		if ($graph === 'day') {
+		if ($period === 'day') {
 			$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM '.(isset($this->ruid) ? 'ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' date >= \''.date('Y-m-d', strtotime('-23 days', strtotime($this->now))).'\'');
 
 			for ($i = 23; $i >= 0; --$i) {
 				$dates[] = date('Y-m-d', strtotime('-'.$i.' days', strtotime($this->now)));
 			}
-		} elseif ($graph === 'month') {
+		} elseif ($period === 'month') {
 			$results = db::query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM '.(isset($this->ruid) ? 'ruid_activity_by_month WHERE ruid = '.$this->ruid.' AND' : 'channel_activity WHERE').' SUBSTR(date, 1, 7) >= \''.date('Y-m', strtotime('-23 months', strtotime(substr($this->now, 0, 7).'-01'))).'\' GROUP BY SUBSTR(date, 1, 7)');
 
 			for ($i = 23; $i >= 0; --$i) {
 				$dates[] = date('Y-m', strtotime('-'.$i.' months', strtotime(substr($this->now, 0, 7).'-01')));
 			}
-		} elseif ($graph === 'year') {
+		} elseif ($period === 'year') {
 			/**
 			 * If there is more than one day left until the end of the current year, and
 			 * there has been activity during a 90 day period prior to $now, we display an
@@ -89,12 +89,12 @@ trait common_html_user
 		/**
 		 * Add the estimate column if applicable.
 		 */
-		if ($graph === 'year' && $estimate) {
+		if ($period === 'year' && $estimate) {
 			$lines['estimate']['total'] = 0;
 
 			foreach ($times as $time) {
 				/**
-				 * This query consists of three subqueries which calculate the total lines per
+				 * This query consists of three subqueries that calculate the total lines per
 				 * 30 days for each time of day in the past 90 days. Each of these values is
 				 * then multiplied by a weight factor, which is lower the further back in time
 				 * we go. We end up with some arbitrary nonscientific average value to create an
@@ -117,7 +117,7 @@ trait common_html_user
 			}
 		}
 
-		$tr1 = '<tr><th colspan="'.count($dates).'">Activity by '.ucfirst($graph);
+		$tr1 = '<tr><th colspan="'.count($dates).'">Activity by '.ucfirst($period);
 		$tr2 = '<tr class="bars">';
 		$tr3 = '<tr class="sub">';
 
@@ -195,16 +195,16 @@ trait common_html_user
 
 			$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>';
 
-			if ($graph === 'day') {
+			if ($period === 'day') {
 				$tr3 .= date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
-			} elseif ($graph === 'month') {
+			} elseif ($period === 'month') {
 				$tr3 .= date('M', strtotime($date.'-01')).'<br>&apos;'.substr($date, 2, 2);
-			} elseif ($graph === 'year') {
+			} elseif ($period === 'year') {
 				$tr3 .= ($date === 'estimate' ? 'Est.' : '&apos;'.substr($date, 2, 2));
 			}
 		}
 
-		return '<table class="act'.($graph === 'year' ? '-year" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act'.($period === 'year' ? '-year" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
 	private function create_table_activity_distribution_day(): ?string
