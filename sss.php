@@ -68,9 +68,46 @@ class sss
 		mb_internal_encoding('UTF-8');
 
 		/**
+		 * Set output verbosity if applicable.
+		 */
+		if (array_key_exists('q', $options)) {
+			out::set_verbosity(0);
+		} elseif (array_key_exists('v', $options)) {
+			out::set_verbosity(2);
+		}
+
+		/**
+		 * Read either the user provided config file or the default one.
+		 */
+		$settings = $this->read_config($options['c'] ?? __DIR__.'/sss.conf');
+
+		/**
+		 * Set the proper timezone.
+		 */
+		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
+		out::put('debug', 'timezone set to: \''.$this->timezone.'\'');
+
+		/**
+		 * Open the database connection and store config settings.
+		 */
+		db::set_database($this->database);
+		db::connect();
+		db::query_exec('DELETE FROM settings');
+
+		foreach ($settings as $setting => $value) {
+			db::query_exec('INSERT INTO settings (setting, value) VALUES (\''.$setting.'\', \''.preg_replace('/\'/', '\'\'', $value).'\')');
+		}
+
+		/**
 		 * Init done, move to main.
 		 */
 		$this->main($options);
+
+		/**
+		 * Synchronize and finalize.
+		 */
+		db::disconnect();
+		out::put('notice', 'kthxbye');
 	}
 
 	private function create_html(string $file): void
@@ -152,41 +189,10 @@ class sss
 	}
 
 	/**
-	 * Take actions based on given command line arguments.
+	 * Take action based on given command line arguments.
 	 */
 	private function main(array $options): void
 	{
-		if (array_key_exists('q', $options)) {
-			out::set_verbosity(0);
-		} elseif (array_key_exists('v', $options)) {
-			out::set_verbosity(2);
-		}
-
-		/**
-		 * Read either the user provided config file or the default one.
-		 */
-		$settings = $this->read_config($options['c'] ?? __DIR__.'/sss.conf');
-
-		/**
-		 * Set the proper timezone.
-		 */
-		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
-		out::put('debug', 'timezone set to: \''.$this->timezone.'\'');
-
-		/**
-		 * Open the database connection and store config settings.
-		 */
-		db::set_database($this->database);
-		db::connect();
-		db::query_exec('DELETE FROM settings');
-
-		foreach ($settings as $setting => $value) {
-			db::query_exec('INSERT INTO settings (setting, value) VALUES (\''.$setting.'\', \''.preg_replace('/\'/', '\'\'', $value).'\')');
-		}
-
-		/**
-		 * Run appropriate parts of the program.
-		 */
 		if (array_key_exists('e', $options)) {
 			$this->export_nicks($options['e']);
 		}
@@ -207,12 +213,6 @@ class sss
 		if (array_key_exists('o', $options)) {
 			$this->create_html($options['o']);
 		}
-
-		/**
-		 * Synchronize and finalize.
-		 */
-		db::disconnect();
-		out::put('notice', 'kthxbye');
 	}
 
 	private function parse_log(string $filedir): void
