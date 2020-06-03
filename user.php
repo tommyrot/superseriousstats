@@ -15,8 +15,8 @@ if (!isset($_GET['nick'])) {
  * Include shared code.
  */
 require 'common.php';
-require 'common_user_hist.php';
-require 'common_html_user_hist.php';
+require 'common_user_history.php';
+require 'common_html_user_history.php';
 require 'common_html_user.php';
 
 /**
