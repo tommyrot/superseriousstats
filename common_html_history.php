@@ -39,8 +39,8 @@ trait common_html_history
 		 * Execute the appropriate queries.
 		 */
 		if (isset($this->year)) {
-			if (!is_null($l_total = db::query_single_col('SELECT SUM(t1.l_total) FROM '.(isset($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.(isset($this-month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\''))) {
-				$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote FROM '.(isset($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->year.(isset($this-month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT 30');
+			if (!is_null($l_total = db::query_single_col('SELECT SUM(t1.l_total) FROM '.(isset($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.(isset($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\''))) {
+				$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote FROM '.(isset($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->year.(isset($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT 30');
 			}
 		else {
 			if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)'))) {
