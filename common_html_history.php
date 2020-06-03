@@ -123,10 +123,10 @@ trait common_html_history
 			/**
 			 * Execute the appropriate query.
 			 */
-			if (isset($this->month)) {
-				$results = db::query('SELECT csnick, l_'.$time.' FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.'-'.($this->month <= 9 ? '0' : '').$this->month.'\' AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_activity_by_month.ruid ASC LIMIT 10');
+			if (isset($this->year)) {
+				$results = db::query('SELECT csnick, t1.l_'.$time.' FROM '.(isset($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.(isset($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, t1.ruid ASC LIMIT 10');
 			} else {
-				$results = db::query('SELECT csnick, l_'.$time.' FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4)'.(isset($this->year) ? ' AND date = \''.$this->year.'\'' : '').' AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_activity_by_year.ruid ASC LIMIT 10');
+				$results = db::query('SELECT csnick, l_'.$time.' FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_lines.ruid ASC LIMIT 10');
 			}
 
 			if (($result = $results->fetchArray(SQLITE3_ASSOC)) === false) {
