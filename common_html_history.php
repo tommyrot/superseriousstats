@@ -136,7 +136,7 @@ trait common_html_history
 			$results->reset();
 
 			/**
-			 * Arrange data in a useable format.
+			 * Arrange data in a usable format.
 			 */
 			$i = 0;
 

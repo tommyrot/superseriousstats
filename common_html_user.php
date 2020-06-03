@@ -68,7 +68,7 @@ trait common_html_user
 		$results->reset();
 
 		/**
-		 * Arrange data in a useable format and remember the first date with the most
+		 * Arrange data in a usable format and remember the first date with the most
 		 * lines along with said amount. We use this value to scale the bar heights.
 		 */
 		$high_lines = 0;
@@ -226,7 +226,7 @@ trait common_html_user
 		}
 
 		/**
-		 * Arrange data in a useable format and remember the first day with the most
+		 * Arrange data in a usable format and remember the first day with the most
 		 * lines along with said amount. We use this value to scale the bar heights.
 		 */
 		$high_lines = 0;
