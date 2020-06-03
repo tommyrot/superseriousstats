@@ -37,7 +37,7 @@ class user
 	private string $userpics_default = '';
 	private string $userpics_dir = 'userpics';
 
-	public function __construct(string $nick)
+	public function __construct()
 	{
 		/**
 		 * Explicitly set the locale to C (POSIX) for all categories so there hopefully
@@ -157,9 +157,9 @@ class user
 	}
 
 	/**
-	 * Find the user $nick belongs to and create a stats page for it.
+	 * Find the user whom the nick belongs to and create a stats page for it.
 	 */
-	private function main(string $nick): void
+	private function main(): void
 	{
 		/**
 		 * Open the database connection and update our settings.
@@ -178,7 +178,7 @@ class user
 		 * Do some input validation. Make sure the nick doesn't contain any invalid
 		 * characters and doesn't exceed 64 characters in length.
 		 */
-		if (mb_strlen($nick) > 64 || !preg_match('/^([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})+$/', $nick) || preg_match('/\p{C}+/u', $nick) || preg_match('/^[0-9-]|[\x20-\x2C\x2E\x2F\x3A-\x40\x7E]|\xC2\xA0|\xE2\x80[\xA8\xA9]/', $nick) || is_null($result = db::query_single_row('SELECT csnick, ruid FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE csnick = \''.preg_replace('/\'/', '\'\'', $nick).'\')'))) {
+		if (mb_strlen($_GET['nick']) > 64 || !preg_match('/^([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})+$/', $_GET['nick']) || preg_match('/\p{C}+/u', $_GET['nick']) || preg_match('/^[0-9-]|[\x20-\x2C\x2E\x2F\x3A-\x40\x7E]|\xC2\xA0|\xE2\x80[\xA8\xA9]/', $_GET['nick']) || is_null($result = db::query_single_row('SELECT csnick, ruid FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE csnick = \''.preg_replace('/\'/', '\'\'', $_GET['nick']).'\')'))) {
 			out::put('critical', 'Nonexistent and/or erroneous nickname.');
 		}
 
@@ -200,4 +200,4 @@ class user
 /**
  * Make stats!
  */
-$user = new user($_GET['nick']);
+$user = new user();
