@@ -56,9 +56,27 @@ class user
 		mb_internal_encoding('UTF-8');
 
 		/**
+		 * Open the database connection and update our settings.
+		 */
+		db::connect();
+		$this->apply_settings(['timezone', 'channel', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page']);
+		out::set_stylesheet($this->stylesheet);
+
+		/**
+		 * Set the proper timezone.
+		 */
+		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
+		$this->now = date('Y-m-d');
+
+		/**
 		 * Init done, move to main.
 		 */
-		$this->main($nick);
+		$this->main();
+
+		/**
+		 * Close the database connection.
+		 */
+		db::disconnect();
 	}
 
 	/**
@@ -157,23 +175,10 @@ class user
 	}
 
 	/**
-	 * Find the user whom the nick belongs to and create a stats page for it.
+	 * Find the user whom $_GET['nick'] belongs to and create a stats page for it.
 	 */
 	private function main(): void
 	{
-		/**
-		 * Open the database connection and update our settings.
-		 */
-		db::connect();
-		$this->apply_settings(['timezone', 'channel', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page']);
-		out::set_stylesheet($this->stylesheet);
-
-		/**
-		 * Set the proper timezone.
-		 */
-		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
-		$this->now = date('Y-m-d');
-
 		/**
 		 * Do some input validation. Make sure the nick doesn't contain any invalid
 		 * characters and doesn't exceed 64 characters in length.
@@ -193,7 +198,6 @@ class user
 		}
 
 		echo $this->get_contents();
-		db::disconnect();
 	}
 }
 
