@@ -57,7 +57,7 @@ trait common_html_history
 		 */
 		$title = 'Most Talkative People &ndash; '.(isset($this->month) ? date('F Y', strtotime($this->year.'-'.($this->month <= 9 ? '0' : '').$this->month.'-01')) : ($this->year ?? 'All-Time'));
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
-		$tr1 = '<tr><th colspan="7">'.($this->linkto_history_php ? '<span class="title">'.$title.'</span><span class="title-right"><a href="history.php">History</a></span>' : $title);
+		$tr1 = '<tr><th colspan="7">'.($this->link_history_php ? '<span class="title">'.$title.'</span><span class="title-right"><a href="history.php">History</a></span>' : $title);
 		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">Activity<td class="k5">Last Talked<td class="k6">Quote';
 		$trx = '';
 		$pos = 0;
@@ -104,7 +104,7 @@ trait common_html_history
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $l_total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$pos.'<td class="v3">'.($this->linkto_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
+			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $l_total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$pos.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
