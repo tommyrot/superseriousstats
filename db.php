@@ -141,9 +141,9 @@ class db
 		}
 
 		/**
-		 * Return null instead of an empty array.
+		 * Return null instead of an empty array or an array full of null values.
 		 */
-		if (empty($result)) {
+		if (empty($result) || count(array_filter($result, 'is_null')) === count($result)) {
 			return null;
 		}
 

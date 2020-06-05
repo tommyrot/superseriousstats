@@ -83,7 +83,7 @@ class db
 			self::fail();
 		}
 
-		if (empty($result)) {
+		if (empty($result) || count(array_filter($result, 'is_null')) === count($result)) {
 			return null;
 		}
 
