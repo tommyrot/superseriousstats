@@ -29,8 +29,9 @@ trait common_html_user_history
 		}
 
 		/**
-		 * Arrange data in a usable format and remember the first hour with the most
-		 * lines along with said amount. We use this value to scale the bar heights.
+		 * Arrange data in a usable format. Remember the (first) hour with the most
+		 * lines so we can make the bar label bold later. $high_lines is used to scale
+		 * the bar heights.
 		 */
 		$high_lines = 0;
 
