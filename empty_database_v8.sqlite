@@ -101,8 +101,8 @@ kicks INT NOT NULL,
 kicked INT NOT NULL,
 nickchanges INT NOT NULL,
 topics INT NOT NULL,
-ex_kicks TEXT NOT NULL DEFAULT '',
-ex_kicked TEXT NOT NULL DEFAULT ''
+ex_kicks TEXT NOT NULL,
+ex_kicked TEXT NOT NULL
 );
 
 CREATE TABLE ruid_lines (
@@ -176,11 +176,11 @@ exclamations INT NOT NULL,
 questions INT NOT NULL,
 actions INT NOT NULL,
 uppercased INT NOT NULL,
-quote TEXT NOT NULL DEFAULT '',
-ex_exclamations TEXT NOT NULL DEFAULT '',
-ex_questions TEXT NOT NULL DEFAULT '',
-ex_actions TEXT NOT NULL DEFAULT '',
-ex_uppercased TEXT NOT NULL DEFAULT '',
+quote TEXT NOT NULL,
+ex_exclamations TEXT NOT NULL,
+ex_questions TEXT NOT NULL,
+ex_actions TEXT NOT NULL,
+ex_uppercased TEXT NOT NULL,
 lasttalked TEXT NOT NULL
 );
 
@@ -505,8 +505,8 @@ SUM(kicks) AS kicks,
 SUM(kicked) AS kicked,
 SUM(nickchanges) AS nickchanges,
 SUM(topics) AS topics,
-(SELECT ex_kicks FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicks != '' AND ruid = t1.ruid ORDER BY RANDOM() LIMIT 1) AS ex_kicks,
-(SELECT ex_kicked FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicked != '' AND ruid = t1.ruid ORDER BY RANDOM() LIMIT 1) AS ex_kicked
+IFNULL((SELECT ex_kicks FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicks != '' AND ruid = t1.ruid ORDER BY RANDOM() LIMIT 1), '') AS ex_kicks,
+IFNULL((SELECT ex_kicked FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicked != '' AND ruid = t1.ruid ORDER BY RANDOM() LIMIT 1), '') AS ex_kicked
 FROM uid_events JOIN uid_details AS t1 ON uid_events.uid = t1.uid GROUP BY ruid;
 
 CREATE VIEW v_ruid_lines AS
@@ -580,11 +580,11 @@ SUM(exclamations) AS exclamations,
 SUM(questions) AS questions,
 SUM(actions) AS actions,
 SUM(uppercased) AS uppercased,
-(SELECT quote FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE quote != '' AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS quote,
-(SELECT ex_exclamations FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_exclamations != '' AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_exclamations,
-(SELECT ex_questions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_questions != '' AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_questions,
-(SELECT ex_actions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_actions != '' AND ruid = t1.ruid ORDER BY lastseen DESC, uid_lines.uid ASC LIMIT 1) AS ex_actions,
-(SELECT ex_uppercased FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_uppercased != '' AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_uppercased,
+IFNULL((SELECT quote FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE quote != '' AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1), '') AS quote,
+IFNULL((SELECT ex_exclamations FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_exclamations != '' AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1), '') AS ex_exclamations,
+IFNULL((SELECT ex_questions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_questions != '' AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1), '') AS ex_questions,
+IFNULL((SELECT ex_actions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_actions != '' AND ruid = t1.ruid ORDER BY lastseen DESC, uid_lines.uid ASC LIMIT 1), '') AS ex_actions,
+IFNULL((SELECT ex_uppercased FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_uppercased != '' AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1), '') AS ex_uppercased,
 MAX(lasttalked) AS lasttalked
 FROM uid_lines JOIN uid_details AS t1 ON uid_lines.uid = t1.uid GROUP BY ruid;
 
