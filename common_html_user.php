@@ -157,7 +157,7 @@ trait common_html_user
 			if (!array_key_exists($date, $lines)) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
-				$total = ($lines[$date]['total'] >= 999500 ? number_format($lines[$date]['total'] / 1000000, 1).'M' : ($lines[$date]['total'] >= 10000 ? round($lines[$date]['total'] / 1000).'k' : $lines[$date]['total']));
+				$total = ($lines[$date]['total'] >= 999500 ? number_format($lines[$date]['total'] / 1000000, 1).'M' : ($lines[$date]['total'] >= 10000 ? round($lines[$date]['total'] / 1000).'K' : $lines[$date]['total']));
 				$height['total'] = (int) round(($lines[$date]['total'] / $high_lines) * 100);
 				$tr2 .= '<td'.($date === 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.$total;
 
