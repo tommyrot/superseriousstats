@@ -57,14 +57,15 @@ trait common_html_history
 			return null;
 		}
 
-		/**
-		 * Construct the table, processing data as we need it.
-		 */
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
 		$tr1 = '<tr><th colspan="7">'.($this->link_history_php ? '<span class="title">'.$title.'</span><span class="title-right"><a href="history.php">History</a></span>' : $title);
 		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">Activity<td class="k5">Last Talked<td class="k6">Quote';
 		$trx = '';
-		$pos = 0;
+
+		/**
+		 * Construct each individual row.
+		 */
+		$i = 0;
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			/**
@@ -100,6 +101,9 @@ trait common_html_history
 				--$unclaimed_pixels;
 			}
 
+			/**
+			 * Put together the little activity bar graph of 50 pixels wide.
+			 */
 			$activity = '';
 
 			foreach ($times as $time) {
@@ -108,7 +112,7 @@ trait common_html_history
 				}
 			}
 
-			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $l_total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$pos.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
+			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $l_total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$i.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
@@ -120,7 +124,7 @@ trait common_html_history
 		$times = ['night', 'morning', 'afternoon', 'evening'];
 
 		/**
-		 * Use the highest amount of lines to scale the bar widths.
+		 * $high_lines is used to scale the bar widths.
 		 */
 		$high_lines = 0;
 
@@ -162,7 +166,8 @@ trait common_html_history
 		$trx = '';
 
 		/**
-		 * Construct each row, provided there is at least one column with data per row.
+		 * Construct each individual row, provided there is at least one column per row
+		 * width data.
 		 */
 		for ($i = 1; $i <= 10; ++$i) {
 			if (!isset($lines['night'][$i]) && !isset($lines['morning'][$i]) && !isset($lines['afternoon'][$i]) && !isset($lines['evening'][$i])) {
