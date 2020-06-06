@@ -29,7 +29,8 @@ class db
 		}
 
 		/**
-		 * Prevent all changes to database files ("query_only = ON").
+		 * Setup the SQLite connection:
+		 *  - Prevent all changes to database files ("query_only = ON").
 		 */
 		$pragmas = [
 			'busy_timeout' => '0',
@@ -45,7 +46,7 @@ class db
 
 	public static function disconnect(): void
 	{
-		self::query_exec('COMMIT') or exit;
+		self::query_exec('COMMIT');
 		self::$db->close();
 	}
 
