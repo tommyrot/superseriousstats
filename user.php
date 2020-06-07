@@ -109,8 +109,8 @@ class user
 			. '<body><div id="container">'."\n"
 			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<br><br>'
 			. 'First seen on '.$date_first_seen.' and last seen on '.$date_last_seen.'.<br><br>'
-			. $this->htmlify($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total > 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg > 1 ? 's' : '').' per day.<br>'
-			. 'Most active day was '.$high_date.' with a total of '.number_format($high_lines).' line'.($high_lines > 1 ? 's' : '').' typed.</div>'."\n";
+			. $this->htmlify($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total !== 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
+			. 'Most active day was '.$high_date.' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * CONTENT
@@ -125,7 +125,7 @@ class user
 		/**
 		 * FOOT
 		 */
-		$output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
+		$output .= '<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').'.</div>'."\n";
 		$output .= '</div></body>'."\n\n".'</html>'."\n";
 		return $output;
 	}
@@ -175,13 +175,13 @@ class user
 	}
 
 	/**
-	 * Find the user whom $_GET['nick'] belongs to and create a stats page for it.
+	 * Find the user to whom $_GET['nick'] belongs and create a stats page for it.
 	 */
 	private function main(): void
 	{
 		/**
 		 * Do some input validation. Make sure the nick doesn't contain any invalid
-		 * characters and doesn't exceed 64 characters in length.
+		 * characters and doesn't exceed 64 characters in length (arbitrary limit).
 		 */
 		if (mb_strlen($_GET['nick']) > 64 || !preg_match('/^([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})+$/', $_GET['nick']) || preg_match('/\p{C}+/u', $_GET['nick']) || preg_match('/^[0-9-]|[\x20-\x2C\x2E\x2F\x3A-\x40\x7E]|\xC2\xA0|\xE2\x80[\xA8\xA9]/', $_GET['nick']) || is_null($result = db::query_single_row('SELECT csnick, ruid FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE csnick = \''.preg_replace('/\'/', '\'\'', $_GET['nick']).'\')'))) {
 			out::put('critical', 'Nonexistent and/or erroneous nickname.');
