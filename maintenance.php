@@ -20,7 +20,8 @@ class maintenance
 	}
 
 	/**
-	 * Calculate on which date a user reached certain milestones.
+	 * Calculate on which date a user reached certain milestones. Skip bots and
+	 * excluded users.
 	 */
 	private function calculate_milestones(): void
 	{
