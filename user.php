@@ -156,7 +156,7 @@ class user
 		 * Search the $images array for a filename that matches $csnick or any of the
 		 * aliases belonging to this user.
 		 */
-		$nicks = explode(',', mb_strtolower($this->csnick.db::query_single_col('SELECT \',\' || GROUP_CONCAT(csnick) FROM uid_details WHERE uid_details.ruid = '.$this->ruid.' AND status = 2')));
+		$nicks = explode(',', mb_strtolower($this->csnick.db::query_single_col('SELECT \',\' || GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = '.$this->ruid.' AND status = 2')));
 
 		foreach ($nicks as $nick) {
 			if (array_key_exists($nick, $images)) {
