@@ -1,239 +1,107 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Copyright (c) 2010-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
+ * Include shared code.
+ */
+require 'common.php';
+require 'common_user_history.php';
+require 'common_html_user_history.php';
+require 'common_html_history.php';
+
+/**
  * Class for creating historical stats.
  */
 class history
 {
-	use common_html_user_history;
+	use common, common_html_user_history, common_html_history;
 
-	//required
-	private string $month;
-	private string $year;
-	//
+	private bool $link_history_php = false; /* Don't update via config settings. */
+	private bool $link_user_php = true;
+	private ?int $month = null;
+	private int $year = 0;
+	private string $channel = 'unconfigured';
+	private string $main_page = './';
+	private string $now = '';
+	private string $stylesheet = 'sss.css';
+	private string $timezone = '';
 
-	/**
-	 * Default settings for this script, which can be overridden in the
-	 * configuration file.
-	 */
-	private $channel = '';
-	private $database = 'sss.db3';
-	private $main_page = './';
-	private $stylesheet = 'sss.css';
-	private $timezone = 'UTC';
-	private $userstats = false;
-
-	/**
-	 * Variables that shouldn't be tampered with.
-	 */
-	private $activity = [];
-	private $cid = '';
-	private $color = [
-		'afternoon' => 'y',
-		'evening' => 'r',
-		'morning' => 'g',
-		'night' => 'b'];
-	private $datetime = [];
-	private $l_total = 0;
-	private $output = '';
-
-	public function __construct($cid, $year, $month)
+	public function __construct()
 	{
-		$this->cid = $cid;
-		$this->datetime['month'] = $month;
-		$this->datetime['year'] = $year;
+		/**
+		 * Explicitly set the locale to C (POSIX) for all categories so there hopefully
+		 * won't be any unexpected results between platforms.
+		 */
+		setlocale(LC_ALL, 'C');
 
 		/**
-		 * Load settings from vars.php (contained in $settings[]).
+		 * Use UTC until config specified timezone is set.
 		 */
-		if ((include 'vars.php') === false) {
-			$this->output(null, 'The configuration file could not be read.');
-		}
+		date_default_timezone_set('UTC');
 
 		/**
-		 * $cid is the channel ID used in vars.php and is passed along in the URL so
-		 * that channel specific settings can be identified and loaded.
+		 * Set the character encoding used by all mbstring functions.
 		 */
-		if (empty($settings[$this->cid])) {
-			$this->output(null, 'This channel has not been configured.');
-		}
-
-		foreach ($settings[$this->cid] as $key => $value) {
-			$this->$key = $value;
-		}
-
-		date_default_timezone_set($this->timezone);
+		mb_internal_encoding('UTF-8');
 
 		/**
-		 * Open the database connection.
+		 * Open the database connection and update our settings.
 		 */
-		try {
-			$sqlite3 = new SQLite3($this->database, SQLITE3_OPEN_READONLY);
-			$sqlite3->busyTimeout(0);
-		} catch (Exception $e) {
-			$this->output(null, basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$e->getMessage());
-		}
+		db::connect();
+		$this->apply_settings(['timezone', 'channel', 'stylesheet', 'main_page', 'link_user_php']);
+		out::set_stylesheet($this->stylesheet);
 
 		/**
-		 * Set SQLite3 PRAGMAs:
-		 *  query_only = ON - Disable all changes to database files.
-		 *  temp_store = MEMORY - Temporary tables and indices are kept in memory.
+		 * Set the proper timezone.
 		 */
-		$pragmas = [
-			'query_only' => 'ON',
-			'temp_store' => 'MEMORY'];
-
-		foreach ($pragmas as $key => $value) {
-			$sqlite3->exec('PRAGMA '.$key.' = '.$value);
-		}
+		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
+		$this->now = date('Y-m-d');
 
 		/**
-		 * Make stats!
+		 * Init done, move to main.
 		 */
-		echo $this->make_html($sqlite3);
-		$sqlite3->close();
+		$this->main();
+
+		/**
+		 * Close the database connection.
+		 */
+		db::disconnect();
 	}
 
 	/**
-	 * Calculate how many days ago a given $datetime is.
+	 * Create an index with clickable links to all years and months in which there
+	 * was activity.
 	 */
-	private function daysago($datetime)
+	private function create_index(): string
 	{
 		/**
-		 * Because the amount of seconds in a day can vary due to DST we have
-		 * to round the value of $daysago.
+		 * Retrieve all activity and arrange data in a usable format.
 		 */
-		$daysago = round((strtotime('today') - strtotime(substr($datetime, 0, 10))) / 86400);
+		$results = db::query('SELECT SUBSTR(date, 1, 4) AS year, CAST(SUBSTR(date, 6, 2) AS INTEGER) AS month, SUM(l_total) AS l_total FROM channel_activity GROUP BY year, month ORDER BY date ASC');
 
-		if ($daysago / 365 >= 1) {
-			$daysago = str_replace('.0', '', number_format($daysago / 365, 1));
-			$daysago .= ' Year'.((float) $daysago > 1 ? 's' : '').' Ago';
-		} elseif ($daysago / 30.42 >= 1) {
-			$daysago = str_replace('.0', '', number_format($daysago / 30.42, 1));
-			$daysago .= ' Month'.((float) $daysago > 1 ? 's' : '').' Ago';
-		} elseif ($daysago > 1) {
-			$daysago .= ' Days Ago';
-		} elseif ($daysago === (float) 1) {
-			$daysago = 'Yesterday';
-		} elseif ($daysago === (float) 0) {
-			$daysago = 'Today';
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+			$lines[(int) $result['year']][$result['month']] = $result['l_total'];
 		}
 
-		return $daysago;
-	}
-
-	private function get_activity($sqlite3)
-	{
-		$query = $sqlite3->query('SELECT SUBSTR(date, 1, 4) AS year, CAST(SUBSTR(date, 6, 2) AS INTEGER) AS month, SUM(l_total) AS l_total FROM channel_activity GROUP BY year, month ORDER BY date ASC') or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			$this->activity[$result['year']][$result['month']] = $result['l_total'];
-
-			if (!isset($this->activity[$result['year']][0])) {
-				$this->activity[$result['year']][0] = 0;
-			}
-
-			$this->activity[$result['year']][0] += $result['l_total'];
-		}
-	}
-
-	/**
-	 * Generate the HTML page.
-	 */
-	private function make_html($sqlite3)
-	{
-		if (($daycount = $sqlite3->querySingle('SELECT COUNT(*) FROM channel_activity')) === false) {
-			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		/**
-		 * All queries from this point forward require a non-empty database.
-		 */
-		if ($daycount === 0) {
-			$this->output('error', 'There is not enough data to create statistics, yet.');
-		}
-
-		if (($result = $sqlite3->querySingle('SELECT CAST(MIN(SUBSTR(date, 1, 4)) AS INTEGER) AS year_first, CAST(MAX(SUBSTR(date, 1, 4)) AS INTEGER) AS year_last FROM parse_history', true)) === false) {
-			$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		/**
-		 * Date and time variables used throughout the script.
-		 */
-		$this->datetime['year_first'] = $result['year_first'];
-		$this->datetime['year_last'] = $result['year_last'];
-
-		if (!is_null($this->datetime['month'])) {
-			$this->datetime['monthname'] = date('F', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year']));
-		}
-
-		/**
-		 * HTML Head.
-		 */
-		$this->output = '<!DOCTYPE html>'."\n\n"
-			. '<html>'."\n\n"
-			. '<head>'."\n"
-			. '<meta charset="utf-8">'."\n"
-			. '<title>'.htmlspecialchars($this->channel).', historically.</title>'."\n"
-			. '<link rel="stylesheet" href="'.$this->stylesheet.'">'."\n"
-			. '</head>'."\n\n"
-			. '<body><div id="container">'."\n"
-			. '<div class="info"><a href="'.htmlspecialchars($this->mainpage).'">'.htmlspecialchars($this->channel).'</a>, historically.<br><br>'
-			. (is_null($this->datetime['year']) ? '<span class="note">Select a year and/or month in the matrix below.</span>' : 'Displaying statistics for '.(!is_null($this->datetime['month']) ? $this->datetime['monthname'].' '.$this->datetime['year'] : 'the year '.$this->datetime['year']).'.').'</div>'."\n";
-
-		/**
-		 * Activity section.
-		 */
-		$this->get_activity($sqlite3);
-		$this->output .= '<div class="section">Activity</div>'."\n";
-		$this->output .= $this->make_index();
-
-		/**
-		 * Only call make_table_* functions for times in which there was activity.
-		 */
-		if (!is_null($this->datetime['year']) && array_key_exists($this->datetime['year'], $this->activity) && (is_null($this->datetime['month']) || array_key_exists($this->datetime['month'], $this->activity[$this->datetime['year']]))) {
-			/**
-			 * Set $l_total to the total number of lines in the specific scope.
-			 */
-			if (is_null($this->datetime['month'])) {
-				$this->l_total = $this->activity[$this->datetime['year']][0];
-				$type = 'year';
-			} else {
-				$this->l_total = $this->activity[$this->datetime['year']][$this->datetime['month']];
-				$type = 'month';
-			}
-
-			$this->output .= $this->create_table_activity_distribution_hour($type);
-			$this->output .= $this->make_table_people($sqlite3, $type);
-			$this->output .= $this->make_table_people_timeofday($sqlite3, $type);
-		}
-
-		/**
-		 * HTML Foot.
-		 */
-		$this->output .= '<div class="info">Statistics created with <a href="http://sss.dutnie.nl">superseriousstats</a> on '.date('r').'.</div>'."\n";
-		$this->output .= '</div></body>'."\n\n".'</html>'."\n";
-		return $this->output;
-	}
-
-	private function make_index()
-	{
 		$tr0 = '<colgroup><col class="pos"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c">';
 		$tr1 = '<tr><th colspan="13">History';
 		$tr2 = '<tr><td class="pos"><td class="k">Jan<td class="k">Feb<td class="k">Mar<td class="k">Apr<td class="k">May<td class="k">Jun<td class="k">Jul<td class="k">Aug<td class="k">Sep<td class="k">Oct<td class="k">Nov<td class="k">Dec';
 		$trx = '';
 
-		for ($year = $this->datetime['year_first']; $year <= $this->datetime['year_last']; ++$year) {
-			if (array_key_exists($year, $this->activity)) {
-				$trx .= '<tr><td class="pos"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'">'.$year.'</a>';
+		/**
+		 * Construct a line with activity numbers per month for each year since the
+		 * date of the first log parsed. Months with no activity will show "n/a".
+		 */
+		for ($year = (int) db::query_single_col('SELECT MIN(SUBSTR(date, 1, 4)) FROM parse_history'); $year <= (int) db::query_single_col('SELECT MAX(SUBSTR(date, 1, 4)) FROM parse_history'); ++$year) {
+			if (array_key_exists($year, $lines)) {
+				$trx .= '<tr><td class="pos"><a href="history.php?year='.$year.'">'.$year.'</a>';
 
 				for ($month = 1; $month <= 12; ++$month) {
-					if (array_key_exists($month, $this->activity[$year])) {
-						$trx .= '<td class="v"><a href="history.php?cid='.urlencode($this->cid).'&amp;year='.$year.'&amp;month='.$month.'">'.number_format($this->activity[$year][$month]).'</a>';
+					if (array_key_exists($month, $lines[$year])) {
+						$trx .= '<td class="v"><a href="history.php?year='.$year.'&amp;month='.$month.'">'.number_format($lines[$year][$month]).'</a>';
 					} else {
 						$trx .= '<td class="v"><span class="grey">n/a</span>';
 					}
@@ -246,198 +114,81 @@ class history
 		return '<table class="index">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	private function make_table_people($sqlite3, $type)
-	{
-		/**
-		 * Only create the table if there is activity from users other than bots and
-		 * excluded users.
-		 */
-		if ($type === 'month') {
-			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\'')) === false) {
-				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-		} elseif ($type === 'year') {
-			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\'')) === false) {
-				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-		}
-
-		if (empty($total)) {
-			return null;
-		}
-
-		if ($type === 'month') {
-			$head = 'Most Talkative People &ndash; '.$this->datetime['monthname'].' '.$this->datetime['year'];
-			$query = $sqlite3->query('SELECT csnick, ruid_activity_by_month.l_total AS l_total, ruid_activity_by_month.l_night AS l_night, ruid_activity_by_month.l_morning AS l_morning, ruid_activity_by_month.l_afternoon AS l_afternoon, ruid_activity_by_month.l_evening AS l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_month.ruid) AS lastseen FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_month.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\' ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_month) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		} elseif ($type === 'year') {
-			$head = 'Most Talkative People &ndash; '.$this->datetime['year'];
-			$query = $sqlite3->query('SELECT csnick, ruid_activity_by_year.l_total AS l_total, ruid_activity_by_year.l_night AS l_night, ruid_activity_by_year.l_morning AS l_morning, ruid_activity_by_year.l_afternoon AS l_afternoon, ruid_activity_by_year.l_evening AS l_evening, quote, (SELECT MAX(lastseen) FROM uid_details WHERE ruid = ruid_activity_by_year.ruid) AS lastseen FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid JOIN ruid_lines ON ruid_activity_by_year.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\' ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_year) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-		}
-
-		$i = 0;
-		$times = ['night', 'morning', 'afternoon', 'evening'];
-		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
-		$tr1 = '<tr><th colspan="7">'.$head;
-		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">When?<td class="k5">Last Seen<td class="k6">Quote';
-		$trx = '';
-
-		while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-			++$i;
-			$width = 50;
-
-			foreach ($times as $time) {
-				if ($result['l_'.$time] !== 0) {
-					$width_float[$time] = (float) ($result['l_'.$time] / $result['l_total']) * 50;
-					$width_int[$time] = (int) floor($width_float[$time]);
-					$width_remainders[$time] = $width_float[$time] - $width_int[$time];
-					$width -= $width_int[$time];
-				}
-			}
-
-			if ($width !== 0) {
-				arsort($width_remainders);
-
-				foreach ($width_remainders as $time => $remainder) {
-					--$width;
-					++$width_int[$time];
-
-					if ($width === 0) {
-						break;
-					}
-				}
-			}
-
-			$when = '';
-
-			foreach ($times as $time) {
-				if (!empty($width_int[$time])) {
-					$when .= '<li class="'.$this->color[$time].'" style="width:'.$width_int[$time].'px">';
-				}
-			}
-
-			$trx .= '<tr><td class="v1">'.number_format(($result['l_total'] / $total) * 100, 2).'%<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.$i.'<td class="v3">'.($this->userstats ? '<a href="user.php?cid='.urlencode($this->cid).'&amp;nick='.urlencode($result['csnick']).'">'.htmlspecialchars($result['csnick']).'</a>' : htmlspecialchars($result['csnick'])).'<td class="v4"><ul>'.$when.'</ul><td class="v5">'.$this->daysago($result['lastseen']).'<td class="v6">'.htmlspecialchars($result['quote']);
-			unset($width_float, $width_int, $width_remainders);
-		}
-
-		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
-	}
-
-	private function make_table_people_timeofday($sqlite3, $type)
-	{
-		/**
-		 * Only create the table if there is activity from users other than bots and
-		 * excluded users.
-		 */
-		if ($type === 'month') {
-			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\'')) === false) {
-				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-		} elseif ($type === 'year') {
-			if (($total = $sqlite3->querySingle('SELECT SUM(l_total) FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->datetime['year'].'\'')) === false) {
-				$this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-		}
-
-		if (empty($total)) {
-			return null;
-		}
-
-		$high_value = 0;
-		$times = ['night', 'morning', 'afternoon', 'evening'];
-
-		foreach ($times as $time) {
-			if ($type === 'month') {
-				$query = $sqlite3->query('SELECT csnick, l_'.$time.' FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE date = \''.date('Y-m', mktime(0, 0, 0, $this->datetime['month'], 1, $this->datetime['year'])).'\' AND status NOT IN (3,4) AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_activity_by_month.ruid ASC LIMIT '.$this->maxrows_people_timeofday) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			} elseif ($type === 'year') {
-				$query = $sqlite3->query('SELECT csnick, l_'.$time.' FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE date = \''.$this->datetime['year'].'\' AND status NOT IN (3,4) AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_activity_by_year.ruid ASC LIMIT '.$this->maxrows_people_timeofday) or $this->output($sqlite3->lastErrorCode(), basename(__FILE__).':'.__LINE__.', sqlite3 says: '.$sqlite3->lastErrorMsg());
-			}
-
-			$i = 0;
-
-			while ($result = $query->fetchArray(SQLITE3_ASSOC)) {
-				++$i;
-				${$time}[$i]['lines'] = $result['l_'.$time];
-				${$time}[$i]['user'] = $result['csnick'];
-
-				if (${$time}[$i]['lines'] > $high_value) {
-					$high_value = ${$time}[$i]['lines'];
-				}
-			}
-		}
-
-		$tr0 = '<colgroup><col class="pos"><col class="c"><col class="c"><col class="c"><col class="c">';
-		$tr1 = '<tr><th colspan="5">Most Talkative People by Time of Day';
-		$tr2 = '<tr><td class="pos"><td class="k">Night<br>0h - 5h<td class="k">Morning<br>6h - 11h<td class="k">Afternoon<br>12h - 17h<td class="k">Evening<br>18h - 23h';
-		$trx = '';
-
-		for ($i = 1; $i <= $this->maxrows_people_timeofday; ++$i) {
-			if (!isset($night[$i]['lines']) && !isset($morning[$i]['lines']) && !isset($afternoon[$i]['lines']) && !isset($evening[$i]['lines'])) {
-				break;
-			}
-
-			$trx .= '<tr><td class="pos">'.$i;
-
-			foreach ($times as $time) {
-				if (!isset(${$time}[$i]['lines'])) {
-					$trx .= '<td class="v">';
-				} else {
-					$width = round((${$time}[$i]['lines'] / $high_value) * 190);
-
-					if ($width !== (float) 0) {
-						$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']).'<br><div class="'.$this->color[$time].'" style="width:'.$width.'px"></div>';
-					} else {
-						$trx .= '<td class="v">'.htmlspecialchars(${$time}[$i]['user']).' - '.number_format(${$time}[$i]['lines']);
-					}
-				}
-			}
-		}
-
-		return '<table class="ppl-tod">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
-	}
-
 	/**
-	 * For compatibility reasons this function has the same name as the original
-	 * version in the base class and accepts the same arguments. Its functionality
-	 * is slightly different in that it exits on any type of message passed to it.
-	 * SQLite3 result code 5 = SQLITE_BUSY, result code 6 = SQLITE_LOCKED.
+	 * Generate the HTML page.
 	 */
-	private function output($code, $msg)
+	private function get_contents(): string
 	{
-		if ($code === 5 || $code === 6) {
-			$msg = 'Statistics are currently being updated, this may take a minute.';
+		/**
+		 * HEAD
+		 */
+		$output = '<!DOCTYPE html>'."\n\n"
+			. '<html>'."\n\n"
+			. '<head>'."\n"
+			. '<meta charset="utf-8">'."\n"
+			. '<title>'.$this->htmlify($this->channel).', historically.</title>'."\n"
+			. '<link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'">'."\n"
+			. '</head>'."\n\n"
+			. '<body><div id="container">'."\n"
+			. '<div class="info"><a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a>, historically.<br><br>'
+			. 'Displaying statistics for '.(!is_null($this->month) ? date('F', strtotime($this->year.'-'.($this->month <= 9 ? '0' : '').$this->month.'-01')).' ' : '').$this->year.'</div>'."\n";
+
+		/**
+		 * CONTENT
+		 */
+		$output .= '<div class="section">Activity</div>'."\n";
+		$output .= $this->create_index();
+
+		/**
+		 * Stats require a non-empty dataset.
+		 */
+		//if (is_null(db::query_single_col('SELECT SUM(l_total) FROM channel_activity'))) {
+		// WHERE date LIKE \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'%\''
+		//	out::put('critical', 'There is not enough data to create statistics, yet.');
+		//}
+		$output .= $this->create_table_activity_distribution_hour();
+		$output .= $this->create_table_people();
+		$output .= $this->create_table_people_timeofday();
+
+		/**
+		 * FOOT
+		 */
+		$output .= '<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').'.</div>'."\n";
+		$output .= '</div></body>'."\n\n".'</html>'."\n";
+		return $output;
+	}
+
+	private function main(): void
+	{
+		/**
+		 * Do some input validation. Both $year and $month default to the current date.
+		 * $month may also be null.
+		 */
+		if (isset($_GET['year']) && preg_match('/^[12][0-9]{3}$/', $_GET['year'])) {
+			$this->year = (int) $_GET['year'];
+
+			if (isset($_GET['month']) && preg_match('/^([1-9]|1[0-2])$/', $_GET['month'])) {
+				$this->month = (int) $_GET['month'];
+			} else {
+				$this->month = null;
+			}
+		} else {
+			$this->year = (int) date('Y');
+			$this->month = (int) date('n');
 		}
 
-		exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">'.htmlspecialchars($msg).'</div></div></body></html>'."\n");
+		/**
+		 * Stats require a non-empty dataset.
+		 */
+		if (db::query_single_col('SELECT COUNT(*) FROM channel_activity') === 0) {
+			out::put('critical', 'There is not enough data to create statistics, yet.');
+		}
+
+		echo $this->get_contents();
 	}
-}
-
-/**
- * The channel ID must be set, cannot be empty and cannot be of excessive
- * length.
- */
-if (empty($_GET['cid']) || !preg_match('/^\S{1,32}$/', $_GET['cid'])) {
-	exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="sss.css"></head><body><div id="container"><div class="error">Invalid channel ID.</div></div></body></html>'."\n");
-}
-
-$cid = $_GET['cid'];
-
-/**
- * Pass along a null value if the year and/or month are not set.
- */
-if (isset($_GET['year']) && preg_match('/^[12][0-9]{3}$/', $_GET['year'])) {
-	$year = (int) $_GET['year'];
-
-	if (isset($_GET['month']) && preg_match('/^([1-9]|1[0-2])$/', $_GET['month'])) {
-		$month = (int) $_GET['month'];
-	} else {
-		$month = null;
-	}
-} else {
-	$month = null;
-	$year = null;
 }
 
 /**
  * Make stats!
  */
-$history = new history($cid, $year, $month);
+$history = new history();
