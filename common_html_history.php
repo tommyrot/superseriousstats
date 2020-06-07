@@ -31,7 +31,7 @@ trait common_html_history
 		return $ago;
 	}
 
-	private function create_table_people(): ?string
+	private function create_table_people(?string $period = null): ?string
 	{
 		$page = get_class($this);
 		$times = ['night', 'morning', 'afternoon', 'evening'];
@@ -40,10 +40,18 @@ trait common_html_history
 		 * Execute the appropriate queries. Return if there is no data.
 		 */
 		if ($page === 'html') {
-			$title = 'Most Talkative People &ndash; All-Time';
+			if (!is_null($period)) {
+				$title = 'Most Talkative People &ndash; '.($period === 'month' ? date('F Y', strtotime($this->now)) : substr($this->now, 0, 4));
 
-			if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0'))) {
-				$results = db::query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, lasttalked, quote FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT 30');
+				if (!is_null($l_total = db::query_single_col('SELECT SUM(t1.l_total) FROM '.($period === 'month' ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.($period === 'month' ? substr($this->now, 0, 7) : substr($this->now, 0, 4)).'\''))) {
+					$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote FROM '.($period === 'month' ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.($period === 'month' ? substr($this->now, 0, 7) : substr($this->now, 0, 4)).'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT 10');
+				}
+			} else {
+				$title = 'Most Talkative People &ndash; All-Time';
+
+				if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0'))) {
+					$results = db::query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, lasttalked, quote FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT 30');
+				}
 			}
 		} elseif ($page === 'history') {
 			$title = 'Most Talkative People &ndash; '.(!is_null($this->month) ? date('F Y', strtotime($this->year.'-'.($this->month <= 9 ? '0' : '').$this->month.'-01')) : $this->year);
