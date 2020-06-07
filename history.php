@@ -138,14 +138,6 @@ class history
 		 */
 		$output .= '<div class="section">Activity</div>'."\n";
 		$output .= $this->create_index();
-
-		/**
-		 * Stats require a non-empty dataset.
-		 */
-		//if (is_null(db::query_single_col('SELECT SUM(l_total) FROM channel_activity'))) {
-		// WHERE date LIKE \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'%\''
-		//	out::put('critical', 'There is not enough data to create statistics, yet.');
-		//}
 		$output .= $this->create_table_activity_distribution_hour();
 		$output .= $this->create_table_people();
 		$output .= $this->create_table_people_timeofday();
