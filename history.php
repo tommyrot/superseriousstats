@@ -122,7 +122,7 @@ class history
 		/**
 		 * HEAD
 		 */
-		$output = '<!DOCTYPE html>'."\n\n"
+		$contents = '<!DOCTYPE html>'."\n\n"
 			. '<html>'."\n\n"
 			. '<head>'."\n"
 			. '<meta charset="utf-8">'."\n"
@@ -136,18 +136,18 @@ class history
 		/**
 		 * CONTENT
 		 */
-		$output .= '<div class="section">Activity</div>'."\n";
-		$output .= $this->create_index();
-		$output .= $this->create_table_activity_distribution_hour();
-		$output .= $this->create_table_people();
-		$output .= $this->create_table_people_timeofday();
+		$contents .= '<div class="section">Activity</div>'."\n";
+		$contents .= $this->create_index();
+		$contents .= $this->create_table_activity_distribution_hour();
+		$contents .= $this->create_table_people();
+		$contents .= $this->create_table_people_timeofday();
 
 		/**
 		 * FOOT
 		 */
-		$output .= '<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').'.</div>'."\n";
-		$output .= '</div></body>'."\n\n".'</html>'."\n";
-		return $output;
+		$contents .= '<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').'.</div>'."\n";
+		$contents .= '</div></body>'."\n\n".'</html>'."\n";
+		return $contents;
 	}
 
 	private function main(): void
