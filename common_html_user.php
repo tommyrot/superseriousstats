@@ -55,7 +55,7 @@ trait common_html_user
 					--$i;
 				}
 
-				if (db::query_single_col('SELECT COUNT(DISTINCT SUBSTR(date, 1, 4)) FROM channel_activity WHERE SUBSTR(date, 1, 4) BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\'') === 0) {
+				if (db::query_single_col('SELECT COUNT(*) FROM channel_activity WHERE SUBSTR(date, 1, 4) BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\'') === 0) {
 					$i -= 8;
 				}
 
@@ -66,7 +66,7 @@ trait common_html_user
 					--$i;
 				}
 
-				if (db::query_single_col('SELECT COUNT(DISTINCT date) FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\'') === 0) {
+				if (db::query_single_col('SELECT COUNT(*) FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\'') === 0) {
 					$i -= 8;
 				}
 
