@@ -295,7 +295,7 @@ class sss
 			 * Update the parse history when there are actual (non-empty) lines parsed.
 			 */
 			if ($parser->get_int('linenum_last_nonempty') >= $linenum_start) {
-				db::query_exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_int('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = '.$parser->get_int('linenum_last_nonempty'));
+				db::query_exec('INSERT INTO parse_history (date, lines_parsed) VALUES (\''.$date.'\', '.$parser->get_int('linenum_last_nonempty').') ON CONFLICT (date) DO UPDATE SET lines_parsed = excluded.lines_parsed');
 
 				/**
 				 * Store data in the database. We will need maintenance if any data is stored.
