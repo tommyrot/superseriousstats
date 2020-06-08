@@ -290,7 +290,7 @@ trait common_html_user
 				$percentage = ($lines[$day]['total'] / $result['l_total']) * 100;
 				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
 				$height['total'] = (int) round(($lines[$day]['total'] / $high_lines) * 100);
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.$percentage;
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
 
 				if ($height['total'] !== 0) {
 					/**

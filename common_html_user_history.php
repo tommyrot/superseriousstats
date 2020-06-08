@@ -58,7 +58,7 @@ trait common_html_user_history
 				$percentage = ($lines[$hour] / $result['l_total']) * 100;
 				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
 				$height = (int) round(($lines[$hour] / $high_lines) * 100);
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.$percentage;
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
 
 				if ($height !== 0) {
 					$tr2 .= '<li class="'.($hour <= 5 ? 'n' : ($hour <= 11 ? 'm' : ($hour <= 17 ? 'a' : 'e'))).'" style="height:'.$height.'px" title="'.number_format($lines[$hour]).'">';
