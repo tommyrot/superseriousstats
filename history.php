@@ -19,7 +19,6 @@ class history
 {
 	use common, common_html_user_history, common_html_history;
 
-	private bool $link_history_php = false; /* Don't update via config settings. */
 	private bool $link_user_php = true;
 	private ?int $month = null;
 	private int $year = 0;
