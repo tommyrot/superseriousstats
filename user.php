@@ -26,7 +26,6 @@ class user
 {
 	use common, common_html_user_history, common_html_user;
 
-	private int $l_total = 0;
 	private int $ruid = 0;
 	private string $channel = 'unconfigured';
 	private string $csnick = '';
@@ -94,7 +93,8 @@ class user
 		$high_date = date('M j, Y', strtotime($result['date']));
 		$high_lines = $result['l_total'];
 		$mood = db::query_single_col('SELECT smiley FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE ruid = '.$this->ruid.' AND textual = 0 ORDER BY total DESC, ruid_smileys.sid ASC LIMIT 1');
-		$l_avg = $this->l_total / db::query_single_col('SELECT activedays FROM ruid_lines WHERE ruid = '.$this->ruid);
+		$l_total = db::query_single_col('SELECT l_total FROM ruid_lines WHERE ruid = '.$this->ruid);
+		$l_avg = $l_total / db::query_single_col('SELECT activedays FROM ruid_lines WHERE ruid = '.$this->ruid);
 
 		/**
 		 * HEAD
@@ -109,7 +109,7 @@ class user
 			. '<body><div id="container">'."\n"
 			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<br><br>'
 			. 'First seen on '.$date_first_seen.' and last seen on '.$date_last_seen.'.<br><br>'
-			. $this->htmlify($this->csnick).' typed '.number_format($this->l_total).' line'.($this->l_total !== 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
+			. $this->htmlify($this->csnick).' typed '.number_format($l_total).' line'.($l_total !== 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.$high_date.' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
@@ -193,7 +193,7 @@ class user
 		/**
 		 * Stats require a non-empty dataset.
 		 */
-		if (($this->l_total = db::query_single_col('SELECT l_total FROM ruid_lines WHERE ruid = '.$this->ruid) ?? 0) === 0) {
+		if (db::query_single_col('SELECT COUNT(*) FROM ruid_activity_by_day WHERE ruid = '.$this->ruid) === 0) {
 			out::put('critical', $this->htmlify($this->csnick).' is a filthy lurker!');
 		}
 
