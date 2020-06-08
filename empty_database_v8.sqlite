@@ -200,14 +200,6 @@ PRIMARY KEY (ruid, sid)
 );
 CREATE INDEX ruid_smileys_sid ON ruid_smileys (sid);
 
-CREATE TABLE ruid_smileys_by_category (
-ruid INT NOT NULL,
-category TEXT NOT NULL,
-total INT NOT NULL,
-PRIMARY KEY (ruid, category)
-);
-CREATE INDEX ruid_smileys_by_category_category ON ruid_smileys_by_category (category);
-
 CREATE TABLE settings (
 setting TEXT PRIMARY KEY NOT NULL,
 value TEXT NOT NULL
@@ -481,12 +473,6 @@ SELECT ruid,
 sid,
 SUM(total) AS total
 FROM uid_smileys JOIN uid_details ON uid_smileys.uid = uid_details.uid GROUP BY ruid, sid;
-
-CREATE VIEW v_ruid_smileys_by_category AS
-SELECT ruid,
-category,
-SUM(total) AS total
-FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid GROUP BY ruid, category;
 
 CREATE VIEW v_ruid_events AS
 SELECT ruid,
