@@ -87,10 +87,10 @@ class user
 		 * Get all the dirt we got on this user.
 		 */
 		$result = db::query_single_row('SELECT MIN(firstseen) AS firstseen, MAX(lastseen) AS lastseen FROM uid_details WHERE ruid = '.$this->ruid);
-		$date_first_seen = date('M j, Y', strtotime($result['firstseen']));
-		$date_last_seen = date('M j, Y', strtotime($result['lastseen']));
+		$firstseen = $result['firstseen'];
+		$lastseen = $result['lastseen'];
 		$result = db::query_single_row('SELECT date, l_total FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' ORDER BY l_total DESC, date ASC LIMIT 1');
-		$high_date = date('M j, Y', strtotime($result['date']));
+		$high_date = $result['date'];
 		$high_lines = $result['l_total'];
 		$mood = db::query_single_col('SELECT smiley FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE ruid = '.$this->ruid.' AND textual = 0 ORDER BY total DESC, ruid_smileys.sid ASC LIMIT 1');
 		$l_total = db::query_single_col('SELECT l_total FROM ruid_lines WHERE ruid = '.$this->ruid);
@@ -108,9 +108,9 @@ class user
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
 			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<br><br>'
-			. 'First seen on '.$date_first_seen.' and last seen on '.$date_last_seen.'.<br><br>'
+			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
 			. $this->htmlify($this->csnick).' typed '.number_format($l_total).' line'.($l_total !== 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
-			. 'Most active day was '.$high_date.' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.</div>'."\n";
+			. 'Most active day was '.date('M j, Y', strtotime($high_date)).' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * CONTENT
