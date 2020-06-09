@@ -66,7 +66,7 @@ trait common_html_history
 		}
 
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
-		$tr1 = '<tr><th colspan="7">'.($page === 'html' && $this->link_history_php ? '<span class="title">'.$title.'</span><span class="title-right"><a href="history.php'.(!is_null($period) ? ($period === 'month' ? '?year='.substr($this->now, 0, 4).'&amp;month='.((int) substr($this->now, 6, 2)) : '?year='.substr($this->now, 0, 4)) : '').'">History</a></span>' : $title);
+		$tr1 = '<tr><th colspan="7">'.($page === 'html' && $this->link_history_php ? '<span class="title">'.$title.'</span><span class="title-right"><a href="history.php'.(!is_null($period) ? ($period === 'month' ? '?year='.substr($this->now, 0, 4).'&amp;month='.((int) substr($this->now, 5, 2)) : '?year='.substr($this->now, 0, 4)) : '').'">History</a></span>' : $title);
 		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">Activity<td class="k5">Last Talked<td class="k6">Quote';
 		$trx = '';
 
