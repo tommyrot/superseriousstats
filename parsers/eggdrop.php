@@ -18,6 +18,14 @@ class parser_eggdrop extends parser
 			$this->set_join($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) \(\S+\) left irc:( .+)?$/', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
+		} elseif (preg_match('/^'.$timestamp.'Action: (?<line>(?<nick_performing>\S+) ((?<slap>slaps( (?<nick_undergoing>\S+)( .+)?))|(.+)))$/i', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
+			if (!is_null($matches['slap'])) {
+				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
+			}
+
+			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
+		} elseif (preg_match('/^'.$timestamp.'Nick change: (?<nick_performing>\S+) -> (?<nick_undergoing>\S+)$/', $line, $matches)) {
+			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 		} elseif (preg_match('/^'.$timestamp.'[#&!+]\S+: mode change \'(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)\' by (?<nick_performing>\S+?)(!(\S+)?)?$/', $line, $matches)) {
 			$mode_num = 0;
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
@@ -32,14 +40,6 @@ class parser_eggdrop extends parser
 					++$mode_num;
 				}
 			}
-		} elseif (preg_match('/^'.$timestamp.'Action: (?<line>(?<nick_performing>\S+) ((?<slap>slaps( (?<nick_undergoing>\S+)( .+)?))|(.+)))$/i', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
-			if (!is_null($matches['slap'])) {
-				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
-			}
-
-			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
-		} elseif (preg_match('/^'.$timestamp.'Nick change: (?<nick_performing>\S+) -> (?<nick_undergoing>\S+)$/', $line, $matches)) {
-			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) \(\S+\) left [#&!+]\S+( \(.*\))?\.$/', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'Topic changed on [#&!+]\S+ by (?<nick>\S+?)(!(\S+)?)?: (?<line>.+)$/', $line, $matches)) {
