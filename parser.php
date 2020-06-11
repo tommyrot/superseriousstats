@@ -535,8 +535,12 @@ class parser
 
 	/**
 	 * Syntax check a given nick. Leave unicode constraints mostly up to the server.
-	 * Removing characters (e.g. 0x27) from the disallowed ones in the regular
+	 * Removing characters (e.g. 0x27 = ') from the disallowed ones in the regular
 	 * expression below can have serious implications throughout the program.
+	 *
+	 * The constraints are as follows:
+	 *  - Nicks may NOT start with: 1234567890-
+	 *  - Nicks may NOT contain: !"#$%&'()*+,./:;<=>?@~
 	 */
 	private function validate_nick(string $csnick): bool
 	{
