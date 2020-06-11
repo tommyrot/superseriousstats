@@ -40,10 +40,8 @@ class parser_znc extends parser
 			}
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* Parts: (?<nick>\S+) \(\S+\)( \(.*\))?$/', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) changes topic to \'(?<line>.+)\'$/', $line, $matches)) {
-			if ($matches['line'] !== ' ') {
-				$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
-			}
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) changes topic to \'(?<line>.+)\'$/', $line, $matches) && $matches['line'] !== ' ') {
+			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<line>(?<nick_undergoing>\S+) was kicked by (?<nick_performing>\S+) \(.*\))$/', $line, $matches)) {
 			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line']);
 		} else {
