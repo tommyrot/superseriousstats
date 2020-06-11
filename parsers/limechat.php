@@ -21,7 +21,7 @@ class parser_limechat extends parser
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 
 			for ($i = 0, $j = strlen($matches['modes']); $i < $j; ++$i) {
-				$mode = substr($matches['modes'][$i];
+				$mode = $matches['modes'][$i];
 
 				if ($mode === '-' || $mode === '+') {
 					$mode_sign = $mode;
