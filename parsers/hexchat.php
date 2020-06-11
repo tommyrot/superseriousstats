@@ -12,7 +12,7 @@ class parser_hexchat extends parser
 
 		if (preg_match('/^'.$timestamp.'<(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
-		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) \(\S+\) has joined$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) \(\S+\) has joined( [#&!+]\S+)?$/', $line, $matches)) {
 			$this->set_join($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) has quit \(.*\)$/', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
@@ -36,7 +36,7 @@ class parser_hexchat extends parser
 			foreach ($nicks_undergoing as $nick_undergoing) {
 				$this->set_mode($matches['time'], $matches['nick_performing'], $nick_undergoing, $mode_sign.$mode);
 			}
-		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) \(\S+\) has left$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) \(\S+\) has left( [#&!+]\S+)?$/', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) has changed the topic to: (?<line>.+)$/', $line, $matches)) {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
