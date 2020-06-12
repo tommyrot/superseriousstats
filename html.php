@@ -247,7 +247,7 @@ class html
 		/**
 		 * FOOT
 		 */
-		$contents .= '<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').'.</div>'."\n";
+		$contents .= '<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').' <span class="grey">('.date('T').')</span>.</div>'."\n";
 		$contents .= '</div></body>'."\n\n".'</html>'."\n";
 		return $contents;
 	}
