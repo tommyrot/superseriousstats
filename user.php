@@ -26,6 +26,7 @@ class user
 {
 	use common, common_html_user_history, common_html_user;
 
+	private bool $show_banner = true;
 	private int $ruid = 0;
 	private string $channel = 'unconfigured';
 	private string $csnick = '';
@@ -58,7 +59,7 @@ class user
 		 * Open the database connection and update our settings.
 		 */
 		db::connect();
-		$this->apply_settings(['timezone', 'channel', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page']);
+		$this->apply_settings(['timezone', 'channel', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page', 'show_banner']);
 		out::set_stylesheet($this->stylesheet);
 
 		/**
@@ -106,7 +107,8 @@ class user
 			. '<title>'.$this->htmlify($this->csnick).', seriously.</title>'."\n"
 			. '<link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'">'."\n"
 			. '</head>'."\n\n"
-			. '<body><div id="container">'."\n"
+			. '<body'.($this->show_banner ? ' class="bannerbg"' : '').'><div id="container">'."\n"
+			. ($this->show_banner ? '<img src="banner.png" alt="" class="banner">'."\n" : '')
 			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<br><br>'
 			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
 			. $this->htmlify($this->csnick).' typed '.number_format($l_total).' line'.($l_total !== 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'

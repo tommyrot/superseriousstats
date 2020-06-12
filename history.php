@@ -20,6 +20,7 @@ class history
 	use common, common_html_user_history, common_html_history;
 
 	private bool $link_user_php = true;
+	private bool $show_banner = true;
 	private ?int $month = null;
 	private int $year = 0;
 	private string $channel = 'unconfigured';
@@ -50,7 +51,7 @@ class history
 		 * Open the database connection and update our settings.
 		 */
 		db::connect();
-		$this->apply_settings(['timezone', 'channel', 'stylesheet', 'main_page', 'link_user_php']);
+		$this->apply_settings(['timezone', 'channel', 'stylesheet', 'main_page', 'link_user_php', 'show_banner']);
 		out::set_stylesheet($this->stylesheet);
 
 		/**
@@ -128,7 +129,8 @@ class history
 			. '<title>'.$this->htmlify($this->channel).', historically.</title>'."\n"
 			. '<link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'">'."\n"
 			. '</head>'."\n\n"
-			. '<body><div id="container">'."\n"
+			. '<body'.($this->show_banner ? ' class="bannerbg"' : '').'><div id="container">'."\n"
+			. ($this->show_banner ? '<img src="banner.png" alt="" class="banner">'."\n" : '')
 			. '<div class="info"><a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a>, historically.<br><br>'
 			. 'Displaying statistics for '.(!is_null($this->month) ? date('F', strtotime($this->year.'-'.($this->month <= 9 ? '0' : '').$this->month.'-01')).' ' : '').$this->year.'.</div>'."\n";
 

@@ -13,6 +13,14 @@ body {
 	margin:0 auto;
 	width:843px;
 }
+.banner {
+	display:block;
+	height:62px;
+	width:818px;
+}
+.bannerbg {
+	background:#F9F9F9 url('bg.png') left top repeat-x;
+}
 #container {
 	float:left;
 }
