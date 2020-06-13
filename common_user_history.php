@@ -10,7 +10,7 @@
  */
 class db
 {
-	private static string $database = '__RTFM__';
+	private static string $database = '%CHANGEME%';
 	private static SQLite3 $db;
 
 	private function __construct() {}
