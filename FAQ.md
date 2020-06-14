@@ -1,7 +1,7 @@
 Downloading superseriousstats
 =============================
 
-Just clone or download the git [repository](https://github.com/tommyrot/superseriousstats). This is a mirror of my local repo and aims to always be in a working state. Be mindful that if the **major** version changes (e.g. 7.1 => 8.0) it means that the database layout has changed. You will need to create a fresh empty database from the template and reimport all your logs. Migrate your channel's user relations with the `sss.php -e` and `sss.php -m` commands as outlined in [MANUAL](MANUAL).
+Just clone or download [the git repository](https://github.com/tommyrot/superseriousstats). This is a mirror of my local repo and aims to always be in a working state. Be mindful that if the **major** version changes (e.g. ***7***.1 => ***8***.0) it means that the database layout has changed. You will need to create a fresh empty database from the template and parse all your logs again. Migrate your channel's user relations with the `sss.php -e` and `sss.php -m` commands as outlined in [the MANUAL](MANUAL).
 
 ---
 
@@ -22,9 +22,9 @@ Logs
 
 One directory per channel, one log per day. The logfiles should have a date in their filename in the format Ymd or Y-m-d.
 
-> #my_channel.1999-12-31.log
-> 1999-12-31.txt
-> 19991231
+    #my_channel.1999-12-31.log
+    1999-12-31.txt
+    19991231
 
 ***Have a backup of your logs at a safe place.*** You may at some point decide to rebuild the database from scratch for whatever reason.
 
@@ -62,20 +62,20 @@ Webserver Configuration
 
 The complete list of files and directories you should have on your webserver:
 
-| File | Considerations | Visibility |
+| File | Considerations | Accessibility |
 |------|----------------|------------|
-| banner.png | only if `show_banner = "true"` in `sss.conf` | world |
-| bg.png | only if `show_banner = "true"` in `sss.conf` | world |
+| banner.png | only if `show_banner = "true"` in `sss.conf` | global |
+| bg.png | only if `show_banner = "true"` in `sss.conf` | global |
 | common.php | only when serving `user.php` and/or `history.php` | local |
 | common_html_history.php | only when serving `history.php` | local |
 | common_html_user.php | only when serving `user.php` | local |
 | common_user_history.php | only when serving `user.php` and/or `history.php` | local |
-| favicon.ico | optional | world |
-| history.php | optional | world |
-| *index.html* | this is the static output file from `sss.php -o` | world |
-| sss.css | | world |
-| user.php | optional | world |
-| userpics/ | optional | world |
+| favicon.ico | optional | global |
+| history.php | optional | global |
+| *index.html* | this is the static output file from `sss.php -o` | global |
+| sss.css | | global |
+| user.php | optional | global |
+| userpics/ | optional | global |
 
 php-fpm.ini, php.ini and other webserver settings are beyond the scope of this FAQ. That said, you might want to put `pcre.jit = 0` in your webserver's php.ini if you experience errors related to it.
 
