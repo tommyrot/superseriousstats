@@ -22,9 +22,9 @@ Have a look at this [live demo](https://sss.dutnie.nl) which uses default settin
 Installation
 ============
 
-The following five steps quickly go over setting up superseriousstats with full functionality. For more detailed notes be sure to check out [FAQ.md](FAQ.md).
+The following five steps quickly go over setting up superseriousstats with full functionality. For more detailed notes be sure to [check out the FAQ](FAQ.md).
 
-First, clone or download the git repository (green button) to a place on your machine which we will call `$repo` from here on.
+First, clone or download the git repository (green button) to a place on your machine which we will call `$repo` from here on out.
 
 1 - Logs
 --------
@@ -38,23 +38,23 @@ The logfile parsers can be found in `$repo/parsers`. Currently, the following fo
 
 Install the latest version of SQLite3 along with both PHP cli and PHP fpm-fcgi version 7.4 or later. The cli runtime should have the `mbstring`, `sqlite3` and `zlib` modules compiled in, fpm-fcgi should contain `mbstring` and `sqlite3`. Confirm by running `php -v && php -m`, `php-fpm -v && php-fpm -m`. Ensure you have a working webserver that is configured to handle PHP pages.
 
-Create a dedicated directory to serve stats pages from for the channel. Copy ***only the following*** files from `$repo` to that directory `cp banner.png bg.png common* favicon.ico history.php sss.css user.php /path/to/www/my_channel`.
+Create a dedicated directory to serve stats pages for the channel. Copy ***only the following*** files from `$repo` to that directory `cp banner.png bg.png common* favicon.ico history.php sss.css user.php /path/to/www/my_channel`.
 
 3 - Configure
 -------------
 
-From `$repo` run the following command to create an empty database `cat empty_database_v8.sqlite | sqlite3 /path/to/www/databases/my_channel.db`. Copy `sss.conf` to `my_channel.conf` and edit its contents. Then open up `/path/to/www/my_channel/common_user_history.php` and change the value `%CHANGEME%` into the full path to `/path/to/www/databases/my_channel.db` relative to the chroot/jail your webserver operates in.
+From `$repo` run the following command to create an empty database `cat empty_database_v8.sqlite | sqlite3 /path/to/www/databases/my_channel.db`. Edit `sss.conf` to fit your needs. Then open up `/path/to/www/my_channel/common_user_history.php` and change the value `%CHANGEME%` into the full path to `/path/to/www/databases/my_channel.db` relative to the chroot/jail your webserver operates in.
 
 4 - Parse Logs
 -------------
 
-`php -c my_channel.conf -i ~/irclogs/my_channel/`
+`php sss.php -i ~/irclogs/my_channel/`
 
 
 5 - Create Stats
 ----------------
 
-`php -c my_channel.conf -o /path/to/www/my_channel/index.html`
+`php sss.php -o /path/to/www/my_channel/index.html`
 
 ---
 
@@ -69,16 +69,16 @@ Bugs
 Everything Else
 ---------------
 
-For everything beside bugs you may find us on IRC in **#superseriousstats** on chat.**freenode**.net. Feel free to ask, talk about features, or help others get up and running. When it comes to adding support for new logging formats i expect you to provide enough information to extract the full syntax. Discord, slack, teams, we could make it all happen. Just keep in mind that my personal todo list is already filled to the brim and i don't have unlimited time to work on things by myself. One particular feature i have in mind requires some artwork to be commissioned.
+For everything beside bugs you may find us on IRC in **#superseriousstats** on *chat.freenode.net*. Feel free to ask, talk about features, or help others get up and running. When it comes to adding support for new logging formats i expect you to provide enough information to extract the full syntax. Discord, slack, teams, we could make it all happen. Just keep in mind that my personal todo list is already filled to the brim and i don't have unlimited time to work on things, let alone research chat clients i don't even use myself. One particular feature i have in mind requires some artwork to be commissioned. Maybe some day.
 
 ---
 
 Supporting the Project
 ======================
 
-You're very welcome to help the project grow! This is best done by using superseriousstats and having fun with it, but also;
+You're very welcome to help the project grow! This is best done by using superseriousstats and having fun with it, but also by;
 
-* Star this repo
-* Share with a friend
-* Buy me a coffee/beer
+* Starring this repo
+* Sharing with a friend
+* Buying me a coffee/beer
 * ...
