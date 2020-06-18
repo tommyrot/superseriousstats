@@ -44,7 +44,7 @@ class parser_eggdrop extends parser
 			$this->set_part($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'Topic changed on [#&!+]\S+ by (?<nick>\S+?)(!(\S+)?)?: (?<line>.+)$/', $line, $matches)) {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
-		} elseif (preg_match('/^'.$timestamp.'(?<line>(?<nick_undergoing>\S+) kicked from [#&!+]\S+ by (?<nick_performing>\S+)(:( .+)?))$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'(?<line>(?<nick_undergoing>\S+) kicked from [#&!+]\S+ by (?<nick_performing>\S+):( .+)?)$/', $line, $matches)) {
 			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'Last message repeated (?<num>\d+) time\(s\)\.$/', $line, $matches)) {
 			if ($this->line_prev === '' || $this->repeat_lock) {
