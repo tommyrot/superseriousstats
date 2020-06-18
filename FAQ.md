@@ -45,6 +45,9 @@ If you opt to compile PHP yourself here's how i do it, for cli:
     make
     cd sapi/cli
     ./php -v
+    ./php -m
+
+*If you really don't want zlib (and don't mind losing the ability to parse gzipped logs) you can compile without it and remove the extension check in `sss.php` manually.*
 
 And for fpm-fcgi:
 
@@ -56,6 +59,7 @@ And for fpm-fcgi:
     make
     cd sapi/fpm
     ./php-fpm -v
+    ./php-fpm -m
 
 Webserver Configuration
 -----------------------
@@ -134,7 +138,7 @@ Let's say you want to change a user to a **bot**. Just change the 1 into a 3. If
     4,SPAMGUY
     *,randomguy
 
-Save your changes and run `sss.php -m` to import them. The line beginning with the asterisk will be ignored when importing this file.
+Save your changes and run `sss.php -m` to import them. The line(s) beginning with an asterisk will be ignored when importing this file.
 
 ---
 
