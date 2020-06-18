@@ -36,7 +36,7 @@ The logfile parsers can be found in `$repo/parsers`. Currently, the following fo
 2 - Environment
 ---------------
 
-Install the latest version of SQLite3 along with both PHP cli and PHP fpm-fcgi version 7.4 or later. The cli runtime should have the `mbstring`, `sqlite3` and `zlib` modules compiled in, fpm-fcgi should contain `mbstring` and `sqlite3`. Confirm by running `php -v && php -m`, `php-fpm -v && php-fpm -m`. Ensure you have a working webserver that is configured to handle PHP pages.
+Install the latest version of SQLite3 along with both PHP cli and PHP fpm-fcgi version 7.4 or later. The cli runtime should have the `mbstring`, `sqlite3` and `zlib` modules compiled in, fpm-fcgi should contain `mbstring` and `sqlite3`. Ensure you have a working webserver which is configured to handle PHP pages.
 
 Create a dedicated directory to serve stats pages for the channel. Copy ***only the following*** files from `$repo` to that directory `cp banner.png bg.png common* favicon.ico history.php sss.css user.php /path/to/www/my_channel`.
 
@@ -69,7 +69,7 @@ Bugs
 Everything Else
 ---------------
 
-For everything beside bugs you may find us on IRC in **#superseriousstats** on *chat.freenode.net*. Feel free to ask, talk about features, or help others get up and running. When it comes to adding support for new logging formats i expect you to provide enough information to extract the full syntax. Discord, slack, teams, we could make it all happen. Just keep in mind that my personal todo list is already filled to the brim and i don't have unlimited time to work on things, let alone research chat clients i don't even use myself. One particular feature i have in mind requires some artwork to be commissioned. Maybe some day.
+For everything beside bugs you may find us on IRC in **#superseriousstats** on *chat.freenode.net*. Feel free to ask, talk about features, or help others get up and running.
 
 ---
 
