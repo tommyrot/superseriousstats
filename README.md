@@ -81,4 +81,8 @@ You're very welcome to help the project grow! This is best done by using superse
 * Starring this repo
 * Sharing with a friend
 * Buying me a coffee/beer
-* ...
+
+![donate.png](https://sss.dutnie.nl/donate.png)
+```
+14Nd9sTUfQ88SfsazL5GJ99JjtaKGpS2Kx
+```
