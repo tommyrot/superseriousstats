@@ -221,7 +221,7 @@ class html
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			/**
-			 * Hide registered nicks, bots and excluded nicks (status = 1, 3, 4).
+			 * Hide words for which a nick with 7 or more days of activity exists.
 			 */
 			$section .= $this->create_table('Words of '.$result['length'].' Characters', ['Times Used', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE length = '.$result['length'].' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', $result['total']]);
 		}
