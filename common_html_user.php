@@ -132,7 +132,7 @@ trait common_html_user
 					$subquery3 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 3 FROM ruid_activity_by_day WHERE l_'.$time.' != 0 AND ruid = '.$this->ruid.' AND date BETWEEN \''.date('Y-m-d', strtotime('-30 day', strtotime($this->now))).'\' AND \''.date('Y-m-d', strtotime('-1 day', strtotime($this->now))).'\')';
 				}
 
-				$lines['estimate'][$time] = $lines[substr($this->now, 0, 4)][$time] + (int) round(db::query_single_col('SELECT CAST(SUM('.$subquery1.' + '.$subquery2.' + '.$subquery3.') AS REAL) / 180') * $days_left);
+				$lines['estimate'][$time] = $lines[substr($this->now, 0, 4)][$time] + (int) round(db::query_single_col('SELECT CAST('.$subquery1.' + '.$subquery2.' + '.$subquery3.' AS REAL) / 180') * $days_left);
 				$lines['estimate']['total'] += $lines['estimate'][$time];
 			}
 
