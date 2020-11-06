@@ -379,8 +379,8 @@ class parser
 		 * Words are simply considered character groups separated by whitespace.
 		 */
 		$words = explode(' ', $line);
-		$words_count = count($words);
-		$this->nick_objs[$nick]->add_int('words', $words_count);
+		$wordcount = count($words);
+		$this->nick_objs[$nick]->add_int('words', $wordcount);
 
 		/**
 		 * $skip_quote controls whether a line may be used as a quote. We flip this
@@ -452,7 +452,7 @@ class parser
 			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line)) * 2 > $line_length) {
 				$this->nick_objs[$nick]->add_int('uppercased', 1);
 
-				if (!$skip_quote && $words_count > 2 && ($this->nick_objs[$nick]->get_string('ex_uppercased') === '' || rand(1, 100) <= 80)) {
+				if (!$skip_quote && $wordcount >= 3 && ($this->nick_objs[$nick]->get_string('ex_uppercased') === '' || rand(1, 100) <= 80)) {
 					$this->nick_objs[$nick]->set_string('ex_uppercased', $line);
 					$skip_quote = true;
 				}
@@ -462,20 +462,20 @@ class parser
 		if (preg_match('/!$/', $line)) {
 			$this->nick_objs[$nick]->add_int('exclamations', 1);
 
-			if (!$skip_quote && $words_count > 2 && ($this->nick_objs[$nick]->get_string('ex_exclamations') === '' || rand(1, 100) <= 80)) {
+			if (!$skip_quote && $wordcount >= 3 && ($this->nick_objs[$nick]->get_string('ex_exclamations') === '' || rand(1, 100) <= 80)) {
 				$this->nick_objs[$nick]->set_string('ex_exclamations', $line);
 				$skip_quote = true;
 			}
 		} elseif (preg_match('/\?$/', $line)) {
 			$this->nick_objs[$nick]->add_int('questions', 1);
 
-			if (!$skip_quote && $words_count > 2 && ($this->nick_objs[$nick]->get_string('ex_questions') === '' || rand(1, 100) <= 80)) {
+			if (!$skip_quote && $wordcount >= 3 && ($this->nick_objs[$nick]->get_string('ex_questions') === '' || rand(1, 100) <= 80)) {
 				$this->nick_objs[$nick]->set_string('ex_questions', $line);
 				$skip_quote = true;
 			}
 		}
 
-		if (!$skip_quote && $words_count > 2 && ($this->nick_objs[$nick]->get_string('quote') === '' || rand(1, 100) <= 25)) {
+		if (!$skip_quote && $wordcount >= 3 && ($this->nick_objs[$nick]->get_string('quote') === '' || rand(1, 100) <= 25)) {
 			$this->nick_objs[$nick]->set_string('quote', $line);
 		}
 	}
