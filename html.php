@@ -314,10 +314,10 @@ class html
 						${'v'.$col} = '<a href="user.php?nick='.$this->htmlify(urlencode(${'v'.$col})).'">'.$this->htmlify(${'v'.$col}).'</a>';
 						break;
 					case 'date':
-						${'v'.$col} = date('j M &\ap\o\s;y', strtotime(${'v'.$col}));
+						${'v'.$col} = date('j M &\a\p\o\s;y', strtotime(${'v'.$col}));
 						break;
 					case 'date-norepeat':
-						${'v'.$col} = date('j M &\ap\o\s;y', strtotime(${'v'.$col}));
+						${'v'.$col} = date('j M &\a\p\o\s;y', strtotime(${'v'.$col}));
 
 						if (isset($date_prev) && ${'v'.$col} === $date_prev) {
 							${'v'.$col} = '';
