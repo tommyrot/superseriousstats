@@ -122,7 +122,7 @@ class db
 	/**
 	 * Execute a query and return the single column result.
 	 */
-	public static function query_single_col(string $query)#: int|float|string|null (see PHP8 union types)
+	public static function query_single_col(string $query): int|float|string|null
 	{
 		if (($result = self::$db->querySingle($query)) === false) {
 			self::fail();

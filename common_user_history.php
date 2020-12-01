@@ -69,7 +69,7 @@ class db
 		self::$db->exec($query) or self::fail();
 	}
 
-	public static function query_single_col(string $query)#: int|float|string|null (see PHP8 union types)
+	public static function query_single_col(string $query): int|float|string|null
 	{
 		if (($result = self::$db->querySingle($query)) === false) {
 			self::fail();
@@ -102,7 +102,7 @@ class out
 
 	private function __construct() {}
 
-	public static function put($type, string $message): void #PHP8 int|string $type
+	public static function put(int|string $type, string $message): void
 	{
 		/**
 		 * Code 5 = SQLITE_BUSY, code 6 = SQLITE_LOCKED.
