@@ -36,7 +36,7 @@ The logfile parsers can be found in `$repo/parsers`. Currently, the following fo
 2 - Environment
 ---------------
 
-Install the latest version of SQLite3 along with both PHP cli and PHP fpm-fcgi version 7.4 or later. The cli runtime should have the `mbstring`, `sqlite3` and `zlib` modules compiled in, fpm-fcgi should contain `mbstring` and `sqlite3`. Ensure you have a working webserver which is configured to handle PHP pages.
+Install the latest version of SQLite3 along with both PHP cli and PHP fpm-fcgi version 8.0 or later. The cli runtime should have the `mbstring`, `sqlite3` and `zlib` modules compiled in, fpm-fcgi should contain `mbstring` and `sqlite3`. Ensure you have a working webserver which is configured to handle PHP pages.
 
 Create a dedicated directory to serve stats pages for the channel. Copy ***only the following*** files from `$repo` to that directory `cp banner.png bg.png common* favicon.ico history.php sss.css user.php /path/to/www/my_channel`.
 
@@ -58,31 +58,20 @@ From `$repo` run the following command to create an empty database `cat empty_da
 
 ---
 
-Reporting Problems
-==================
+Bugs, Features and Discussion
+=============================
 
-Bugs
-----
-
-***Please*** report bugs by openening an issue here on github. I prioritize fixing bugs above all else. Provide logs whenever possible so i have something to work with (chat logs and/or verbose output from `php sss.php -v ...`).
-
-Everything Else
----------------
-
-For everything beside bugs you may find us on IRC in **#superseriousstats** on *chat.freenode.net*. Feel free to ask, talk about features, or help others get up and running.
+Find me and others on IRC in **#superseriousstats** on *chat.freenode.net*. All project related talk is welcomed there. Please report any bugs you may find, given enough details i usually have a patch out in a couple of days.
 
 ---
 
 Supporting the Project
 ======================
 
-You're very welcome to help the project grow! This is best done by using superseriousstats and having fun with it, but also by;
+I started this project back in 2002 as a fun way to give some insight into the chat patterns and such of me and my friends on IRC. Over the years it evolved from a single static page to a dynamic *piece of art* containing user profiles and a browsable history. I released the source so others can enjoy it as well. The project isn't done. I'm always connected to IRC and there are still multiple ideas on my TODO.
 
-* Starring this repo
-* Sharing with a friend
-* Buying me a coffee/beer
+In the meantime, have fun with superseriousstats and if you can, give this repo a star to increase the chances others will discover it too. Support by means of a donation is also very much appreciated and can be done via Bitcoin to the following address:
 
-![donate.png](https://sss.dutnie.nl/donate.png)
 ```
-14Nd9sTUfQ88SfsazL5GJ99JjtaKGpS2Kx
+Bitcoin: 14Nd9sTUfQ88SfsazL5GJ99JjtaKGpS2Kx
 ```
