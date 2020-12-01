@@ -112,7 +112,7 @@ class db
 		 * Return the row id of the most recent INSERT (logic in the calling function
 		 * should decide if this value has meaning or purpose).
 		 */
-		if (strpos($query, 'INSERT') === 0) { #str_starts_with() PHP8
+		if (str_starts_with($query, 'INSERT')) {
 			return self::$db->lastInsertRowID();
 		}
 
