@@ -408,7 +408,8 @@ class parser
 				}
 
 				/**
-				 * Check for textual user expressions and a couple of smileys.
+				 * Check for textual user expressions, and smileys that matched the previous
+				 * regular expression.
 				 */
 				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|rofl|lmao)$/i', $csword_trimmed)) {
 					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], strtolower($csword_trimmed));
