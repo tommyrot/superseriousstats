@@ -198,22 +198,24 @@ trait common_html_user
 					 * need to add the overlapping parts' heights to get our final height value.
 					 */
 					foreach ($times as $time) {
-						if ($height[$time] !== 0) {
-							$height_li = 0;
-
-							switch ($time) {
-								case 'evening':
-									$height_li += $height['evening'];
-								case 'afternoon':
-									$height_li += $height['afternoon'];
-								case 'morning':
-									$height_li += $height['morning'];
-								case 'night':
-									$height_li += $height['night'];
-							}
-
-							$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
+						if ($height[$time] === 0) {
+							continue;
 						}
+
+						$height_li = 0;
+
+						switch ($time) {
+							case 'evening':
+								$height_li += $height['evening'];
+							case 'afternoon':
+								$height_li += $height['afternoon'];
+							case 'morning':
+								$height_li += $height['morning'];
+							case 'night':
+								$height_li += $height['night'];
+						}
+
+						$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
 					}
 				}
 
@@ -327,22 +329,24 @@ trait common_html_user
 					 * need to add the overlapping parts' heights to get our final height value.
 					 */
 					foreach ($times as $time) {
-						if ($height[$time] !== 0) {
-							$height_li = 0;
-
-							switch ($time) {
-								case 'evening':
-									$height_li += $height['evening'];
-								case 'afternoon':
-									$height_li += $height['afternoon'];
-								case 'morning':
-									$height_li += $height['morning'];
-								case 'night':
-									$height_li += $height['night'];
-							}
-
-							$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($lines[$day]['total']).'">';
+						if ($height[$time] === 0) {
+							continue;
 						}
+
+						$height_li = 0;
+
+						switch ($time) {
+							case 'evening':
+								$height_li += $height['evening'];
+							case 'afternoon':
+								$height_li += $height['afternoon'];
+							case 'morning':
+								$height_li += $height['morning'];
+							case 'night':
+								$height_li += $height['night'];
+						}
+
+						$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($lines[$day]['total']).'">';
 					}
 				}
 
