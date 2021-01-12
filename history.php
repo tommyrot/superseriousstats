@@ -80,10 +80,10 @@ class history
 		/**
 		 * Retrieve all activity and arrange data in a usable format.
 		 */
-		$results = db::query('SELECT SUBSTR(date, 1, 4) AS year, CAST(SUBSTR(date, 6, 2) AS INTEGER) AS month, SUM(l_total) AS l_total FROM channel_activity GROUP BY year, month ORDER BY date ASC');
+		$results = db::query('SELECT SUBSTR(date, 1, 4) AS year, SUBSTR(date, 6, 2) AS month, SUM(l_total) AS l_total FROM channel_activity GROUP BY year, month ORDER BY date ASC');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			$lines[(int) $result['year']][$result['month']] = $result['l_total'];
+			$lines[(int) $result['year']][(int) $result['month']] = $result['l_total'];
 		}
 
 		$tr0 = '<colgroup><col class="pos"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c">';
