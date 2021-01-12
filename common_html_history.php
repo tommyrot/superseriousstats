@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -77,9 +77,7 @@ trait common_html_history
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			/**
-			 * Due to flooring (intval) it can happen that not all pixels of the full bar
-			 * width are used initially. Distribute the leftover pixels among the times
-			 * with highest $unclaimed_subpixels.
+			 * Divide the available pixels among times, according to activity.
 			 */
 			$unclaimed_pixels = 50;
 			$unclaimed_subpixels = [];

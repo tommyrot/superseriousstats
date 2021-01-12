@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -163,9 +163,7 @@ trait common_html_user
 
 				if ($height['total'] !== 0) {
 					/**
-					 * Due to flooring (intval) it can happen that not all pixels of the full bar
-					 * height are used initially. Distribute the leftover pixels among the times
-					 * with highest $unclaimed_subpixels.
+					 * Divide the available pixels among times, according to activity.
 					 */
 					$unclaimed_pixels = $height['total'];
 					$unclaimed_subpixels = [];
@@ -294,9 +292,7 @@ trait common_html_user
 
 				if ($height['total'] !== 0) {
 					/**
-					 * Due to flooring (intval) it can happen that not all pixels of the full bar
-					 * height are used initially. Distribute the leftover pixels among the times
-					 * with highest $unclaimed_subpixels.
+					 * Divide the available pixels among times, according to activity.
 					 */
 					$unclaimed_pixels = $height['total'];
 					$unclaimed_subpixels = [];
