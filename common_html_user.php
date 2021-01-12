@@ -151,7 +151,7 @@ trait common_html_user
 		$tr3 = '<tr class="sub">';
 
 		/**
-		 * Construct each individual bar.
+		 * Assemble each column.
 		 */
 		foreach ($dates as $date) {
 			if (!array_key_exists($date, $lines)) {
@@ -279,7 +279,7 @@ trait common_html_user
 		$tr3 = '<tr class="sub">';
 
 		/**
-		 * Construct each individual bar.
+		 * Assemble each column.
 		 */
 		foreach ($days as $day) {
 			if ($lines[$day]['total'] === 0) {

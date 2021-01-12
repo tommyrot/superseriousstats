@@ -71,7 +71,7 @@ trait common_html_history
 		$trx = '';
 
 		/**
-		 * Construct each individual row.
+		 * Assemble each row.
 		 */
 		$i = 0;
 
@@ -108,7 +108,7 @@ trait common_html_history
 			}
 
 			/**
-			 * Put together the little activity bar graph of 50 pixels wide.
+			 * Assemble the little activity bar graph of 50 pixels wide.
 			 */
 			$activity = '';
 
@@ -172,8 +172,7 @@ trait common_html_history
 		$trx = '';
 
 		/**
-		 * Construct each individual row, provided there is at least one column per row
-		 * width data.
+		 * Assemble each row, provided there is at least one column with data.
 		 */
 		for ($i = 1; $i <= 10; ++$i) {
 			if (!isset($lines['night'][$i]) && !isset($lines['morning'][$i]) && !isset($lines['afternoon'][$i]) && !isset($lines['evening'][$i])) {

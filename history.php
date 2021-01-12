@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2010-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -92,8 +92,8 @@ class history
 		$trx = '';
 
 		/**
-		 * Construct a line with activity numbers per month for each year since the
-		 * date of the first log parsed. Months with no activity will show "n/a".
+		 * Assemble a line with activity numbers per month for each year since the date
+		 * of the first log parsed. Months with no activity will show "n/a".
 		 */
 		for ($year = (int) db::query_single_col('SELECT MIN(SUBSTR(date, 1, 4)) FROM parse_history'); $year <= (int) db::query_single_col('SELECT MAX(SUBSTR(date, 1, 4)) FROM parse_history'); ++$year) {
 			if (array_key_exists($year, $lines)) {

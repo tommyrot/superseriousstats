@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -49,7 +49,7 @@ trait common_html_user_history
 		$tr3 = '<tr class="sub">';
 
 		/**
-		 * Construct each individual bar.
+		 * Assemble each column.
 		 */
 		for ($hour = 0; $hour <= 23; ++$hour) {
 			if ($lines[$hour] === 0) {
