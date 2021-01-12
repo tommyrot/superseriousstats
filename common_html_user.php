@@ -170,7 +170,7 @@ trait common_html_user
 
 					foreach ($times as $time) {
 						if ($lines[$date][$time] !== 0) {
-							$height[$time] = intval(($lines[$date][$time] / $high_lines) * 100);
+							$height[$time] = (int) (($lines[$date][$time] / $high_lines) * 100);
 							$unclaimed_pixels -= $height[$time];
 							$unclaimed_subpixels[$time] = (($lines[$date][$time] / $high_lines) * 100) - $height[$time];
 						} else {
@@ -299,7 +299,7 @@ trait common_html_user
 
 					foreach ($times as $time) {
 						if ($lines[$day][$time] !== 0) {
-							$height[$time] = intval(($lines[$day][$time] / $high_lines) * 100);
+							$height[$time] = (int) (($lines[$day][$time] / $high_lines) * 100);
 							$unclaimed_pixels -= $height[$time];
 							$unclaimed_subpixels[$time] = (($lines[$day][$time] / $high_lines) * 100) - $height[$time];
 						} else {

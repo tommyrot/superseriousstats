@@ -84,7 +84,7 @@ trait common_html_history
 
 			foreach ($times as $time) {
 				if ($result['l_'.$time] !== 0) {
-					$width[$time] = intval(($result['l_'.$time] / $result['l_total']) * 50);
+					$width[$time] = (int) (($result['l_'.$time] / $result['l_total']) * 50);
 					$unclaimed_pixels -= $width[$time];
 					$unclaimed_subpixels[$time] = (($result['l_'.$time] / $result['l_total']) * 50) - $width[$time];
 				} else {
