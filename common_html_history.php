@@ -108,7 +108,7 @@ trait common_html_history
 			}
 
 			/**
-			 * Assemble the little activity bar graph of 50 pixels wide.
+			 * Assemble the little activity bar of 50 pixels wide.
 			 */
 			$activity = '';
 

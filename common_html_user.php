@@ -193,15 +193,18 @@ trait common_html_user
 						--$unclaimed_pixels;
 					}
 
-					/**
-					 * The bar sections for different times are layered on top of each other so we
-					 * need to add the overlapping parts' heights to get our final height value.
+					/*
+					 * Assemble the activity bar.
 					 */
 					foreach ($times as $time) {
 						if ($height[$time] === 0) {
 							continue;
 						}
 
+						/**
+						 * $height_li is the total height of all stacked bar sections up to and
+						 * including current iteration ($time).
+						 */
 						$height_li = 0;
 
 						switch ($time) {
@@ -325,14 +328,17 @@ trait common_html_user
 					}
 
 					/**
-					 * The bar sections for different times are layered on top of each other so we
-					 * need to add the overlapping parts' heights to get our final height value.
+					 * Assemble the activity bar.
 					 */
 					foreach ($times as $time) {
 						if ($height[$time] === 0) {
 							continue;
 						}
 
+						/**
+						 * $height_li is the total height of all stacked bar sections up to and
+						 * including current iteration ($time).
+						 */
 						$height_li = 0;
 
 						switch ($time) {
