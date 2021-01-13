@@ -161,65 +161,63 @@ trait common_html_user
 				$height['total'] = (int) round(($lines[$date]['total'] / $high_lines) * 100);
 				$tr2 .= '<td'.($date === 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.$total;
 
-				if ($height['total'] !== 0) {
+				/**
+				 * Divide the available pixels among times, according to activity.
+				 */
+				$unclaimed_pixels = $height['total'];
+				$unclaimed_subpixels = [];
+
+				foreach ($times as $time) {
+					if ($unclaimed_pixels !== 0 && $lines[$date][$time] !== 0) {
+						$height[$time] = (int) (($lines[$date][$time] / $high_lines) * 100);
+						$unclaimed_pixels -= $height[$time];
+						$unclaimed_subpixels[$time] = (($lines[$date][$time] / $high_lines) * 100) - $height[$time];
+					} else {
+						$height[$time] = 0;
+					}
+				}
+
+				while ($unclaimed_pixels > 0) {
+					$high_subpixels = 0;
+
+					foreach ($unclaimed_subpixels as $time => $subpixels) {
+						if ($subpixels > $high_subpixels) {
+							$high_subpixels = $subpixels;
+							$high_time = $time;
+						}
+					}
+
+					++$height[$high_time];
+					$unclaimed_subpixels[$high_time] = 0;
+					--$unclaimed_pixels;
+				}
+
+				/*
+				 * Assemble the activity bar.
+				 */
+				foreach ($times as $time) {
+					if ($height[$time] === 0) {
+						continue;
+					}
+
 					/**
-					 * Divide the available pixels among times, according to activity.
+					 * $height_li is the total height of all stacked bar sections up to and
+					 * including current iteration ($time).
 					 */
-					$unclaimed_pixels = $height['total'];
-					$unclaimed_subpixels = [];
+					$height_li = 0;
 
-					foreach ($times as $time) {
-						if ($lines[$date][$time] !== 0) {
-							$height[$time] = (int) (($lines[$date][$time] / $high_lines) * 100);
-							$unclaimed_pixels -= $height[$time];
-							$unclaimed_subpixels[$time] = (($lines[$date][$time] / $high_lines) * 100) - $height[$time];
-						} else {
-							$height[$time] = 0;
-						}
+					switch ($time) {
+						case 'evening':
+							$height_li += $height['evening'];
+						case 'afternoon':
+							$height_li += $height['afternoon'];
+						case 'morning':
+							$height_li += $height['morning'];
+						case 'night':
+							$height_li += $height['night'];
 					}
 
-					while ($unclaimed_pixels > 0) {
-						$high_subpixels = 0;
-
-						foreach ($unclaimed_subpixels as $time => $subpixels) {
-							if ($subpixels > $high_subpixels) {
-								$high_subpixels = $subpixels;
-								$high_time = $time;
-							}
-						}
-
-						++$height[$high_time];
-						$unclaimed_subpixels[$high_time] = 0;
-						--$unclaimed_pixels;
-					}
-
-					/*
-					 * Assemble the activity bar.
-					 */
-					foreach ($times as $time) {
-						if ($height[$time] === 0) {
-							continue;
-						}
-
-						/**
-						 * $height_li is the total height of all stacked bar sections up to and
-						 * including current iteration ($time).
-						 */
-						$height_li = 0;
-
-						switch ($time) {
-							case 'evening':
-								$height_li += $height['evening'];
-							case 'afternoon':
-								$height_li += $height['afternoon'];
-							case 'morning':
-								$height_li += $height['morning'];
-							case 'night':
-								$height_li += $height['night'];
-						}
-
-						$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
-					}
+					$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
 				}
 
 				$tr2 .= '</ul>';
@@ -295,65 +293,63 @@ trait common_html_user
 				$height['total'] = (int) round(($lines[$day]['total'] / $high_lines) * 100);
 				$tr2 .= '<td><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
 
-				if ($height['total'] !== 0) {
+				/**
+				 * Divide the available pixels among times, according to activity.
+				 */
+				$unclaimed_pixels = $height['total'];
+				$unclaimed_subpixels = [];
+
+				foreach ($times as $time) {
+					if ($unclaimed_pixels !== 0 && $lines[$day][$time] !== 0) {
+						$height[$time] = (int) (($lines[$day][$time] / $high_lines) * 100);
+						$unclaimed_pixels -= $height[$time];
+						$unclaimed_subpixels[$time] = (($lines[$day][$time] / $high_lines) * 100) - $height[$time];
+					} else {
+						$height[$time] = 0;
+					}
+				}
+
+				while ($unclaimed_pixels > 0) {
+					$high_subpixels = 0;
+
+					foreach ($unclaimed_subpixels as $time => $subpixels) {
+						if ($subpixels > $high_subpixels) {
+							$high_subpixels = $subpixels;
+							$high_time = $time;
+						}
+					}
+
+					++$height[$high_time];
+					$unclaimed_subpixels[$high_time] = 0;
+					--$unclaimed_pixels;
+				}
+
+				/**
+				 * Assemble the activity bar.
+				 */
+				foreach ($times as $time) {
+					if ($height[$time] === 0) {
+						continue;
+					}
+
 					/**
-					 * Divide the available pixels among times, according to activity.
+					 * $height_li is the total height of all stacked bar sections up to and
+					 * including current iteration ($time).
 					 */
-					$unclaimed_pixels = $height['total'];
-					$unclaimed_subpixels = [];
+					$height_li = 0;
 
-					foreach ($times as $time) {
-						if ($lines[$day][$time] !== 0) {
-							$height[$time] = (int) (($lines[$day][$time] / $high_lines) * 100);
-							$unclaimed_pixels -= $height[$time];
-							$unclaimed_subpixels[$time] = (($lines[$day][$time] / $high_lines) * 100) - $height[$time];
-						} else {
-							$height[$time] = 0;
-						}
+					switch ($time) {
+						case 'evening':
+							$height_li += $height['evening'];
+						case 'afternoon':
+							$height_li += $height['afternoon'];
+						case 'morning':
+							$height_li += $height['morning'];
+						case 'night':
+							$height_li += $height['night'];
 					}
 
-					while ($unclaimed_pixels > 0) {
-						$high_subpixels = 0;
-
-						foreach ($unclaimed_subpixels as $time => $subpixels) {
-							if ($subpixels > $high_subpixels) {
-								$high_subpixels = $subpixels;
-								$high_time = $time;
-							}
-						}
-
-						++$height[$high_time];
-						$unclaimed_subpixels[$high_time] = 0;
-						--$unclaimed_pixels;
-					}
-
-					/**
-					 * Assemble the activity bar.
-					 */
-					foreach ($times as $time) {
-						if ($height[$time] === 0) {
-							continue;
-						}
-
-						/**
-						 * $height_li is the total height of all stacked bar sections up to and
-						 * including current iteration ($time).
-						 */
-						$height_li = 0;
-
-						switch ($time) {
-							case 'evening':
-								$height_li += $height['evening'];
-							case 'afternoon':
-								$height_li += $height['afternoon'];
-							case 'morning':
-								$height_li += $height['morning'];
-							case 'night':
-								$height_li += $height['night'];
-						}
-
-						$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($lines[$day]['total']).'">';
-					}
+					$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($lines[$day]['total']).'">';
 				}
 
 				$tr2 .= '</ul>';

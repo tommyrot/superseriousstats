@@ -83,7 +83,7 @@ trait common_html_history
 			$unclaimed_subpixels = [];
 
 			foreach ($times as $time) {
-				if ($result['l_'.$time] !== 0) {
+				if ($unclaimed_pixels !== 0 && $result['l_'.$time] !== 0) {
 					$width[$time] = (int) (($result['l_'.$time] / $result['l_total']) * 50);
 					$unclaimed_pixels -= $width[$time];
 					$unclaimed_subpixels[$time] = (($result['l_'.$time] / $result['l_total']) * 50) - $width[$time];
@@ -113,9 +113,11 @@ trait common_html_history
 			$activity = '';
 
 			foreach ($times as $time) {
-				if ($width[$time] !== 0) {
-					$activity .= '<li class="'.$time[0].'" style="width:'.$width[$time].'px">';
+				if ($width[$time] === 0) {
+					continue;
 				}
+
+				$activity .= '<li class="'.$time[0].'" style="width:'.$width[$time].'px">';
 			}
 
 			$trx .= '<tr><td class="v1">'.(($percentage = number_format(($result['l_total'] / $l_total) * 100, 2).'%') === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$i.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
