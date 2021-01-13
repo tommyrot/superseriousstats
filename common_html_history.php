@@ -187,8 +187,7 @@ trait common_html_history
 				if (!isset($lines[$time][$i])) {
 					$trx .= '<td class="v">';
 				} else {
-					$width = (int) round(($lines[$time][$i] / $high_lines) * 190);
-					$trx .= '<td class="v">'.$this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).($width !== 0 ? '<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>' : '');
+					$trx .= '<td class="v">'.$this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).(($width = number_format(($lines[$time][$i] / $high_lines) * 190)) !== '0' ? '<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>' : '');
 				}
 			}
 		}
