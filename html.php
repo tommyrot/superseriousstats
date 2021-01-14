@@ -87,7 +87,7 @@ class html
 			$contents .= $this->create_table_people('year');
 		}
 
-		if ((int) substr($date_last_log_parsed, 5, 2) !== 1) {
+		if (substr($date_last_log_parsed, 5, 2) !== '01') {
 			$contents .= $this->create_table_people('month');
 		}
 
