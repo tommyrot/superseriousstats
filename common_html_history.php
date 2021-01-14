@@ -103,8 +103,8 @@ trait common_html_history
 				}
 
 				++$width[$high_time];
-				$unclaimed_subpixels[$high_time] = 0;
 				--$unclaimed_pixels;
+				$unclaimed_subpixels[$high_time] = 0;
 			}
 
 			/**
@@ -120,7 +120,8 @@ trait common_html_history
 				$activity .= '<li class="'.$time[0].'" style="width:'.$width[$time].'px">';
 			}
 
-			$trx .= '<tr><td class="v1">'.(($percentage = number_format(($result['l_total'] / $l_total) * 100, 2).'%') === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$i.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
+			$percentage = number_format(($result['l_total'] / $l_total) * 100, 2).'%';
+			$trx .= '<tr><td class="v1">'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$i.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
@@ -187,7 +188,8 @@ trait common_html_history
 				if (!isset($lines[$time][$i])) {
 					$trx .= '<td class="v">';
 				} else {
-					$trx .= '<td class="v">'.$this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).(($width = number_format(($lines[$time][$i] / $high_lines) * 190)) !== '0' ? '<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>' : '');
+					$width = number_format(($lines[$time][$i] / $high_lines) * 190);
+					$trx .= '<td class="v">'.$this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).($width !== '0' ? '<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>' : '');
 				}
 			}
 		}

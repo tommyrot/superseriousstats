@@ -188,8 +188,8 @@ trait common_html_user
 					}
 
 					++$height[$high_time];
-					$unclaimed_subpixels[$high_time] = 0;
 					--$unclaimed_pixels;
+					$unclaimed_subpixels[$high_time] = 0;
 				}
 
 				/*
@@ -320,8 +320,8 @@ trait common_html_user
 					}
 
 					++$height[$high_time];
-					$unclaimed_subpixels[$high_time] = 0;
 					--$unclaimed_pixels;
+					$unclaimed_subpixels[$high_time] = 0;
 				}
 
 				/**
