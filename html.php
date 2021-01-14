@@ -165,14 +165,9 @@ class html
 		 * Build the "Smileys" section.
 		 */
 		$section = '';
-		$results = db::query('SELECT category, SUM(total) AS total, (SELECT smiley FROM smileys JOIN ruid_smileys ON smileys.sid = ruid_smileys.sid WHERE category = t1.category ORDER BY total DESC, smileys.sid ASC LIMIT 1) AS smiley FROM smileys AS t1 JOIN ruid_smileys ON t1.sid = ruid_smileys.sid WHERE textual = 0 GROUP BY category ORDER BY total DESC, t1.sid ASC');
-		$i = 0;
+		$results = db::query('SELECT category, SUM(total) AS total, (SELECT smiley FROM smileys JOIN ruid_smileys ON smileys.sid = ruid_smileys.sid WHERE category = t1.category ORDER BY total DESC, smileys.sid ASC LIMIT 1) AS smiley FROM smileys AS t1 JOIN ruid_smileys ON t1.sid = ruid_smileys.sid WHERE textual = 0 GROUP BY category ORDER BY total DESC, t1.sid ASC LIMIT 9');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			if (++$i > 9) {
-				break;
-			}
-
 			$section .= $this->create_table(ucwords($result['category']).' '.$this->htmlify($result['smiley']), ['Total', 'User'], ['num', 'str'], ['SELECT SUM(total) AS v1, csnick AS v2 FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND category = \''.$result['category'].'\' GROUP BY ruid_smileys.ruid, category ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', $result['total']]);
 		}
 
@@ -184,14 +179,9 @@ class html
 		 * Build the "Expressions" section.
 		 */
 		$section = '';
-		$results = db::query('SELECT category, SUM(total) AS total, (SELECT smiley FROM smileys JOIN ruid_smileys ON smileys.sid = ruid_smileys.sid WHERE category = t1.category ORDER BY total DESC, smileys.sid ASC LIMIT 1) AS smiley FROM smileys AS t1 JOIN ruid_smileys ON t1.sid = ruid_smileys.sid WHERE textual = 1 GROUP BY category ORDER BY total DESC, t1.sid ASC');
-		$i = 0;
+		$results = db::query('SELECT category, SUM(total) AS total, (SELECT smiley FROM smileys JOIN ruid_smileys ON smileys.sid = ruid_smileys.sid WHERE category = t1.category ORDER BY total DESC, smileys.sid ASC LIMIT 1) AS smiley FROM smileys AS t1 JOIN ruid_smileys ON t1.sid = ruid_smileys.sid WHERE textual = 1 GROUP BY category ORDER BY total DESC, t1.sid ASC LIMIT 6');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			if (++$i > 6) {
-				break;
-			}
-
 			$section .= $this->create_table('&quot;<i>'.$result['category'].'</i>&quot;', ['Total', 'User'], ['num', 'str'], ['SELECT SUM(total) AS v1, csnick AS v2 FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND category = \''.$result['category'].'\' GROUP BY ruid_smileys.ruid, category ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', $result['total']]);
 		}
 
