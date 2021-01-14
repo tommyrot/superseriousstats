@@ -1,13 +1,11 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 class parser_eggdrop extends parser
 {
-	private bool $repeat_lock = false;
-
 	protected function parse_line(string $line): void
 	{
 		$timestamp = '\[(?<time>\d{2}:\d{2}(:\d{2})?)\] ';
@@ -47,12 +45,11 @@ class parser_eggdrop extends parser
 		} elseif (preg_match('/^'.$timestamp.'(?<line>(?<nick_undergoing>\S+) kicked from [#&!+]\S+ by (?<nick_performing>\S+):( .+)?)$/', $line, $matches)) {
 			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'Last message repeated (?<num>\d+) time\(s\)\.$/', $line, $matches)) {
-			if ($this->line_prev === '' || $this->repeat_lock) {
+			if ($this->line_prev === '' || preg_match('/^'.$timestamp.'Last message repeated \d+ time\(s\)\.$/', $this->line_prev)) {
 				return;
 			}
 
 			--$this->linenum;
-			$this->repeat_lock = true;
 			out::put('debug', 'repeating line '.$this->linenum.': '.$matches['num'].' time'.($matches['num'] !== '1' ? 's' : ''));
 
 			for ($i = 1, $j = (int) $matches['num']; $i <= $j; ++$i) {
@@ -60,7 +57,6 @@ class parser_eggdrop extends parser
 			}
 
 			++$this->linenum;
-			$this->repeat_lock = false;
 		} else {
 			out::put('debug', 'skipping line '.$this->linenum.': \''.$line.'\'');
 		}
