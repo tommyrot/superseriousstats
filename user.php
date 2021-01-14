@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -95,7 +95,7 @@ class user
 		$high_lines = $result['l_total'];
 		$mood = db::query_single_col('SELECT smiley FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE ruid = '.$this->ruid.' AND textual = 0 ORDER BY total DESC, ruid_smileys.sid ASC LIMIT 1');
 		$l_total = db::query_single_col('SELECT l_total FROM ruid_lines WHERE ruid = '.$this->ruid);
-		$l_avg = intdiv($l_total, db::query_single_col('SELECT activedays FROM ruid_lines WHERE ruid = '.$this->ruid));
+		$l_avg = (int) round($l_total / db::query_single_col('SELECT activedays FROM ruid_lines WHERE ruid = '.$this->ruid));
 
 		/**
 		 * HEAD

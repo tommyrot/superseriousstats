@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -47,7 +47,7 @@ class html
 		$high_date = $result['date'];
 		$high_lines = $result['l_total'];
 		$l_total = db::query_single_col('SELECT SUM(l_total) FROM channel_activity');
-		$l_avg = intdiv($l_total, $days_logged);
+		$l_avg = (int) round($l_total / $days_logged);
 
 		/**
 		 * HEAD
