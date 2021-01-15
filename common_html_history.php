@@ -16,9 +16,9 @@ trait common_html_history
 	{
 		$diff = date_diff(date_create($this->now), date_create(substr($datetime, 0, 10)));
 
-		if ($diff->y > 0) {
+		if ($diff->y !== 0) {
 			$ago = $diff->y.' Year'.($diff->y !== 1 ? 's' : '').' Ago';
-		} elseif ($diff->m > 0) {
+		} elseif ($diff->m !== 0) {
 			$ago = $diff->m.' Month'.($diff->m !== 1 ? 's' : '').' Ago';
 		} elseif ($diff->d === 0) {
 			$ago = 'Today';
@@ -92,7 +92,7 @@ trait common_html_history
 				}
 			}
 
-			while ($unclaimed_pixels > 0) {
+			while ($unclaimed_pixels !== 0) {
 				$high_subpixels = 0;
 
 				foreach ($unclaimed_subpixels as $time => $subpixels) {

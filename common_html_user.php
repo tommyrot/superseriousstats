@@ -177,7 +177,7 @@ trait common_html_user
 					}
 				}
 
-				while ($unclaimed_pixels > 0) {
+				while ($unclaimed_pixels !== 0) {
 					$high_subpixels = 0;
 
 					foreach ($unclaimed_subpixels as $time => $subpixels) {
@@ -309,7 +309,7 @@ trait common_html_user
 					}
 				}
 
-				while ($unclaimed_pixels > 0) {
+				while ($unclaimed_pixels !== 0) {
 					$high_subpixels = 0;
 
 					foreach ($unclaimed_subpixels as $time => $subpixels) {
