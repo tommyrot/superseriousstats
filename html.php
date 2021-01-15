@@ -271,14 +271,10 @@ class html
 		/**
 		 * Retrieve the main dataset.
 		 */
-		$i = 0;
 		$results = db::query($queries[0]);
+		$i = 0;
 
-		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			if (++$i > $rows) {
-				break;
-			}
-
+		while (($result = $results->fetchArray(SQLITE3_ASSOC)) && $i < $rows) {
 			for ($col = 1; $col <= $cols; ++$col) {
 				${'v'.$col} = $result['v'.$col];
 
@@ -320,6 +316,12 @@ class html
 						${'v'.$col} = '<a href="'.$this->htmlify(${'v'.$col}).'">'.$this->htmlify(${'v'.$col}).'</a>';
 						break;
 					default:
+						/**
+						 * By default columns will be formatted as if containing numeric data. If
+						 * specified, the $type string should be of the following syntax:
+						 * "num[$x][-perc]". Where "$x" specifies the amount of decimals used, and
+						 * "-perc" to append a percent sign to the column value.
+						 */
 						preg_match('/^num(?<decimals>[0-9])?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
 						$decimals = (!is_null($matches['decimals']) ? (int) $matches['decimals'] : 0);
 						$percentage = (!is_null($matches['percentage']) ? true : false);
@@ -331,7 +333,7 @@ class html
 				}
 			}
 
-			$table .= '<tr><td class="v1">'.$v1.'<td class="pos">'.$i.'<td class="v2">'.$v2.($cols === 3 ? '<td class="'.($types[2] === 'str-url' ? 'v3a' : 'v3').'">'.$v3 : '');
+			$table .= '<tr><td class="v1">'.$v1.'<td class="pos">'.++$i.'<td class="v2">'.$v2.($cols === 3 ? '<td class="'.($types[2] === 'str-url' ? 'v3a' : 'v3').'">'.$v3 : '');
 		}
 
 		if ($i === 0) {
