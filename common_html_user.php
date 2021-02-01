@@ -154,7 +154,7 @@ trait common_html_user
 		 * Assemble each column.
 		 */
 		foreach ($dates as $date) {
-			if (!array_key_exists($date, $lines)) {
+			if (!isset($lines[$date])) {
 				$tr2 .= '<td><span class="grey">n/a</span>';
 			} else {
 				$total = ($lines[$date]['total'] >= 999500 ? number_format($lines[$date]['total'] / 1000000, 1).'M' : ($lines[$date]['total'] >= 10000 ? round($lines[$date]['total'] / 1000).'K' : $lines[$date]['total']));

@@ -161,7 +161,7 @@ class user
 		$nicks = explode(',', mb_strtolower($this->csnick.db::query_single_col('SELECT \',\' || GROUP_CONCAT(csnick) FROM uid_details WHERE ruid = '.$this->ruid.' AND status = 2')));
 
 		foreach ($nicks as $nick) {
-			if (array_key_exists($nick, $images)) {
+			if (isset($images[$nick])) {
 				return '<img src="'.$this->htmlify($this->userpics_dir.'/'.$images[$nick]).'" alt="" class="userpic">';
 			}
 		}
@@ -169,7 +169,7 @@ class user
 		/**
 		 * Display $userpics_default if no image could be found, provided it's valid.
 		 */
-		if (array_key_exists(mb_strtolower(preg_replace('/\.(bmp|gif|jpe?g|png)$/i', '', $this->userpics_default)), $images)) {
+		if (isset($images[mb_strtolower(preg_replace('/\.(bmp|gif|jpe?g|png)$/i', '', $this->userpics_default))])) {
 			return '<img src="'.$this->htmlify($this->userpics_dir.'/'.$this->userpics_default).'" alt="" class="userpic">';
 		}
 

@@ -79,7 +79,7 @@ class parser
 	{
 		$nick = mb_strtolower($csnick);
 
-		if (!array_key_exists($nick, $this->nick_objs)) {
+		if (!isset($this->nick_objs[$nick])) {
 			$this->nick_objs[$nick] = new nick($csnick);
 		} else {
 			$this->nick_objs[$nick]->set_string('csnick', $csnick);
@@ -104,7 +104,7 @@ class parser
 	 */
 	private function create_topic(string $time, string $nick, string $topic): void
 	{
-		if (!array_key_exists($topic, $this->topic_objs)) {
+		if (!isset($this->topic_objs[$topic])) {
 			$this->topic_objs[$topic] = new topic($topic);
 		}
 
@@ -118,7 +118,7 @@ class parser
 	{
 		$url = $urlparts['url'];
 
-		if (!array_key_exists($url, $this->url_objs)) {
+		if (!isset($this->url_objs[$url])) {
 			$this->url_objs[$url] = new url($urlparts);
 		}
 
@@ -132,7 +132,7 @@ class parser
 	{
 		$word = mb_strtolower($csword);
 
-		if (!array_key_exists($word, $this->word_objs)) {
+		if (!isset($this->word_objs[$word])) {
 			$this->word_objs[$word] = new word($word);
 			$this->word_objs[$word]->set_int('length', $length);
 		}

@@ -71,9 +71,9 @@ class sss
 		/**
 		 * Set output verbosity if applicable.
 		 */
-		if (array_key_exists('q', $options)) {
+		if (isset($options['q'])) {
 			out::set_verbosity(0);
-		} elseif (array_key_exists('v', $options)) {
+		} elseif (isset($options['v'])) {
 			out::set_verbosity(2);
 		}
 
@@ -203,16 +203,16 @@ class sss
 	 */
 	private function main(array $options): void
 	{
-		if (array_key_exists('e', $options)) {
+		if (isset($options['e'])) {
 			$this->export_nicks($options['e']);
 		}
 
-		if (array_key_exists('m', $options)) {
+		if (isset($options['m'])) {
 			$this->import_nicks($options['m']);
 			$this->need_maintenance = true;
 		}
 
-		if (array_key_exists('i', $options)) {
+		if (isset($options['i'])) {
 			$this->parse_log($options['i']);
 		}
 
@@ -220,7 +220,7 @@ class sss
 			$maintenance = new maintenance();
 		}
 
-		if (array_key_exists('o', $options)) {
+		if (isset($options['o'])) {
 			$this->create_html($options['o']);
 		}
 	}
