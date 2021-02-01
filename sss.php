@@ -14,7 +14,7 @@ ini_set('pcre.jit', '0');
 /**
  * Check if all required extensions are loaded.
  */
-foreach (['sqlite3', 'mbstring', 'zlib'] as $module) {
+foreach (['sqlite3', 'mbstring'] as $module) {
 	extension_loaded($module) or exit('>> php\'s '.$module.' extension isn\'t loaded <<'."\n");
 }
 
@@ -45,6 +45,7 @@ class sss
 	use common;
 
 	private bool $need_maintenance = false;
+	private bool $with_zlib = false;
 	private string $database = '';
 	private string $parser = '';
 	private string $timezone = '';
@@ -86,6 +87,15 @@ class sss
 		 */
 		date_default_timezone_set($this->timezone) or out::put('critical', 'invalid timezone: \''.$this->timezone.'\'');
 		out::put('debug', 'timezone set to: \''.$this->timezone.'\'');
+
+		/**
+		 * Check if the zlib extension is loaded.
+		 */
+		if (extension_loaded('zlib')) {
+			$this->with_zlib = true;
+		} else {
+			out::put('notice', 'php\'s zlib extension isn\'t loaded, skipping any gzipped logs');
+		}
 
 		/**
 		 * Open the database connection and store config settings.
@@ -246,6 +256,10 @@ class sss
 			 * Each filename must contain a date formatted like "Ymd" or "Y-m-d".
 			 */
 			if (preg_match('/(?<!\d)(?<year>\d{4})-?(?<month>\d{2})-?(?<day>\d{2})(?!\d)/', $file, $matches)) {
+				if (preg_match('/\.gz$/', $file) && !$this->with_zlib) {
+					continue;
+				}
+
 				$logfiles[$matches['year'].'-'.$matches['month'].'-'.$matches['day']] = $file;
 			}
 		}
