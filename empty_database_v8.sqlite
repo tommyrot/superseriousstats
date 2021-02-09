@@ -289,8 +289,8 @@ PRIMARY KEY (uid, date)
 CREATE TABLE uid_details (
 uid INTEGER PRIMARY KEY AUTOINCREMENT,
 csnick TEXT COLLATE NOCASE UNIQUE NOT NULL, --case insensitive matching and sorting
-firstseen TEXT NOT NULL DEFAULT '0000-00-00 00:00:00',
-lastseen TEXT NOT NULL DEFAULT '0000-00-00 00:00:00',
+firstseen TEXT NOT NULL,
+lastseen TEXT NOT NULL,
 ruid INT NOT NULL DEFAULT 0, --defaults to uid by trigger
 status INT NOT NULL DEFAULT 0 CHECK (status IN (0,1,2,3,4))
 );
