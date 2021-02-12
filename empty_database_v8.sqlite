@@ -434,9 +434,11 @@ CREATE INDEX urls_fid ON urls (fid);
 CREATE TABLE words (
 word TEXT PRIMARY KEY NOT NULL,
 length INT NOT NULL CHECK (length > 0),
-total INT NOT NULL CHECK (total > 0)
+total INT NOT NULL CHECK (total > 0),
+firstused TEXT NOT NULL
 );
 CREATE INDEX words_length ON words (length);
+CREATE INDEX words_firstused ON words (firstused);
 
 CREATE VIEW v_ruid_activity_by_day AS
 SELECT ruid,

@@ -133,8 +133,7 @@ class parser
 		$word = mb_strtolower($csword);
 
 		if (!isset($this->word_objs[$word])) {
-			$this->word_objs[$word] = new word($word);
-			$this->word_objs[$word]->set_int('length', $length);
+			$this->word_objs[$word] = new word($word, $length, $this->date);
 		}
 
 		$this->word_objs[$word]->add_int('total', 1);

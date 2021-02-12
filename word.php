@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -13,11 +13,14 @@ class word
 
 	private int $length = 0;
 	private int $total = 0;
+	private string $firstused = '';
 	private string $word = '';
 
-	public function __construct(string $word)
+	public function __construct(string $word, int $length, string $firstused)
 	{
 		$this->word = $word;
+		$this->length = $length;
+		$this->firstused = $firstused;
 	}
 
 	/**
@@ -28,6 +31,6 @@ class word
 		/**
 		 * Store data in database table "words".
 		 */
-		db::query_exec('INSERT INTO words (word, length, total) VALUES (\''.$this->word.'\', '.$this->length.', '.$this->total.') ON CONFLICT (word) DO UPDATE SET total = total + '.$this->total);
+		db::query_exec('INSERT INTO words (word, length, total, firstused) VALUES (\''.$this->word.'\', '.$this->length.', '.$this->total.', DATE(\''.$this->firstused.'\')) ON CONFLICT (word) DO UPDATE SET total = total + '.$this->total);
 	}
 }
