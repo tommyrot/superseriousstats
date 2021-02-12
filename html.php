@@ -204,7 +204,7 @@ class html
 		}
 
 		/**
-		 * Build the "Words" section.
+		 * Build the "Words by Length" section.
 		 */
 		$section = '';
 		$results = db::query('SELECT * FROM (SELECT length, COUNT(*) AS total FROM words GROUP BY length ORDER BY total DESC, length DESC LIMIT 12) ORDER BY length ASC');
@@ -217,7 +217,24 @@ class html
 		}
 
 		if ($section !== '') {
-			$contents .= '<div class="section">Words</div>'."\n".$section;
+			$contents .= '<div class="section">Words by Length</div>'."\n".$section;
+		}
+
+		/**
+		 * Build the "Words by Year of First Use" section.
+		 */
+		$section = '';
+		$results = db::query('SELECT DISTINCT SUBSTR(date, 1, 4) AS year FROM channel_activity ORDER BY year ASC');
+
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+			/**
+			 * Hide words for which a nick with 7 or more days of activity exists.
+			 */
+			$section .= $this->create_table('Words First Used in '.$result['year'], ['Times Used', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE SUBSTR(firstused, 1, 4) = \''.$result['year'].'\' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', 'SELECT COUNT(*) FROM words WHERE SUBSTR(firstused, 1, 4) = \''.$result['year'].'\'']);
+		}
+
+		if ($section !== '') {
+			$contents .= '<div class="section">Words by Year of First Use</div>'."\n".$section;
 		}
 
 		/**
