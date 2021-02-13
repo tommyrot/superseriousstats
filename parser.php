@@ -53,12 +53,14 @@ class parser
 	private string $hex_valid_utf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private string $line_new = '';
 	private string $nick_prev = '';
+	private string $year = '';
 	protected int $linenum = 0;
 	protected string $line_prev = '';
 
 	public function __construct(string $date)
 	{
 		$this->date = $date;
+		$this->year = substr($date, 0, 4);
 
 		/**
 		 * Retrieve smiley mappings from the database.
@@ -133,7 +135,7 @@ class parser
 		$word = mb_strtolower($csword);
 
 		if (!isset($this->word_objs[$word])) {
-			$this->word_objs[$word] = new word($word, $length, $this->date);
+			$this->word_objs[$word] = new word($word, $length, $this->year);
 		}
 
 		$this->word_objs[$word]->add_int('total', 1);
