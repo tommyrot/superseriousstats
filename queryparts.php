@@ -16,7 +16,12 @@ trait queryparts
 				if ($this->$var !== 0) {
 					$insert_columns[] = $var;
 					$insert_values[] = $this->$var;
-					$update_assignments[] = $var.' = '.$var.' + '.$this->$var;
+
+					if ($var === 'topmonologue') {
+						$update_assignments[] = 'topmonologue = CASE WHEN '.$this->topmonologue.' > topmonologue THEN '.$this->topmonologue.' ELSE topmonologue END';
+					} else {
+						$update_assignments[] = $var.' = '.$var.' + '.$this->$var;
+					}
 				}
 			} elseif (is_string($this->$var)) {
 				if ($this->$var !== '') {
