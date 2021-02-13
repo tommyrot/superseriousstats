@@ -121,7 +121,7 @@ trait common_html_history
 			}
 
 			$percentage = number_format(($result['l_total'] / $l_total) * 100, 2).'%';
-			$trx .= '<tr><td class="v1">'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$i.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.($result['quote'] === '' ? '<span class="grey">n/a</span>' : $this->htmlify($result['quote']));
+			$trx .= '<tr><td class="v1">'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$i.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
 		}
 
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
