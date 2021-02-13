@@ -383,9 +383,7 @@ class parser
 
 		/**
 		 * $skip_quote controls whether a line may be used as a quote. We flip this
-		 * variable to true when a line contains a URL (because those look bad) and when
-		 * a line has already been used as a quote of different type (to avoid duplicate
-		 * quotes on the stats page).
+		 * variable to true when a line contains a URL because those look bad).
 		 */
 		$skip_quote = false;
 
@@ -460,7 +458,6 @@ class parser
 
 				if (!$skip_quote && ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_uppercased') === '')) {
 					$this->nick_objs[$nick]->set_string('ex_uppercased', $line);
-					$skip_quote = true;
 				}
 			}
 		}
@@ -475,14 +472,12 @@ class parser
 
 			if (!$skip_quote && ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_exclamations') === '')) {
 				$this->nick_objs[$nick]->set_string('ex_exclamations', $line);
-				$skip_quote = true;
 			}
 		} elseif (($word_type !== 'url' && preg_match('/\?$/', $line)) || ($wordcount > 1 && $word_type === 'smiley' && preg_match('/\?$/', $words[$wordcount - 2]))) {
 			$this->nick_objs[$nick]->add_int('questions', 1);
 
 			if (!$skip_quote && ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_questions') === '')) {
 				$this->nick_objs[$nick]->set_string('ex_questions', $line);
-				$skip_quote = true;
 			}
 		}
 
