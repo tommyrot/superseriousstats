@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2020-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -28,7 +28,12 @@ trait queryparts
 					$value = '\''.preg_replace('/\'/', '\'\'', $this->$var).'\'';
 					$insert_columns[] = $var;
 					$insert_values[] = $value;
-					$update_assignments[] = $var.' = '.$value;
+
+					if ($var === 'quote' || $var === 'ex_exclamations' || $var === 'ex_questions' || $var === 'ex_uppercased') {
+						$update_assignments[] = $var.' = CASE WHEN '.$value.' LIKE \'% % %\' OR '.$var.' NOT LIKE \'% % %\' THEN '.$value.' ELSE '.$var.' END';
+					} else {
+						$update_assignments[] = $var.' = '.$value;
+					}
 				}
 			}
 		}
