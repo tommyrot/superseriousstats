@@ -29,8 +29,8 @@ trait queryparts
 					$insert_columns[] = $var;
 					$insert_values[] = $value;
 
-					if ($var === 'quote' || $var === 'ex_exclamations' || $var === 'ex_questions' || $var === 'ex_uppercased') {
-						$update_assignments[] = $var.' = CASE WHEN '.$value.' LIKE \'% % %\' OR '.$var.' NOT LIKE \'% % %\' THEN '.$value.' ELSE '.$var.' END';
+					if (($var === 'quote' || $var === 'ex_exclamations' || $var === 'ex_questions' || $var === 'ex_uppercased') && substr_count($this->$var, ' ') < 2) {
+						$update_assignments[] = $var.' = CASE WHEN '.$var.' NOT LIKE \'% % %\' THEN '.$value.' ELSE '.$var.' END';
 					} else {
 						$update_assignments[] = $var.' = '.$value;
 					}
