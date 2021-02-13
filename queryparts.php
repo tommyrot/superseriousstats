@@ -18,6 +18,9 @@ trait queryparts
 					$insert_values[] = $this->$var;
 
 					if ($var === 'topmonologue') {
+						/**
+						 * $topmonologue is a high value and should be treated as such.
+						 */
 						$update_assignments[] = 'topmonologue = CASE WHEN '.$this->topmonologue.' > topmonologue THEN '.$this->topmonologue.' ELSE topmonologue END';
 					} else {
 						$update_assignments[] = $var.' = '.$var.' + '.$this->$var;
@@ -30,6 +33,9 @@ trait queryparts
 					$insert_values[] = $value;
 
 					if (($var === 'quote' || $var === 'ex_exclamations' || $var === 'ex_questions' || $var === 'ex_uppercased') && substr_count($this->$var, ' ') < 2) {
+						/**
+						 * Don't update a quote if that means its length will fall below 3 words.
+						 */
 						$update_assignments[] = $var.' = CASE WHEN '.$var.' NOT LIKE \'% % %\' THEN '.$value.' ELSE '.$var.' END';
 					} else {
 						$update_assignments[] = $var.' = '.$value;
