@@ -262,7 +262,7 @@ class html
 	/**
 	 * Create small, medium and large generic tables.
 	 */
-	private function create_table(string $title, array $keys, array $types, array $queries, int $rows = 5): ?string
+	private function create_table(string $title, array $keys, array $types, array $queries, int $rows = 5): string|null
 	{
 		/**
 		 * Amount of columns the table will have (not counting the position column).
@@ -366,7 +366,7 @@ class html
 		return $table.'</table>'."\n";
 	}
 
-	private function create_table_people2(): ?string
+	private function create_table_people2(): string|null
 	{
 		$results = db::query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC limit 30,40');
 		$col = 1;

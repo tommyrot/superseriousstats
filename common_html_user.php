@@ -9,7 +9,7 @@
  */
 trait common_html_user
 {
-	private function create_table_activity(string $period): ?string
+	private function create_table_activity(string $period): string|null
 	{
 		$page = get_class($this);
 		$times = ['evening', 'afternoon', 'morning', 'night'];
@@ -237,7 +237,7 @@ trait common_html_user
 		return '<table class="act'.($period === 'year' ? '-year" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$tr1.$tr2.$tr3.'</table>'."\n";
 	}
 
-	private function create_table_activity_distribution_day(): ?string
+	private function create_table_activity_distribution_day(): string|null
 	{
 		$page = get_class($this);
 		$days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];

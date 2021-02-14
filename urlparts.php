@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -24,7 +24,7 @@ trait urlparts
 	private string $regexp_callback = '';
 	private string $regexp_complete = '';
 
-	private function get_urlparts(string $url): ?array
+	private function get_urlparts(string $url): array|null
 	{
 		/**
 		 * Assemble the regular expression if not already done so.

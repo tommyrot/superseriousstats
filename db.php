@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2020-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -104,7 +104,7 @@ class db
 	/**
 	 * Execute a resultless query.
 	 */
-	public static function query_exec(string $query): ?int
+	public static function query_exec(string $query): int|null
 	{
 		self::$db->exec($query) or self::fail();
 
@@ -134,7 +134,7 @@ class db
 	/**
 	 * Execute a query and return the single row result.
 	 */
-	public static function query_single_row(string $query): ?array
+	public static function query_single_row(string $query): array|null
 	{
 		if (($result = self::$db->querySingle($query, true)) === false) {
 			self::fail();
