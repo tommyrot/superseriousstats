@@ -224,7 +224,7 @@ class html
 		 * Build the "Words by Year of First Use" section.
 		 */
 		$section = '';
-		$results = db::query('SELECT DISTINCT SUBSTR(date, 1, 4) AS year FROM channel_activity ORDER BY year ASC');
+		$results = db::query('SELECT DISTINCT firstused FROM words ORDER BY firstused ASC');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			/**
