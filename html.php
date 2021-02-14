@@ -230,7 +230,7 @@ class html
 			/**
 			 * Hide words for which a nick with 7 or more days of activity exists.
 			 */
-			$section .= $this->create_table('Words First Used in '.$result['year'], ['Times Used', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE SUBSTR(firstused, 1, 4) = \''.$result['year'].'\' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', 'SELECT COUNT(*) FROM words WHERE SUBSTR(firstused, 1, 4) = \''.$result['year'].'\'']);
+			$section .= $this->create_table('Words First Used in '.$result['firstused'], ['Times Used', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE firstused = \''.$result['firstused'].'\' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', 'SELECT COUNT(*) FROM words WHERE firstused = \''.$result['firstused'].'\'']);
 		}
 
 		if ($section !== '') {
