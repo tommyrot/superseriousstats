@@ -437,13 +437,8 @@ class parser
 				$line_symbolized_urls = preg_replace('/(www\.|https?:\/\/)\S+/i', "\xF0\x9F\x99\x8F", $line_symbolized_urls, 1);
 
 				if (!is_null($urlparts = $this->get_urlparts($csword))) {
-					/**
-					 * Track URLs of up to a hard limit of 512 characters in length.
-					 */
-					if (strlen($urlparts['url']) <= 512) {
-						$this->create_url($time, $nick, $urlparts);
-						$this->nick_objs[$nick]->add_int('urls', 1);
-					}
+					$this->create_url($time, $nick, $urlparts);
+					$this->nick_objs[$nick]->add_int('urls', 1);
 				} else {
 					out::put('debug', 'invalid url: \''.$csword.'\' on line '.$this->linenum);
 				}
