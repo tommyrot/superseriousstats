@@ -383,12 +383,6 @@ class parser
 		$wordcount = count($words);
 		$this->nick_objs[$nick]->add_int('words', $wordcount);
 
-		/**
-		 * $skip_quote controls whether a line may be used as a quote. We flip this
-		 * variable to true when a line contains a URL because those look bad).
-		 */
-		$skip_quote = false;
-
 		foreach ($words as $csword) {
 			$word_type = 'generic';
 
@@ -432,8 +426,6 @@ class parser
 			 * Only catch URLs which start with "www.", "http://" or "https://".
 			 */
 			} elseif (preg_match('/^(www\.|https?:\/\/).+/i', $csword)) {
-				$skip_quote = true;
-
 				if (!is_null($urlparts = $this->get_urlparts($csword))) {
 					$word_type = 'url';
 
@@ -458,7 +450,7 @@ class parser
 			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line)) * 2 > $line_length) {
 				$this->nick_objs[$nick]->add_int('uppercased', 1);
 
-				if (!$skip_quote && ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_uppercased') === '')) {
+				if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_uppercased') === '') {
 					$this->nick_objs[$nick]->set_string('ex_uppercased', $line);
 				}
 			}
@@ -472,18 +464,18 @@ class parser
 		if (($word_type !== 'url' && preg_match('/!$/', $line)) || ($wordcount > 1 && $word_type === 'smiley' && preg_match('/!$/', $words[$wordcount - 2]))) {
 			$this->nick_objs[$nick]->add_int('exclamations', 1);
 
-			if (!$skip_quote && ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_exclamations') === '')) {
+			if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_exclamations') === '') {
 				$this->nick_objs[$nick]->set_string('ex_exclamations', $line);
 			}
 		} elseif (($word_type !== 'url' && preg_match('/\?$/', $line)) || ($wordcount > 1 && $word_type === 'smiley' && preg_match('/\?$/', $words[$wordcount - 2]))) {
 			$this->nick_objs[$nick]->add_int('questions', 1);
 
-			if (!$skip_quote && ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_questions') === '')) {
+			if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_questions') === '') {
 				$this->nick_objs[$nick]->set_string('ex_questions', $line);
 			}
 		}
 
-		if (!$skip_quote && ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('quote') === '')) {
+		if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('quote') === '') {
 			$this->nick_objs[$nick]->set_string('quote', $line);
 		}
 	}
