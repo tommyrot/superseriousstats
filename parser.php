@@ -382,6 +382,7 @@ class parser
 		$words = explode(' ', $line);
 		$wordcount = count($words);
 		$this->nick_objs[$nick]->add_int('words', $wordcount);
+		$line_symbolized_urls = $line;
 
 		foreach ($words as $csword) {
 			$trailing_smiley = false;
@@ -424,10 +425,6 @@ class parser
 				 * Replace URLs (regardless of validity) with a unicode hyperlink symbol so the
 				 * line (i.e. $line_symbolized_urls) can be used as a quote without looking bad.
 				 */
-				if (!isset($line_symbolized_urls)) {
-					$line_symbolized_urls = $line;
-				}
-
 				$line_symbolized_urls = preg_replace('/(www\.|https?:\/\/)\S+/i', "\xF0\x9F\x99\x8F", $line_symbolized_urls, 1);
 
 				if (!is_null($urlparts = $this->get_urlparts($csword))) {
