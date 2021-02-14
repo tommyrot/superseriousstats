@@ -384,7 +384,7 @@ class parser
 		$this->nick_objs[$nick]->add_int('words', $wordcount);
 
 		foreach ($words as $csword) {
-			$word_type = 'generic';
+			$trailing_smiley = false;
 
 			/**
 			 * Strip most common punctuation from the beginning and end of the word before
@@ -404,7 +404,7 @@ class parser
 					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], strtolower($csword_trimmed));
 					$this->nick_objs[$nick]->add_smiley($this->smileys[$smiley_textual], 1);
 				} elseif (preg_match('/^([xX]D|D:)$/', $csword)) {
-					$word_type = 'smiley';
+					$trailing_smiley = true;
 					$this->nick_objs[$nick]->add_smiley($this->smileys[strtolower($csword)], 1);
 				}
 
@@ -412,7 +412,7 @@ class parser
 			 * Regular expression to check for all remaining smileys we're interested in.
 			 */
 			} elseif (preg_match('/^(:([][)(pPD\/oOxX\\\|3<>sS]|-[)D\/pP(\\\]|\'\()|;([)(pPD]|-\)|_;)|[:;](\)\)+|\(\(+)|\\\[oO]\/|<3|=[])pP\/\\\D(]|8\)|-[_.]-|[oO][_.][oO])$/', $csword)) {
-				$word_type = 'smiley';
+				$trailing_smiley = true;
 				$smiley = preg_replace(['/^(:-?|=)[\/\\\]$/', '/^:\)\)\)+$/', '/^:\(\(\(+$/', '/^;\)\)+$/', '/^;\(\(+$/', '/^;d$/', '/^o\.o$/', '/^-\.-$/'], [':/', ':))', ':((', ';)', ';(', ':d', 'o_o', '-_-'], strtolower($csword));
 				$this->nick_objs[$nick]->add_smiley($this->smileys[$smiley], 1);
 
@@ -454,17 +454,16 @@ class parser
 		}
 
 		/**
-		 * In order to decide whether a line counts as an exclamation or question we
-		 * take the value of $word_type into account, which relates to the type of the
-		 * last word of the line, either "generic", "smiley" or (valid) "url".
+		 * Look back one word in lines with a trailing smiley before validating whether
+		 * it's an exclamation or question.
 		 */
-		if (preg_match('/!$/', $line_symbolized_urls) || ($wordcount > 1 && $word_type === 'smiley' && preg_match('/!$/', $words[$wordcount - 2]))) {
+		if (preg_match('/!$/', $line_symbolized_urls) || ($wordcount > 1 && $trailing_smiley && preg_match('/!$/', $words[$wordcount - 2]))) {
 			$this->nick_objs[$nick]->add_int('exclamations', 1);
 
 			if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_exclamations') === '') {
 				$this->nick_objs[$nick]->set_string('ex_exclamations', $line_symbolized_urls);
 			}
-		} elseif (preg_match('/\?$/', $line_symbolized_urls) || ($wordcount > 1 && $word_type === 'smiley' && preg_match('/\?$/', $words[$wordcount - 2]))) {
+		} elseif (preg_match('/\?$/', $line_symbolized_urls) || ($wordcount > 1 && $trailing_smiley && preg_match('/\?$/', $words[$wordcount - 2]))) {
 			$this->nick_objs[$nick]->add_int('questions', 1);
 
 			if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_questions') === '') {
