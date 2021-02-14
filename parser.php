@@ -426,6 +426,16 @@ class parser
 			 * Only catch URLs which start with "www.", "http://" or "https://".
 			 */
 			} elseif (preg_match('/^(www\.|https?:\/\/).+/i', $csword)) {
+				/**
+				 * Replace URLs (regardless of validity) with a unicode hyperlink symbol so the
+				 * line (i.e. $line_symbolized_urls) can be used as a quote without looking bad.
+				 */
+				if (!isset($line_symbolized_urls)) {
+					$line_symbolized_urls = $line;
+				}
+
+				$line_symbolized_urls = preg_replace('/(www\.|https?:\/\/)\S+/i', "\xF0\x9F\x99\x8F", $line_symbolized_urls, 1);
+
 				if (!is_null($urlparts = $this->get_urlparts($csword))) {
 					$word_type = 'url';
 
@@ -451,7 +461,7 @@ class parser
 				$this->nick_objs[$nick]->add_int('uppercased', 1);
 
 				if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_uppercased') === '') {
-					$this->nick_objs[$nick]->set_string('ex_uppercased', $line);
+					$this->nick_objs[$nick]->set_string('ex_uppercased', $line_symbolized_urls);
 				}
 			}
 		}
@@ -461,22 +471,22 @@ class parser
 		 * take the value of $word_type into account, which relates to the type of the
 		 * last word of the line, either "generic", "smiley" or (valid) "url".
 		 */
-		if (($word_type !== 'url' && preg_match('/!$/', $line)) || ($wordcount > 1 && $word_type === 'smiley' && preg_match('/!$/', $words[$wordcount - 2]))) {
+		if (preg_match('/!$/', $line_symbolized_urls) || ($wordcount > 1 && $word_type === 'smiley' && preg_match('/!$/', $words[$wordcount - 2]))) {
 			$this->nick_objs[$nick]->add_int('exclamations', 1);
 
 			if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_exclamations') === '') {
-				$this->nick_objs[$nick]->set_string('ex_exclamations', $line);
+				$this->nick_objs[$nick]->set_string('ex_exclamations', $line_symbolized_urls);
 			}
-		} elseif (($word_type !== 'url' && preg_match('/\?$/', $line)) || ($wordcount > 1 && $word_type === 'smiley' && preg_match('/\?$/', $words[$wordcount - 2]))) {
+		} elseif (preg_match('/\?$/', $line_symbolized_urls) || ($wordcount > 1 && $word_type === 'smiley' && preg_match('/\?$/', $words[$wordcount - 2]))) {
 			$this->nick_objs[$nick]->add_int('questions', 1);
 
 			if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_questions') === '') {
-				$this->nick_objs[$nick]->set_string('ex_questions', $line);
+				$this->nick_objs[$nick]->set_string('ex_questions', $line_symbolized_urls);
 			}
 		}
 
 		if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('quote') === '') {
-			$this->nick_objs[$nick]->set_string('quote', $line);
+			$this->nick_objs[$nick]->set_string('quote', $line_symbolized_urls);
 		}
 	}
 
