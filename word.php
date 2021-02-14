@@ -16,10 +16,10 @@ class word
 	private string $firstused = '';
 	private string $word = '';
 
-	public function __construct(string $word, int $length, string $firstused)
+	public function __construct(string $word, string $firstused)
 	{
 		$this->word = $word;
-		$this->length = $length;
+		$this->length = mb_strlen($word);
 		$this->firstused = $firstused;
 	}
 

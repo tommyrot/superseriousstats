@@ -130,12 +130,12 @@ class parser
 	/**
 	 * Words are stored in lower case.
 	 */
-	private function create_word(string $csword, int $length): void
+	private function create_word(string $csword): void
 	{
 		$word = mb_strtolower($csword);
 
 		if (!isset($this->word_objs[$word])) {
-			$this->word_objs[$word] = new word($word, $length, $this->year);
+			$this->word_objs[$word] = new word($word, $this->year);
 		}
 
 		$this->word_objs[$word]->add_int('total', 1);
@@ -394,7 +394,7 @@ class parser
 			 */
 			if (preg_match('/^["\'(]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;]?$/u', $csword, $matches)) {
 				$csword_trimmed = $matches['csword_trimmed'];
-				$this->create_word($csword_trimmed, $word_length);
+				$this->create_word($csword_trimmed);
 
 				/**
 				 * Check for textual user expressions, and smileys that matched the previous
