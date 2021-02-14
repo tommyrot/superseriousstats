@@ -394,13 +394,7 @@ class parser
 			 */
 			if (preg_match('/^["\'(]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;]?$/u', $csword, $matches)) {
 				$csword_trimmed = $matches['csword_trimmed'];
-
-				/**
-				 * Words consisting of 30+ characters are most likely not real words.
-				 */
-				if (($word_length = mb_strlen($csword_trimmed)) <= 30) {
-					$this->create_word($csword_trimmed, $word_length);
-				}
+				$this->create_word($csword_trimmed, $word_length);
 
 				/**
 				 * Check for textual user expressions, and smileys that matched the previous
