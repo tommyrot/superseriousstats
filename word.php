@@ -11,7 +11,6 @@ class word
 {
 	use common;
 
-	private int $length = 0;
 	private int $total = 0;
 	private string $firstused = '';
 	private string $word = '';
@@ -19,7 +18,6 @@ class word
 	public function __construct(string $word, string $firstused)
 	{
 		$this->word = $word;
-		$this->length = mb_strlen($word);
 		$this->firstused = $firstused;
 	}
 
@@ -31,6 +29,6 @@ class word
 		/**
 		 * Store data in database table "words".
 		 */
-		db::query_exec('INSERT INTO words (word, length, total, firstused) VALUES (\''.$this->word.'\', '.$this->length.', '.$this->total.', \''.$this->firstused.'\') ON CONFLICT (word) DO UPDATE SET total = total + '.$this->total);
+		db::query_exec('INSERT INTO words (word, length, total, firstused) VALUES (\''.$this->word.'\', LENGTH(\''.$this->word.'\'), '.$this->total.', \''.$this->firstused.'\') ON CONFLICT (word) DO UPDATE SET total = total + '.$this->total);
 	}
 }
