@@ -34,7 +34,7 @@ class topic
 		 * Store data in database tables "topics" and "uid_topics".
 		 */
 		if (is_null($tid = db::query_single_col('SELECT tid FROM topics WHERE topic = \''.preg_replace('/\'/', '\'\'', $this->topic).'\''))) {
-			$tid = db::query_exec('INSERT INTO topics (tid, topic) VALUES (NULL, \''.preg_replace('/\'/', '\'\'', $this->topic).'\')');
+			$tid = db::query_exec('INSERT INTO topics (topic) VALUES (\''.preg_replace('/\'/', '\'\'', $this->topic).'\')');
 		}
 
 		foreach ($this->uses as [$datetime, $nick]) {

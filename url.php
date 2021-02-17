@@ -39,7 +39,7 @@ class url
 		 */
 		if ($this->fqdn !== '') {
 			if (is_null($fid = db::query_single_col('SELECT fid FROM fqdns WHERE fqdn = \''.$this->fqdn.'\''))) {
-				$fid = db::query_exec('INSERT INTO fqdns (fid, fqdn, tld) VALUES (NULL, \''.$this->fqdn.'\', \''.$this->tld.'\')');
+				$fid = db::query_exec('INSERT INTO fqdns (fqdn, tld) VALUES (\''.$this->fqdn.'\', \''.$this->tld.'\')');
 			}
 		}
 
@@ -47,7 +47,7 @@ class url
 		 * Store data in database tables "urls" and "uid_urls".
 		 */
 		if (is_null($lid = db::query_single_col('SELECT lid FROM urls WHERE url = \''.preg_replace('/\'/', '\'\'', $this->url).'\''))) {
-			$lid = db::query_exec('INSERT INTO urls (lid, url'.($this->fqdn !== '' ? ', fid' : '').') VALUES (NULL, \''.preg_replace('/\'/', '\'\'', $this->url).'\''.($this->fqdn !== '' ? ', '.$fid : '').')');
+			$lid = db::query_exec('INSERT INTO urls (url'.($this->fqdn !== '' ? ', fid' : '').') VALUES (\''.preg_replace('/\'/', '\'\'', $this->url).'\''.($this->fqdn !== '' ? ', '.$fid : '').')');
 		}
 
 		foreach ($this->uses as [$datetime, $nick]) {
