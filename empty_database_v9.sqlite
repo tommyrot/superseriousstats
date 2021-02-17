@@ -36,7 +36,7 @@ l_total INT NOT NULL CHECK (l_total > 0)
 );
 
 CREATE TABLE fqdns (
-fid INTEGER PRIMARY KEY AUTOINCREMENT,
+fid INTEGER PRIMARY KEY,
 fqdn TEXT UNIQUE NOT NULL,
 tld TEXT NOT NULL,
 active BOOLEAN NOT NULL DEFAULT 1 CHECK (active IN (0,1)) --column affinity NUMERIC
@@ -206,7 +206,7 @@ value TEXT NOT NULL
 );
 
 CREATE TABLE smileys (
-sid INTEGER PRIMARY KEY AUTOINCREMENT,
+sid INTEGER PRIMARY KEY,
 smiley TEXT COLLATE NOCASE UNIQUE NOT NULL, --case insensitive matching and sorting
 category TEXT NOT NULL,
 textual BOOLEAN NOT NULL CHECK (textual IN (0,1)) --column affinity NUMERIC
@@ -271,7 +271,7 @@ streak INT NOT NULL CHECK (streak > 0)
 );
 
 CREATE TABLE topics (
-tid INTEGER PRIMARY KEY AUTOINCREMENT,
+tid INTEGER PRIMARY KEY,
 topic TEXT UNIQUE NOT NULL
 );
 
@@ -287,7 +287,7 @@ PRIMARY KEY (uid, date)
 );
 
 CREATE TABLE uid_details (
-uid INTEGER PRIMARY KEY AUTOINCREMENT,
+uid INTEGER PRIMARY KEY,
 csnick TEXT COLLATE NOCASE UNIQUE NOT NULL, --case insensitive matching and sorting
 firstseen TEXT NOT NULL,
 lastseen TEXT NOT NULL,
@@ -425,7 +425,7 @@ CREATE INDEX uid_urls_uid ON uid_urls (uid);
 CREATE INDEX uid_urls_lid ON uid_urls (lid);
 
 CREATE TABLE urls (
-lid INTEGER PRIMARY KEY AUTOINCREMENT,
+lid INTEGER PRIMARY KEY,
 url TEXT UNIQUE NOT NULL,
 fid INT REFERENCES fqdns (fid)
 );
