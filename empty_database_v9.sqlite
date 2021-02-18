@@ -194,7 +194,7 @@ CREATE INDEX ruid_milestones_milestone ON ruid_milestones (milestone);
 
 CREATE TABLE ruid_smileys (
 ruid INT NOT NULL,
-sid INT NOT NULL,
+sid INT NOT NULL REFERENCES smileys (sid),
 total INT NOT NULL,
 PRIMARY KEY (ruid, sid)
 );
