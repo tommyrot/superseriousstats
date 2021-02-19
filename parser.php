@@ -14,7 +14,6 @@ class parser
 
 	private array $nick_objs = [];
 	private array $smileys = [];
-	private array $topic_objs = [];
 	private array $url_objs = [];
 	private array $word_objs = [];
 	private int $l_00 = 0;
@@ -53,6 +52,7 @@ class parser
 	private string $hex_valid_utf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private string $line_new = '';
 	private string $nick_prev = '';
+	private string $topic = '';
 	private string $year = '';
 	protected int $linenum = 0;
 	protected string $line_prev = '';
@@ -99,18 +99,6 @@ class parser
 		}
 
 		return $nick;
-	}
-
-	/**
-	 * Topics are handled (and stored) while preserving case.
-	 */
-	private function create_topic(string $time, string $nick, string $topic): void
-	{
-		if (!isset($this->topic_objs[$topic])) {
-			$this->topic_objs[$topic] = new topic($topic);
-		}
-
-		$this->topic_objs[$topic]->add_uses($this->date.' '.$time, $nick);
 	}
 
 	/**
@@ -524,7 +512,7 @@ class parser
 
 		$nick = $this->create_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_int('topics', 1);
-		$this->create_topic($time, $nick, $line);
+		$this->topic = $line;
 	}
 
 	/**
@@ -568,17 +556,10 @@ class parser
 		}
 
 		/**
-		 * Store user data. MUST be done before storing topic and URL data.
+		 * Store user data. MUST be done before storing URL data.
 		 */
 		foreach ($this->nick_objs as $nick) {
 			$nick->store_data();
-		}
-
-		/**
-		 * Store topic data.
-		 */
-		foreach ($this->topic_objs as $topic) {
-			$topic->store_data();
 		}
 
 		/**
@@ -586,6 +567,13 @@ class parser
 		 */
 		foreach ($this->url_objs as $url) {
 			$url->store_data();
+		}
+
+		/**
+		 * Store topic data.
+		 */
+		if ($this->topic !== '') {
+			db::query_exec('UPDATE parse_state SET topic = \''.preg_replace('/\'/', '\'\'', $this->topic).'\'');
 		}
 
 		/**

@@ -272,11 +272,6 @@ INSERT INTO smileys (smiley, category, textual) VALUES
 ('lmao', 'lmao', 1),
 ('huh', 'huh', 1);
 
-CREATE TABLE topics (
-tid INTEGER PRIMARY KEY,
-topic TEXT UNIQUE NOT NULL
-);
-
 CREATE TABLE uid_activity (
 uid INT NOT NULL REFERENCES uid_details (uid),
 date TEXT NOT NULL,
@@ -409,14 +404,6 @@ total INT NOT NULL CHECK (total > 0),
 PRIMARY KEY (uid, sid)
 );
 CREATE INDEX uid_smileys_sid ON uid_smileys (sid);
-
-CREATE TABLE uid_topics (
-uid INT NOT NULL REFERENCES uid_details (uid),
-tid INT NOT NULL REFERENCES topics (tid),
-datetime TEXT NOT NULL
-);
-CREATE INDEX uid_topics_uid ON uid_topics (uid);
-CREATE INDEX uid_topics_tid ON uid_topics (tid);
 
 CREATE TABLE uid_urls (
 uid INT NOT NULL REFERENCES uid_details (uid),
