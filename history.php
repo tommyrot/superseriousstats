@@ -51,7 +51,7 @@ class history
 		 * Open the database connection and update our settings.
 		 */
 		db::connect();
-		$this->apply_settings(['timezone', 'channel', 'stylesheet', 'main_page', 'link_user_php', 'show_banner']);
+		$this->apply_vars('settings', ['timezone', 'channel', 'stylesheet', 'main_page', 'link_user_php', 'show_banner']);
 		out::set_stylesheet($this->stylesheet);
 
 		/**

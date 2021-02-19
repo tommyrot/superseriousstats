@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2010-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -15,27 +15,27 @@ trait common
 	}
 
 	/**
-	 * Retrieve and apply given settings after casting their values to the
-	 * appropriate type.
+	 * Retrieve and apply given variables from $table after casting their values to
+	 * the appropriate type. $table can be either "settings" or "parse_state".
 	 */
-	private function apply_settings(array $settings): void
+	private function apply_vars(string $table, array $vars): void
 	{
-		foreach ($settings as $setting) {
-			if (is_null($value = db::query_single_col('SELECT value FROM settings WHERE setting = \''.$setting.'\''))) {
+		foreach ($vars as $var) {
+			if (is_null($value = db::query_single_col('SELECT value FROM '.$table.' WHERE var = \''.$var.'\''))) {
 				continue;
 			}
 
-			if (is_string($this->$setting)) {
-				$this->$setting = $value;
-			} elseif (is_int($this->$setting)) {
+			if (is_string($this->$var)) {
+				$this->$var = $value;
+			} elseif (is_int($this->$var)) {
 				if (preg_match('/^\d+$/', $value)) {
-					$this->$setting = (int) $value;
+					$this->$var = (int) $value;
 				}
-			} elseif (is_bool($this->$setting)) {
+			} elseif (is_bool($this->$var)) {
 				if (preg_match('/^true$/i', $value)) {
-					$this->$setting = true;
+					$this->$var = true;
 				} elseif (preg_match('/^false$/i', $value)) {
-					$this->$setting = false;
+					$this->$var = false;
 				}
 			}
 		}

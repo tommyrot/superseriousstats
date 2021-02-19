@@ -49,12 +49,10 @@ date TEXT PRIMARY KEY NOT NULL,
 lines_parsed INT NOT NULL CHECK (lines_parsed > 0)
 );
 
-CREATE TABLE parse_state ( --single row table
-nick_prev TEXT,
-streak INT CHECK (streak > 0),
-topic TEXT
+CREATE TABLE parse_state (
+var TEXT PRIMARY KEY NOT NULL,
+value TEXT NOT NULL
 );
-INSERT INTO parse_state DEFAULT VALUES;
 
 CREATE TABLE ruid_activity_by_day (
 ruid INT NOT NULL,
@@ -208,7 +206,7 @@ PRIMARY KEY (ruid, sid)
 CREATE INDEX ruid_smileys_sid ON ruid_smileys (sid);
 
 CREATE TABLE settings (
-setting TEXT PRIMARY KEY NOT NULL,
+var TEXT PRIMARY KEY NOT NULL,
 value TEXT NOT NULL
 );
 

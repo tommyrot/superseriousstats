@@ -20,7 +20,7 @@ class html
 
 	public function __construct()
 	{
-		$this->apply_settings(['channel', 'stylesheet', 'link_history_php', 'link_user_php', 'show_banner']);
+		$this->apply_vars('settings', ['channel', 'stylesheet', 'link_history_php', 'link_user_php', 'show_banner']);
 	}
 
 	/**

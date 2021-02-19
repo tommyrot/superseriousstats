@@ -59,7 +59,7 @@ class user
 		 * Open the database connection and update our settings.
 		 */
 		db::connect();
-		$this->apply_settings(['timezone', 'channel', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page', 'show_banner']);
+		$this->apply_vars('settings', ['timezone', 'channel', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page', 'show_banner']);
 		out::set_stylesheet($this->stylesheet);
 
 		/**

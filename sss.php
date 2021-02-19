@@ -105,7 +105,7 @@ class sss
 		db::query_exec('DELETE FROM settings');
 
 		foreach ($settings as $setting => $value) {
-			db::query_exec('INSERT INTO settings (setting, value) VALUES (\''.$setting.'\', \''.preg_replace('/\'/', '\'\'', $value).'\')');
+			db::query_exec('INSERT INTO settings (var, value) VALUES (\''.$setting.'\', \''.preg_replace('/\'/', '\'\'', $value).'\')');
 		}
 
 		/**
@@ -275,22 +275,14 @@ class sss
 
 		foreach ($logfiles as $date => $logfile) {
 			/**
-			 * Skip logs that have already been processed.
+			 * Skip logs that have already been processed. We only support parsing logs in
+			 * chronological order.
 			 */
 			if (!is_null($date_last_log_parsed = db::query_single_col('SELECT MAX(date) FROM parse_history')) && $date < $date_last_log_parsed) {
 				continue;
 			}
 
 			$parser = new $this->parser($date);
-
-			/**
-			 * Get the streak history. This will assume logs are parsed in chronological
-			 * order with no gaps.
-			 */
-			if (!is_null($result = db::query_single_row('SELECT nick_prev, streak FROM parse_state'))) {
-				$parser->set_string('nick_prev', $result['nick_prev']);
-				$parser->set_int('streak', $result['streak']);
-			}
 
 			/**
 			 * Get the parse history and set the line number on which to start parsing the
