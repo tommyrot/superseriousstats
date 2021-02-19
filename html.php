@@ -155,7 +155,6 @@ class html
 		$section .= $this->create_table('Nick Changes', ['Total', 'User'], ['num', 'str'], ['SELECT nickchanges AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND nickchanges != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(nickchanges) FROM ruid_events']);
 		$section .= $this->create_table('Aliases', ['Total', 'User'], ['num', 'str'], ['SELECT COUNT(*) - 1 AS v1, (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS v2 FROM uid_details AS t1 WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 1) GROUP BY ruid HAVING v1 != 0 ORDER BY v1 DESC, ruid ASC LIMIT 5', 'SELECT COUNT(*) FROM uid_details WHERE status = 2']);
 		$section .= $this->create_table('Topics Set', ['Total', 'User'], ['num', 'str'], ['SELECT topics AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND topics != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(topics) FROM ruid_events']);
-		$section .= $this->create_table('Most Recent Topics', ['Date', 'User', 'Topic'], ['date', 'str', 'str-url'], ['SELECT datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS v2, topic AS v3 FROM uid_topics JOIN topics ON uid_topics.tid = topics.tid JOIN uid_details AS t1 ON uid_topics.uid = t1.uid WHERE ruid NOT IN (SELECT ruid FROM uid_details WHERE status = 4) ORDER BY v1 DESC, ruid ASC limit 5']);
 
 		if ($section !== '') {
 			$contents .= '<div class="section">Events</div>'."\n".$section;
@@ -299,20 +298,6 @@ class html
 					case 'str':
 						${'v'.$col} = $this->htmlify(${'v'.$col});
 						break;
-					case 'str-url':
-						$words = explode(' ', ${'v'.$col});
-						$line = '';
-
-						foreach ($words as $csword) {
-							if (preg_match('/^(www\.|https?:\/\/).+/i', $csword) && !is_null($urlparts = $this->get_urlparts($csword))) {
-								$line .= '<a href="'.$this->htmlify($urlparts['url']).'">'.$this->htmlify($urlparts['url']).'</a> ';
-							} else {
-								$line .= $this->htmlify($csword).' ';
-							}
-						}
-
-						${'v'.$col} = rtrim($line);
-						break;
 					case 'str-userstats':
 						${'v'.$col} = '<a href="user.php?nick='.$this->htmlify(urlencode(${'v'.$col})).'">'.$this->htmlify(${'v'.$col}).'</a>';
 						break;
@@ -350,7 +335,7 @@ class html
 				}
 			}
 
-			$table .= '<tr><td class="v1">'.$v1.'<td class="pos">'.++$i.'<td class="v2">'.$v2.($cols === 3 ? '<td class="'.($types[2] === 'str-url' ? 'v3a' : 'v3').'">'.$v3 : '');
+			$table .= '<tr><td class="v1">'.$v1.'<td class="pos">'.++$i.'<td class="v2">'.$v2.($cols === 3 ? '<td class="v3">'.$v3 : '');
 		}
 
 		if ($i === 0) {
