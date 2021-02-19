@@ -49,6 +49,13 @@ date TEXT PRIMARY KEY NOT NULL,
 lines_parsed INT NOT NULL CHECK (lines_parsed > 0)
 );
 
+CREATE TABLE parse_state ( --single row table
+nick_prev TEXT,
+streak INT CHECK (streak > 0),
+topic TEXT
+);
+INSERT INTO parse_state DEFAULT VALUES;
+
 CREATE TABLE ruid_activity_by_day (
 ruid INT NOT NULL,
 date TEXT NOT NULL,
@@ -265,11 +272,6 @@ INSERT INTO smileys (smiley, category, textual) VALUES
 ('lmao', 'lmao', 1),
 ('huh', 'huh', 1);
 
-CREATE TABLE streak_history ( --single row table
-nick_prev TEXT NOT NULL,
-streak INT NOT NULL CHECK (streak > 0)
-);
-
 CREATE TABLE topics (
 tid INTEGER PRIMARY KEY,
 topic TEXT UNIQUE NOT NULL
@@ -470,12 +472,6 @@ SUM(l_evening) AS l_evening,
 SUM(l_total) AS l_total
 FROM ruid_activity_by_month GROUP BY ruid, SUBSTR(date, 1, 4);
 
-CREATE VIEW v_ruid_smileys AS
-SELECT ruid,
-sid,
-SUM(total) AS total
-FROM uid_smileys JOIN uid_details ON uid_smileys.uid = uid_details.uid GROUP BY ruid, sid;
-
 CREATE VIEW v_ruid_events AS
 SELECT ruid,
 SUM(m_op) AS m_op,
@@ -575,5 +571,11 @@ IFNULL((SELECT ex_actions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid
 IFNULL((SELECT ex_uppercased FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_uppercased != '' AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1), '') AS ex_uppercased,
 MAX(lasttalked) AS lasttalked
 FROM uid_lines JOIN uid_details AS t1 ON uid_lines.uid = t1.uid GROUP BY ruid;
+
+CREATE VIEW v_ruid_smileys AS
+SELECT ruid,
+sid,
+SUM(total) AS total
+FROM uid_smileys JOIN uid_details ON uid_smileys.uid = uid_details.uid GROUP BY ruid, sid;
 
 COMMIT;

@@ -287,7 +287,7 @@ class sss
 			 * Get the streak history. This will assume logs are parsed in chronological
 			 * order with no gaps.
 			 */
-			if (!is_null($result = db::query_single_row('SELECT nick_prev, streak FROM streak_history'))) {
+			if (!is_null($result = db::query_single_row('SELECT nick_prev, streak FROM parse_state'))) {
 				$parser->set_string('nick_prev', $result['nick_prev']);
 				$parser->set_int('streak', $result['streak']);
 			}
