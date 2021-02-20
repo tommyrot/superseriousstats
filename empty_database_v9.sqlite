@@ -33,7 +33,7 @@ l_morning INT NOT NULL DEFAULT 0,
 l_afternoon INT NOT NULL DEFAULT 0,
 l_evening INT NOT NULL DEFAULT 0,
 l_total INT NOT NULL CHECK (l_total > 0)
-);
+) WITHOUT ROWID;
 
 CREATE TABLE fqdns (
 fid INTEGER PRIMARY KEY,
@@ -47,12 +47,12 @@ CREATE INDEX fqdns_active ON fqdns (active);
 CREATE TABLE parse_history (
 date TEXT PRIMARY KEY NOT NULL,
 lines_parsed INT NOT NULL CHECK (lines_parsed > 0)
-);
+) WITHOUT ROWID;
 
 CREATE TABLE parse_state (
 var TEXT PRIMARY KEY NOT NULL,
 value TEXT NOT NULL
-);
+) WITHOUT ROWID;
 
 CREATE TABLE ruid_activity_by_day (
 ruid INT NOT NULL,
@@ -63,7 +63,7 @@ l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
 l_total INT NOT NULL,
 PRIMARY KEY (ruid, date)
-);
+) WITHOUT ROWID;
 
 CREATE TABLE ruid_activity_by_month (
 ruid INT NOT NULL,
@@ -74,8 +74,7 @@ l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
 l_total INT NOT NULL,
 PRIMARY KEY (ruid, date)
-);
-CREATE INDEX ruid_activity_by_month_date ON ruid_activity_by_month (date);
+) WITHOUT ROWID;
 
 CREATE TABLE ruid_activity_by_year (
 ruid INT NOT NULL,
@@ -86,8 +85,7 @@ l_afternoon INT NOT NULL,
 l_evening INT NOT NULL,
 l_total INT NOT NULL,
 PRIMARY KEY (ruid, date)
-);
-CREATE INDEX ruid_activity_by_year_date ON ruid_activity_by_year (date);
+) WITHOUT ROWID;
 
 CREATE TABLE ruid_events (
 ruid INT PRIMARY KEY NOT NULL,
@@ -108,7 +106,7 @@ nickchanges INT NOT NULL,
 topics INT NOT NULL,
 ex_kicks TEXT NOT NULL,
 ex_kicked TEXT NOT NULL
-);
+) WITHOUT ROWID;
 
 CREATE TABLE ruid_lines (
 ruid INT PRIMARY KEY NOT NULL,
@@ -187,28 +185,27 @@ ex_questions TEXT NOT NULL,
 ex_actions TEXT NOT NULL,
 ex_uppercased TEXT NOT NULL,
 lasttalked TEXT NOT NULL
-);
+) WITHOUT ROWID;
 
 CREATE TABLE ruid_milestones (
 ruid INT NOT NULL,
 milestone INT NOT NULL,
 date TEXT NOT NULL,
 PRIMARY KEY (ruid, milestone)
-);
-CREATE INDEX ruid_milestones_milestone ON ruid_milestones (milestone);
+) WITHOUT ROWID;
 
 CREATE TABLE ruid_smileys (
 ruid INT NOT NULL,
 sid INT NOT NULL REFERENCES smileys (sid),
 total INT NOT NULL,
 PRIMARY KEY (ruid, sid)
-);
+) WITHOUT ROWID;
 CREATE INDEX ruid_smileys_sid ON ruid_smileys (sid);
 
 CREATE TABLE settings (
 var TEXT PRIMARY KEY NOT NULL,
 value TEXT NOT NULL
-);
+) WITHOUT ROWID;
 
 CREATE TABLE smileys (
 sid INTEGER PRIMARY KEY,
@@ -279,7 +276,7 @@ l_afternoon INT NOT NULL DEFAULT 0,
 l_evening INT NOT NULL DEFAULT 0,
 l_total INT NOT NULL CHECK (l_total > 0),
 PRIMARY KEY (uid, date)
-);
+) WITHOUT ROWID;
 
 CREATE TABLE uid_details (
 uid INTEGER PRIMARY KEY,
@@ -315,7 +312,7 @@ nickchanges INT NOT NULL DEFAULT 0,
 topics INT NOT NULL DEFAULT 0,
 ex_kicks TEXT NOT NULL DEFAULT '',
 ex_kicked TEXT NOT NULL DEFAULT ''
-);
+) WITHOUT ROWID;
 
 CREATE TABLE uid_lines (
 uid INT PRIMARY KEY NOT NULL REFERENCES uid_details (uid),
@@ -393,14 +390,14 @@ ex_questions TEXT NOT NULL DEFAULT '',
 ex_actions TEXT NOT NULL DEFAULT '',
 ex_uppercased TEXT NOT NULL DEFAULT '',
 lasttalked TEXT NOT NULL DEFAULT '0000-00-00 00:00:00'
-);
+) WITHOUT ROWID;
 
 CREATE TABLE uid_smileys (
 uid INT NOT NULL REFERENCES uid_details (uid),
 sid INT NOT NULL REFERENCES smileys (sid),
 total INT NOT NULL CHECK (total > 0),
 PRIMARY KEY (uid, sid)
-);
+) WITHOUT ROWID;
 CREATE INDEX uid_smileys_sid ON uid_smileys (sid);
 
 CREATE TABLE uid_urls (
