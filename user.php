@@ -93,7 +93,7 @@ class user
 		$result = db::query_single_row('SELECT date, l_total FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' ORDER BY l_total DESC, date ASC LIMIT 1');
 		$high_date = $result['date'];
 		$high_lines = $result['l_total'];
-		$mood = db::query_single_col('SELECT smiley FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE ruid = '.$this->ruid.' AND textual = 0 ORDER BY total DESC, ruid_smileys.sid ASC LIMIT 1');
+		$mood = db::query_single_col('SELECT smiley FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE ruid = '.$this->ruid.' AND category IS NOT NULL ORDER BY total DESC, ruid_smileys.sid ASC LIMIT 1');
 		$l_total = db::query_single_col('SELECT l_total FROM ruid_lines WHERE ruid = '.$this->ruid);
 		$l_avg = (int) round($l_total / db::query_single_col('SELECT activedays FROM ruid_lines WHERE ruid = '.$this->ruid));
 
