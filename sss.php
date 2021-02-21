@@ -98,7 +98,7 @@ class sss
 		}
 
 		/**
-		 * Open the database connection and store config settings.
+		 * Open the database connection and (clear and) store config settings.
 		 */
 		db::set_database($this->database);
 		db::connect();
