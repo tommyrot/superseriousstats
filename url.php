@@ -51,7 +51,7 @@ class url
 		}
 
 		foreach ($this->uses as [$datetime, $nick]) {
-			db::query_exec('INSERT INTO uid_urls (uid, lid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$lid.', DATETIME(\''.$datetime.'\'))');
+			db::query_exec('INSERT INTO uid_urls (uid, lid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$lid.', \''.$datetime.'\')');
 		}
 	}
 }

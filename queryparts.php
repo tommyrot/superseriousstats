@@ -28,12 +28,7 @@ trait queryparts
 				}
 			} elseif (is_string($this->$var)) {
 				if ($this->$var !== '') {
-					if ($var === 'lasttalked') {
-						$value = 'DATETIME(\''.$this->lasttalked.'\')';
-					} else {
-						$value = '\''.preg_replace('/\'/', '\'\'', $this->$var).'\'';
-					}
-
+					$value = '\''.preg_replace('/\'/', '\'\'', $this->$var).'\'';
 					$insert_columns[] = $var;
 					$insert_values[] = $value;
 

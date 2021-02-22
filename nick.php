@@ -142,7 +142,7 @@ class nick
 				return;
 			}
 
-			$uid = db::query_exec('INSERT INTO uid_details (csnick, firstseen) VALUES (\''.$this->csnick.'\', DATETIME(\''.$this->firstseen.'\'))');
+			$uid = db::query_exec('INSERT INTO uid_details (csnick, firstseen'.($this->lastseen > $this->firstseen ? ', lastseen' : '').') VALUES (\''.$this->csnick.'\', \''.$this->firstseen.'\''.($this->lastseen > $this->firstseen ? ', \''.$this->lastseen.'\'' : '').')');
 		} else {
 			if ($this->firstseen === '') {
 				/**
@@ -155,7 +155,7 @@ class nick
 				return;
 			}
 
-			db::query_exec('UPDATE uid_details SET csnick = \''.$this->csnick.'\', lastseen = CASE WHEN DATETIME(\''.$this->lastseen.'\') > firstseen THEN DATETIME(\''.$this->lastseen.'\') END WHERE uid = '.$uid);
+			db::query_exec('UPDATE uid_details SET csnick = \''.$this->csnick.'\', lastseen = CASE WHEN \''.$this->lastseen.'\' > firstseen THEN \''.$this->lastseen.'\' END WHERE uid = '.$uid);
 		}
 
 		/**
@@ -170,7 +170,7 @@ class nick
 		 */
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts(['l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
-			db::query_exec('INSERT INTO uid_activity (uid, date, '.$queryparts['insert_columns'].') VALUES ('.$uid.', \''.substr($this->firstseen, 0, 10).'\', '.$queryparts['insert_values'].') ON CONFLICT (uid, date) DO UPDATE SET '.$queryparts['update_assignments']);
+			db::query_exec('INSERT INTO uid_activity (uid, date, '.$queryparts['insert_columns'].') VALUES ('.$uid.', DATE(\''.$this->firstseen.'\'), '.$queryparts['insert_values'].') ON CONFLICT (uid, date) DO UPDATE SET '.$queryparts['update_assignments']);
 
 			if (!empty($this->smileys)) {
 				foreach ($this->smileys as $sid => $total) {

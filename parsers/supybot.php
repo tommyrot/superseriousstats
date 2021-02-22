@@ -8,7 +8,7 @@ class parser_supybot extends parser
 {
 	protected function parse_line(string $line): void
 	{
-		$timestamp = '\d{4}-\d{2}-\d{2}T(?<time>\d{2}:\d{2}:\d{2}) ';
+		$timestamp = '\d{4}-\d{2}-\d{2}T(?<time>\d{2}:\d{2}):\d{2} ';
 
 		if (preg_match('/^'.$timestamp.'<(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
