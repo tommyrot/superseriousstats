@@ -202,6 +202,16 @@ PRIMARY KEY (ruid, sid)
 ) WITHOUT ROWID;
 CREATE INDEX ruid_smileys_sid ON ruid_smileys (sid);
 
+CREATE TABLE ruid_urls (
+ruid INT NOT NULL,
+lid INT NOT NULL REFERENCES urls (lid),
+firstused TEXT NOT NULL,
+lastused TEXT,
+total INT NOT NULL,
+PRIMARY KEY (ruid, lid)
+) WITHOUT ROWID;
+CREATE INDEX ruid_urls_lid ON ruid_urls (lid);
+
 CREATE TABLE settings (
 var TEXT PRIMARY KEY NOT NULL,
 value TEXT NOT NULL
@@ -401,9 +411,11 @@ CREATE INDEX uid_smileys_sid ON uid_smileys (sid);
 CREATE TABLE uid_urls (
 uid INT NOT NULL REFERENCES uid_details (uid),
 lid INT NOT NULL REFERENCES urls (lid),
-datetime TEXT NOT NULL
-);
-CREATE INDEX uid_urls_uid ON uid_urls (uid);
+firstused TEXT NOT NULL,
+lastused TEXT,
+total INT NOT NULL CHECK (total > 0),
+PRIMARY KEY (uid, lid)
+) WITHOUT ROWID;
 CREATE INDEX uid_urls_lid ON uid_urls (lid);
 
 CREATE TABLE urls (
@@ -558,4 +570,11 @@ sid,
 SUM(total) AS total
 FROM uid_smileys JOIN uid_details ON uid_smileys.uid = uid_details.uid GROUP BY ruid, sid;
 
+CREATE VIEW v_ruid_urls AS
+SELECT ruid,
+lid,
+MIN(firstused) AS firstused,
+MAX(lastused) AS lastused,
+SUM(total) AS total
+FROM uid_urls JOIN uid_details ON uid_urls.uid = uid_details.uid GROUP BY ruid, lid;
 COMMIT;

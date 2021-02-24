@@ -26,7 +26,14 @@ class url
 	 */
 	public function add_uses(string $datetime, string $nick): void
 	{
-		$this->uses[] = [$datetime, $nick];
+		if (!isset($this->uses[$nick])) {
+			$this->uses[$nick]['firstused'] = $datetime;
+			$this->uses[$nick]['total'] = 1;
+		} else {
+			++$this->uses[$nick]['total'];
+		}
+
+		$this->uses[$nick]['lastused'] = $datetime;
 	}
 
 	/**
@@ -47,11 +54,11 @@ class url
 		 * Store data in database tables "urls" and "uid_urls".
 		 */
 		if (is_null($lid = db::query_single_col('SELECT lid FROM urls WHERE url = \''.preg_replace('/\'/', '\'\'', $this->url).'\''))) {
-			$lid = db::query_exec('INSERT INTO urls (url'.($this->fqdn !== '' ? ', fid' : '').') VALUES (\''.preg_replace('/\'/', '\'\'', $this->url).'\''.($this->fqdn !== '' ? ', '.$fid : '').')');
+			$lid = db::query_exec('INSERT INTO urls (url, fid) VALUES (\''.preg_replace('/\'/', '\'\'', $this->url).'\', '.($this->fqdn !== '' ? $fid : 'NULL').')');
 		}
 
-		foreach ($this->uses as [$datetime, $nick]) {
-			db::query_exec('INSERT INTO uid_urls (uid, lid, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$lid.', \''.$datetime.'\')');
+		foreach ($this->uses as $nick => ['firstused' => $firstused, 'lastused' => $lastused, 'total' => $total]) {
+			db::query_exec('INSERT INTO uid_urls (uid, lid, firstused, lastused, total) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$lid.', \''.$firstused.'\', '.($lastused > $firstused ? '\''.$lastused.'\'' : 'NULL').', '.$total.') ON CONFLICT (uid, lid) DO UPDATE SET lastused = CASE WHEN \''.$lastused.'\' > firstused THEN \''.$lastused.'\' END, total = total + '.$total);
 		}
 	}
 }

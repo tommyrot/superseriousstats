@@ -61,7 +61,8 @@ class maintenance
 			'v_ruid_activity_by_year' => 'ruid_activity_by_year',
 			'v_ruid_smileys' => 'ruid_smileys',
 			'v_ruid_events' => 'ruid_events',
-			'v_ruid_lines' => 'ruid_lines'];
+			'v_ruid_lines' => 'ruid_lines',
+			'v_ruid_urls' => 'ruid_urls'];
 
 		foreach ($views as $view => $table) {
 			db::query_exec('DELETE FROM '.$table);
