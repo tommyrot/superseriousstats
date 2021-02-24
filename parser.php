@@ -303,8 +303,7 @@ class parser
 		}
 
 		$nick = $this->create_nick($time, $csnick);
-		$line_length = mb_strlen($line);
-		$this->nick_objs[$nick]->add_int('characters', $line_length);
+		$this->nick_objs[$nick]->add_int('characters', mb_strlen($line));
 		$this->nick_objs[$nick]->set_string('lasttalked', $this->date.' '.$time);
 
 		/**
@@ -430,16 +429,14 @@ class parser
 		}
 
 		/**
-		 * Upper cased lines may not contain any lower cased characters and must consist
-		 * of more than 50% upper cased characters.
+		 * Upper cased lines may not contain any lower cased characters and must contain
+		 * at least two concurrent upper cased characters.
 		 */
-		if (!preg_match('/\p{Ll}/u', $line)) {
-			if (mb_strlen(preg_replace('/\P{Lu}+/u', '', $line)) * 2 > $line_length) {
-				$this->nick_objs[$nick]->add_int('uppercased', 1);
+		if (!preg_match('/\p{Ll}/u', $line) && preg_match('/\p{Lu}{2}/u', $line)) {
+			$this->nick_objs[$nick]->add_int('uppercased', 1);
 
-				if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_uppercased') === '') {
-					$this->nick_objs[$nick]->set_string('ex_uppercased', $line_symbolized_urls);
-				}
+			if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_uppercased') === '') {
+				$this->nick_objs[$nick]->set_string('ex_uppercased', $line_symbolized_urls);
 			}
 		}
 
