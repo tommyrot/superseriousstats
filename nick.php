@@ -142,7 +142,7 @@ class nick
 				return;
 			}
 
-			$uid = db::query_exec('INSERT INTO uid_details (csnick, firstseen'.($this->lastseen > $this->firstseen ? ', lastseen' : '').') VALUES (\''.$this->csnick.'\', \''.$this->firstseen.'\''.($this->lastseen > $this->firstseen ? ', \''.$this->lastseen.'\'' : '').')');
+			$uid = db::query_exec('INSERT INTO uid_details (csnick, firstseen, lastseen) VALUES (\''.$this->csnick.'\', \''.$this->firstseen.'\', '.($this->lastseen > $this->firstseen ? '\''.$this->lastseen.'\'' : 'NULL').')');
 		} else {
 			if ($this->firstseen === '') {
 				/**
