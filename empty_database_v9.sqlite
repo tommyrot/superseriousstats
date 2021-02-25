@@ -35,6 +35,17 @@ l_evening INT,
 l_total INT NOT NULL CHECK (l_total > 0)
 ) WITHOUT ROWID;
 
+CREATE TABLE table_state (
+table_name TEXT PRIMARY KEY NOT NULL,
+modified BOOLEAN NOT NULL DEFAULT 0 CHECK (modified IN (0,1)) --column affinity NUMERIC
+) WITHOUT ROWID;
+INSERT INTO table_state (table_name) VALUES
+('uid_details'),
+('uid_events'),
+('uid_lines'),
+('uid_smileys'),
+('uid_urls');
+
 CREATE TABLE fqdns (
 fid INTEGER PRIMARY KEY,
 fqdn TEXT UNIQUE NOT NULL,
@@ -300,6 +311,10 @@ CREATE TRIGGER uid_details_update_ruid AFTER INSERT ON uid_details
 BEGIN
 UPDATE uid_details SET ruid = uid WHERE uid = LAST_INSERT_ROWID();
 END;
+CREATE TRIGGER uid_details_update_modified AFTER UPDATE OF ruid ON uid_details
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_details' AND modified = 0;
+END;
 
 CREATE TABLE uid_events (
 uid INT PRIMARY KEY NOT NULL REFERENCES uid_details (uid),
@@ -321,6 +336,14 @@ topics INT,
 ex_kicks TEXT,
 ex_kicked TEXT
 ) WITHOUT ROWID;
+CREATE TRIGGER uid_events_update_modified_1 AFTER INSERT ON uid_events
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_events' AND modified = 0;
+END;
+CREATE TRIGGER uid_events_update_modified_2 AFTER UPDATE ON uid_events
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_events' AND modified = 0;
+END;
 
 CREATE TABLE uid_lines (
 uid INT PRIMARY KEY NOT NULL REFERENCES uid_details (uid),
@@ -399,6 +422,14 @@ ex_actions TEXT,
 ex_uppercased TEXT,
 lasttalked TEXT
 ) WITHOUT ROWID;
+CREATE TRIGGER uid_lines_update_modified_1 AFTER INSERT ON uid_lines
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_lines' AND modified = 0;
+END;
+CREATE TRIGGER uid_lines_update_modified_2 AFTER UPDATE ON uid_lines
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_lines' AND modified = 0;
+END;
 
 CREATE TABLE uid_smileys (
 uid INT NOT NULL REFERENCES uid_details (uid),
@@ -407,6 +438,14 @@ total INT NOT NULL CHECK (total > 0),
 PRIMARY KEY (uid, sid)
 ) WITHOUT ROWID;
 CREATE INDEX uid_smileys_sid ON uid_smileys (sid);
+CREATE TRIGGER uid_smileys_update_modified_1 AFTER INSERT ON uid_smileys
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_smileys' AND modified = 0;
+END;
+CREATE TRIGGER uid_smileys_update_modified_2 AFTER UPDATE ON uid_smileys
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_smileys' AND modified = 0;
+END;
 
 CREATE TABLE uid_urls (
 uid INT NOT NULL REFERENCES uid_details (uid),
@@ -417,6 +456,14 @@ total INT NOT NULL CHECK (total > 0),
 PRIMARY KEY (uid, lid)
 ) WITHOUT ROWID;
 CREATE INDEX uid_urls_lid ON uid_urls (lid);
+CREATE TRIGGER uid_urls_update_modified_1 AFTER INSERT ON uid_urls
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_urls' AND modified = 0;
+END;
+CREATE TRIGGER uid_urls_update_modified_2 AFTER UPDATE ON uid_urls
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_urls' AND modified = 0;
+END;
 
 CREATE TABLE urls (
 lid INTEGER PRIMARY KEY,
