@@ -25,6 +25,13 @@ class maintenance
 	 */
 	private function calculate_milestones(): void
 	{
+		/**
+		 * Only continue if "uid_activity" was modified since last maintenance.
+		 */
+		if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_activity\'') === 0) {
+			return;
+		}
+
 		db::query_exec('DELETE FROM ruid_milestones');
 		$results = db::query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC');
 
@@ -51,22 +58,42 @@ class maintenance
 	private function create_materialized_views(): void
 	{
 		/**
-		 * Data from the views below (v_ruid_*) will be stored as materialized views
-		 * (ruid_*) in the database. The order in which they are processed is important,
-		 * as some views depend on materialized views created prior to them.
+		 * Retrieve the modification state from the database and decide which views
+		 * should be materialized. Make sure the order in which they are processed is
+		 * correct as some views depend on materialized views created prior to them.
 		 */
-		$views = [
-			'v_ruid_activity_by_day' => 'ruid_activity_by_day',
-			'v_ruid_activity_by_month' => 'ruid_activity_by_month',
-			'v_ruid_activity_by_year' => 'ruid_activity_by_year',
-			'v_ruid_smileys' => 'ruid_smileys',
-			'v_ruid_events' => 'ruid_events',
-			'v_ruid_lines' => 'ruid_lines',
-			'v_ruid_urls' => 'ruid_urls'];
+		if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_details\'') === 1) {
+			$views = ['v_ruid_activity_by_day', 'v_ruid_activity_by_month', 'v_ruid_activity_by_year', 'v_ruid_lines', 'v_ruid_smileys', 'v_ruid_urls', 'v_ruid_events'];
+		} else {
+			$views = [];
 
-		foreach ($views as $view => $table) {
+			if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_activity\'') === 1) {
+				$views = ['v_ruid_activity_by_day', 'v_ruid_activity_by_month', 'v_ruid_activity_by_year', 'v_ruid_lines'];
+
+				if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_smileys\'') === 1) {
+					$views[] = 'v_ruid_smileys';
+				}
+
+				if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_urls\'') === 1) {
+					$views[] = 'v_ruid_urls';
+				}
+			} elseif (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_lines\'') === 1) {
+				$views[] = 'v_ruid_lines';
+			}
+
+			if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_events\'') === 1) {
+				$views[] = 'v_ruid_events';
+			}
+		}
+
+		foreach ($views as $view) {
+			$table = substr($view, 2);
 			db::query_exec('DELETE FROM '.$table);
 			db::query_exec('INSERT INTO '.$table.' SELECT * FROM '.$view);
+		}
+
+		if (!empty($views)) {
+			out::put('debug', 'materialized views: \''.implode('\', \'', $views).'\'');
 		}
 	}
 
@@ -109,6 +136,13 @@ class maintenance
 	 */
 	private function link_nicks(): void
 	{
+		/**
+		 * Only continue if "uid_details" was modified since last maintenance.
+		 */
+		if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_details\'') === 0) {
+			return;
+		}
+
 		$results = db::query('SELECT uid, csnick, ruid, status FROM uid_details');
 		$nicks_stripped = [];
 
@@ -183,6 +217,11 @@ class maintenance
 		$this->create_materialized_views();
 		$this->calculate_milestones();
 		$this->deactivate_fqdns();
+
+		/**
+		 * Set the modification state back to 0 for all tables.
+		 */
+		db::query_exec('UPDATE table_state SET modified = 0');
 	}
 
 	/**

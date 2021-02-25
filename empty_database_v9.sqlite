@@ -40,6 +40,7 @@ table_name TEXT PRIMARY KEY NOT NULL,
 modified BOOLEAN NOT NULL DEFAULT 0 CHECK (modified IN (0,1)) --column affinity NUMERIC
 ) WITHOUT ROWID;
 INSERT INTO table_state (table_name) VALUES
+('uid_activity'),
 ('uid_details'),
 ('uid_events'),
 ('uid_lines'),
@@ -296,6 +297,14 @@ l_evening INT,
 l_total INT NOT NULL CHECK (l_total > 0),
 PRIMARY KEY (uid, date)
 ) WITHOUT ROWID;
+CREATE TRIGGER uid_activity_update_modified_1 AFTER INSERT ON uid_activity
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_activity' AND modified = 0;
+END;
+CREATE TRIGGER uid_activity_update_modified_2 AFTER UPDATE ON uid_activity
+BEGIN
+UPDATE table_state SET modified = 1 WHERE table_name = 'uid_activity' AND modified = 0;
+END;
 
 CREATE TABLE uid_details (
 uid INTEGER PRIMARY KEY,
