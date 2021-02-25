@@ -221,9 +221,9 @@ class maintenance
 		$this->deactivate_fqdns();
 
 		/**
-		 * Set the modification state back to 0 for all tables.
+		 * Reset the modification state for all tables.
 		 */
-		db::query_exec('UPDATE table_state SET modified = 0');
+		db::query_exec('UPDATE table_state SET modified = 0 WHERE modified = 1');
 	}
 
 	/**
