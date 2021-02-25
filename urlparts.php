@@ -24,7 +24,7 @@ trait urlparts
 	private string $regexp_callback = '';
 	private string $regexp_complete = '';
 
-	private function get_urlparts(string $url): array|null
+	private function get_urlparts(string $url): ?array
 	{
 		/**
 		 * Assemble the regular expression if not already done so.

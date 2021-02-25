@@ -78,7 +78,7 @@ class db
 		return $result;
 	}
 
-	public static function query_single_row(string $query): array|null
+	public static function query_single_row(string $query): ?array
 	{
 		if (($result = self::$db->querySingle($query, true)) === false) {
 			self::fail();

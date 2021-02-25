@@ -135,7 +135,7 @@ class user
 	/**
 	 * Find an image for this user to display.
 	 */
-	private function get_userpic(): string|null
+	private function get_userpic(): ?string
 	{
 		/**
 		 * Create an array with all valid images in $userpics_dir.

@@ -9,7 +9,7 @@
  */
 trait common_html_user_history
 {
-	private function create_table_activity_distribution_hour(): string|null
+	private function create_table_activity_distribution_hour(): ?string
 	{
 		$page = get_class($this);
 

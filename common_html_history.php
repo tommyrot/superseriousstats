@@ -31,7 +31,7 @@ trait common_html_history
 		return $ago;
 	}
 
-	private function create_table_people(string|null $period = null): string|null
+	private function create_table_people(?string $period = null): ?string
 	{
 		$page = get_class($this);
 		$times = ['night', 'morning', 'afternoon', 'evening'];
@@ -127,7 +127,7 @@ trait common_html_history
 		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
 	}
 
-	private function create_table_people_timeofday(): string|null
+	private function create_table_people_timeofday(): ?string
 	{
 		$page = get_class($this);
 		$times = ['night', 'morning', 'afternoon', 'evening'];

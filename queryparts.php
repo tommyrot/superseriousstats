@@ -9,7 +9,7 @@
  */
 trait queryparts
 {
-	private function get_queryparts(array $columns): array|null
+	private function get_queryparts(array $columns): ?array
 	{
 		foreach ($columns as $var) {
 			if (is_int($this->$var)) {
