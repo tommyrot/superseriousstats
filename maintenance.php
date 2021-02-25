@@ -65,8 +65,6 @@ class maintenance
 		if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_details\'') === 1) {
 			$views = ['v_ruid_activity_by_day', 'v_ruid_activity_by_month', 'v_ruid_activity_by_year', 'v_ruid_lines', 'v_ruid_smileys', 'v_ruid_urls', 'v_ruid_events'];
 		} else {
-			$views = [];
-
 			if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_activity\'') === 1) {
 				$views = ['v_ruid_activity_by_day', 'v_ruid_activity_by_month', 'v_ruid_activity_by_year', 'v_ruid_lines'];
 
@@ -93,7 +91,7 @@ class maintenance
 		}
 
 		if (!empty($views)) {
-			out::put('debug', 'materialized views: \''.implode('\', \'', $views).'\'');
+			out::put('debug', 'materialized views: \''.preg_replace('/v_ruid_/', '', implode('\', \'', $views)).'\'');
 		}
 	}
 
