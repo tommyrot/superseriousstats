@@ -88,7 +88,7 @@ class parser
 
 		if (!isset($this->nick_objs[$nick])) {
 			$this->nick_objs[$nick] = new nick($csnick);
-		} else {
+		} elseif ($real) {
 			$this->nick_objs[$nick]->set_string('csnick', $csnick);
 		}
 
