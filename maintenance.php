@@ -102,6 +102,11 @@ class maintenance
 	 */
 	private function deactivate_fqdns(): void
 	{
+		/**
+		 * Reset all inactive TLDs to active state, as is the default upon entry.
+		 */
+		db::query_exec('UPDATE fqdns SET active = 1 WHERE active = 0');
+
 		if (($rp = realpath('tlds-alpha-by-domain.txt')) === false) {
 			out::put('debug', 'no such file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
 			return;
@@ -121,7 +126,6 @@ class maintenance
 		fclose($fp);
 
 		if (isset($tlds_active)) {
-			db::query_exec('UPDATE fqdns SET active = 1');
 			db::query_exec('UPDATE fqdns SET active = 0 WHERE tld NOT IN ('.implode(',', $tlds_active).')');
 			out::put('debug', 'deactivated '.db::changes().' invalid fqdn'.(db::changes() !== 1 ? 's' : ''));
 		}
