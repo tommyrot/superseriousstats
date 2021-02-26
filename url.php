@@ -54,7 +54,7 @@ class url
 		 * Store data in database tables "urls" and "uid_urls".
 		 */
 		if (is_null($lid = db::query_single_col('SELECT lid FROM urls WHERE url = \''.preg_replace('/\'/', '\'\'', $this->url).'\''))) {
-			$lid = db::query_exec('INSERT INTO urls (url, fid) VALUES (\''.preg_replace('/\'/', '\'\'', $this->url).'\', '.($this->fqdn !== '' ? $fid : 'NULL').')');
+			$lid = db::query_exec('INSERT INTO urls (url, fid) VALUES (\''.preg_replace('/\'/', '\'\'', $this->url).'\', '.($fid ?? 'NULL').')');
 		}
 
 		foreach ($this->uses as $nick => ['firstused' => $firstused, 'lastused' => $lastused, 'total' => $total]) {
