@@ -84,15 +84,17 @@ class maintenance
 			}
 		}
 
+		if (!isset($views)) {
+			return;
+		}
+
 		foreach ($views as $view) {
 			$table = substr($view, 2);
 			db::query_exec('DELETE FROM '.$table);
 			db::query_exec('INSERT INTO '.$table.' SELECT * FROM '.$view);
 		}
 
-		if (!empty($views)) {
-			out::put('debug', 'materialized views: \''.preg_replace('/v_ruid_/', '', implode('\', \'', $views)).'\'');
-		}
+		out::put('debug', 'materialized views: \''.preg_replace('/v_ruid_/', '', implode('\', \'', $views)).'\'');
 	}
 
 	/**
