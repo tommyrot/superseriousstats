@@ -177,7 +177,7 @@ class sss
 		 * Set all nicks to their default state before updating them according to
 		 * imported data.
 		 */
-		db::query_exec('UPDATE uid_details SET ruid = uid, status = 0');
+		db::query_exec('UPDATE uid_details SET ruid = uid, status = 0 WHERE ruid != uid OR status != 0');
 
 		while (($line = fgets($fp)) !== false) {
 			/**
