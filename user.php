@@ -186,8 +186,7 @@ class user
 			out::put('critical', 'Nonexistent and/or erroneous nickname.');
 		}
 
-		$this->csnick = $result['csnick'];
-		$this->ruid = $result['ruid'];
+		list('csnick' => $this->csnick, 'ruid' => $this->ruid) = $result;
 
 		/**
 		 * Stats require a non-empty dataset.
