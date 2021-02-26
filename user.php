@@ -196,7 +196,7 @@ class user
 		/**
 		 * Stats require a non-empty dataset.
 		 */
-		if (db::query_single_col('SELECT COUNT(*) FROM ruid_activity_by_day WHERE ruid = '.$this->ruid) === 0) {
+		if (is_null(db::query_single_col('SELECT 1 FROM ruid_activity_by_day WHERE ruid = '.$this->ruid))) {
 			out::put('critical', $this->htmlify($this->csnick).' is a filthy lurker!');
 		}
 
