@@ -57,7 +57,7 @@ class url
 			$lid = db::query_exec('INSERT INTO urls (url, fid) VALUES (\''.preg_replace('/\'/', '\'\'', $this->url).'\', '.($fid ?? 'NULL').')');
 		}
 
-		foreach ($this->uses as $nick => list('firstused' => $firstused, 'lastused' => $lastused, 'total' => $total)) {
+		foreach ($this->uses as $nick => ['firstused' => $firstused, 'lastused' => $lastused, 'total' => $total]) {
 			db::query_exec('INSERT INTO uid_urls (uid, lid, firstused, lastused, total) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$lid.', \''.$firstused.'\', '.($lastused > $firstused ? '\''.$lastused.'\'' : 'NULL').', '.$total.') ON CONFLICT (uid, lid) DO UPDATE SET lastused = CASE WHEN \''.$lastused.'\' > firstused THEN \''.$lastused.'\' END, total = total + '.$total);
 		}
 	}
