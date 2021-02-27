@@ -173,7 +173,7 @@ class history
 		/**
 		 * Stats require a non-empty dataset.
 		 */
-		if (db::query_single_col('SELECT COUNT(*) FROM channel_activity') === 0) {
+		if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM channel_activity)') === 0) {
 			out::put('critical', 'There is not enough data to create statistics, yet.');
 		}
 

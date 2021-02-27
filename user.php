@@ -196,7 +196,7 @@ class user
 		/**
 		 * Stats require a non-empty dataset.
 		 */
-		if (is_null(db::query_single_col('SELECT 1 FROM ruid_activity_by_day WHERE ruid = '.$this->ruid))) {
+		if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.')') === 0) {
 			out::put('critical', $this->htmlify($this->csnick).' is a filthy lurker!');
 		}
 
