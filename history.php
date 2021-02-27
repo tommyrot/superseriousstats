@@ -95,7 +95,7 @@ class history
 		 * Assemble a line with activity numbers per month for each year since the date
 		 * of the first log parsed. Months with no activity will show "n/a".
 		 */
-		for ($year = (int) db::query_single_col('SELECT MIN(SUBSTR(date, 1, 4)) FROM parse_history'), $j = (int) db::query_single_col('SELECT MAX(SUBSTR(date, 1, 4)) FROM parse_history'); $year <= $j; ++$year) {
+		for ($year = (int) substr(db::query_single_col('SELECT MIN(date) FROM parse_history'), 0, 4), $j = (int) substr(db::query_single_col('SELECT MAX(date) FROM parse_history'), 0, 4); $year <= $j; ++$year) {
 			if (isset($lines[$year])) {
 				$trx .= '<tr><td class="pos"><a href="history.php?year='.$year.'">'.$year.'</a>';
 
