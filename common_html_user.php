@@ -66,7 +66,7 @@ trait common_html_user
 					--$i;
 				}
 
-				if (db::query_single_col('SELECT EXIST (SELECT 1 FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\')') === 0) {
+				if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\')') === 0) {
 					$i -= 8;
 				}
 
