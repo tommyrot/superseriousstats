@@ -35,18 +35,6 @@ l_evening INT,
 l_total INT NOT NULL CHECK (l_total > 0)
 ) WITHOUT ROWID;
 
-CREATE TABLE table_state (
-table_name TEXT PRIMARY KEY NOT NULL,
-modified BOOLEAN NOT NULL DEFAULT 0 CHECK (modified IN (0,1)) --column affinity NUMERIC
-) WITHOUT ROWID;
-INSERT INTO table_state (table_name) VALUES
-('uid_activity'),
-('uid_details'),
-('uid_events'),
-('uid_lines'),
-('uid_smileys'),
-('uid_urls');
-
 CREATE TABLE fqdns (
 fid INTEGER PRIMARY KEY,
 fqdn TEXT UNIQUE NOT NULL,
@@ -286,6 +274,18 @@ INSERT INTO smileys (smiley, category) VALUES
 ('rofl', NULL),
 ('lmao', NULL),
 ('huh', NULL);
+
+CREATE TABLE table_state (
+table_name TEXT PRIMARY KEY NOT NULL,
+modified BOOLEAN NOT NULL DEFAULT 0 CHECK (modified IN (0,1)) --column affinity NUMERIC
+) WITHOUT ROWID;
+INSERT INTO table_state (table_name) VALUES
+('uid_activity'),
+('uid_details'),
+('uid_events'),
+('uid_lines'),
+('uid_smileys'),
+('uid_urls');
 
 CREATE TABLE uid_activity (
 uid INT NOT NULL REFERENCES uid_details (uid),
