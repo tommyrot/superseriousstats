@@ -256,7 +256,7 @@ class sss
 			 * Each filename must contain a date formatted like "Ymd" or "Y-m-d".
 			 */
 			if (preg_match('/(?<!\d)(?<year>\d{4})-?(?<month>\d{2})-?(?<day>\d{2})(?!\d)/', $file, $matches)) {
-				if (str_ends_with('.gz', $file) && !$this->with_zlib) {
+				if (str_ends_with($file, '.gz') && !$this->with_zlib) {
 					continue;
 				}
 
@@ -295,7 +295,7 @@ class sss
 			}
 
 			out::put('notice', 'parsing logfile: \''.$logfile.'\' from line '.$linenum_start);
-			$parser->parse_log($logfile, $linenum_start, str_ends_with('.gz', $logfile));
+			$parser->parse_log($logfile, $linenum_start, str_ends_with($logfile, '.gz'));
 
 			/**
 			 * Update the parse history when there are actual (non-empty) lines parsed.

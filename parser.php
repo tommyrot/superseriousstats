@@ -444,13 +444,13 @@ class parser
 		 * Look back one word in lines with a trailing smiley before validating whether
 		 * it's an exclamation or question.
 		 */
-		if ((!$trailing_smiley && str_ends_with('!', $line_symbolized_urls)) || ($trailing_smiley && $wordcount > 1 && preg_match('/! \S+$/', $line_symbolized_urls))) {
+		if ((!$trailing_smiley && str_ends_with($line_symbolized_urls, '!')) || ($trailing_smiley && $wordcount > 1 && preg_match('/! \S+$/', $line_symbolized_urls))) {
 			$this->nick_objs[$nick]->add_int('exclamations', 1);
 
 			if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_exclamations') === '') {
 				$this->nick_objs[$nick]->set_string('ex_exclamations', $line_symbolized_urls);
 			}
-		} elseif ((!$trailing_smiley && str_ends_with('?', $line_symbolized_urls)) || ($trailing_smiley && $wordcount > 1 && preg_match('/\? \S+$/', $line_symbolized_urls))) {
+		} elseif ((!$trailing_smiley && str_ends_with($line_symbolized_urls, '?')) || ($trailing_smiley && $wordcount > 1 && preg_match('/\? \S+$/', $line_symbolized_urls))) {
 			$this->nick_objs[$nick]->add_int('questions', 1);
 
 			if ($wordcount >= 3 || $this->nick_objs[$nick]->get_string('ex_questions') === '') {
