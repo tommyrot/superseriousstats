@@ -393,8 +393,8 @@ class parser
 				 * Check for textual user expressions, and smileys that matched the previous
 				 * regular expression.
 				 */
-				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|rofl|lmao)$/i', $csword_trimmed)) {
-					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/'], ['hehe', 'haha', 'hmm', 'pff'], strtolower($csword_trimmed));
+				if (preg_match('/^(hehe[he]*|heh|haha[ha]*|lol|hmm+|wow|huh|meh|ugh|pff+|rofl|lmao|ahh+|brr+|ole+|omg|bah|doh|duh+|wtf|uhm+|yum|woh+|grr+|ehh+|tsk|ffs|uhh+|yay|uhuh|ahem|woo+t|argh|urgh|whut)$/i', $csword_trimmed)) {
+					$smiley_textual = preg_replace(['/^hehe[he]+$/', '/^haha[ha]+$/', '/^hmm+$/', '/^pff+$/', '/^ahh+$/', '/^brr+$/', '/^ole+$/', '/^duh+$/', '/^uhm+$/', '/^woh+$/', '/^grr+$/', '/^ehh+$/', '/^uhh+$/', '/^woo+t$/'], ['hehe', 'haha', 'hmm', 'pff', 'ahh', 'brr', 'ole', 'duh', 'uhm', 'woh', 'grr', 'ehh', 'uhh', 'woot'], strtolower($csword_trimmed));
 					$this->nick_objs[$nick]->add_smiley($this->smileys[$smiley_textual], 1);
 				} elseif (preg_match('/^([xX]D|D:)$/', $csword)) {
 					$trailing_smiley = true;

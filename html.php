@@ -193,7 +193,7 @@ class html
 		 * Build the "Expressions" section.
 		 */
 		$section = '';
-		$results = db::query('SELECT smiley, SUM(total) AS total FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE category IS NULL GROUP BY smiley ORDER BY total DESC, ruid_smileys.sid ASC LIMIT 6');
+		$results = db::query('SELECT smiley, SUM(total) AS total FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE category IS NULL GROUP BY smiley ORDER BY total DESC, ruid_smileys.sid ASC LIMIT 9');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			$section .= $this->create_table('&quot;<i>'.$result['smiley'].'</i>&quot;', ['Total', 'User'], ['num', 'str'], ['SELECT total AS v1, csnick AS v2 FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND smiley = \''.$result['smiley'].'\' ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', $result['total']]);
