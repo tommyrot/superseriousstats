@@ -49,6 +49,21 @@ class html
 		$l_total = db::query_single_col('SELECT SUM(l_total) FROM channel_activity');
 		$l_avg = (int) round($l_total / $days_logged);
 
+		if (!is_null($topic = db::query_single_col('SELECT value FROM parse_state WHERE var = \'topic\''))) {
+			$words = explode(' ', $topic);
+			$topic_new = '';
+
+			foreach ($words as $csword) {
+				if (preg_match('/^(www\.|https?:\/\/).+/i', $csword) && !is_null($urlparts = $this->get_urlparts($csword))) {
+					$topic_new .= '<a href="'.$this->htmlify($urlparts['url']).'">'.$this->htmlify($urlparts['url']).'</a> ';
+				} else {
+					$topic_new .= $this->htmlify($csword).' ';
+				}
+			}
+
+			$topic = rtrim($topic_new);
+		}
+
 		/**
 		 * HEAD
 		 */
@@ -65,7 +80,8 @@ class html
 			. '<div class="info">'.$this->htmlify($this->channel).', seriously.<br><br>'
 			. number_format($days_logged).' day'.($days_logged !== 1 ? 's logged from '.date('M j, Y', strtotime($date_first_log_parsed)).' to '.date('M j, Y', strtotime($date_last_log_parsed)) : ' logged on '.date('M j, Y', strtotime($date_first_log_parsed))).'.<br><br>'
 			. 'Logs contain '.number_format($l_total).' line'.($l_total !== 1 ? 's' : '').' &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
-			. 'Most active day was '.date('M j, Y', strtotime($high_date)).' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.</div>'."\n";
+			. 'Most active day was '.date('M j, Y', strtotime($high_date)).' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.'
+			. (isset($topic) ? '<br><br>Current topic is: <i>&quot;'.$topic.'&quot;</i>' : '').'</div>'."\n";
 
 		/**
 		 * CONTENT
