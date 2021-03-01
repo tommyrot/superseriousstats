@@ -58,7 +58,7 @@ class url
 		}
 
 		foreach ($this->uses as $nick => ['firstused' => $firstused, 'lastused' => $lastused, 'total' => $total]) {
-			db::query_exec('INSERT INTO uid_urls (uid, lid, firstused, lastused, total) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$lid.', \''.$firstused.'\', '.($lastused > $firstused ? '\''.$lastused.'\'' : 'NULL').', '.$total.') ON CONFLICT (uid, lid) DO UPDATE SET lastused = CASE WHEN \''.$lastused.'\' > firstused THEN \''.$lastused.'\' END, total = total + '.$total);
+			db::query_exec('INSERT INTO uid_urls (uid, lid, firstused, lastused, total) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), '.$lid.', DATETIME(\''.$firstused.'\'), DATETIME(\''.$lastused.'\'), '.$total.') ON CONFLICT (uid, lid) DO UPDATE SET lastused = DATETIME(\''.$lastused.'\'), total = total + '.$total);
 		}
 	}
 }

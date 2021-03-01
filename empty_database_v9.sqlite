@@ -310,7 +310,7 @@ CREATE TABLE uid_details (
 uid INTEGER PRIMARY KEY,
 csnick TEXT COLLATE NOCASE UNIQUE NOT NULL, --case insensitive matching and sorting
 firstseen TEXT NOT NULL,
-lastseen TEXT,
+lastseen TEXT NOT NULL,
 ruid INT NOT NULL DEFAULT 0, --defaults to uid by trigger
 status INT NOT NULL DEFAULT 0 CHECK (status IN (0,1,2,3,4))
 );
@@ -429,7 +429,7 @@ ex_exclamations TEXT,
 ex_questions TEXT,
 ex_actions TEXT,
 ex_uppercased TEXT,
-lasttalked TEXT
+lasttalked TEXT NOT NULL DEFAULT '0000-00-00 00:00:00'
 ) WITHOUT ROWID;
 CREATE TRIGGER uid_lines_update_modified_1 AFTER INSERT ON uid_lines
 BEGIN
@@ -460,7 +460,7 @@ CREATE TABLE uid_urls (
 uid INT NOT NULL REFERENCES uid_details (uid),
 lid INT NOT NULL REFERENCES urls (lid),
 firstused TEXT NOT NULL,
-lastused TEXT,
+lastused TEXT NOT NULL,
 total INT NOT NULL CHECK (total > 0),
 PRIMARY KEY (uid, lid)
 ) WITHOUT ROWID;
@@ -537,8 +537,8 @@ SUM(kicks) AS kicks,
 SUM(kicked) AS kicked,
 SUM(nickchanges) AS nickchanges,
 SUM(topics) AS topics,
-(SELECT ex_kicks FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicks IS NOT NULL AND ruid = t1.ruid ORDER BY RANDOM() LIMIT 1) AS ex_kicks,
-(SELECT ex_kicked FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ex_kicked IS NOT NULL AND ruid = t1.ruid ORDER BY RANDOM() LIMIT 1) AS ex_kicked
+(SELECT ex_kicks FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_kicks IS NOT NULL ORDER BY RANDOM() LIMIT 1) AS ex_kicks,
+(SELECT ex_kicked FROM uid_events JOIN uid_details ON uid_events.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_kicked IS NOT NULL ORDER BY RANDOM() LIMIT 1) AS ex_kicked
 FROM uid_events JOIN uid_details AS t1 ON uid_events.uid = t1.uid GROUP BY ruid;
 
 CREATE VIEW v_ruid_lines AS
@@ -612,11 +612,11 @@ SUM(exclamations) AS exclamations,
 SUM(questions) AS questions,
 SUM(actions) AS actions,
 SUM(uppercased) AS uppercased,
-(SELECT quote FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE quote IS NOT NULL AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS quote,
-(SELECT ex_exclamations FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_exclamations IS NOT NULL AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_exclamations,
-(SELECT ex_questions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_questions IS NOT NULL AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_questions,
-(SELECT ex_actions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_actions IS NOT NULL AND ruid = t1.ruid ORDER BY lastseen DESC, uid_lines.uid ASC LIMIT 1) AS ex_actions,
-(SELECT ex_uppercased FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ex_uppercased IS NOT NULL AND ruid = t1.ruid ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_uppercased,
+(SELECT quote FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND quote IS NOT NULL ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS quote,
+(SELECT ex_exclamations FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_exclamations IS NOT NULL ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_exclamations,
+(SELECT ex_questions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_questions IS NOT NULL ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_questions,
+(SELECT ex_actions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_actions IS NOT NULL ORDER BY IFNULL(lastseen, firstseen) DESC, uid_lines.uid ASC LIMIT 1) AS ex_actions,
+(SELECT ex_uppercased FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_uppercased IS NOT NULL ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_uppercased,
 MAX(lasttalked) AS lasttalked
 FROM uid_lines JOIN uid_details AS t1 ON uid_lines.uid = t1.uid GROUP BY ruid;
 

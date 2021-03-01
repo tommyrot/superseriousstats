@@ -28,11 +28,16 @@ trait queryparts
 				}
 			} elseif (is_string($this->$var)) {
 				if ($this->$var !== '') {
-					$value = '\''.preg_replace('/\'/', '\'\'', $this->$var).'\'';
+					if ($var === 'lasttalked') {
+						$value = 'DATETIME(\''.$this->lasttalked.'\')';
+					} else {
+						$value = '\''.preg_replace('/\'/', '\'\'', $this->$var).'\'';
+					}
+
 					$insert_columns[] = $var;
 					$insert_values[] = $value;
 
-					if (($var === 'quote' || $var === 'ex_exclamations' || $var === 'ex_questions' || $var === 'ex_uppercased') && substr_count($this->$var, ' ') < 2) {
+					if (($var === 'quote' || $var === 'ex_exclamations' || $var === 'ex_questions' || $var === 'ex_uppercased' || 'ex_actions') && substr_count($this->$var, ' ') < 2) {
 						/**
 						 * Don't update a quote if that means its length will fall below 3 words.
 						 */

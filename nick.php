@@ -142,7 +142,7 @@ class nick
 				return;
 			}
 
-			$uid = db::query_exec('INSERT INTO uid_details (csnick, firstseen, lastseen) VALUES (\''.$this->csnick.'\', \''.$this->firstseen.'\', '.($this->lastseen > $this->firstseen ? '\''.$this->lastseen.'\'' : 'NULL').')');
+			$uid = db::query_exec('INSERT INTO uid_details (csnick, firstseen, lastseen) VALUES (\''.$this->csnick.'\', DATETIME(\''.$this->firstseen.'\'), DATETIME(\''.$this->lastseen.'\'))');
 		} else {
 			if ($this->firstseen === '') {
 				/**
@@ -155,7 +155,7 @@ class nick
 				return;
 			}
 
-			db::query_exec('UPDATE uid_details SET csnick = \''.$this->csnick.'\', lastseen = CASE WHEN \''.$this->lastseen.'\' > firstseen THEN \''.$this->lastseen.'\' END WHERE uid = '.$uid);
+			db::query_exec('UPDATE uid_details SET csnick = \''.$this->csnick.'\', lastseen = DATETIME(\''.$this->lastseen.'\') WHERE uid = '.$uid);
 		}
 
 		/**
