@@ -7,17 +7,16 @@
 /**
  * Include shared code.
  */
+require 'web.php';
 require 'common.php';
-require 'common_user_history.php';
-require 'common_html_user_history.php';
-require 'common_html_history.php';
+require 'common_web.php';
 
 /**
  * Class for creating historical stats.
  */
 class history
 {
-	use common, common_html_user_history, common_html_history;
+	use common, common_web;
 
 	private bool $link_user_php = true;
 	private bool $show_banner = true;

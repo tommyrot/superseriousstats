@@ -14,17 +14,16 @@ if (!isset($_GET['nick'])) {
 /**
  * Include shared code.
  */
+require 'web.php';
 require 'common.php';
-require 'common_user_history.php';
-require 'common_html_user_history.php';
-require 'common_html_user.php';
+require 'common_web.php';
 
 /**
  * Class for creating user stats.
  */
 class user
 {
-	use common, common_html_user_history, common_html_user;
+	use common, common_web;
 
 	private bool $show_banner = true;
 	private int $ruid = 0;

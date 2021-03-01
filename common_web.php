@@ -1,0 +1,620 @@
+<?php declare(strict_types=1);
+
+/**
+ * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
+ */
+
+/**
+ * Trait with code common between html.php, user.php and history.php.
+ */
+trait common_web
+{
+	/**
+	 * Calculate how long ago a given $datetime is.
+	 */
+	private function ago(string $datetime): string
+	{
+		$diff = date_diff(date_create($this->now), date_create(substr($datetime, 0, 10)));
+
+		if ($diff->y !== 0) {
+			$ago = $diff->y.' Year'.($diff->y !== 1 ? 's' : '').' Ago';
+		} elseif ($diff->m !== 0) {
+			$ago = $diff->m.' Month'.($diff->m !== 1 ? 's' : '').' Ago';
+		} elseif ($diff->d === 0) {
+			$ago = 'Today';
+		} elseif ($diff->d === 1) {
+			$ago = 'Yesterday';
+		} else {
+			$ago = $diff->d.' Days Ago';
+		}
+
+		return $ago;
+	}
+
+	private function create_table_activity(string $period): ?string
+	{
+		$page = get_class($this);
+		$times = ['evening', 'afternoon', 'morning', 'night'];
+
+		/**
+		 * Execute the appropriate query and fill $dates. Return if there is no data.
+		 */
+		if ($period === 'day') {
+			if ($page === 'html') {
+				$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM channel_activity WHERE date >= DATE(\''.$this->now.'\', \'-23 days\') ORDER BY date ASC');
+			} elseif ($page === 'user') {
+				$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date >= DATE(\''.$this->now.'\', \'-23 days\') ORDER BY date ASC');
+			}
+
+			for ($i = 23; $i >= 0; --$i) {
+				$dates[] = date('Y-m-d', strtotime('-'.$i.' days', strtotime($this->now)));
+			}
+		} elseif ($period === 'month') {
+			if ($page === 'html') {
+				$results = db::query('SELECT SUBSTR(date, 1, 7) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 7) >= SUBSTR(DATE(\''.$this->now.'\', \'start of month\', \'-23 months\'), 1, 7) GROUP BY SUBSTR(date, 1, 7) ORDER BY date ASC');
+			} elseif ($page === 'user') {
+				$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_month WHERE ruid = '.$this->ruid.' AND date >= SUBSTR(DATE(\''.$this->now.'\', \'start of month\', \'-23 months\'), 1, 7) ORDER BY date ASC');
+			}
+
+			for ($i = 23; $i >= 0; --$i) {
+				$dates[] = date('Y-m', strtotime('-'.$i.' months', strtotime(substr($this->now, 0, 7).'-01')));
+			}
+		} elseif ($period === 'year') {
+			$estimate = false;
+			$i = 23;
+
+			/**
+			 * If there is more than one day left until the end of the current year, and
+			 * there has been activity during a 90 day period prior to $now, we display an
+			 * additional column with a bar depicting the estimated line count for the year.
+			 *
+			 * Secondly, when the leftmost 8 columns are empty we shrink the table so that
+			 * the "Activity Distribution by Day" table fits horizontally adjacent to it.
+			 */
+			if ($page === 'html') {
+				if (substr($this->now, 0, 4) === date('Y') && ($days_left = (int) date('z', strtotime(substr($this->now, 0, 4).'-12-31')) - (int) date('z', strtotime($this->now))) !== 0 && db::query_single_col('SELECT EXISTS (SELECT 1 FROM channel_activity WHERE date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))') === 1) {
+					$estimate = true;
+					--$i;
+				}
+
+				if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM channel_activity WHERE SUBSTR(date, 1, 4) BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\')') === 0) {
+					$i -= 8;
+				}
+
+				$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) >= \''.((int) substr($this->now, 0, 4) - $i).'\' GROUP BY SUBSTR(date, 1, 4) ORDER BY date ASC');
+			} elseif ($page === 'user') {
+				if (($days_left = (int) date('z', strtotime(substr($this->now, 0, 4).'-12-31')) - (int) date('z', strtotime($this->now))) !== 0 && db::query_single_col('SELECT EXISTS (SELECT 1 FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))') === 1) {
+					$estimate = true;
+					--$i;
+				}
+
+				if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\')') === 0) {
+					$i -= 8;
+				}
+
+				$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date >= \''.((int) substr($this->now, 0, 4) - $i).'\' ORDER BY date ASC');
+			}
+
+			for (; $i >= 0; --$i) {
+				$dates[] = (string) ((int) substr($this->now, 0, 4) - $i);
+			}
+
+			if ($estimate) {
+				$dates[] = 'estimate';
+			}
+		}
+
+		if (($result = $results->fetchArray(SQLITE3_ASSOC)) === false) {
+			return null;
+		}
+
+		$results->reset();
+
+		/**
+		 * Arrange data in a usable format. Remember the (first) date with the most
+		 * lines so we can make the bar label bold later. $high_lines is used to scale
+		 * the bar heights.
+		 */
+		$high_lines = 0;
+
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+			$lines[$result['date']]['total'] = $result['l_total'];
+
+			foreach ($times as $time) {
+				$lines[$result['date']][$time] = $result['l_'.$time];
+			}
+
+			if ($lines[$result['date']]['total'] > $high_lines) {
+				$high_lines = $lines[$result['date']]['total'];
+				$high_date = $result['date'];
+			}
+		}
+
+		/**
+		 * Add the estimate column if applicable.
+		 */
+		if ($period === 'year' && $estimate) {
+			$lines['estimate']['total'] = 0;
+
+			foreach ($times as $time) {
+				/**
+				 * This query consists of three subqueries that calculate the total lines per
+				 * 30 days for each time of day in the past 90 days. Each of these values is
+				 * then multiplied by a weight factor, which is lower the further back in time
+				 * we go. We end up with some arbitrary nonscientific average value to create an
+				 * estimate column with.
+				 */
+				if ($page === 'html') {
+					$subquery1 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) FROM channel_activity WHERE l_'.$time.' != 0 AND date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-61 days\'))';
+					$subquery2 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 2 FROM channel_activity WHERE l_'.$time.' != 0 AND date BETWEEN DATE(\''.$this->now.'\', \'-60 days\') AND DATE(\''.$this->now.'\', \'-31 days\'))';
+					$subquery3 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 3 FROM channel_activity WHERE l_'.$time.' != 0 AND date BETWEEN DATE(\''.$this->now.'\', \'-30 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))';
+				} elseif ($page === 'user') {
+					$subquery1 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) FROM ruid_activity_by_day WHERE l_'.$time.' != 0 AND ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-61 days\'))';
+					$subquery2 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 2 FROM ruid_activity_by_day WHERE l_'.$time.' != 0 AND ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-60 days\') AND DATE(\''.$this->now.'\', \'-31 days\'))';
+					$subquery3 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 3 FROM ruid_activity_by_day WHERE l_'.$time.' != 0 AND ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-30 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))';
+				}
+
+				$lines['estimate'][$time] = ($lines[substr($this->now, 0, 4)][$time] ?? 0) + (int) round(db::query_single_col('SELECT CAST('.$subquery1.' + '.$subquery2.' + '.$subquery3.' AS REAL) / 180') * $days_left);
+				$lines['estimate']['total'] += $lines['estimate'][$time];
+			}
+
+			if ($lines['estimate']['total'] > $high_lines) {
+				/**
+				 * Don't set $high_date because we don't want "Est." to be bold. The previously
+				 * set $high_date will be bold instead. $high_lines must however be set in order
+				 * to properly scale bar heights.
+				 */
+				$high_lines = $lines['estimate']['total'];
+			}
+		}
+
+		$tr1 = '<tr><th colspan="'.count($dates).'">Activity by '.ucfirst($period);
+		$tr2 = '<tr class="bars">';
+		$tr3 = '<tr class="sub">';
+
+		/**
+		 * Assemble each column.
+		 */
+		foreach ($dates as $date) {
+			if (!isset($lines[$date])) {
+				$tr2 .= '<td><span class="grey">n/a</span>';
+			} else {
+				$total = ($lines[$date]['total'] >= 999500 ? number_format($lines[$date]['total'] / 1000000, 1).'M' : ($lines[$date]['total'] >= 10000 ? round($lines[$date]['total'] / 1000).'K' : $lines[$date]['total']));
+				$height['total'] = (int) round(($lines[$date]['total'] / $high_lines) * 100);
+				$tr2 .= '<td'.($date === 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.$total;
+
+				/**
+				 * Divide the available pixels among times, according to activity.
+				 */
+				$unclaimed_pixels = $height['total'];
+				$unclaimed_subpixels = [];
+
+				foreach ($times as $time) {
+					if ($unclaimed_pixels !== 0 && $lines[$date][$time] !== 0) {
+						$height[$time] = (int) (($lines[$date][$time] / $high_lines) * 100);
+						$unclaimed_pixels -= $height[$time];
+						$unclaimed_subpixels[$time] = (($lines[$date][$time] / $high_lines) * 100) - $height[$time];
+					} else {
+						$height[$time] = 0;
+					}
+				}
+
+				while ($unclaimed_pixels !== 0) {
+					$high_subpixels = 0;
+
+					foreach ($unclaimed_subpixels as $time => $subpixels) {
+						if ($subpixels > $high_subpixels) {
+							$high_subpixels = $subpixels;
+							$high_time = $time;
+						}
+					}
+
+					++$height[$high_time];
+					--$unclaimed_pixels;
+					$unclaimed_subpixels[$high_time] = 0;
+				}
+
+				/*
+				 * Assemble the activity bar.
+				 */
+				foreach ($times as $time) {
+					if ($height[$time] === 0) {
+						continue;
+					}
+
+					/**
+					 * $height_li is the total height of all stacked bar sections up to and
+					 * including current iteration ($time).
+					 */
+					$height_li = 0;
+
+					switch ($time) {
+						case 'evening':
+							$height_li += $height['evening'];
+						case 'afternoon':
+							$height_li += $height['afternoon'];
+						case 'morning':
+							$height_li += $height['morning'];
+						case 'night':
+							$height_li += $height['night'];
+					}
+
+					$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
+				}
+
+				$tr2 .= '</ul>';
+			}
+
+			$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>';
+
+			if ($period === 'day') {
+				$tr3 .= date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
+			} elseif ($period === 'month') {
+				$tr3 .= date('M', strtotime($date.'-01')).'<br>&apos;'.substr($date, 2, 2);
+			} elseif ($period === 'year') {
+				$tr3 .= ($date === 'estimate' ? 'Est.' : '&apos;'.substr($date, 2, 2));
+			}
+		}
+
+		return '<table class="act'.($period === 'year' ? '-year" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
+	private function create_table_activity_distribution_day(): ?string
+	{
+		$page = get_class($this);
+		$days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+		$times = ['evening', 'afternoon', 'morning', 'night'];
+
+		/**
+		 * Execute the appropriate query. Return if there is no data.
+		 */
+		if ($page === 'html') {
+			$result = db::query_single_row('SELECT SUM(l_mon_night) AS l_mon_night, SUM(l_mon_morning) AS l_mon_morning, SUM(l_mon_afternoon) AS l_mon_afternoon, SUM(l_mon_evening) AS l_mon_evening, SUM(l_tue_night) AS l_tue_night, SUM(l_tue_morning) AS l_tue_morning, SUM(l_tue_afternoon) AS l_tue_afternoon, SUM(l_tue_evening) AS l_tue_evening, SUM(l_wed_night) AS l_wed_night, SUM(l_wed_morning) AS l_wed_morning, SUM(l_wed_afternoon) AS l_wed_afternoon, SUM(l_wed_evening) AS l_wed_evening, SUM(l_thu_night) AS l_thu_night, SUM(l_thu_morning) AS l_thu_morning, SUM(l_thu_afternoon) AS l_thu_afternoon, SUM(l_thu_evening) AS l_thu_evening, SUM(l_fri_night) AS l_fri_night, SUM(l_fri_morning) AS l_fri_morning, SUM(l_fri_afternoon) AS l_fri_afternoon, SUM(l_fri_evening) AS l_fri_evening, SUM(l_sat_night) AS l_sat_night, SUM(l_sat_morning) AS l_sat_morning, SUM(l_sat_afternoon) AS l_sat_afternoon, SUM(l_sat_evening) AS l_sat_evening, SUM(l_sun_night) AS l_sun_night, SUM(l_sun_morning) AS l_sun_morning, SUM(l_sun_afternoon) AS l_sun_afternoon, SUM(l_sun_evening) AS l_sun_evening, SUM(l_total) AS l_total FROM ruid_lines WHERE l_total != 0');
+		} elseif ($page === 'user') {
+			$result = db::query_single_row('SELECT l_mon_night, l_mon_morning, l_mon_afternoon, l_mon_evening, l_tue_night, l_tue_morning, l_tue_afternoon, l_tue_evening, l_wed_night, l_wed_morning, l_wed_afternoon, l_wed_evening, l_thu_night, l_thu_morning, l_thu_afternoon, l_thu_evening, l_fri_night, l_fri_morning, l_fri_afternoon, l_fri_evening, l_sat_night, l_sat_morning, l_sat_afternoon, l_sat_evening, l_sun_night, l_sun_morning, l_sun_afternoon, l_sun_evening, l_total FROM ruid_lines WHERE ruid = '.$this->ruid.' AND l_total != 0');
+		}
+
+		if (is_null($result)) {
+			return null;
+		}
+
+		/**
+		 * Arrange data in a usable format. Remember the (first) day with the most lines
+		 * so we can make the bar label bold later. $high_lines is used to scale the bar
+		 * heights.
+		 */
+		$high_lines = 0;
+
+		foreach ($days as $day) {
+			$lines[$day]['total'] = 0;
+
+			foreach ($times as $time) {
+				$lines[$day][$time] = $result['l_'.$day.'_'.$time];
+				$lines[$day]['total'] += $lines[$day][$time];
+			}
+
+			if ($lines[$day]['total'] > $high_lines) {
+				$high_lines = $lines[$day]['total'];
+				$high_day = $day;
+			}
+		}
+
+		$tr1 = '<tr><th colspan="7">Activity Distribution by Day';
+		$tr2 = '<tr class="bars">';
+		$tr3 = '<tr class="sub">';
+
+		/**
+		 * Assemble each column.
+		 */
+		foreach ($days as $day) {
+			if ($lines[$day]['total'] === 0) {
+				$tr2 .= '<td><span class="grey">n/a</span>';
+			} else {
+				$percentage = ($lines[$day]['total'] / $result['l_total']) * 100;
+				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
+				$height['total'] = (int) round(($lines[$day]['total'] / $high_lines) * 100);
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
+
+				/**
+				 * Divide the available pixels among times, according to activity.
+				 */
+				$unclaimed_pixels = $height['total'];
+				$unclaimed_subpixels = [];
+
+				foreach ($times as $time) {
+					if ($unclaimed_pixels !== 0 && $lines[$day][$time] !== 0) {
+						$height[$time] = (int) (($lines[$day][$time] / $high_lines) * 100);
+						$unclaimed_pixels -= $height[$time];
+						$unclaimed_subpixels[$time] = (($lines[$day][$time] / $high_lines) * 100) - $height[$time];
+					} else {
+						$height[$time] = 0;
+					}
+				}
+
+				while ($unclaimed_pixels !== 0) {
+					$high_subpixels = 0;
+
+					foreach ($unclaimed_subpixels as $time => $subpixels) {
+						if ($subpixels > $high_subpixels) {
+							$high_subpixels = $subpixels;
+							$high_time = $time;
+						}
+					}
+
+					++$height[$high_time];
+					--$unclaimed_pixels;
+					$unclaimed_subpixels[$high_time] = 0;
+				}
+
+				/**
+				 * Assemble the activity bar.
+				 */
+				foreach ($times as $time) {
+					if ($height[$time] === 0) {
+						continue;
+					}
+
+					/**
+					 * $height_li is the total height of all stacked bar sections up to and
+					 * including current iteration ($time).
+					 */
+					$height_li = 0;
+
+					switch ($time) {
+						case 'evening':
+							$height_li += $height['evening'];
+						case 'afternoon':
+							$height_li += $height['afternoon'];
+						case 'morning':
+							$height_li += $height['morning'];
+						case 'night':
+							$height_li += $height['night'];
+					}
+
+					$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($lines[$day]['total']).'">';
+				}
+
+				$tr2 .= '</ul>';
+			}
+
+			$tr3 .= '<td'.($day === $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
+		}
+
+		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
+	private function create_table_activity_distribution_hour(): ?string
+	{
+		$page = get_class($this);
+
+		/**
+		 * Execute the appropriate query. Return if there is no data.
+		 */
+		if ($page === 'html') {
+			$result = db::query_single_row('SELECT SUM(l_00) AS l_00, SUM(l_01) AS l_01, SUM(l_02) AS l_02, SUM(l_03) AS l_03, SUM(l_04) AS l_04, SUM(l_05) AS l_05, SUM(l_06) AS l_06, SUM(l_07) AS l_07, SUM(l_08) AS l_08, SUM(l_09) AS l_09, SUM(l_10) AS l_10, SUM(l_11) AS l_11, SUM(l_12) AS l_12, SUM(l_13) AS l_13, SUM(l_14) AS l_14, SUM(l_15) AS l_15, SUM(l_16) AS l_16, SUM(l_17) AS l_17, SUM(l_18) AS l_18, SUM(l_19) AS l_19, SUM(l_20) AS l_20, SUM(l_21) AS l_21, SUM(l_22) AS l_22, SUM(l_23) AS l_23, SUM(l_total) AS l_total FROM channel_activity');
+		} elseif ($page === 'user') {
+			$result = db::query_single_row('SELECT l_00, l_01, l_02, l_03, l_04, l_05, l_06, l_07, l_08, l_09, l_10, l_11, l_12, l_13, l_14, l_15, l_16, l_17, l_18, l_19, l_20, l_21, l_22, l_23, l_total FROM ruid_lines WHERE ruid = '.$this->ruid.' AND l_total != 0');
+		} elseif ($page === 'history') {
+			$result = db::query_single_row('SELECT SUM(l_00) AS l_00, SUM(l_01) AS l_01, SUM(l_02) AS l_02, SUM(l_03) AS l_03, SUM(l_04) AS l_04, SUM(l_05) AS l_05, SUM(l_06) AS l_06, SUM(l_07) AS l_07, SUM(l_08) AS l_08, SUM(l_09) AS l_09, SUM(l_10) AS l_10, SUM(l_11) AS l_11, SUM(l_12) AS l_12, SUM(l_13) AS l_13, SUM(l_14) AS l_14, SUM(l_15) AS l_15, SUM(l_16) AS l_16, SUM(l_17) AS l_17, SUM(l_18) AS l_18, SUM(l_19) AS l_19, SUM(l_20) AS l_20, SUM(l_21) AS l_21, SUM(l_22) AS l_22, SUM(l_23) AS l_23, SUM(l_total) AS l_total FROM channel_activity WHERE date LIKE \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'%\'');
+		}
+
+		if (is_null($result)) {
+			return null;
+		}
+
+		/**
+		 * Arrange data in a usable format. Remember the (first) hour with the most
+		 * lines so we can make the bar label bold later. $high_lines is used to scale
+		 * the bar heights.
+		 */
+		$high_lines = 0;
+
+		for ($hour = 0; $hour <= 23; ++$hour) {
+			$lines[$hour] = $result['l_'.($hour <= 9 ? '0' : '').$hour];
+
+			if ($lines[$hour] > $high_lines) {
+				$high_lines = $lines[$hour];
+				$high_hour = $hour;
+			}
+		}
+
+		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour';
+		$tr2 = '<tr class="bars">';
+		$tr3 = '<tr class="sub">';
+
+		/**
+		 * Assemble each column.
+		 */
+		for ($hour = 0; $hour <= 23; ++$hour) {
+			if ($lines[$hour] === 0) {
+				$tr2 .= '<td><span class="grey">n/a</span>';
+			} else {
+				$percentage = ($lines[$hour] / $result['l_total']) * 100;
+				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
+				$height = (int) round(($lines[$hour] / $high_lines) * 100);
+				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
+
+				if ($height !== 0) {
+					$tr2 .= '<li class="'.($hour <= 5 ? 'n' : ($hour <= 11 ? 'm' : ($hour <= 17 ? 'a' : 'e'))).'" style="height:'.$height.'px" title="'.number_format($lines[$hour]).'">';
+				}
+
+				$tr2 .= '</ul>';
+			}
+
+			$tr3 .= '<td'.($hour === $high_hour ? ' class="bold"' : '').'>'.$hour.'h';
+		}
+
+		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
+	}
+
+	private function create_table_people(?string $period = null): ?string
+	{
+		$page = get_class($this);
+		$times = ['night', 'morning', 'afternoon', 'evening'];
+
+		/**
+		 * Execute the appropriate queries. Return if there is no data.
+		 */
+		if ($page === 'html') {
+			if (!is_null($period)) {
+				$title = 'Most Talkative People &ndash; '.($period === 'month' ? date('F Y', strtotime($this->now)) : substr($this->now, 0, 4));
+
+				if (!is_null($l_total = db::query_single_col('SELECT SUM(t1.l_total) FROM '.($period === 'month' ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.($period === 'month' ? substr($this->now, 0, 7) : substr($this->now, 0, 4)).'\''))) {
+					$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote FROM '.($period === 'month' ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.($period === 'month' ? substr($this->now, 0, 7) : substr($this->now, 0, 4)).'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT 10');
+				}
+			} else {
+				$title = 'Most Talkative People &ndash; All-Time';
+
+				if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0'))) {
+					$results = db::query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, lasttalked, quote FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT 30');
+				}
+			}
+		} elseif ($page === 'history') {
+			$title = 'Most Talkative People &ndash; '.(!is_null($this->month) ? date('F Y', strtotime($this->year.'-'.($this->month <= 9 ? '0' : '').$this->month.'-01')) : $this->year);
+
+			if (!is_null($l_total = db::query_single_col('SELECT SUM(t1.l_total) FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\''))) {
+				$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT 30');
+			}
+		}
+
+		if (is_null($l_total)) {
+			return null;
+		}
+
+		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
+		$tr1 = '<tr><th colspan="7">'.($page === 'html' && $this->link_history_php ? '<span class="title">'.$title.'</span><span class="title-right"><a href="history.php'.(!is_null($period) ? '?year='.substr($this->now, 0, 4).($period === 'month' ? '&amp;month='.((int) substr($this->now, 5, 2)) : '') : '').'">History</a></span>' : $title);
+		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">Activity<td class="k5">Last Talked<td class="k6">Quote';
+		$trx = '';
+
+		/**
+		 * Assemble each row.
+		 */
+		$i = 0;
+
+		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+			/**
+			 * Divide the available pixels among times, according to activity.
+			 */
+			$unclaimed_pixels = 50;
+			$unclaimed_subpixels = [];
+
+			foreach ($times as $time) {
+				if ($unclaimed_pixels !== 0 && $result['l_'.$time] !== 0) {
+					$width[$time] = (int) (($result['l_'.$time] / $result['l_total']) * 50);
+					$unclaimed_pixels -= $width[$time];
+					$unclaimed_subpixels[$time] = (($result['l_'.$time] / $result['l_total']) * 50) - $width[$time];
+				} else {
+					$width[$time] = 0;
+				}
+			}
+
+			while ($unclaimed_pixels !== 0) {
+				$high_subpixels = 0;
+
+				foreach ($unclaimed_subpixels as $time => $subpixels) {
+					if ($subpixels > $high_subpixels) {
+						$high_subpixels = $subpixels;
+						$high_time = $time;
+					}
+				}
+
+				++$width[$high_time];
+				--$unclaimed_pixels;
+				$unclaimed_subpixels[$high_time] = 0;
+			}
+
+			/**
+			 * Assemble the little activity bar of 50 pixels wide.
+			 */
+			$activity = '';
+
+			foreach ($times as $time) {
+				if ($width[$time] === 0) {
+					continue;
+				}
+
+				$activity .= '<li class="'.$time[0].'" style="width:'.$width[$time].'px">';
+			}
+
+			$percentage = number_format(($result['l_total'] / $l_total) * 100, 2).'%';
+			$trx .= '<tr><td class="v1">'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$i.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
+		}
+
+		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+	}
+
+	private function create_table_people_timeofday(): ?string
+	{
+		$page = get_class($this);
+		$times = ['night', 'morning', 'afternoon', 'evening'];
+
+		/**
+		 * $high_lines is used to scale the bar widths.
+		 */
+		$high_lines = 0;
+
+		foreach ($times as $time) {
+			/**
+			 * Execute the appropriate query. Return if there is no data.
+			 */
+			if ($page === 'html') {
+				$results = db::query('SELECT csnick, l_'.$time.' FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_lines.ruid ASC LIMIT 10');
+			} elseif ($page === 'history') {
+				$results = db::query('SELECT csnick, t1.l_'.$time.' FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_'.$time.' != 0 AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' ORDER BY l_'.$time.' DESC, t1.ruid ASC LIMIT 10');
+			}
+
+			if (($result = $results->fetchArray(SQLITE3_ASSOC)) === false) {
+				return null;
+			}
+
+			$results->reset();
+
+			/**
+			 * Arrange data in a usable format.
+			 */
+			$i = 0;
+
+			while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
+				++$i;
+				$lines[$time][$i] = $result['l_'.$time];
+				$csnick[$time][$i] = $result['csnick'];
+
+				if ($lines[$time][$i] > $high_lines) {
+					$high_lines = $lines[$time][$i];
+				}
+			}
+		}
+
+		$tr0 = '<colgroup><col class="pos"><col class="c"><col class="c"><col class="c"><col class="c">';
+		$tr1 = '<tr><th colspan="5">Most Talkative People by Time of Day';
+		$tr2 = '<tr><td class="pos"><td class="k">Night<br>0h &ndash; 5h<td class="k">Morning<br>6h &ndash; 11h<td class="k">Afternoon<br>12h &ndash; 17h<td class="k">Evening<br>18h &ndash; 23h';
+		$trx = '';
+
+		/**
+		 * Assemble each row, provided there is at least one column with data.
+		 */
+		for ($i = 1; $i <= 10; ++$i) {
+			if (!isset($lines['night'][$i]) && !isset($lines['morning'][$i]) && !isset($lines['afternoon'][$i]) && !isset($lines['evening'][$i])) {
+				break;
+			}
+
+			$trx .= '<tr><td class="pos">'.$i;
+
+			foreach ($times as $time) {
+				if (!isset($lines[$time][$i])) {
+					$trx .= '<td class="v">';
+				} else {
+					$width = number_format(($lines[$time][$i] / $high_lines) * 190);
+					$trx .= '<td class="v">'.$this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).($width !== '0' ? '<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>' : '');
+				}
+			}
+		}
+
+		return '<table class="ppl-tod">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+	}
+
+	private function htmlify(string $string): string
+	{
+		return htmlspecialchars($string, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+	}
+}
