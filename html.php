@@ -9,7 +9,7 @@
  */
 class html
 {
-	use common, urlparts, common_html_user_history, common_html_user, common_html_history;
+	use common, common_web, urlparts;
 
 	private bool $link_history_php = true;
 	private bool $link_user_php = true;
