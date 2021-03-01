@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2012-2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2012-2020, Jos de Ruijter <jos@dutnie.nl>
  */
 
 class parser_hexchat extends parser
