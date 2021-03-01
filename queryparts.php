@@ -36,7 +36,7 @@ trait queryparts
 						/**
 						 * Don't update a quote if that means its length will fall below 3 words.
 						 */
-						$update_assignments[] = $var.' = CASE WHEN '.$var.' NOT LIKE \'% % %\' THEN '.$value.' ELSE '.$var.' END';
+						$update_assignments[] = $var.' = CASE WHEN '.$var.' IS NULL OR '.$var.' NOT LIKE \'% % %\' THEN '.$value.' ELSE '.$var.' END';
 					} else {
 						$update_assignments[] = $var.' = '.$value;
 					}
