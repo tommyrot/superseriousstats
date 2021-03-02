@@ -15,11 +15,6 @@ class db
 
 	private function __construct() {}
 
-	public static function changes(): int
-	{
-		return self::$db->changes();
-	}
-
 	public static function connect(): void
 	{
 		try {
