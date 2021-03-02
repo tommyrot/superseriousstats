@@ -54,7 +54,7 @@ var TEXT PRIMARY KEY NOT NULL,
 value TEXT NOT NULL
 ) WITHOUT ROWID;
 
-CREATE TABLE ruid_activity_by_day (
+CREATE TABLE ruid_activity_by_day ( --materialized view
 ruid INT,
 date TEXT,
 l_night INT,
@@ -65,7 +65,7 @@ l_total INT,
 PRIMARY KEY (ruid, date)
 ) WITHOUT ROWID;
 
-CREATE TABLE ruid_activity_by_month (
+CREATE TABLE ruid_activity_by_month ( --materialized view
 ruid INT,
 date TEXT,
 l_night INT,
@@ -76,7 +76,7 @@ l_total INT,
 PRIMARY KEY (ruid, date)
 ) WITHOUT ROWID;
 
-CREATE TABLE ruid_activity_by_year (
+CREATE TABLE ruid_activity_by_year ( --materialized view
 ruid INT,
 date TEXT,
 l_night INT,
@@ -87,7 +87,7 @@ l_total INT,
 PRIMARY KEY (ruid, date)
 ) WITHOUT ROWID;
 
-CREATE TABLE ruid_events (
+CREATE TABLE ruid_events ( --materialized view
 ruid INT PRIMARY KEY,
 m_op INT,
 m_opped INT,
@@ -108,7 +108,7 @@ ex_kicks TEXT,
 ex_kicked TEXT
 ) WITHOUT ROWID;
 
-CREATE TABLE ruid_lines (
+CREATE TABLE ruid_lines ( --materialized view
 ruid INT PRIMARY KEY,
 l_00 INT,
 l_01 INT,
@@ -188,13 +188,13 @@ lasttalked TEXT
 ) WITHOUT ROWID;
 
 CREATE TABLE ruid_milestones (
-ruid INT NOT NULL,
+ruid INT NOT NULL REFERENCES uid_details (uid),
 milestone INT NOT NULL,
 date TEXT NOT NULL,
 PRIMARY KEY (ruid, milestone)
 ) WITHOUT ROWID;
 
-CREATE TABLE ruid_smileys (
+CREATE TABLE ruid_smileys ( --materialized view
 ruid INT,
 sid INT,
 total INT,
@@ -202,7 +202,7 @@ PRIMARY KEY (ruid, sid)
 ) WITHOUT ROWID;
 CREATE INDEX ruid_smileys_sid ON ruid_smileys (sid);
 
-CREATE TABLE ruid_urls (
+CREATE TABLE ruid_urls ( --materialized view
 ruid INT,
 lid INT,
 firstused TEXT,
