@@ -117,7 +117,7 @@ trait common_web
 						${'v'.$col} = number_format(${'v'.$col}, $decimals).($percentage ? '%' : '');
 
 						if (preg_match('/^0\.0+%?$/', ${'v'.$col})) {
-							${'v'.$col} = '<span class="grey">'.$value.'</span>';
+							${'v'.$col} = '<span class="grey">'.${'v'.$col}.'</span>';
 						}
 				}
 			}
