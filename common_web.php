@@ -252,13 +252,13 @@ trait common_web
 				 * estimate column with.
 				 */
 				if ($page === 'html') {
-					$subquery1 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) FROM channel_activity WHERE l_'.$time.' != 0 AND date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-61 days\'))';
-					$subquery2 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 2 FROM channel_activity WHERE l_'.$time.' != 0 AND date BETWEEN DATE(\''.$this->now.'\', \'-60 days\') AND DATE(\''.$this->now.'\', \'-31 days\'))';
-					$subquery3 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 3 FROM channel_activity WHERE l_'.$time.' != 0 AND date BETWEEN DATE(\''.$this->now.'\', \'-30 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))';
+					$subquery1 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) FROM channel_activity WHERE date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-61 days\'))';
+					$subquery2 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 2 FROM channel_activity WHERE date BETWEEN DATE(\''.$this->now.'\', \'-60 days\') AND DATE(\''.$this->now.'\', \'-31 days\'))';
+					$subquery3 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 3 FROM channel_activity WHERE date BETWEEN DATE(\''.$this->now.'\', \'-30 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))';
 				} elseif ($page === 'user') {
-					$subquery1 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) FROM ruid_activity_by_day WHERE l_'.$time.' != 0 AND ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-61 days\'))';
-					$subquery2 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 2 FROM ruid_activity_by_day WHERE l_'.$time.' != 0 AND ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-60 days\') AND DATE(\''.$this->now.'\', \'-31 days\'))';
-					$subquery3 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 3 FROM ruid_activity_by_day WHERE l_'.$time.' != 0 AND ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-30 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))';
+					$subquery1 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-61 days\'))';
+					$subquery2 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 2 FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-60 days\') AND DATE(\''.$this->now.'\', \'-31 days\'))';
+					$subquery3 = '(SELECT IFNULL(SUM(l_'.$time.'), 0) * 3 FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-30 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))';
 				}
 
 				$lines['estimate'][$time] = ($lines[substr($this->now, 0, 4)][$time] ?? 0) + (int) round(db::query_single_col('SELECT CAST('.$subquery1.' + '.$subquery2.' + '.$subquery3.' AS REAL) / 180') * $days_left);
