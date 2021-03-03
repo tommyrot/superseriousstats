@@ -107,7 +107,7 @@ class parser
 	}
 
 	/**
-	 * URLs are handled (and stored) while (mostly) preserving case.
+	 * URLs are handled (and stored) while preserving case for all relevant parts.
 	 */
 	private function create_url(string $time, string $nick, array $urlparts): void
 	{
@@ -553,7 +553,7 @@ class parser
 		}
 
 		/**
-		 * Store channel totals and streak history.
+		 * Store data in database tables "channel_activity" and "parse_state".
 		 */
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts(['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);

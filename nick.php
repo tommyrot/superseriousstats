@@ -182,7 +182,7 @@ class nick
 		}
 
 		/**
-		 * Store data in database tables "uid_lines".
+		 * Store data in database table "uid_lines".
 		 */
 		$columns = ['monologues', 'topmonologue', 'slaps', 'slapped', 'actions', 'ex_actions'];
 
