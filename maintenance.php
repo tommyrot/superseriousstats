@@ -26,9 +26,10 @@ class maintenance
 	private function calculate_milestones(): void
 	{
 		/**
-		 * Only continue if "uid_activity" was modified since last maintenance.
+		 * Only continue if "uid_details" and/or "uid_activity" was modified since last
+		 * maintenance.
 		 */
-		if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_activity\'') === 0) {
+		if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM table_state WHERE (table_name = \'uid_details\' OR table_name = \'uid_activity\') AND modified = 1)') === 0) {
 			return;
 		}
 
