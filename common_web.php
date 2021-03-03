@@ -73,17 +73,17 @@ trait common_web
 						break;
 					case 'str-url':
 						$words = explode(' ', ${'v'.$col});
-						$line = '';
+						${'v'.$col} = '';
 
 						foreach ($words as $csword) {
 							if (preg_match('/^(www\.|https?:\/\/).+/i', $csword) && !is_null($urlparts = $this->get_urlparts($csword))) {
-								$line .= '<a href="'.$this->htmlify($urlparts['url']).'">'.$this->htmlify($urlparts['url']).'</a> ';
+								${'v'.$col} .= '<a href="'.$this->htmlify($urlparts['url']).'">'.$this->htmlify($urlparts['url']).'</a> ';
 							} else {
-								$line .= $this->htmlify($csword).' ';
+								${'v'.$col} .= $this->htmlify($csword).' ';
 							}
 						}
 
-						${'v'.$col} = rtrim($line);
+						${'v'.$col} = rtrim(${'v'.$col});
 						break;
 					case 'str-userstats':
 						${'v'.$col} = '<a href="user.php?nick='.$this->htmlify(urlencode(${'v'.$col})).'">'.$this->htmlify(${'v'.$col}).'</a>';
