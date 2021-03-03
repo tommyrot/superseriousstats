@@ -49,21 +49,6 @@ class html
 		$l_total = db::query_single_col('SELECT SUM(l_total) FROM channel_activity');
 		$l_avg = (int) round($l_total / $days_logged);
 
-		if (!is_null($topic = db::query_single_col('SELECT value FROM parse_state WHERE var = \'topic\''))) {
-			$words = explode(' ', $topic);
-			$topic_new = '';
-
-			foreach ($words as $csword) {
-				if (preg_match('/^(www\.|https?:\/\/).+/i', $csword) && !is_null($urlparts = $this->get_urlparts($csword))) {
-					$topic_new .= '<a href="'.$this->htmlify($urlparts['url']).'">'.$this->htmlify($urlparts['url']).'</a> ';
-				} else {
-					$topic_new .= $this->htmlify($csword).' ';
-				}
-			}
-
-			$topic = rtrim($topic_new);
-		}
-
 		/**
 		 * HEAD
 		 */
@@ -80,8 +65,7 @@ class html
 			. '<div class="info">'.$this->htmlify($this->channel).', seriously.<br><br>'
 			. number_format($days_logged).' day'.($days_logged !== 1 ? 's logged from '.date('M j, Y', strtotime($date_first_log_parsed)).' to '.date('M j, Y', strtotime($date_last_log_parsed)) : ' logged on '.date('M j, Y', strtotime($date_first_log_parsed))).'.<br><br>'
 			. 'Logs contain '.number_format($l_total).' line'.($l_total !== 1 ? 's' : '').' &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
-			. 'Most active day was '.date('M j, Y', strtotime($high_date)).' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.'
-			. (isset($topic) ? '<br><br>Current topic is: <i>&quot;'.$topic.'&quot;</i>' : '').'</div>'."\n";
+			. 'Most active day was '.date('M j, Y', strtotime($high_date)).' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.</div>'."\n";
 
 		/**
 		 * CONTENT
@@ -170,6 +154,7 @@ class html
 		$section .= $this->create_table('Nick Changes', ['Total', 'User'], ['num', 'str'], ['SELECT nickchanges AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND nickchanges != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(nickchanges) FROM ruid_events']);
 		$section .= $this->create_table('Aliases', ['Total', 'User'], ['num', 'str'], ['SELECT COUNT(*) - 1 AS v1, (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS v2 FROM uid_details AS t1 WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 1) GROUP BY ruid HAVING v1 != 0 ORDER BY v1 DESC, ruid ASC LIMIT 5', 'SELECT COUNT(*) FROM uid_details WHERE status = 2']);
 		$section .= $this->create_table('Topics Set', ['Total', 'User'], ['num', 'str'], ['SELECT topics AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND topics != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(topics) FROM ruid_events']);
+		$section .= $this->create_table('Most Recent Topics', ['Date', 'User', 'Topic'], ['date', 'str', 'str-url'], ['SELECT datetime AS v1, csnick AS v2, topic AS v3 FROM uid_topics JOIN uid_details ON uid_topics.uid = uid_details.uid WHERE status != 4 ORDER BY uid_topics.ROWID DESC limit 5']);
 
 		if ($section !== '') {
 			$contents .= '<div class="section">Events</div>'."\n".$section;

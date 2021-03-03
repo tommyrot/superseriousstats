@@ -14,6 +14,7 @@ class parser
 
 	private array $nick_objs = [];
 	private array $smileys = [];
+	private array $topics = [];
 	private array $url_objs = [];
 	private array $word_objs = [];
 	private int $l_00 = 0;
@@ -52,7 +53,6 @@ class parser
 	private string $hex_valid_utf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private string $line_new = '';
 	private string $nick_prev = '';
-	private string $topic = '';
 	private string $year = '';
 	protected int $linenum = 0;
 	protected string $line_prev = '';
@@ -514,7 +514,11 @@ class parser
 
 		$nick = $this->create_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_int('topics', 1);
-		$this->topic = $line;
+
+		/**
+		 * Track topics in a way that preserves the exact order of occurrence.
+		 */
+		$this->topics[] = [$this->date.' '.$time, $nick, $line];
 	}
 
 	/**
@@ -558,7 +562,7 @@ class parser
 		}
 
 		/**
-		 * Store user data. MUST be done before storing URL data.
+		 * Store user data. MUST be done before storing URL and topic data.
 		 */
 		foreach ($this->nick_objs as $nick) {
 			$nick->store_data();
@@ -572,10 +576,10 @@ class parser
 		}
 
 		/**
-		 * Store topic data.
+		 * Store data in database table "uid_topics".
 		 */
-		if ($this->topic !== '') {
-			db::query_exec('INSERT OR REPLACE INTO parse_state (var, value) VALUES (\'topic\', \''.preg_replace('/\'/', '\'\'', $this->topic).'\')');
+		foreach ($this->topics as [$datetime, $nick, $topic]) {
+			db::query_exec('INSERT INTO uid_topics (uid, topic, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), \''.preg_replace('/\'/', '\'\'', $topic).'\', DATETIME(\''.$datetime.'\'))');
 		}
 
 		/**

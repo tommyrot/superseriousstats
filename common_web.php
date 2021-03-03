@@ -71,6 +71,20 @@ trait common_web
 					case 'str':
 						${'v'.$col} = $this->htmlify(${'v'.$col});
 						break;
+					case 'str-url':
+						$words = explode(' ', ${'v'.$col});
+						$line = '';
+
+						foreach ($words as $csword) {
+							if (preg_match('/^(www\.|https?:\/\/).+/i', $csword) && !is_null($urlparts = $this->get_urlparts($csword))) {
+								$line .= '<a href="'.$this->htmlify($urlparts['url']).'">'.$this->htmlify($urlparts['url']).'</a> ';
+							} else {
+								$line .= $this->htmlify($csword).' ';
+							}
+						}
+
+						${'v'.$col} = rtrim($line);
+						break;
 					case 'str-userstats':
 						${'v'.$col} = '<a href="user.php?nick='.$this->htmlify(urlencode(${'v'.$col})).'">'.$this->htmlify(${'v'.$col}).'</a>';
 						break;
@@ -108,7 +122,7 @@ trait common_web
 				}
 			}
 
-			$table .= '<tr><td class="v1">'.$v1.'<td class="pos">'.++$i.'<td class="v2">'.$v2.($cols === 3 ? '<td class="v3">'.$v3 : '');
+			$table .= '<tr><td class="v1">'.$v1.'<td class="pos">'.++$i.'<td class="v2">'.$v2.($cols === 3 ? '<td class="'.($types[2] === 'str-url' ? 'v3a' : 'v3').'">'.$v3 : '');
 		}
 
 		if ($i === 0) {

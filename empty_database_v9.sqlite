@@ -479,6 +479,17 @@ BEGIN
 UPDATE table_state SET modified = 1 WHERE table_name = 'uid_smileys' AND modified = 0;
 END;
 
+CREATE TABLE uid_topics ( --truncated to last 10 records by trigger
+uid INT NOT NULL REFERENCES uid_details (uid),
+topic TEXT NOT NULL,
+datetime TEXT NOT NULL
+);
+CREATE INDEX uid_topics_uid ON uid_topics (uid);
+CREATE TRIGGER uid_topics_truncate AFTER INSERT ON uid_topics
+BEGIN
+DELETE FROM uid_topics WHERE ROWID IN (SELECT ROWID FROM uid_topics ORDER BY ROWID DESC LIMIT -1 OFFSET 10);
+END;
+
 CREATE TABLE uid_urls (
 uid INT NOT NULL REFERENCES uid_details (uid),
 lid INT NOT NULL REFERENCES urls (lid),

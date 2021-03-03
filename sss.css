@@ -432,6 +432,7 @@ th {
 .large td.k3,
 .large td.v2,
 .large td.v3,
+.large td.v3a,
 .medium td.k2,
 .medium td.v2,
 .small td.k2,
@@ -447,4 +448,7 @@ th {
 	overflow:hidden;
 	text-overflow:ellipsis;
 	white-space:nowrap;
+}
+.large td.v3a {
+	overflow-wrap:break-word;
 }
