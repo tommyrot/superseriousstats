@@ -385,7 +385,7 @@ class parser
 			 * letters, no adjacent combination marks. This method of finding words is not
 			 * 100% accurate but it's good enough for our use case.
 			 */
-			if (preg_match('/^["\'(]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;]?$/u', $csword, $matches)) {
+			if (preg_match('/^["\'(*]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;*]?$/u', $csword, $matches)) {
 				$csword_trimmed = $matches['csword_trimmed'];
 				$this->create_word($csword_trimmed);
 
