@@ -29,6 +29,6 @@ class word
 		/**
 		 * Store data in database table "words".
 		 */
-		db::query_exec('INSERT INTO words (word, length, total, firstused) VALUES (\''.$this->word.'\', LENGTH(\''.$this->word.'\'), '.$this->total.', \''.$this->firstused.'\') ON CONFLICT (word) DO UPDATE SET total = total + '.$this->total);
+		db::query_exec('INSERT INTO words (word, length, total, firstused) VALUES (\''.$this->word.'\', LENGTH(\''.$this->word.'\'), '.$this->total.', \''.$this->firstused.'\') ON CONFLICT (word) DO UPDATE SET total = total + excluded.total');
 	}
 }

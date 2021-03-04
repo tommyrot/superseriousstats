@@ -148,10 +148,9 @@ class nick
 				/**
 				 * If $firstseen is empty there have been no lines, actions or events for this
 				 * nick. The only two possibilities left are; this nick has been slapped, or
-				 * this nick had its streak interrupted. Update the appropriate values.
+				 * this nick had its streak interrupted. Update appropriate values.
 				 */
-				$queryparts = $this->get_queryparts(['monologues', 'topmonologue', 'slapped']);
-				db::query_exec('UPDATE uid_lines SET '.$queryparts['update_assignments'].' WHERE uid = '.$uid);
+				db::query_exec('UPDATE uid_lines SET slapped = slapped + '.$this->slapped.', monologues = monologues + '.$this->monologues.', topmonologue = CASE WHEN '.$this->topmonologue.' > topmonologue THEN '.$this->topmonologue.' ELSE topmonologue END WHERE uid = '.$uid);
 				return;
 			}
 

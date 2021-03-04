@@ -5,7 +5,7 @@
  */
 
 /**
- * Trait with code for creating parts of the SQLite query.
+ * Trait with code for creating parts of SQLite UPSERT queries.
  */
 trait queryparts
 {
@@ -17,33 +17,27 @@ trait queryparts
 					$insert_columns[] = $var;
 					$insert_values[] = $this->$var;
 
+					/**
+					 * $topmonologue is a high value and should be treated as such.
+					 */
 					if ($var === 'topmonologue') {
-						/**
-						 * $topmonologue is a high value and should be treated as such.
-						 */
-						$update_assignments[] = 'topmonologue = CASE WHEN '.$this->topmonologue.' > topmonologue THEN '.$this->topmonologue.' ELSE topmonologue END';
+						$update_assignments[] = 'topmonologue = CASE WHEN excluded.topmonologue > topmonologue THEN excluded.topmonologue ELSE topmonologue END';
 					} else {
-						$update_assignments[] = $var.' = '.$var.' + '.$this->$var;
+						$update_assignments[] = $var.' = '.$var.' + excluded.'.$var;
 					}
 				}
 			} elseif (is_string($this->$var)) {
 				if ($this->$var !== '') {
-					if ($var === 'lasttalked') {
-						$value = 'DATETIME(\''.$this->lasttalked.'\')';
-					} else {
-						$value = '\''.preg_replace('/\'/', '\'\'', $this->$var).'\'';
-					}
-
 					$insert_columns[] = $var;
-					$insert_values[] = $value;
+					$insert_values[] = ($var === 'lasttalked' ? 'DATETIME(\''.$this->lasttalked.'\')' : '\''.preg_replace('/\'/', '\'\'', $this->$var).'\'');
 
+					/**
+					 * Don't update a quote if that means its length will fall below 3 words.
+					 */
 					if (($var === 'quote' || $var === 'ex_exclamations' || $var === 'ex_questions' || $var === 'ex_uppercased' || 'ex_actions') && substr_count($this->$var, ' ') < 2) {
-						/**
-						 * Don't update a quote if that means its length will fall below 3 words.
-						 */
-						$update_assignments[] = $var.' = CASE WHEN '.$var.' IS NULL OR '.$var.' NOT LIKE \'% % %\' THEN '.$value.' ELSE '.$var.' END';
+						$update_assignments[] = $var.' = CASE WHEN '.$var.' IS NULL OR '.$var.' NOT LIKE \'% % %\' THEN excluded.'.$var.' ELSE '.$var.' END';
 					} else {
-						$update_assignments[] = $var.' = '.$value;
+						$update_assignments[] = $var.' = excluded.'.$var;
 					}
 				}
 			}
