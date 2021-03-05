@@ -110,7 +110,7 @@ class maintenance
 		 */
 		db::query_exec('UPDATE fqdns SET active = 1 WHERE active = 0');
 
-		if (($rp = realpath('tlds-alpha-by-domain.txt')) === false) {
+		if (($rp = realpath(__DIR__.'/tlds-alpha-by-domain.txt')) === false) {
 			out::put('debug', 'no such file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
 			return;
 		}
