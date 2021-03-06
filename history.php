@@ -23,6 +23,7 @@ class history
 	private ?int $month = null;
 	private int $year = 0;
 	private string $channel = 'unconfigured';
+	private string $favicon = 'favicon.svg';
 	private string $main_page = './';
 	private string $now = '';
 	private string $stylesheet = 'sss.css';
@@ -50,7 +51,7 @@ class history
 		 * Open the database connection and update our settings.
 		 */
 		db::connect();
-		$this->apply_vars('settings', ['timezone', 'channel', 'stylesheet', 'main_page', 'link_user_php', 'show_banner']);
+		$this->apply_vars('settings', ['timezone', 'channel', 'favicon', 'stylesheet', 'main_page', 'link_user_php', 'show_banner']);
 		out::set_stylesheet($this->stylesheet);
 
 		/**
@@ -126,6 +127,7 @@ class history
 			. '<head>'."\n"
 			. '<meta charset="utf-8">'."\n"
 			. '<title>'.$this->htmlify($this->channel).', historically.</title>'."\n"
+			. '<link rel="icon" href="'.$this->htmlify($this->favicon).'">'."\n"
 			. '<link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'">'."\n"
 			. '</head>'."\n\n"
 			. '<body'.($this->show_banner ? ' class="bannerbg"' : '').'><div id="container">'."\n"

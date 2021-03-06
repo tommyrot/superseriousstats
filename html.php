@@ -15,12 +15,13 @@ class html
 	private bool $link_user_php = true;
 	private bool $show_banner = true;
 	private string $channel = 'unconfigured';
+	private string $favicon = 'favicon.svg';
 	private string $now = '';
 	private string $stylesheet = 'sss.css';
 
 	public function __construct()
 	{
-		$this->apply_vars('settings', ['channel', 'stylesheet', 'link_history_php', 'link_user_php', 'show_banner']);
+		$this->apply_vars('settings', ['channel', 'favicon', 'stylesheet', 'link_history_php', 'link_user_php', 'show_banner']);
 	}
 
 	/**
@@ -58,6 +59,7 @@ class html
 			. '<meta charset="utf-8">'."\n"
 			. '<meta name="referrer" content="no-referrer">'."\n"
 			. '<title>'.$this->htmlify($this->channel).', seriously.</title>'."\n"
+			. '<link rel="icon" href="'.$this->htmlify($this->favicon).'">'."\n"
 			. '<link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'">'."\n"
 			. '</head>'."\n\n"
 			. '<body'.($this->show_banner ? ' class="bannerbg"' : '').'><div id="container">'."\n"

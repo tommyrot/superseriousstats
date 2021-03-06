@@ -29,6 +29,7 @@ class user
 	private int $ruid = 0;
 	private string $channel = 'unconfigured';
 	private string $csnick = '';
+	private string $favicon = 'favicon.svg';
 	private string $main_page = './';
 	private string $now = '';
 	private string $stylesheet = 'sss.css';
@@ -58,7 +59,7 @@ class user
 		 * Open the database connection and update our settings.
 		 */
 		db::connect();
-		$this->apply_vars('settings', ['timezone', 'channel', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page', 'show_banner']);
+		$this->apply_vars('settings', ['timezone', 'channel', 'favicon', 'userpics_default', 'userpics_dir', 'stylesheet', 'main_page', 'show_banner']);
 		out::set_stylesheet($this->stylesheet);
 
 		/**
@@ -104,6 +105,7 @@ class user
 			. '<head>'."\n"
 			. '<meta charset="utf-8">'."\n"
 			. '<title>'.$this->htmlify($this->csnick).', seriously.</title>'."\n"
+			. '<link rel="icon" href="'.$this->htmlify($this->favicon).'">'."\n"
 			. '<link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'">'."\n"
 			. '</head>'."\n\n"
 			. '<body'.($this->show_banner ? ' class="bannerbg"' : '').'><div id="container">'."\n"
