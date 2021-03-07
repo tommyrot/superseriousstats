@@ -3,7 +3,6 @@
  */
 a {
 	color:#333;
-	font-style:normal;
 }
 a:hover {
 	text-decoration:none;
@@ -39,9 +38,6 @@ body {
 	text-align:center;
 	width:416px;
 }
-.green {
-	color:#70A35E;
-}
 .grey {
 	color:#999;
 }
@@ -56,13 +52,6 @@ body {
 	font-size:12px;
 	font-weight:bold;
 	margin:15px 22px 7px 0;
-}
-.note {
-	font-style:italic;
-	font-weight:normal;
-}
-.red {
-	color:#C74243;
 }
 .section {
 	border:1px solid #E0E0E0;
@@ -104,7 +93,6 @@ body {
  */
 table {
 	background-color:#EEE;
-	border-collapse:separate;
 	border-color:#666;
 	border-spacing:0;
 	border-style:solid;
