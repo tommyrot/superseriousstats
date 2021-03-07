@@ -54,7 +54,7 @@ trait common_web
 
 		$table = '<table class="'.($title === 'Most Referenced Domain Names' ? 'medium' : ($cols === 3 ? 'large' : 'small')).'">';
 		$table .= '<colgroup><col class="c1"><col class="pos"><col class="c2">'.($cols === 3 ? '<col class="c3">' : '');
-		$table .= '<tr><th colspan="'.($cols + 1).'">'.(isset($total) ? '<span class="title">'.$title.'</span><span class="title-right">'.number_format($total).' Total</span>' : $title);
+		$table .= '<tr><th colspan="'.($cols + 1).'">'.(isset($total) ? '<span class="title-left">'.$title.'</span><span class="title-right">'.number_format($total).' Total</span>' : $title);
 		$table .= '<tr><td class="k1">'.$keys[0].'<td class="pos"><td class="k2">'.$keys[1].($cols === 3 ? '<td class="k3">'.$keys[2] : '');
 
 		/**
@@ -589,7 +589,7 @@ trait common_web
 		}
 
 		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
-		$tr1 = '<tr><th colspan="7">'.($page === 'html' && $this->link_history_php ? '<span class="title">'.$title.'</span><span class="title-right"><a href="history.php'.(!is_null($period) ? '?year='.substr($this->now, 0, 4).($period === 'month' ? '&amp;month='.((int) substr($this->now, 5, 2)) : '') : '').'">History</a></span>' : $title);
+		$tr1 = '<tr><th colspan="7">'.($page === 'html' && $this->link_history_php ? '<span class="title-left">'.$title.'</span><span class="title-right"><a href="history.php'.(!is_null($period) ? '?year='.substr($this->now, 0, 4).($period === 'month' ? '&amp;month='.((int) substr($this->now, 5, 2)) : '') : '').'">History</a></span>' : $title);
 		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">Activity<td class="k5">Last Talked<td class="k6">Quote';
 		$trx = '';
 

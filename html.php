@@ -288,7 +288,7 @@ class html
 
 		$total = db::query_single_col('SELECT COUNT(*) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)') - 70;
 		$tr0 = '<colgroup><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2">';
-		$tr1 = '<tr><th colspan="12">'.($total !== 0 ? '<span class="title">Less Talkative People &ndash; All-Time</span><span class="title-right">'.number_format($total).($total !== 1 ? ' People' : ' Person').' had even less to say..</span>' : 'Less Talkative People &ndash; All-Time');
+		$tr1 = '<tr><th colspan="12">'.($total !== 0 ? '<span class="title-left">Less Talkative People &ndash; All-Time</span><span class="title-right">'.number_format($total).($total !== 1 ? ' People' : ' Person').' had even less to say..</span>' : 'Less Talkative People &ndash; All-Time');
 		$tr2 = '<tr><td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User';
 		$trx = '';
 
