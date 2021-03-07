@@ -63,7 +63,7 @@ class html
 			. '<link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'">'."\n"
 			. '</head>'."\n\n"
 			. '<body'.($this->show_banner ? ' class="bannerbg"' : '').'><div id="container">'."\n"
-			. ($this->show_banner ? '<img src="banner.png" alt="" class="banner">'."\n" : '')
+			. ($this->show_banner ? '<img src="banner.svg" alt="" class="banner">'."\n" : '')
 			. '<div class="info">'.$this->htmlify($this->channel).', seriously.<br><br>'
 			. number_format($days_logged).' day'.($days_logged !== 1 ? 's logged from '.date('M j, Y', strtotime($date_first_log_parsed)).' to '.date('M j, Y', strtotime($date_last_log_parsed)) : ' logged on '.date('M j, Y', strtotime($date_first_log_parsed))).'.<br><br>'
 			. 'Logs contain '.number_format($l_total).' line'.($l_total !== 1 ? 's' : '').' &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
