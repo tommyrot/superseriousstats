@@ -215,7 +215,7 @@ class html
 			/**
 			 * Hide words for which a nick with 7 or more days of activity exists.
 			 */
-			$section .= $this->create_table('Words of '.$result['length'].' Characters', ['Times Used', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE length = '.$result['length'].' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', $result['total']]);
+			$section .= $this->create_table('Words of '.$result['length'].' Characters', ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE length = '.$result['length'].' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', $result['total']]);
 		}
 
 		if ($section !== '') {
@@ -232,7 +232,7 @@ class html
 			/**
 			 * Hide words for which a nick with 7 or more days of activity exists.
 			 */
-			$section .= $this->create_table('Words First Used in '.$result['firstused'], ['Times Used', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE firstused = \''.$result['firstused'].'\' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', 'SELECT COUNT(*) FROM words WHERE firstused = \''.$result['firstused'].'\'']);
+			$section .= $this->create_table('Words First Used in '.$result['firstused'], ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE firstused = \''.$result['firstused'].'\' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', 'SELECT COUNT(*) FROM words WHERE firstused = \''.$result['firstused'].'\'']);
 		}
 
 		if ($section !== '') {
