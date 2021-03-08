@@ -143,7 +143,7 @@ class user
 		 */
 		if (is_dir($this->userpics_dir) && ($dh = opendir($this->userpics_dir)) !== false) {
 			while (($entry = readdir($dh)) !== false) {
-				if (!is_dir($this->userpics_dir.'/'.$entry) && preg_match('/^(?<filename>\S+)\.(bmp|gif|jpe?g|png)$/i', $entry, $matches)) {
+				if (!is_dir($this->userpics_dir.'/'.$entry) && preg_match('/^(?<filename>\S+)\.(bmp|gif|jpe?g|png|svg)$/i', $entry, $matches)) {
 					$images[mb_strtolower($matches['filename'])] = $entry;
 				}
 			}
@@ -168,9 +168,9 @@ class user
 		}
 
 		/**
-		 * Display $userpics_default if no image could be found, provided it's valid.
+		 * Display $userpics_default if no image could be found.
 		 */
-		if (isset($images[mb_strtolower(preg_replace('/\.(bmp|gif|jpe?g|png)$/i', '', $this->userpics_default))])) {
+		if ($this->userpics_default !== '') {
 			return '<img src="'.$this->htmlify($this->userpics_dir.'/'.$this->userpics_default).'" alt="" class="userpic">';
 		}
 
