@@ -38,7 +38,7 @@ Go down the checklist:
     ```
     $ cp banner* common* favicon.svg history.php sss.css user.php /path/to/www/my_channel
     ```
-    Now edit `/path/to/www/my_channel/web.php` and change the value `%CHANGEME%` to `/path/to/www/databases/my_channel.db` (relative to the chroot/jail your webserver operates in, if applicable).
+    Now edit `/path/to/www/my_channel/web.php` and change the value `%CHANGEME%` to `/path/to/www/databases/my_channel.db` (relative to the chroot/jail your webserver operates in, if applicable). Finally, go over `sss.conf` and you're all set!
 
 ---
 ### Usage
