@@ -667,4 +667,5 @@ MIN(firstused) AS firstused,
 MAX(lastused) AS lastused,
 SUM(total) AS total
 FROM uid_urls JOIN uid_details ON uid_urls.uid = uid_details.uid GROUP BY ruid, lid;
+
 COMMIT;
