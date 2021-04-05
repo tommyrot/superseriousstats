@@ -125,7 +125,7 @@ trait common_web
 				}
 			}
 
-			$tbody .= '<tr><td>'.$v1.'<td>'.++$i.'<td>'.$v2.($cols === 3 ? '<td class="'.($types[2] === 'str-url' ? 'wrap' : '').'">'.$v3 : '');
+			$tbody .= '<tr><td>'.$v1.'<td>'.++$i.'<td>'.$v2.($cols === 3 ? '<td'.($types[2] === 'str-url' ? ' class="wrap"' : '').'>'.$v3 : '');
 		}
 
 		if ($i === 0) {
