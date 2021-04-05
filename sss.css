@@ -1,5 +1,13 @@
-/**
- * Assorted global styling
+/***************************************
+ * Global sanity
+ */
+* {
+	box-sizing:border-box;
+	padding:0;
+	margin:0;
+}
+/***************************************
+ * Assorted styling
  */
 a {
 	color:#333;
@@ -12,6 +20,12 @@ body {
 	margin:0 auto;
 	width:840px;
 }
+#container {
+	float:left;
+}
+.bold {
+	color:#666;
+}
 .banner {
 	display:block;
 	height:62px;
@@ -19,9 +33,6 @@ body {
 }
 .bannerbg {
 	background:#F9F9F9 url('bannerbg.png') left top repeat-x;
-}
-#container {
-	float:left;
 }
 .error {
 	background-color:#FFE0E0;
@@ -41,9 +52,6 @@ body {
 .grey {
 	color:#999;
 }
-.info {
-	width:818px;
-}
 .info,
 .section {
 	color:#666;
@@ -52,12 +60,12 @@ body {
 	font-size:12px;
 	font-weight:bold;
 	margin:15px 22px 7px 0;
+	width:818px;
 }
 .section {
 	border:1px solid #E0E0E0;
-	padding:1px 0;
+	padding:1px;
 	text-align:center;
-	width:816px;
 }
 .title-left {
 	float:left;
@@ -70,10 +78,9 @@ body {
 .userpic {
 	float:right;
 	height:80px;
-	padding:2px 1px;
 	width:80px;
 }
-/**
+/***************************************
  * Graph colors; (n)ight, (m)orning, (a)fternoon, (e)vening
  */
 .n {
@@ -88,11 +95,12 @@ body {
 .e {
 	background-color:#C74243;
 }
-/**
+/***************************************
  * Global table styling
  */
 table {
 	background-color:#EEE;
+	border-collapse:separate;
 	border-color:#666;
 	border-spacing:0;
 	border-style:solid;
@@ -101,342 +109,349 @@ table {
 	margin:15px 22px 7px 0;
 	table-layout:fixed;
 }
-td {
-	color:#333;
-	padding:1px 0;
-	vertical-align:top;
-}
-td,
-th {
+th, td {
 	font-family:verdana,sans-serif;
 	font-size:10px;
+	padding:1px 3px;
 }
 th {
 	color:#666;
-	padding:1px 3px;
 	text-align:left;
 }
-/**
- * Specific table styling: activity graphs
+td {
+	color:#333;
+}
+/***************************************
+ * Small generic tables
  */
-.act {
-	width:818px;
+.small {
+	width:258px;
 }
-.act-day {
-	width:240px;
-}
-.act-year {
-	float:right;
-	/**
-	 * Variable width specified in HTML
-	 */
-}
-.act li,
-.act-day li,
-.act-year li {
-	bottom:0;
-	display:block;
-	position:absolute;
-}
-.act li.num,
-.act-day li.num,
-.act-year li.num {
-	text-align:center;
-	width:34px;
-}
-.act li.n,
-.act li.m,
-.act li.a,
-.act li.e,
-.act-day li.n,
-.act-day li.m,
-.act-day li.a,
-.act-day li.e,
-.act-year li.n,
-.act-year li.m,
-.act-year li.a,
-.act-year li.e {
-	margin-left:9px;
-	width:16px;
-}
-.act td,
-.act-day td,
-.act-year td {
-	text-align:center;
-}
-.act-year td.est {
-	opacity:0.6;
-}
-.act tr.bars td,
-.act-day tr.bars td,
-.act-year tr.bars td {
-	height:124px;
-	padding:0;
-	vertical-align:bottom;
-}
-.act tr.sub td,
-.act-day tr.sub td,
-.act-year tr.sub td {
-	background-color:#E0E0E0;
-	color:#999;
-	font-weight:bold;
-}
-.act tr.sub td.bold,
-.act-day tr.sub td.bold,
-.act-year tr.sub td.bold {
-	color:#666;
-}
-.act ul,
-.act-day ul,
-.act-year ul {
-	height:124px;
-	margin:0;
-	padding:0;
-	position:relative;
-}
-/**
- * Specific table styling: history index
- */
-.index {
-	width:818px;
-}
-.index col.c {
-	width:65px;
-}
-.index col.pos {
-	width:36px;
-}
-.index td.k,
-.index td.pos {
-	background-color:#E0E0E0;
-	color:#999;
-	font-weight:bold;
-}
-.index td.k,
-.index td.v {
-	padding-right:2px;
-	text-align:right;
-}
-.index td.pos {
-	text-align:center;
-}
-/**
- * Specific table styling: most talkative people
- */
-.ppl {
-	width:818px;
-}
-.ppl col.c1,
-.ppl col.c2 {
+.small col:nth-child(1) {
 	width:80px;
 }
-.ppl col.c3 {
-	width:140px;
-}
-.ppl col.c4 {
-	width:54px;
-}
-.ppl col.c5 {
-	width:90px;
-}
-.ppl col.c6 {
-	width:336px;
-}
-.ppl col.pos {
+.small col:nth-child(2) {
 	width:36px;
 }
-.ppl li {
-	display:inline-block;
-	height:6px;
-	margin-top:4px;
+.small col:nth-child(3) {
+	width:140px;
 }
-.ppl td.k1,
-.ppl td.k2,
-.ppl td.k3,
-.ppl td.k4,
-.ppl td.k5,
-.ppl td.k6,
-.ppl td.pos {
+.small thead td,
+.small tbody td:nth-child(2) {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.ppl td.k1,
-.ppl td.k2,
-.ppl td.v1,
-.ppl td.v2 {
-	padding-right:2px;
+.small thead td:nth-child(1),
+.small tbody td:nth-child(1) {
 	text-align:right;
 }
-.ppl td.k3,
-.ppl td.k5,
-.ppl td.k6,
-.ppl td.v3,
-.ppl td.v5,
-.ppl td.v6 {
-	padding-left:2px;
-}
-.ppl td.pos {
+.small tbody td:nth-child(2) {
 	text-align:center;
 }
-.ppl td.v6 {
+.small tbody td:nth-child(3) {
 	overflow:hidden;
 	text-overflow:ellipsis;
 	white-space:nowrap;
 }
-.ppl ul {
-	margin:0;
-	padding:0;
-}
-/**
- * Specific table styling: less talkative people
- */
-.ppl2 {
-	width:818px;
-}
-.ppl2 col.c1 {
-	width:55px;
-}
-.ppl2 col.c2 {
-	width:125px;
-}
-.ppl2 col.pos {
-	width:24px;
-}
-.ppl2 td.k1,
-.ppl2 td.k2,
-.ppl2 td.pos {
-	background-color:#E0E0E0;
-	color:#999;
-	font-weight:bold;
-}
-.ppl2 td.k1,
-.ppl2 td.v1 {
-	padding-right:2px;
-	text-align:right;
-}
-.ppl2 td.k2,
-.ppl2 td.v2 {
-	padding-left:2px;
-}
-.ppl2 td.pos {
-	text-align:center;
-}
-/**
- * Specific table styling: people by time of day
- */
-.ppl-tod {
-	width:818px;
-}
-.ppl-tod col.c {
-	width:197px;
-}
-.ppl-tod col.pos {
-	width:28px;
-}
-.ppl-tod div {
-	float:right;
-	height:6px;
-	margin-top:2px;
-}
-.ppl-tod td.k,
-.ppl-tod td.pos {
-	background-color:#E0E0E0;
-	color:#999;
-	font-weight:bold;
-}
-.ppl-tod td.k,
-.ppl-tod td.v {
-	padding-right:2px;
-	text-align:right;
-}
-.ppl-tod td.pos {
-	text-align:center;
-}
-.ppl-tod td.v {
-	height:3em;
-	padding-bottom:0;
-}
-/**
- * Specific table styling: large, medium, small
+/***************************************
+ * Large generic tables
  */
 .large {
 	width:818px;
 }
-.medium {
-	width:538px;
-}
-.small {
-	width:258px;
-}
-.large col.c1,
-.medium col.c1,
-.medium col.c3,
-.small col.c1 {
+.large col:nth-child(1) {
 	width:80px;
 }
-.large col.c2,
-.small col.c2 {
-	width:140px;
-}
-.large col.c3 {
-	width:560px;
-}
-.medium col.c2 {
-	width:340px;
-}
-.large col.pos,
-.medium col.pos,
-.small col.pos {
+.large col:nth-child(2) {
 	width:36px;
 }
-.large td.k1,
-.large td.k2,
-.large td.k3,
-.large td.pos,
-.medium td.k1,
-.medium td.k2,
-.medium td.k3,
-.medium td.pos,
-.small td.k1,
-.small td.k2,
-.small td.pos {
+.large col:nth-child(3) {
+	width:140px;
+}
+.large col:nth-child(4) {
+	width:560px;
+}
+.large thead td,
+.large tbody td:nth-child(2) {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
 }
-.large td.k1,
-.large td.v1,
-.medium td.k1,
-.medium td.k3,
-.medium td.v1,
-.medium td.v3,
-.small td.k1,
-.small td.v1 {
-	padding-right:2px;
+.large thead td:nth-child(1),
+.large tbody td:nth-child(1) {
 	text-align:right;
 }
-.large td.k2,
-.large td.k3,
-.large td.v2,
-.large td.v3,
-.large td.v3a,
-.medium td.k2,
-.medium td.v2,
-.small td.k2,
-.small td.v2 {
-	padding-left:2px;
-}
-.large td.pos,
-.medium td.pos,
-.small td.pos {
+.large tbody td:nth-child(2) {
 	text-align:center;
 }
-.large td.v3 {
+.large tbody td:nth-child(3),
+.large tbody td:nth-child(4) {
 	overflow:hidden;
 	text-overflow:ellipsis;
 	white-space:nowrap;
 }
-.large td.v3a {
+.large tbody td:nth-child(4).wrap {
 	overflow-wrap:break-word;
+	white-space:normal;
+}
+.large tbody td {
+	/* In case of wrapping */
+	vertical-align:top;
+}
+/***************************************
+ * Medium generic tables
+ */
+.medium {
+	width:538px;
+}
+.medium col:nth-child(1),
+.medium col:nth-child(4) {
+	width:80px;
+}
+.medium col:nth-child(2) {
+	width:36px;
+}
+.medium col:nth-child(3) {
+	width:340px;
+}
+.medium thead td,
+.medium tbody td:nth-child(2) {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.medium thead td:nth-child(1),
+.medium tbody td:nth-child(1) {
+	text-align:right;
+}
+.medium tbody td:nth-child(2) {
+	text-align:center;
+}
+.medium tbody td:nth-child(3) {
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+}
+.medium thead td:nth-child(4),
+.medium tbody td:nth-child(4) {
+	text-align:right;
+}
+/***************************************
+ * Activity graph tables
+ */
+.act {
+	width:818px;
+}
+.act.day {
+	width:240px;
+}
+.act.year {
+	/* Variable width specified in HTML */
+	float:right;
+}
+.act col {
+	width:34px;
+}
+.act tbody td {
+	padding:0;
+}
+.act tfoot td {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+	text-align:center;
+}
+.act ul {
+	height:124px;
+	position:relative;
+}
+.act ul.est {
+	opacity:0.6;
+}
+.act li {
+	bottom:0;
+	display:block;
+	margin-left:9px;
+	position:absolute;
+	width:16px;
+}
+.act li:nth-child(1) {
+	margin-left:0;
+	text-align:center;
+	width:100%;
+}
+/***************************************
+ * Most talkative people tables
+ */
+.ppl {
+	width:818px;
+}
+.ppl col:nth-child(1),
+.ppl col:nth-child(2),
+.ppl col:nth-child(5) {
+	width:80px;
+}
+.ppl col:nth-child(3) {
+	width:36px;
+}
+.ppl col:nth-child(4) {
+	width:140px;
+}
+.ppl col:nth-child(6) {
+	width:56px;
+}
+.ppl col:nth-child(7) {
+	width:344px;
+}
+.ppl thead td,
+.ppl tbody td:nth-child(3) {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.ppl thead td:nth-child(1),
+.ppl tbody td:nth-child(1),
+.ppl thead td:nth-child(2),
+.ppl tbody td:nth-child(2),
+.ppl thead td:nth-child(5),
+.ppl tbody td:nth-child(5) {
+	text-align:right;
+}
+.ppl tbody td:nth-child(3),
+.ppl thead td:nth-child(6) {
+	text-align:center;
+}
+.ppl tbody td:nth-child(4),
+.ppl tbody td:nth-child(7) {
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+}
+.ppl li {
+	display:inline-block;
+	height:6px;
+}
+/***************************************
+ * Less talkative people table
+ */
+.ppl2 {
+	width:818px;
+}
+.ppl2 col:nth-child(1),
+.ppl2 col:nth-child(5),
+.ppl2 col:nth-child(9),
+.ppl2 col:nth-child(13) {
+	width:12px;
+}
+.ppl2 col:nth-child(2),
+.ppl2 col:nth-child(6),
+.ppl2 col:nth-child(10) {
+	width:80px;
+}
+.ppl2 col:nth-child(3),
+.ppl2 col:nth-child(7),
+.ppl2 col:nth-child(11) {
+	width:36px;
+}
+.ppl2 col:nth-child(4),
+.ppl2 col:nth-child(8),
+.ppl2 col:nth-child(12) {
+	width:140px;
+}
+.ppl2 thead td,
+.ppl2 tbody td:nth-child(3),
+.ppl2 tbody td:nth-child(7),
+.ppl2 tbody td:nth-child(11) {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.ppl2 thead td:nth-child(2),
+.ppl2 tbody td:nth-child(2),
+.ppl2 thead td:nth-child(6),
+.ppl2 tbody td:nth-child(6),
+.ppl2 thead td:nth-child(10),
+.ppl2 tbody td:nth-child(10) {
+	text-align:right;
+}
+.ppl2 tbody td:nth-child(3),
+.ppl2 tbody td:nth-child(7),
+.ppl2 tbody td:nth-child(11) {
+	text-align:center;
+}
+.ppl2 tbody td:nth-child(4),
+.ppl2 tbody td:nth-child(8),
+.ppl2 tbody td:nth-child(12) {
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+}
+/***************************************
+ * People by time of day table
+ */
+.tod {
+	width:818px;
+}
+.tod col:nth-child(1) {
+	width:36px;
+}
+.tod col:nth-child(2),
+.tod col:nth-child(3),
+.tod col:nth-child(4),
+.tod col:nth-child(5) {
+	width:195px;
+}
+.tod thead td,
+.tod tbody td:nth-child(1) {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.tod tbody td:nth-child(1) {
+	text-align:center;
+}
+.tod thead td:nth-child(2),
+.tod tbody td:nth-child(2),
+.tod thead td:nth-child(3),
+.tod tbody td:nth-child(3),
+.tod thead td:nth-child(4),
+.tod tbody td:nth-child(4),
+.tod tbody td:nth-child(5),
+.tod thead td:nth-child(5) {
+	text-align:right;
+}
+.tod tbody td {
+	height:3em;
+	vertical-align:top;
+}
+.tod div {
+	float:right;
+	height:6px;
+	margin-top:3px;
+}
+/***************************************
+ * History index table
+ */
+.index {
+	width:818px;
+}
+.index col:nth-child(1) {
+	width:36px;
+}
+.index col:nth-child(1n+2) {
+	width:65px;
+}
+.index thead td,
+.index tbody td:nth-child(1) {
+	background-color:#E0E0E0;
+	color:#999;
+	font-weight:bold;
+}
+.index tbody td:nth-child(1) {
+	text-align:center;
+}
+.index thead td:nth-child(1n+2),
+.index tbody td:nth-child(1n+2) {
+	text-align:right;
 }

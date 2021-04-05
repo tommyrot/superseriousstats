@@ -86,10 +86,10 @@ class history
 			$lines[(int) $result['year']][(int) $result['month']] = $result['l_total'];
 		}
 
-		$tr0 = '<colgroup><col class="pos"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c"><col class="c">';
-		$tr1 = '<tr><th colspan="13">History';
-		$tr2 = '<tr><td class="pos"><td class="k">Jan<td class="k">Feb<td class="k">Mar<td class="k">Apr<td class="k">May<td class="k">Jun<td class="k">Jul<td class="k">Aug<td class="k">Sep<td class="k">Oct<td class="k">Nov<td class="k">Dec';
-		$trx = '';
+		$colgroup = '<colgroup>'.str_repeat('<col>', 13);
+		$thead = '<thead><tr><th colspan="13">History';
+		$thead .= '<tr><td><td>Jan<td>Feb<td>Mar<td>Apr<td>May<td>Jun<td>Jul<td>Aug<td>Sep<td>Oct<td>Nov<td>Dec';
+		$tbody = '<tbody>';
 
 		/**
 		 * Assemble a line with activity numbers per month for each year since the date
@@ -97,21 +97,23 @@ class history
 		 */
 		for ($year = (int) substr(db::query_single_col('SELECT MIN(date) FROM parse_history'), 0, 4), $j = (int) substr(db::query_single_col('SELECT MAX(date) FROM parse_history'), 0, 4); $year <= $j; ++$year) {
 			if (isset($lines[$year])) {
-				$trx .= '<tr><td class="pos"><a href="history.php?year='.$year.'">'.$year.'</a>';
+				$tbody .= '<tr><td><a href="history.php?year='.$year.'">'.$year.'</a>';
 
 				for ($month = 1; $month <= 12; ++$month) {
+					$tbody .= '<td>';
+
 					if (isset($lines[$year][$month])) {
-						$trx .= '<td class="v"><a href="history.php?year='.$year.'&amp;month='.$month.'">'.number_format($lines[$year][$month]).'</a>';
+						$tbody .= '<a href="history.php?year='.$year.'&amp;month='.$month.'">'.number_format($lines[$year][$month]).'</a>';
 					} else {
-						$trx .= '<td class="v"><span class="grey">n/a</span>';
+						$tbody .= '<span class="grey">n/a</span>';
 					}
 				}
 			} else {
-				$trx .= '<tr><td class="pos">'.$year.'<td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span><td class="v"><span class="grey">n/a</span>';
+				$tbody .= '<tr><td>'.$year.str_repeat('<td><span class="grey">n/a</span>', 12);
 			}
 		}
 
-		return '<table class="index">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="index">'.$colgroup.$thead.$tbody.'</table>'."\n";
 	}
 
 	/**

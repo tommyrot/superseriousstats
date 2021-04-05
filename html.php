@@ -263,12 +263,12 @@ class html
 
 	private function create_table_people2(): ?string
 	{
-		$results = db::query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC limit 30,40');
+		$results = db::query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC limit 30,45');
 		$col = 1;
 		$row = 0;
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			if (++$row > 10) {
+			if (++$row > 15) {
 				++$col;
 				$row = 1;
 			}
@@ -276,30 +276,30 @@ class html
 			$columns[$col][$row] = [
 				'csnick' => $result['csnick'],
 				'l_total' => $result['l_total'],
-				'pos' => 30 + (($col - 1) * 10) + $row];
+				'pos' => 30 + (($col - 1) * 15) + $row];
 		}
 
 		/**
 		 * Return if we don't have enough data to fill the table.
 		 */
-		if (!isset($columns[4][10])) {
+		if (!isset($columns[3][15])) {
 			return null;
 		}
 
-		$total = db::query_single_col('SELECT COUNT(*) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)') - 70;
-		$tr0 = '<colgroup><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2"><col class="c1"><col class="pos"><col class="c2">';
-		$tr1 = '<tr><th colspan="12">'.($total !== 0 ? '<span class="title-left">Less Talkative People &ndash; All-Time</span><span class="title-right">'.number_format($total).($total !== 1 ? ' People' : ' Person').' had even less to say..</span>' : 'Less Talkative People &ndash; All-Time');
-		$tr2 = '<tr><td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User<td class="k1">Lines<td class="pos"><td class="k2">User';
-		$trx = '';
+		$total = db::query_single_col('SELECT COUNT(*) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)') - 75;
+		$colgroup = '<colgroup>'.str_repeat('<col>', 13);
+		$thead = '<thead><tr><th colspan="13">'.($total !== 0 ? '<span class="title-left">Less Talkative People &ndash; All-Time</span><span class="title-right">'.number_format($total).($total !== 1 ? ' People' : ' Person').' had even less to say..</span>' : 'Less Talkative People &ndash; All-Time');
+		$thead .= '<tr><td><td>Lines<td><td>User<td><td>Lines<td><td>User<td><td>Lines<td><td>User<td>';
+		$tbody = '<tbody>';
 
-		for ($i = 1; $i <= 10; ++$i) {
-			$trx .= '<tr>';
+		for ($i = 1; $i <= 15; ++$i) {
+			$tbody .= '<tr><td>';
 
-			for ($j = 1; $j <= 4; ++$j) {
-				$trx .= '<td class="v1">'.number_format($columns[$j][$i]['l_total']).'<td class="pos">'.$columns[$j][$i]['pos'].'<td class="v2">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($columns[$j][$i]['csnick'])).'">'.$this->htmlify($columns[$j][$i]['csnick']).'</a>' : $this->htmlify($columns[$j][$i]['csnick']));
+			for ($j = 1; $j <= 3; ++$j) {
+				$tbody .= '<td>'.number_format($columns[$j][$i]['l_total']).'<td>'.$columns[$j][$i]['pos'].'<td>'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($columns[$j][$i]['csnick'])).'">'.$this->htmlify($columns[$j][$i]['csnick']).'</a>' : $this->htmlify($columns[$j][$i]['csnick'])).'<td>';
 			}
 		}
 
-		return '<table class="ppl2">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="ppl2">'.$colgroup.$thead.$tbody.'</table>'."\n";
 	}
 }

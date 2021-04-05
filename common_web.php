@@ -52,10 +52,10 @@ trait common_web
 			}
 		}
 
-		$table = '<table class="'.($title === 'Most Referenced Domain Names' ? 'medium' : ($cols === 3 ? 'large' : 'small')).'">';
-		$table .= '<colgroup><col class="c1"><col class="pos"><col class="c2">'.($cols === 3 ? '<col class="c3">' : '');
-		$table .= '<tr><th colspan="'.($cols + 1).'">'.(isset($total) ? '<span class="title-left">'.$title.'</span><span class="title-right">'.number_format($total).' Total</span>' : $title);
-		$table .= '<tr><td class="k1">'.$keys[0].'<td class="pos"><td class="k2">'.$keys[1].($cols === 3 ? '<td class="k3">'.$keys[2] : '');
+		$colgroup = '<colgroup>'.str_repeat('<col>', $cols + 1);
+		$thead = '<thead><tr><th colspan="'.($cols + 1).'">'.(isset($total) ? '<span class="title-left">'.$title.'</span><span class="title-right">'.number_format($total).' Total</span>' : $title);
+		$thead .= '<tr><td>'.$keys[0].'<td><td>'.$keys[1].($cols === 3 ? '<td>'.$keys[2] : '');
+		$tbody = '<tbody>';
 
 		/**
 		 * Retrieve the main dataset.
@@ -72,6 +72,9 @@ trait common_web
 						${'v'.$col} = $this->htmlify(${'v'.$col});
 						break;
 					case 'str-url':
+						/**
+						 * This type is used for topics only and implies wrapping.
+						 */
 						$words = explode(' ', ${'v'.$col});
 						${'v'.$col} = '';
 
@@ -109,7 +112,7 @@ trait common_web
 						 * By default columns will be formatted as if containing numeric data. If
 						 * specified, the $type string should be of the following syntax:
 						 * "num[$x][-perc]". Where "$x" specifies the amount of decimals used, and
-						 * "-perc" to append a percent sign to the column value.
+						 * "-perc" will append a percent sign to the column value.
 						 */
 						preg_match('/^num(?<decimals>[0-9])?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
 						$decimals = (!is_null($matches['decimals']) ? (int) $matches['decimals'] : 0);
@@ -122,7 +125,7 @@ trait common_web
 				}
 			}
 
-			$table .= '<tr><td class="v1">'.$v1.'<td class="pos">'.++$i.'<td class="v2">'.$v2.($cols === 3 ? '<td class="'.($types[2] === 'str-url' ? 'v3a' : 'v3').'">'.$v3 : '');
+			$tbody .= '<tr><td>'.$v1.'<td>'.++$i.'<td>'.$v2.($cols === 3 ? '<td class="'.($types[2] === 'str-url' ? 'wrap' : '').'">'.$v3 : '');
 		}
 
 		if ($i === 0) {
@@ -131,11 +134,11 @@ trait common_web
 
 		if ($i < $rows && $title !== 'Most Recent URLs') {
 			for (; $i < $rows; ++$i) {
-				$table .= '<tr><td class="v1"><td class="pos">&nbsp;<td class="v2">'.($cols === 3 ? '<td class="v3">' : '');
+				$tbody .= '<tr><td><td>&nbsp;<td>'.($cols === 3 ? '<td>' : '');
 			}
 		}
 
-		return $table.'</table>'."\n";
+		return '<table class="'.($title === 'Most Referenced Domain Names' ? 'medium' : ($cols === 3 ? 'large' : 'small')).'">'.$colgroup.$thead.$tbody.'</table>'."\n";
 	}
 
 	private function create_table_activity(string $period): ?string
@@ -275,20 +278,23 @@ trait common_web
 			}
 		}
 
-		$tr1 = '<tr><th colspan="'.count($dates).'">Activity by '.ucfirst($period);
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
+		$colgroup = '<colgroup>'.str_repeat('<col>', count($dates));
+		$thead = '<thead><tr><th colspan="'.count($dates).'">Activity by '.ucfirst($period);
+		$tbody = '<tbody><tr>';
+		$tfoot = '<tfoot><tr>';
 
 		/**
 		 * Assemble each column.
 		 */
 		foreach ($dates as $date) {
+			$tbody .= '<td>';
+
 			if (!isset($lines[$date])) {
-				$tr2 .= '<td><span class="grey">n/a</span>';
+				$tbody .= '<ul><li style="height:14px"><span class="grey">n/a</span></ul>';
 			} else {
 				$total = ($lines[$date]['total'] >= 999500 ? number_format($lines[$date]['total'] / 1000000, 1).'M' : ($lines[$date]['total'] >= 10000 ? round($lines[$date]['total'] / 1000).'K' : $lines[$date]['total']));
 				$height['total'] = (int) round(($lines[$date]['total'] / $high_lines) * 100);
-				$tr2 .= '<td'.($date === 'estimate' ? ' class="est"' : '').'><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.$total;
+				$tbody .= '<ul'.($date === 'estimate' ? ' class="est"' : '').'><li style="height:'.($height['total'] + 14).'px">'.$total;
 
 				/**
 				 * Divide the available pixels among times, according to activity.
@@ -346,24 +352,26 @@ trait common_web
 							$height_li += $height['night'];
 					}
 
-					$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
+					$tbody .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
 				}
 
-				$tr2 .= '</ul>';
+				$tbody .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($date === $high_date ? ' class="bold"' : '').'>';
+			$tfoot .= '<td>'.($date === $high_date ? '<span class="bold">' : '');
 
 			if ($period === 'day') {
-				$tr3 .= date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
+				$tfoot .= date('D', strtotime($date)).'<br>'.date('j', strtotime($date));
 			} elseif ($period === 'month') {
-				$tr3 .= date('M', strtotime($date.'-01')).'<br>&apos;'.substr($date, 2, 2);
+				$tfoot .= date('M', strtotime($date.'-01')).'<br>&apos;'.substr($date, 2, 2);
 			} elseif ($period === 'year') {
-				$tr3 .= ($date === 'estimate' ? 'Est.' : '&apos;'.substr($date, 2, 2));
+				$tfoot .= ($date === 'estimate' ? 'Est.' : '&apos;'.substr($date, 2, 2));
 			}
+
+			$tfoot .= ($date === $high_date ? '</span>' : '');
 		}
 
-		return '<table class="act'.($period === 'year' ? '-year" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act'.($period === 'year' ? ' year" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$colgroup.$thead.$tbody.$tfoot.'</table>'."\n";
 	}
 
 	private function create_table_activity_distribution_day(): ?string
@@ -406,21 +414,24 @@ trait common_web
 			}
 		}
 
-		$tr1 = '<tr><th colspan="7">Activity Distribution by Day';
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
+		$colgroup = '<colgroup>'.str_repeat('<col>', 7);
+		$thead = '<thead><tr><th colspan="7">Activity Distribution by Day';
+		$tbody = '<tbody><tr>';
+		$tfoot = '<tfoot><tr>';
 
 		/**
 		 * Assemble each column.
 		 */
 		foreach ($days as $day) {
+			$tbody .= '<td>';
+
 			if ($lines[$day]['total'] === 0) {
-				$tr2 .= '<td><span class="grey">n/a</span>';
+				$tbody .= '<ul><li style="height:14px"><span class="grey">n/a</span></ul>';
 			} else {
 				$percentage = ($lines[$day]['total'] / $result['l_total']) * 100;
 				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
 				$height['total'] = (int) round(($lines[$day]['total'] / $high_lines) * 100);
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height['total'] + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
+				$tbody .= '<ul><li style="height:'.($height['total'] + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
 
 				/**
 				 * Divide the available pixels among times, according to activity.
@@ -478,16 +489,16 @@ trait common_web
 							$height_li += $height['night'];
 					}
 
-					$tr2 .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($lines[$day]['total']).'">';
+					$tbody .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($lines[$day]['total']).'">';
 				}
 
-				$tr2 .= '</ul>';
+				$tbody .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($day === $high_day ? ' class="bold"' : '').'>'.ucfirst($day);
+			$tfoot .= '<td>'.($day === $high_day ? '<span class="bold">'.ucfirst($day).'</span>' : ucfirst($day));
 		}
 
-		return '<table class="act-day">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act day">'.$colgroup.$thead.$tbody.$tfoot.'</table>'."\n";
 	}
 
 	private function create_table_activity_distribution_hour(): ?string
@@ -525,33 +536,36 @@ trait common_web
 			}
 		}
 
-		$tr1 = '<tr><th colspan="24">Activity Distribution by Hour';
-		$tr2 = '<tr class="bars">';
-		$tr3 = '<tr class="sub">';
+		$colgroup = '<colgroup>'.str_repeat('<col>', 24);
+		$thead = '<thead><tr><th colspan="24">Activity Distribution by Hour';
+		$tbody = '<tbody><tr>';
+		$tfoot = '<tfoot><tr>';
 
 		/**
 		 * Assemble each column.
 		 */
 		for ($hour = 0; $hour <= 23; ++$hour) {
+			$tbody .= '<td>';
+
 			if ($lines[$hour] === 0) {
-				$tr2 .= '<td><span class="grey">n/a</span>';
+				$tbody .= '<ul><li style="height:14px"><span class="grey">n/a</span></ul>';
 			} else {
 				$percentage = ($lines[$hour] / $result['l_total']) * 100;
 				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
 				$height = (int) round(($lines[$hour] / $high_lines) * 100);
-				$tr2 .= '<td><ul><li class="num" style="height:'.($height + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
+				$tbody .= '<ul><li style="height:'.($height + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
 
 				if ($height !== 0) {
-					$tr2 .= '<li class="'.($hour <= 5 ? 'n' : ($hour <= 11 ? 'm' : ($hour <= 17 ? 'a' : 'e'))).'" style="height:'.$height.'px" title="'.number_format($lines[$hour]).'">';
+					$tbody .= '<li class="'.($hour <= 5 ? 'n' : ($hour <= 11 ? 'm' : ($hour <= 17 ? 'a' : 'e'))).'" style="height:'.$height.'px" title="'.number_format($lines[$hour]).'">';
 				}
 
-				$tr2 .= '</ul>';
+				$tbody .= '</ul>';
 			}
 
-			$tr3 .= '<td'.($hour === $high_hour ? ' class="bold"' : '').'>'.$hour.'h';
+			$tfoot .= '<td>'.($hour === $high_hour ? '<span class="bold">'.$hour.'h</span>' : $hour.'h');
 		}
 
-		return '<table class="act">'.$tr1.$tr2.$tr3.'</table>'."\n";
+		return '<table class="act">'.$colgroup.$thead.$tbody.$tfoot.'</table>'."\n";
 	}
 
 	private function create_table_people(?string $period = null): ?string
@@ -588,10 +602,10 @@ trait common_web
 			return null;
 		}
 
-		$tr0 = '<colgroup><col class="c1"><col class="c2"><col class="pos"><col class="c3"><col class="c4"><col class="c5"><col class="c6">';
-		$tr1 = '<tr><th colspan="7">'.($page === 'html' && $this->link_history_php ? '<span class="title-left">'.$title.'</span><span class="title-right"><a href="history.php'.(!is_null($period) ? '?year='.substr($this->now, 0, 4).($period === 'month' ? '&amp;month='.((int) substr($this->now, 5, 2)) : '') : '').'">History</a></span>' : $title);
-		$tr2 = '<tr><td class="k1">Percentage<td class="k2">Lines<td class="pos"><td class="k3">User<td class="k4">Activity<td class="k5">Last Talked<td class="k6">Quote';
-		$trx = '';
+		$colgroup = '<colgroup>'.str_repeat('<col>', 7);
+		$thead = '<thead><tr><th colspan="7">'.($page === 'html' && $this->link_history_php ? '<span class="title-left">'.$title.'</span><span class="title-right"><a href="history.php'.(!is_null($period) ? '?year='.substr($this->now, 0, 4).($period === 'month' ? '&amp;month='.((int) substr($this->now, 5, 2)) : '') : '').'">History</a></span>' : $title);
+		$thead .= '<tr><td>Percentage<td>Lines<td><td>User<td>Last Talked<td>Activity<td>Quote';
+		$tbody = '<tbody>';
 
 		/**
 		 * Assemble each row.
@@ -644,10 +658,10 @@ trait common_web
 			}
 
 			$percentage = number_format(($result['l_total'] / $l_total) * 100, 2).'%';
-			$trx .= '<tr><td class="v1">'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td class="v2">'.number_format($result['l_total']).'<td class="pos">'.++$i.'<td class="v3">'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td class="v4"><ul>'.$activity.'</ul><td class="v5">'.$this->ago($result['lasttalked']).'<td class="v6">'.$this->htmlify($result['quote']);
+			$tbody .= '<tr><td>'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td>'.number_format($result['l_total']).'<td>'.++$i.'<td>'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td>'.$this->ago($result['lasttalked']).'<td><ul>'.$activity.'</ul><td>'.$this->htmlify($result['quote']);
 		}
 
-		return '<table class="ppl">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="ppl">'.$colgroup.$thead.$tbody.'</table>'."\n";
 	}
 
 	private function create_table_people_timeofday(): ?string
@@ -692,10 +706,10 @@ trait common_web
 			}
 		}
 
-		$tr0 = '<colgroup><col class="pos"><col class="c"><col class="c"><col class="c"><col class="c">';
-		$tr1 = '<tr><th colspan="5">Most Talkative People by Time of Day';
-		$tr2 = '<tr><td class="pos"><td class="k">Night<br>0h &ndash; 5h<td class="k">Morning<br>6h &ndash; 11h<td class="k">Afternoon<br>12h &ndash; 17h<td class="k">Evening<br>18h &ndash; 23h';
-		$trx = '';
+		$colgroup = '<colgroup>'.str_repeat('<col>', 5);
+		$thead = '<thead><tr><th colspan="5">Most Talkative People by Time of Day';
+		$thead .= '<tr><td><td>Night<br>0h &ndash; 5h<td>Morning<br>6h &ndash; 11h<td>Afternoon<br>12h &ndash; 17h<td>Evening<br>18h &ndash; 23h';
+		$tbody = '<tbody>';
 
 		/**
 		 * Assemble each row, provided there is at least one column with data.
@@ -705,19 +719,19 @@ trait common_web
 				break;
 			}
 
-			$trx .= '<tr><td class="pos">'.$i;
+			$tbody .= '<tr><td>'.$i;
 
 			foreach ($times as $time) {
-				if (!isset($lines[$time][$i])) {
-					$trx .= '<td class="v">';
-				} else {
-					$width = (int) round(($lines[$time][$i] / $high_lines) * 190);
-					$trx .= '<td class="v">'.$this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).($width !== 0 ? '<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>' : '');
+				$tbody .= '<td>';
+
+				if (isset($lines[$time][$i])) {
+					$width = (int) round(($lines[$time][$i] / $high_lines) * 189);
+					$tbody .= $this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).($width !== 0 ? '<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>' : '');
 				}
 			}
 		}
 
-		return '<table class="ppl-tod">'.$tr0.$tr1.$tr2.$trx.'</table>'."\n";
+		return '<table class="tod">'.$colgroup.$thead.$tbody.'</table>'."\n";
 	}
 
 	private function htmlify(string $string): string
