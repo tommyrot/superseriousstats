@@ -111,7 +111,7 @@ class out
 			exit($message."\n");
 		}
 
-		exit('<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="'.htmlspecialchars(self::$stylesheet, ENT_QUOTES | ENT_HTML5, 'UTF-8').'"></head><body><div id="container"><div class="error">'.htmlspecialchars($message, ENT_QUOTES | ENT_HTML5, 'UTF-8').'</div></div></body></html>'."\n");
+		exit('<!DOCTYPE html>'."\n\n".'<html lang="en"><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="'.htmlspecialchars(self::$stylesheet, ENT_QUOTES | ENT_HTML5, 'UTF-8').'"></head><body><div id="container"><div class="error">'.htmlspecialchars($message, ENT_QUOTES | ENT_HTML5, 'UTF-8').'</div></div></body></html>'."\n");
 	}
 
 	public static function set_stylesheet(string $stylesheet): void

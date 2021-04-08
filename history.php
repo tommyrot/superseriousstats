@@ -125,7 +125,7 @@ class history
 		 * HEAD
 		 */
 		$contents = '<!DOCTYPE html>'."\n\n"
-			. '<html>'."\n\n"
+			. '<html lang="en">'."\n\n"
 			. '<head>'."\n"
 			. '<meta charset="utf-8">'."\n"
 			. '<title>'.$this->htmlify($this->channel).', historically.</title>'."\n"

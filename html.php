@@ -33,7 +33,7 @@ class html
 		 * Stats require a non-empty dataset.
 		 */
 		if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM channel_activity)') === 0) {
-			return '<!DOCTYPE html>'."\n\n".'<html><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'"></head><body><div id="container"><div class="error">There is not enough data to create statistics, yet.</div></div></body></html>'."\n";
+			return '<!DOCTYPE html>'."\n\n".'<html lang="en"><head><meta charset="utf-8"><title>seriously?</title><link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'"></head><body><div id="container"><div class="error">There is not enough data to create statistics, yet.</div></div></body></html>'."\n";
 		}
 
 		/**
@@ -54,7 +54,7 @@ class html
 		 * HEAD
 		 */
 		$contents = '<!DOCTYPE html>'."\n\n"
-			. '<html>'."\n\n"
+			. '<html lang="en">'."\n\n"
 			. '<head>'."\n"
 			. '<meta charset="utf-8">'."\n"
 			. '<meta name="referrer" content="no-referrer">'."\n"
