@@ -329,7 +329,7 @@ class sss
 		$settings_required = ['database', 'parser', 'timezone'];
 
 		while (($line = fgets($fp)) !== false) {
-			if (!preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>.+?)"/', $line, $matches)) {
+			if (!preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>[^"]+)"/', $line, $matches)) {
 				continue;
 			}
 
