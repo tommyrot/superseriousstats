@@ -116,7 +116,7 @@ trait common_web
 						 */
 						preg_match('/^num(?<decimals>[0-9])?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
 						$decimals = (!is_null($matches['decimals']) ? (int) $matches['decimals'] : 0);
-						$percentage = (!is_null($matches['percentage']) ? true : false);
+						$percentage = !is_null($matches['percentage']);
 						${'v'.$col} = number_format(${'v'.$col}, $decimals).($percentage ? '%' : '');
 
 						if (preg_match('/^0\.0+%?$/', ${'v'.$col})) {
