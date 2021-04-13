@@ -488,7 +488,7 @@ class parser
 		/**
 		 * Strip possible network prefix (e.g. psyBNC) from the "undergoing" nick.
 		 */
-		if (preg_match('/^.+?[~\'](?<nick_trimmed>.+)$/', $csnick_undergoing, $matches)) {
+		if (preg_match('/^[^~]+~(?<nick_trimmed>.+)$/', $csnick_undergoing, $matches)) {
 			out::put('debug', 'trimming nick: \''.$csnick_undergoing.'\' on line '.$this->linenum);
 			$csnick_undergoing = $matches['nick_trimmed'];
 		}
