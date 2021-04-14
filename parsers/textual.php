@@ -1,20 +1,20 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2012-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2012-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 class parser_textual extends parser
 {
 	protected function parse_line(string $line): void
 	{
-		$timestamp = '\[(?<time>\d{2}:\d{2}(:\d{2})?)\] ';
+		$timestamp = '\[(?<time>\d{2}:\d{2}(:\d{2})?)] ';
 
 		if (preg_match('/^'.$timestamp.'(?<nick>\S+): (?<line>.+)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
-		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) \(\S+\) joined the channel\.$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) \(\S+\) joined the channel/', $line, $matches)) {
 			$this->set_join($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) \(\S+\) left IRC\. \(.*\)$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) \(\S+\) left IRC/', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
 			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
@@ -32,12 +32,12 @@ class parser_textual extends parser
 					++$mode_num;
 				}
 			}
-		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) \(\S+\) left the channel\.( \(.*\))?$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) \(\S+\) left the channel/', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) changed the topic to (?<line>.+)$/', $line, $matches)) {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
-		} elseif (preg_match('/^'.$timestamp.'(?<line>(?<nick_performing>\S+) kicked (?<nick_undergoing>\S+) from the channel\. \(.*\))$/', $line, $matches)) {
-			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line']);
+		} elseif (preg_match('/^'.$timestamp.'(?<line>(?<nick_performing>\S+) kicked (?<nick_undergoing>\S+) from the channel\. )(?<reason>\(.*\))$/', $line, $matches)) {
+			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line'].($matches['reason'] === '()' ? '('.$matches['nick_undergoing'].')' : $matches['reason']));
 		} else {
 			out::put('debug', 'skipping line '.$this->linenum.': \''.$line.'\'');
 		}
