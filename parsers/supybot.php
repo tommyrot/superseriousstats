@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2011-2020, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2011-2021, Jos de Ruijter <jos@dutnie.nl>
  */
 
 class parser_supybot extends parser
@@ -43,7 +43,7 @@ class parser_supybot extends parser
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) changes topic to "(?<line>.+)"$/', $line, $matches) && $matches['line'] !== ' ') {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<line>(?<nick_undergoing>\S+) was kicked by (?<nick_performing>\S+) )(?<reason>\(.*\))$/', $line, $matches)) {
-			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line'].($matches['reason'] === '()' ? '('.$matches['nick_undergoing'].')' : $matches['reason']));
+			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line'].(preg_match('/^\( ?\)$/', $matches['reason']) ? '('.$matches['nick_undergoing'].')' : $matches['reason']));
 		} else {
 			out::put('debug', 'skipping line '.$this->linenum.': \''.$line.'\'');
 		}
