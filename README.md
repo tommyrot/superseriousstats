@@ -29,7 +29,7 @@ Go down the checklist:
     *If you plan on parsing gzipped logs then PHP8 cli must have the `zlib` module compiled in as well.*
 3. Find the parser for your logs in `superseriousstats/parsers/` and ensure your logs are written as one file per day in a single directory for just that channel. All logs must have a date in their filename, either 'Ymd' or 'Y-m-d', for example: `~/irclogs/my_channel/#my_channel.1999-12-31.log`
 
-    *Currently, the following formats are supported: eggdrop, hexchat (xchat), irssi (smuxi), limechat, mirc, nodelog, supybot, textual, weechat, znc (muh2).*
+    *Currently, the following formats are supported: catgirl, eggdrop, hexchat (xchat), irssi (smuxi), limechat, mirc, nodelog, supybot, textual, weechat, znc (muh2).*
 4. Set up an empty database for your channel:
     ```
     $ cat empty_database.sqlite | sqlite3 /path/to/www/databases/my_channel.db
