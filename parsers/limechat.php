@@ -16,6 +16,8 @@ class parser_limechat extends parser
 			$this->set_join($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) has left IRC/', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
+		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
+			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) has changed mode: (?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)$/', $line, $matches)) {
 			$mode_num = 0;
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
@@ -30,8 +32,6 @@ class parser_limechat extends parser
 					++$mode_num;
 				}
 			}
-		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
-			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) has left/', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) has set topic: (?<line>.+)$/', $line, $matches)) {
