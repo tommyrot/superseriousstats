@@ -27,9 +27,9 @@ Go down the checklist:
 2. Install [PHP8](https://www.php.net) cli and a webserver along with PHP8 fpm-fcgi, confirm that both PHP8 cli and fcgi-fpm have the `mbstring` and `sqlite3` modules compiled in.
 
     *If you plan on parsing gzipped logs then PHP8 cli must have the `zlib` module compiled in as well.*
-3. Find the parser for your logs in `superseriousstats/parsers/` and ensure your logs are written as one file per day in a single directory for just that channel. All logs must have a date in their filename, either 'Ymd' or 'Y-m-d', for example: `~/irclogs/my_channel/#my_channel.1999-12-31.log`
+3. Check if a parser for your logs exists in `superseriousstats/parsers/`. Logfiles must be written as one file per day in a single directory for just that channel. All logs must have a date in their filename, either 'Ymd' or 'Y-m-d', for example: `~/irclogs/my_channel/#my_channel.1999-12-31.log`. All parseable lines and events should be prefixed by a 24-hour clock timestamp.
 
-    *Currently, the following formats are supported: catgirl, eggdrop, hexchat (xchat), irssi (smuxi), limechat, mirc, nodelog, supybot, textual, weechat, znc (muh2).*
+    *Currently, the following formats are supported: catgirl, eggdrop, hexchat (xchat), irssi (smuxi), limechat, mirc, nodelog, supybot, textual, thelounge, weechat, znc (muh2).*
 4. Set up an empty database for your channel:
     ```
     $ cat empty_database.sqlite | sqlite3 /path/to/www/databases/my_channel.db
