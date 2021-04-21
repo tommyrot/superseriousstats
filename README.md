@@ -32,7 +32,7 @@ Go down the checklist:
     *Currently, the following formats are supported: catgirl, eggdrop, hexchat (xchat), irssi (smuxi), limechat, mirc, nodelog, supybot, textual, thelounge, weechat, znc (muh2).*
 4. Set up an empty database for your channel:
     ```
-    $ cat empty_database.sqlite | sqlite3 /path/to/www/databases/my_channel.db
+    $ cat sqlite_schema.sql | sqlite3 /path/to/www/databases/my_channel.db
     ```
 5. Create a dedicated directory for your webserver to serve stats from and copy the following files to it:
     ```
