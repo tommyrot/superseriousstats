@@ -260,6 +260,7 @@ td {
 	background-color:#E0E0E0;
 	color:#999;
 	font-weight:bold;
+	padding:1px 0;
 	text-align:center;
 }
 .act ul {
@@ -332,6 +333,9 @@ td {
 }
 .ppl tbody td:nth-child(5) {
 	padding-left:0;
+}
+.ppl thead td:nth-child(6) {
+	padding:1px 0;
 }
 .ppl li {
 	display:inline-block;
@@ -413,6 +417,10 @@ td {
 	color:#999;
 	font-weight:bold;
 }
+.tod tbody td {
+	height:3em;
+	vertical-align:top;
+}
 .tod tbody td:nth-child(1) {
 	text-align:center;
 }
@@ -425,10 +433,6 @@ td {
 .tod tbody td:nth-child(5),
 .tod thead td:nth-child(5) {
 	text-align:right;
-}
-.tod tbody td {
-	height:3em;
-	vertical-align:top;
 }
 .tod div {
 	float:right;
