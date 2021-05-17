@@ -326,7 +326,7 @@ class sss
 			out::put('critical', 'failed to open file: \''.$rp.'\'');
 		}
 
-		$settings_required = ['database', 'parser', 'timezone'];
+		$settings_missing = $settings_required = ['database', 'parser', 'timezone'];
 
 		while (($line = fgets($fp)) !== false) {
 			if (!preg_match('/^\s*(?<setting>\w+)\s*=\s*"(?<value>[^"]+)"/', $line, $matches)) {
@@ -341,7 +341,7 @@ class sss
 			 * Apply and keep track of required settings.
 			 */
 			if (in_array($setting, $settings_required)) {
-				$settings_missing = array_diff($settings_missing ?? $settings_required, [$setting]);
+				$settings_missing = array_diff($settings_missing, [$setting]);
 				$this->$setting = $value;
 			}
 		}
