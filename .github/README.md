@@ -10,8 +10,6 @@ superseriousstats is a fast and efficient program to create statistics out of va
 * Optional dynamic pages for historical and user stats
 * Tiny configuration file with as little as three required settings
 
-[artist's impression](/.github/example.png)
-
 ---
 ### Installation
 
