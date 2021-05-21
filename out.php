@@ -29,7 +29,7 @@ class out
 		 * the program.
 		 */
 		if ($type === 'critical') {
-			exit($datetime.' [!] '.$message."\n");
+			exit($datetime.' [C] '.$message."\n");
 		}
 
 		/**
@@ -46,7 +46,7 @@ class out
 			}
 		} elseif ($type === 'debug') {
 			if (self::$verbosity >= 2) {
-				echo $datetime.' [?] '.$message."\n";
+				echo $datetime.' [D] '.$message."\n";
 			}
 		}
 
