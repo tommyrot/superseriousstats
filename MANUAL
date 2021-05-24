@@ -17,9 +17,9 @@ options:
 
         -m <file>
                 Import user relations from <file> into the database. Existing
-                relationships will be unset prior to any updates made. It is
-                highly recommended to keep an export as backup. Nicks contained
-                in <file> are treated as case insensitive and nicks which don't
+                relations will be unset prior to any updates made. It is highly
+                recommended to keep an export as backup. Nicks contained in
+                <file> are treated as case insensitive and nicks which don't
                 exist in the database will be ignored.
 
         -o <file>
