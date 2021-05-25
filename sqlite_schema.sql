@@ -649,7 +649,7 @@ SUM(uppercased) AS uppercased,
 (SELECT quote FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND quote IS NOT NULL ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS quote,
 (SELECT ex_exclamations FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_exclamations IS NOT NULL ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_exclamations,
 (SELECT ex_questions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_questions IS NOT NULL ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_questions,
-(SELECT ex_actions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_actions IS NOT NULL ORDER BY IFNULL(lastseen, firstseen) DESC, uid_lines.uid ASC LIMIT 1) AS ex_actions,
+(SELECT ex_actions FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_actions IS NOT NULL ORDER BY lastseen DESC, uid_lines.uid ASC LIMIT 1) AS ex_actions,
 (SELECT ex_uppercased FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_uppercased IS NOT NULL ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_uppercased,
 MAX(lasttalked) AS lasttalked
 FROM uid_lines JOIN uid_details AS t1 ON uid_lines.uid = t1.uid GROUP BY ruid;
