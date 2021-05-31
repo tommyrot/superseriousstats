@@ -1,13 +1,13 @@
-usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]
-       php sss.php [-q | -v] [-c config] [-e <file>]
-       php sss.php [-q | -v] [-c config] [-m <file>]
+Usage: php sss.php [-q | -v] [-c config] [-i <logfile or directory>] [-o html]
+       php sss.php [-q | -v] [-c config] [-e target]
+       php sss.php [-q | -v] [-c config] [-m source]
 
-options:
+Options:
         -c <file>
                 Read settings from <file>. By default "sss.conf" is read.
 
         -e <file>
-                Export all user relations from the database to <file>.
+                Export all user relations in the database to <file>.
 
         -i <file|directory>
                 Parse a single logfile <file> or all logfiles in <directory>.
@@ -31,7 +31,7 @@ options:
         -v
                 Verbose mode. Useful to see parser issues if any.
 
-examples:
+Examples:
         Parse all logfiles found in "~/irclogs/foobar/" and create a stats
         page named "/var/www/foobar.html":
 
