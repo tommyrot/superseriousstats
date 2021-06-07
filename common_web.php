@@ -581,13 +581,13 @@ trait common_web
 				$title = 'Most Talkative People &ndash; '.($period === 'month' ? date('F Y', strtotime($this->now)) : substr($this->now, 0, 4));
 
 				if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM ruid_activity_by_'.$period.' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.($period === 'month' ? substr($this->now, 0, 7) : substr($this->now, 0, 4)).'\''))) {
-					$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote FROM ruid_activity_by_'.$period.' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.($period === 'month' ? substr($this->now, 0, 7) : substr($this->now, 0, 4)).'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT 10');
+					$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote, rank_cur, rank_old FROM ruid_activity_by_'.$period.' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid JOIN ruid_rank_'.$period.' ON t1.ruid = ruid_rank_'.$period.'.ruid WHERE status NOT IN (3,4) AND date = \''.($period === 'month' ? substr($this->now, 0, 7) : substr($this->now, 0, 4)).'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT 10');
 				}
 			} else {
 				$title = 'Most Talkative People &ndash; All-Time';
 
 				if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0'))) {
-					$results = db::query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, lasttalked, quote FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT 30');
+					$results = db::query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, lasttalked, quote, rank_cur, rank_old FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid JOIN ruid_rank_alltime ON ruid_lines.ruid = ruid_rank_alltime.ruid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT 30');
 				}
 			}
 		} elseif ($page === 'history') {
@@ -657,8 +657,19 @@ trait common_web
 				$activity .= '<li class="'.$time[0].'" style="width:'.$width[$time].'px">';
 			}
 
+			/**
+			 * Indicate change in ranking compared to previous day.
+			 */
+			if ($result['rank_cur'] === $result['rank_old']) {
+				$pos = ++$i;
+			} elseif (is_null($result['rank_old']) || $result['rank_cur'] < $result['rank_old']) {
+				$pos = '<span class="up">'.++$i.'</span>';
+			} else {
+				$pos = '<span class="down">'.++$i.'</span>';
+			}
+
 			$percentage = number_format(($result['l_total'] / $l_total) * 100, 2).'%';
-			$tbody .= '<tr><td>'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td>'.number_format($result['l_total']).'<td>'.++$i.'<td>'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td>'.$this->ago($result['lasttalked']).'<td><ul>'.$activity.'</ul><td>'.$this->htmlify($result['quote']);
+			$tbody .= '<tr><td>'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td>'.number_format($result['l_total']).'<td>'.$pos.'<td>'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td>'.$this->ago($result['lasttalked']).'<td><ul>'.$activity.'</ul><td>'.$this->htmlify($result['quote']);
 		}
 
 		return '<table class="ppl">'.$colgroup.$thead.$tbody.'</table>'."\n";

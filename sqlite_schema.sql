@@ -194,6 +194,24 @@ date TEXT NOT NULL,
 PRIMARY KEY (ruid, milestone)
 ) WITHOUT ROWID;
 
+CREATE TABLE ruid_rank_alltime ( --materialized view
+ruid INT PRIMARY KEY,
+rank_cur INT,
+rank_old INT
+) WITHOUT ROWID;
+
+CREATE TABLE ruid_rank_month ( --materialized view
+ruid INT PRIMARY KEY,
+rank_cur INT,
+rank_old INT
+) WITHOUT ROWID;
+
+CREATE TABLE ruid_rank_year ( --materialized view
+ruid INT PRIMARY KEY,
+rank_cur INT,
+rank_old INT
+) WITHOUT ROWID;
+
 CREATE TABLE ruid_smileys ( --materialized view
 ruid INT,
 sid INT,
@@ -653,6 +671,24 @@ SUM(uppercased) AS uppercased,
 (SELECT ex_uppercased FROM uid_lines JOIN uid_details ON uid_lines.uid = uid_details.uid WHERE ruid = t1.ruid AND ex_uppercased IS NOT NULL ORDER BY lasttalked DESC, uid_lines.uid ASC LIMIT 1) AS ex_uppercased,
 MAX(lasttalked) AS lasttalked
 FROM uid_lines JOIN uid_details AS t1 ON uid_lines.uid = t1.uid GROUP BY ruid;
+
+CREATE VIEW v_ruid_rank_alltime AS
+SELECT t1.ruid,
+(SELECT rank_cur FROM (SELECT ruid_lines.ruid, ROW_NUMBER() OVER (ORDER BY l_total DESC, ruid_lines.ruid ASC) AS rank_cur FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)) WHERE ruid = t1.ruid) AS rank_cur,
+(SELECT rank_old FROM (SELECT ruid_activity_by_day.ruid, ROW_NUMBER() OVER (ORDER BY SUM(l_total) DESC, ruid_activity_by_day.ruid ASC) AS rank_old FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date < (SELECT MAX(date) FROM parse_history) GROUP BY ruid_activity_by_day.ruid) WHERE ruid = t1.ruid) AS rank_old
+FROM ruid_lines AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0;
+
+CREATE VIEW v_ruid_rank_month AS
+SELECT t1.ruid,
+(SELECT rank_cur FROM (SELECT ruid_activity_by_month.ruid, ROW_NUMBER() OVER (ORDER BY l_total DESC, ruid_activity_by_month.ruid ASC) AS rank_cur FROM ruid_activity_by_month JOIN uid_details ON ruid_activity_by_month.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = SUBSTR((SELECT MAX(date) FROM parse_history), 1, 7)) WHERE ruid = t1.ruid) AS rank_cur,
+(SELECT rank_old FROM (SELECT ruid_activity_by_day.ruid, ROW_NUMBER() OVER (ORDER BY SUM(l_total) DESC, ruid_activity_by_day.ruid ASC) AS rank_old FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date BETWEEN (SELECT DATE(MAX(date), 'start of month') FROM parse_history) AND (SELECT DATE(MAX(date), '-1 day') FROM parse_history) GROUP BY ruid_activity_by_day.ruid) WHERE ruid = t1.ruid) AS rank_old
+FROM ruid_lines AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0;
+
+CREATE VIEW v_ruid_rank_year AS
+SELECT t1.ruid,
+(SELECT rank_cur FROM (SELECT ruid_activity_by_year.ruid, ROW_NUMBER() OVER (ORDER BY l_total DESC, ruid_activity_by_year.ruid ASC) AS rank_cur FROM ruid_activity_by_year JOIN uid_details ON ruid_activity_by_year.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = SUBSTR((SELECT MAX(date) FROM parse_history), 1, 4)) WHERE ruid = t1.ruid) AS rank_cur,
+(SELECT rank_old FROM (SELECT ruid_activity_by_day.ruid, ROW_NUMBER() OVER (ORDER BY SUM(l_total) DESC, ruid_activity_by_day.ruid ASC) AS rank_old FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date BETWEEN (SELECT DATE(MAX(date), 'start of year') FROM parse_history) AND (SELECT DATE(MAX(date), '-1 day') FROM parse_history) GROUP BY ruid_activity_by_day.ruid) WHERE ruid = t1.ruid) AS rank_old
+FROM ruid_lines AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0;
 
 CREATE VIEW v_ruid_smileys AS
 SELECT ruid,

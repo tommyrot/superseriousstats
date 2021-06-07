@@ -34,6 +34,10 @@ body {
 .bannerbg {
 	background:#F9F9F9 url('bannerbg.png') left top repeat-x;
 }
+.down:before {
+	color:#c74243;
+	content:'\25BC';
+}
 .error {
 	background-color:#FFE0E0;
 	border-color:#CC0000;
@@ -74,6 +78,10 @@ body {
 	float:right;
 	font-style:italic;
 	font-weight:normal;
+}
+.up:before {
+	color:#70a35e;
+	content:'\25B2';
 }
 .userpic {
 	border-radius:50%;

@@ -64,10 +64,10 @@ class maintenance
 		 * correct as some views depend on materialized views created prior to them.
 		 */
 		if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_details\'') === 1) {
-			$views = ['v_ruid_activity_by_day', 'v_ruid_activity_by_month', 'v_ruid_activity_by_year', 'v_ruid_lines', 'v_ruid_smileys', 'v_ruid_urls', 'v_ruid_events'];
+			$views = ['v_ruid_activity_by_day', 'v_ruid_activity_by_month', 'v_ruid_activity_by_year', 'v_ruid_lines', 'v_ruid_smileys', 'v_ruid_urls', 'v_ruid_events', 'v_ruid_rank_alltime', 'v_ruid_rank_month', 'v_ruid_rank_year'];
 		} else {
 			if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_activity\'') === 1) {
-				$views = ['v_ruid_activity_by_day', 'v_ruid_activity_by_month', 'v_ruid_activity_by_year', 'v_ruid_lines'];
+				$views = ['v_ruid_activity_by_day', 'v_ruid_activity_by_month', 'v_ruid_activity_by_year', 'v_ruid_lines', 'v_ruid_rank_alltime', 'v_ruid_rank_month', 'v_ruid_rank_year'];
 
 				if (db::query_single_col('SELECT modified FROM table_state WHERE table_name = \'uid_smileys\'') === 1) {
 					$views[] = 'v_ruid_smileys';
