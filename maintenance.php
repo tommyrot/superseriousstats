@@ -34,7 +34,7 @@ class maintenance
 		}
 
 		db::query_exec('DELETE FROM ruid_milestones');
-		$results = db::query('SELECT ruid_activity_by_day.ruid AS ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid ASC, date ASC');
+		$results = db::query('SELECT ruid_activity_by_day.ruid, date, l_total FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) ORDER BY ruid_activity_by_day.ruid ASC, date ASC');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			if (!isset($l_total[$result['ruid']])) {
@@ -235,7 +235,7 @@ class maintenance
 	 */
 	private function register_most_active_aliases(): void
 	{
-		$results = db::query('SELECT status, csnick, ruid, (SELECT uid_details.uid AS uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid ASC LIMIT 1) AS new_ruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND IFNULL(new_ruid, ruid) != ruid');
+		$results = db::query('SELECT status, csnick, ruid, (SELECT uid_details.uid FROM uid_details JOIN uid_lines ON uid_details.uid = uid_lines.uid WHERE ruid = t1.ruid ORDER BY l_total DESC, uid_details.uid ASC LIMIT 1) AS new_ruid FROM uid_details AS t1 WHERE status IN (1,3,4) AND IFNULL(new_ruid, ruid) != ruid');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			$old_registered_nick = $result['csnick'];
