@@ -610,8 +610,6 @@ trait common_web
 		/**
 		 * Assemble each row.
 		 */
-		$i = 0;
-
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			/**
 			 * Divide the available pixels among times, according to activity.
@@ -661,11 +659,11 @@ trait common_web
 			 * Indicate change in ranking compared to previous day.
 			 */
 			if ($result['rank_cur'] === $result['rank_old']) {
-				$pos = ++$i;
+				$pos = $result['rank_cur'];
 			} elseif (is_null($result['rank_old']) || $result['rank_cur'] < $result['rank_old']) {
-				$pos = '<span class="up">'.++$i.'</span>';
+				$pos = '<span class="up">'.$result['rank_cur'].'</span>';
 			} else {
-				$pos = '<span class="down">'.++$i.'</span>';
+				$pos = '<span class="down">'.$result['rank_cur'].'</span>';
 			}
 
 			$percentage = number_format(($result['l_total'] / $l_total) * 100, 2).'%';
