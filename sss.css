@@ -66,6 +66,14 @@ body {
 	margin:15px 22px 7px 0;
 	width:818px;
 }
+.ranking {
+	background-color:#EEE;
+	border-radius:5px;
+	border:1px solid #E0E0E0;
+	color:#999999;
+	margin-left:15px;
+	padding:2px 5px;
+}
 .section {
 	border:1px solid #E0E0E0;
 	padding:1px;

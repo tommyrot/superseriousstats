@@ -98,6 +98,39 @@ class user
 		$l_avg = (int) round($l_total / db::query_single_col('SELECT activedays FROM ruid_lines WHERE ruid = '.$this->ruid));
 
 		/**
+		 * Show the user's current all-time ranking.
+		 */
+		$rank_cur = db::query_single_col('SELECT rank_cur FROM ruid_rank_alltime WHERE ruid = '.$this->ruid);
+
+		if (is_null($rank_cur)) {
+			$ranking = '';
+		} else {
+			switch ($rank_cur % 100) {
+				case 11:
+				case 12:
+				case 13:
+					$ordinal_suffix = 'th';
+					break;
+				default:
+					switch ($rank_cur % 10) {
+						case 1:
+							$ordinal_suffix = 'st';
+							break;
+						case 2:
+							$ordinal_suffix = 'nd';
+							break;
+						case 3:
+							$ordinal_suffix = 'rd';
+							break;
+						default:
+							$ordinal_suffix = 'th';
+					}
+			}
+
+			$ranking = '<span class="ranking">'.$rank_cur.$ordinal_suffix.'</span>';
+		}
+
+		/**
 		 * HEAD
 		 */
 		$contents = '<!DOCTYPE html>'."\n\n"
@@ -110,7 +143,7 @@ class user
 			. '</head>'."\n\n"
 			. '<body'.($this->show_banner ? ' class="bannerbg"' : '').'><div id="container">'."\n"
 			. ($this->show_banner ? '<img src="banner.svg" alt="" class="banner">'."\n" : '')
-			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<br><br>'
+			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').$ranking.'<br><br>'
 			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
 			. $this->htmlify($this->csnick).' typed '.number_format($l_total).' line'.($l_total !== 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($high_date)).' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.</div>'."\n";
