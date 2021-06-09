@@ -35,7 +35,7 @@ body {
 	background:#F9F9F9 url('bannerbg.png') left top repeat-x;
 }
 .down:before {
-	color:#c74243;
+	color:#C74243;
 	content:'\25BC';
 }
 .error {
@@ -56,16 +56,6 @@ body {
 .grey {
 	color:#999;
 }
-.info,
-.section {
-	color:#666;
-	float:left;
-	font-family:verdana,sans-serif;
-	font-size:12px;
-	font-weight:bold;
-	margin:15px 22px 7px 0;
-	width:818px;
-}
 .ranking {
 	background-color:#EEE;
 	border-radius:5px;
@@ -73,6 +63,15 @@ body {
 	color:#999999;
 	margin-left:15px;
 	padding:2px 5px;
+}
+.section, .info {
+	color:#666;
+	float:left;
+	font-family:verdana,sans-serif;
+	font-size:12px;
+	font-weight:bold;
+	margin:15px 22px 7px 0;
+	width:818px;
 }
 .section {
 	border:1px solid #E0E0E0;
@@ -88,7 +87,7 @@ body {
 	font-weight:normal;
 }
 .up:before {
-	color:#70a35e;
+	color:#70A35E;
 	content:'\25B2';
 }
 .userpic {
