@@ -339,32 +339,17 @@ class parser
 		++$this->streak;
 
 		/**
-		 * Increase line counts for relevant day, part of day, and hour.
+		 * Increase line counts for appropriate day, time of day, and hour.
 		 */
 		$day = strtolower(date('D', strtotime($this->date)));
 		$hour_leadingzero = substr($time, 0, 2);
 		$hour = (int) $hour_leadingzero;
-
-		if ($hour <= 5) {
-			++$this->l_night;
-			$this->nick_objs[$nick]->add_int('l_'.$day.'_night', 1);
-			$this->nick_objs[$nick]->add_int('l_night', 1);
-		} elseif ($hour <= 11) {
-			++$this->l_morning;
-			$this->nick_objs[$nick]->add_int('l_'.$day.'_morning', 1);
-			$this->nick_objs[$nick]->add_int('l_morning', 1);
-		} elseif ($hour <= 17) {
-			++$this->l_afternoon;
-			$this->nick_objs[$nick]->add_int('l_'.$day.'_afternoon', 1);
-			$this->nick_objs[$nick]->add_int('l_afternoon', 1);
-		} elseif ($hour <= 23) {
-			++$this->l_evening;
-			$this->nick_objs[$nick]->add_int('l_'.$day.'_evening', 1);
-			$this->nick_objs[$nick]->add_int('l_evening', 1);
-		}
-
+		$time_of_day = ($hour <= 5 ? 'night' : ($hour <= 11 ? 'morning' : ($hour <= 17 ? 'afternoon' : 'evening')));
+		$this->nick_objs[$nick]->add_int('l_'.$day.'_'.$time_of_day, 1);
+		$this->nick_objs[$nick]->add_int('l_'.$time_of_day, 1);
 		$this->nick_objs[$nick]->add_int('l_'.$hour_leadingzero, 1);
 		$this->nick_objs[$nick]->add_int('l_total', 1);
+		++$this->{'l_'.$time_of_day};
 		++$this->{'l_'.$hour_leadingzero};
 		++$this->l_total;
 
