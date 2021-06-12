@@ -63,9 +63,9 @@ class parser
 		$this->year = substr($date, 0, 4);
 
 		/**
-		 * Apply the parse state if any, this comprises topic data and streak history.
+		 * Apply the parse state if any.
 		 */
-		$this->apply_vars('parse_state', ['nick_prev', 'streak', 'topic']);
+		$this->apply_vars('parse_state', ['nick_prev', 'streak']);
 
 		/**
 		 * Retrieve smiley mappings from the database.
