@@ -691,6 +691,9 @@ trait common_web
 				$results = db::query('SELECT csnick, l_'.$time.' FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_lines.ruid ASC LIMIT 10');
 			} elseif ($page === 'history') {
 				$results = db::query('SELECT csnick, l_'.$time.' FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, t1.ruid ASC LIMIT 10');
+			} elseif ($page === 'user') {
+				$title = 'Chat Buddies by Time of Day';
+				$results = db::query('SELECT (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS csnick, SUM(l_'.$time.') AS l_'.$time.' FROM buddies JOIN uid_details AS t1 ON buddies.uid_passive = t1.uid WHERE uid_active IN (SELECT uid FROM uid_details WHERE ruid = '.$this->ruid.') AND status NOT IN (3,4) and l_'.$time.' != 0 GROUP BY ruid ORDER BY l_'.$time.' DESC, ruid ASC LIMIT 5');
 			}
 
 			if (($result = $results->fetchArray(SQLITE3_ASSOC)) === false) {
@@ -716,7 +719,7 @@ trait common_web
 		}
 
 		$colgroup = '<colgroup>'.str_repeat('<col>', 5);
-		$thead = '<thead><tr><th colspan="5">Most Talkative People by Time of Day';
+		$thead = '<thead><tr><th colspan="5">'.$title ?? 'Most Talkative People by Time of Day';
 		$thead .= '<tr><td><td>Night<br>0h &ndash; 5h<td>Morning<br>6h &ndash; 11h<td>Afternoon<br>12h &ndash; 17h<td>Evening<br>18h &ndash; 23h';
 		$tbody = '<tbody>';
 

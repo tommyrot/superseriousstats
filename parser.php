@@ -12,6 +12,7 @@ class parser
 {
 	use common, queryparts, urlparts;
 
+	private array $buddy_tracker = [];
 	private array $nick_objs = [];
 	private array $smileys = [];
 	private array $topics = [];
@@ -65,7 +66,7 @@ class parser
 		/**
 		 * Apply the parse state if any.
 		 */
-		$this->apply_vars('parse_state', ['nick_prev', 'streak']);
+		$this->apply_vars('parse_state', ['nick_prev', 'streak', 'buddy_tracker']);
 
 		/**
 		 * Retrieve smiley mappings from the database.
@@ -354,6 +355,27 @@ class parser
 		++$this->l_total;
 
 		/**
+		 * Count lines typed exclusively between two nicks in a timespan of 5 minutes.
+		 */
+		$datetime = str_pad($this->date.' '.$time, 19, ':00');
+		$datetime_minus_5min = date('Y-m-d H:i:s', strtotime('-5 minutes', strtotime($datetime)));
+		$nicks = [];
+
+		foreach ($this->buddy_tracker as $key => [$datetime_buddy, $nick_buddy]) {
+			if ($datetime_buddy < $datetime_minus_5min) {
+				unset($this->buddy_tracker[$key]);
+			} elseif ($nick_buddy !== $nick && !in_array($nick_buddy, $nicks)) {
+				$nicks[] = $nick_buddy;
+			}
+		}
+
+		$this->buddy_tracker[] = [$datetime, $nick];
+
+		if (count($nicks) === 1) {
+			$this->nick_objs[$nick]->add_buddy($nicks[0], $time_of_day);
+		}
+
+		/**
 		 * Words are simply considered character groups separated by whitespace.
 		 */
 		$words = explode(' ', $line);
@@ -543,11 +565,11 @@ class parser
 		if ($this->l_total !== 0) {
 			$queryparts = $this->get_queryparts(['l_00', 'l_01', 'l_02', 'l_03', 'l_04', 'l_05', 'l_06', 'l_07', 'l_08', 'l_09', 'l_10', 'l_11', 'l_12', 'l_13', 'l_14', 'l_15', 'l_16', 'l_17', 'l_18', 'l_19', 'l_20', 'l_21', 'l_22', 'l_23', 'l_night', 'l_morning', 'l_afternoon', 'l_evening', 'l_total']);
 			db::query_exec('INSERT INTO channel_activity (date, '.$queryparts['insert_columns'].') VALUES (\''.$this->date.'\', '.$queryparts['insert_values'].') ON CONFLICT (date) DO UPDATE SET '.$queryparts['update_assignments']);
-			db::query_exec('INSERT OR REPLACE INTO parse_state (var, value) VALUES (\'nick_prev\', \''.$this->nick_prev.'\'), (\'streak\', \''.$this->streak.'\')');
+			db::query_exec('INSERT OR REPLACE INTO parse_state (var, value) VALUES (\'nick_prev\', \''.$this->nick_prev.'\'), (\'streak\', \''.$this->streak.'\'), (\'buddy_tracker\', \''.serialize($this->buddy_tracker).'\')');
 		}
 
 		/**
-		 * Store user data. MUST be done before storing URL and topic data.
+		 * Store user data. MUST be done before storing URL, topic and buddy data.
 		 */
 		foreach ($this->nick_objs as $nick) {
 			$nick->store_data();
@@ -565,6 +587,13 @@ class parser
 		 */
 		foreach ($this->topics as [$datetime, $nick, $topic]) {
 			db::query_exec('INSERT INTO uid_topics (uid, topic, datetime) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$nick.'\'), \''.preg_replace('/\'/', '\'\'', $topic).'\', DATETIME(\''.$datetime.'\'))');
+		}
+
+		/**
+		 * Store buddy data.
+		 */
+		foreach ($this->nick_objs as $nick) {
+			$nick->store_buddies();
 		}
 
 		/**

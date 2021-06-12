@@ -159,6 +159,11 @@ class user
 		$contents .= $this->create_table_activity_distribution_day();
 
 		/**
+		 * Chat buddies! Smart reuse of create_table_people_timeofday() code.
+		 */
+		$contents .= $this->create_table_people_timeofday();
+
+		/**
 		 * FOOT
 		 */
 		$contents .= '<div class="info">Statistics created with <a href="https://sss.dutnie.nl">superseriousstats</a> on '.date('r').' <span class="grey">('.date('T').')</span>.</div>'."\n";

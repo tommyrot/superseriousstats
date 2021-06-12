@@ -2,6 +2,16 @@ PRAGMA encoding = 'UTF-8';
 
 BEGIN TRANSACTION;
 
+CREATE TABLE buddies (
+uid_active INT NOT NULL REFERENCES uid_details (uid),
+uid_passive INT NOT NULL REFERENCES uid_details (uid) CHECK (uid_passive != uid_active),
+l_night INT NOT NULL DEFAULT 0,
+l_morning INT NOT NULL DEFAULT 0,
+l_afternoon INT NOT NULL DEFAULT 0,
+l_evening INT NOT NULL DEFAULT 0,
+PRIMARY KEY (uid_active, uid_passive)
+) WITHOUT ROWID;
+
 CREATE TABLE channel_activity (
 date TEXT PRIMARY KEY NOT NULL,
 l_00 INT NOT NULL DEFAULT 0,

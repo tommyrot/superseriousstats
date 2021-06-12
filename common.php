@@ -26,7 +26,11 @@ trait common
 			}
 
 			if (is_string($this->$var)) {
-				$this->$var = $value;
+				if (substr($value, 0, 2) === 'a:') {
+					$this->$var = unserialize($value);
+				} else {
+					$this->$var = $value;
+				}
 			} elseif (is_int($this->$var)) {
 				if (preg_match('/^\d+$/', $value)) {
 					$this->$var = (int) $value;

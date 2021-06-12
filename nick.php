@@ -11,6 +11,7 @@ class nick
 {
 	use common, queryparts;
 
+	private array $buddies = [];
 	private array $smileys = [];
 	private int $actions = 0;
 	private int $characters = 0;
@@ -112,6 +113,15 @@ class nick
 		$this->csnick = $csnick;
 	}
 
+	public function add_buddy(string $nick_buddy, string $time_of_day): void
+	{
+		if (!isset($this->buddies[$nick_buddy])) {
+			$this->buddies[$nick_buddy]['l_night'] = $this->buddies[$nick_buddy]['l_morning'] = $this->buddies[$nick_buddy]['l_afternoon'] = $this->buddies[$nick_buddy]['l_evening'] = 0;
+		}
+
+		++$this->buddies[$nick_buddy]['l_'.$time_of_day];
+	}
+
 	public function add_smiley(int $sid, int $value): void
 	{
 		if (!isset($this->smileys[$sid])) {
@@ -122,7 +132,7 @@ class nick
 	}
 
 	/**
-	 * Store everything in the database.
+	 * Store everything in the database. Buddy data is handled separately.
 	 */
 	public function store_data(): void
 	{
@@ -191,6 +201,18 @@ class nick
 
 		if (!is_null($queryparts = $this->get_queryparts($columns))) {
 			db::query_exec('INSERT INTO uid_lines (uid, '.$queryparts['insert_columns'].') VALUES ('.$uid.', '.$queryparts['insert_values'].') ON CONFLICT (uid) DO UPDATE SET '.$queryparts['update_assignments']);
+		}
+	}
+
+	/**
+	 * Store data in database table "buddies". This should only be done after all
+	 * involved nicks are known and present in the database, otherwise their uids
+	 * cannot be resolved during insert.
+	 */
+	public function store_buddies(): void
+	{
+		foreach ($this->buddies as $nick_buddy => ['l_night' => $l_night, 'l_morning' => $l_morning, 'l_afternoon' => $l_afternoon, 'l_evening' => $l_evening]) {
+			db::query_exec('INSERT INTO buddies (uid_active, uid_passive, l_night, l_morning, l_afternoon, l_evening) VALUES ((SELECT uid FROM uid_details WHERE csnick = \''.$this->csnick.'\'), (SELECT uid FROM uid_details WHERE csnick = \''.$nick_buddy.'\'), '.$l_night.', '.$l_morning.', '.$l_afternoon.', '.$l_evening.') ON CONFLICT (uid_active, uid_passive) DO UPDATE SET l_night = l_night + excluded.l_night, l_morning = l_morning + excluded.l_morning, l_afternoon = l_afternoon + excluded.l_afternoon, l_evening = l_evening + excluded.l_evening');
 		}
 	}
 }
