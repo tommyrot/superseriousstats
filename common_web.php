@@ -696,12 +696,6 @@ trait common_web
 				$results = db::query('SELECT (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS csnick, SUM(l_'.$time.') AS l_'.$time.' FROM buddies JOIN uid_details AS t1 ON buddies.uid_passive = t1.uid WHERE uid_active IN (SELECT uid FROM uid_details WHERE ruid = '.$this->ruid.') AND status NOT IN (3,4) and l_'.$time.' != 0 GROUP BY ruid ORDER BY l_'.$time.' DESC, ruid ASC LIMIT 5');
 			}
 
-			if (($result = $results->fetchArray(SQLITE3_ASSOC)) === false) {
-				return null;
-			}
-
-			$results->reset();
-
 			/**
 			 * Arrange data in a usable format.
 			 */
@@ -741,6 +735,10 @@ trait common_web
 					$tbody .= $this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).($width !== 0 ? '<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>' : '');
 				}
 			}
+		}
+
+		if ($i === 1) {
+			return null;
 		}
 
 		return '<table class="tod">'.$colgroup.$thead.$tbody.'</table>'."\n";
