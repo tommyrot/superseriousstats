@@ -685,7 +685,7 @@ trait common_web
 
 		foreach ($times as $time) {
 			/**
-			 * Execute the appropriate query. Return if there is no data.
+			 * Execute the appropriate query.
 			 */
 			if ($page === 'html') {
 				$results = db::query('SELECT csnick, l_'.$time.' FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_lines.ruid ASC LIMIT 10');
