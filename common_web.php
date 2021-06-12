@@ -713,7 +713,7 @@ trait common_web
 		}
 
 		$colgroup = '<colgroup>'.str_repeat('<col>', 5);
-		$thead = '<thead><tr><th colspan="5">'.$title ?? 'Most Talkative People by Time of Day';
+		$thead = '<thead><tr><th colspan="5">'.($title ?? 'Most Talkative People by Time of Day');
 		$thead .= '<tr><td><td>Night<br>0h &ndash; 5h<td>Morning<br>6h &ndash; 11h<td>Afternoon<br>12h &ndash; 17h<td>Evening<br>18h &ndash; 23h';
 		$tbody = '<tbody>';
 
@@ -737,6 +737,9 @@ trait common_web
 			}
 		}
 
+		/**
+		 * Don't return an empty table.
+		 */
 		if ($i === 1) {
 			return null;
 		}
