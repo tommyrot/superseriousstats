@@ -102,8 +102,13 @@ class user
 		 */
 		$rank_cur = db::query_single_col('SELECT rank_cur FROM ruid_rank_alltime WHERE ruid = '.$this->ruid);
 
+		/**
+		 * If $rank_cur is null the user has no lines, is excluded or is a bot. In the
+		 * first two cases we had already returned an error so we can be confident that
+		 * the user is a bot. Indicate this instead of a ranking.
+		 */
 		if (is_null($rank_cur)) {
-			$ranking = '';
+			$ranking = 'Bot';
 		} else {
 			switch ($rank_cur % 100) {
 				case 11:
@@ -127,7 +132,7 @@ class user
 					}
 			}
 
-			$ranking = '<span class="ranking">'.$rank_cur.$ordinal_suffix.'</span>';
+			$ranking = $rank_cur.$ordinal_suffix;
 		}
 
 		/**
@@ -143,7 +148,7 @@ class user
 			. '</head>'."\n\n"
 			. '<body'.($this->show_banner ? ' class="bannerbg"' : '').'><div id="container">'."\n"
 			. ($this->show_banner ? '<img src="banner.svg" alt="" class="banner">'."\n" : '')
-			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').$ranking.'<br><br>'
+			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<span class="ranking">'.$ranking.'</span><br><br>'
 			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
 			. $this->htmlify($this->csnick).' typed '.number_format($l_total).' line'.($l_total !== 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($high_date)).' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.</div>'."\n";
