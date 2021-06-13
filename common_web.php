@@ -693,7 +693,7 @@ trait common_web
 				$results = db::query('SELECT csnick, l_'.$time.' FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, t1.ruid ASC LIMIT 10');
 			} elseif ($page === 'user') {
 				$title = 'Chat Buddies by Time of Day';
-				$results = db::query('SELECT (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS csnick, SUM(l_'.$time.') AS l_'.$time.' FROM buddies JOIN uid_details AS t1 ON buddies.uid_passive = t1.uid WHERE uid_active IN (SELECT uid FROM uid_details WHERE ruid = '.$this->ruid.') AND status NOT IN (3,4) and l_'.$time.' != 0 GROUP BY ruid ORDER BY l_'.$time.' DESC, ruid ASC LIMIT 5');
+				$results = db::query('SELECT (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS csnick, SUM(l_'.$time.') AS l_'.$time.' FROM buddies JOIN uid_details AS t1 ON buddies.uid_passive = t1.uid WHERE uid_active IN (SELECT uid FROM uid_details WHERE ruid = '.$this->ruid.') AND l_'.$time.' != 0 GROUP BY ruid HAVING (SELECT status FROM uid_details WHERE uid = t1.ruid) NOT IN (3,4) ORDER BY l_'.$time.' DESC, ruid ASC LIMIT 5');
 			}
 
 			/**
