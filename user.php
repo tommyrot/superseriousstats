@@ -164,9 +164,12 @@ class user
 		$contents .= $this->create_table_activity_distribution_day();
 
 		/**
-		 * Chat buddies! Smart reuse of create_table_people_timeofday() code.
+		 * Chat buddies! Smart reuse of create_table_people_timeofday() code. Don't
+		 * generate the table if user is a bot (status = 3).
 		 */
-		$contents .= $this->create_table_people_timeofday();
+		if (db::query_single_col('SELECT status FROM uid_details WHERE uid = '.$this->ruid) !== 3) {
+			$contents .= $this->create_table_people_timeofday();
+		}
 
 		/**
 		 * FOOT
