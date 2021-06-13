@@ -26,7 +26,7 @@ trait common
 			}
 
 			if (is_string($this->$var)) {
-				if (substr($value, 0, 2) === 'a:') {
+				if (str_starts_with($value, 'a:')) {
 					$this->$var = unserialize($value);
 				} else {
 					$this->$var = $value;

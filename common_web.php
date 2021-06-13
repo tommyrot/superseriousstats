@@ -182,7 +182,7 @@ trait common_web
 			 * the "Activity Distribution by Day" table fits horizontally adjacent to it.
 			 */
 			if ($page === 'html') {
-				if (substr($this->now, 0, 4) === date('Y') && ($days_left = (int) date('z', strtotime(substr($this->now, 0, 4).'-12-31')) - (int) date('z', strtotime($this->now))) !== 0 && db::query_single_col('SELECT EXISTS (SELECT 1 FROM channel_activity WHERE date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))') === 1) {
+				if (str_starts_with($this->now, date('Y')) && ($days_left = (int) date('z', strtotime(substr($this->now, 0, 4).'-12-31')) - (int) date('z', strtotime($this->now))) !== 0 && db::query_single_col('SELECT EXISTS (SELECT 1 FROM channel_activity WHERE date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))') === 1) {
 					$estimate = true;
 					--$i;
 				}
