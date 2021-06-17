@@ -104,8 +104,8 @@ class user
 
 		/**
 		 * If $rank_cur is null the user has no lines, is excluded or is a bot. In the
-		 * first two cases we had already returned an error so we can be confident that
-		 * the user is a bot. Indicate this instead of a ranking.
+		 * first two cases we would have already returned an error so that means the
+		 * user is a bot. Indicate this instead of showing a ranking.
 		 */
 		if (is_null($rank_cur)) {
 			$ranking = 'Bot';
