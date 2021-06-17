@@ -679,7 +679,7 @@ trait common_web
 		return '<table class="ppl">'.$colgroup.$thead.$tbody.'</table>'."\n";
 	}
 
-	private function create_table_people_timeofday(): ?string
+	private function create_table_people_timeofday(bool $buddies = false): ?string
 	{
 		$page = get_class($this);
 		$times = ['night', 'morning', 'afternoon', 'evening'];
@@ -693,13 +693,20 @@ trait common_web
 			/**
 			 * Execute the appropriate query.
 			 */
-			if ($page === 'html') {
-				$results = db::query('SELECT csnick, l_'.$time.' FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_lines.ruid ASC LIMIT 10');
-			} elseif ($page === 'history') {
-				$results = db::query('SELECT csnick, l_'.$time.' FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, t1.ruid ASC LIMIT 10');
-			} elseif ($page === 'user') {
+			if ($buddies) {
 				$title = 'Chat Buddies by Time of Day';
-				$results = db::query('SELECT (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS csnick, SUM(l_'.$time.') AS l_'.$time.' FROM buddies JOIN uid_details AS t1 ON buddies.uid_passive = t1.uid WHERE uid_active IN (SELECT uid FROM uid_details WHERE ruid = '.$this->ruid.') AND l_'.$time.' != 0 GROUP BY ruid HAVING (SELECT status FROM uid_details WHERE uid = t1.ruid) NOT IN (3,4) ORDER BY l_'.$time.' DESC, ruid ASC LIMIT 5');
+
+				if ($page === 'html') {
+					$results = db::query('SELECT MIN(ruid_active, ruid_passive) || \'_\' || MAX(ruid_active, ruid_passive) AS ruid_pair, (SELECT csnick FROM uid_details WHERE uid = t1.ruid_active) || \' : \' || (SELECT csnick FROM uid_details WHERE uid = t1.ruid_passive) AS csnick, SUM(l_'.$time.') AS l_'.$time.' FROM ruid_buddies AS t1 WHERE l_'.$time.' != 0 GROUP BY ruid_pair ORDER BY l_'.$time.' DESC, ruid_pair ASC LIMIT 10');
+				} elseif ($page === 'user') {
+					$results = db::query('SELECT csnick, l_'.$time.' FROM ruid_buddies JOIN uid_details ON ruid_passive = uid_details.uid WHERE ruid_active = '.$this->ruid.' AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_passive ASC LIMIT 5');
+				}
+			} else {
+				if ($page === 'html') {
+					$results = db::query('SELECT csnick, l_'.$time.' FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, ruid_lines.ruid ASC LIMIT 10');
+				} elseif ($page === 'history') {
+					$results = db::query('SELECT csnick, l_'.$time.' FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' AND l_'.$time.' != 0 ORDER BY l_'.$time.' DESC, t1.ruid ASC LIMIT 10');
+				}
 			}
 
 			/**

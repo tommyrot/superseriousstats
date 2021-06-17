@@ -2,16 +2,6 @@ PRAGMA encoding = 'UTF-8';
 
 BEGIN TRANSACTION;
 
-CREATE TABLE buddies (
-uid_active INT NOT NULL REFERENCES uid_details (uid),
-uid_passive INT NOT NULL REFERENCES uid_details (uid) CHECK (uid_passive != uid_active),
-l_night INT NOT NULL DEFAULT 0,
-l_morning INT NOT NULL DEFAULT 0,
-l_afternoon INT NOT NULL DEFAULT 0,
-l_evening INT NOT NULL DEFAULT 0,
-PRIMARY KEY (uid_active, uid_passive)
-) WITHOUT ROWID;
-
 CREATE TABLE channel_activity (
 date TEXT PRIMARY KEY NOT NULL,
 l_00 INT NOT NULL DEFAULT 0,
@@ -95,6 +85,16 @@ l_afternoon INT,
 l_evening INT,
 l_total INT,
 PRIMARY KEY (ruid, date)
+) WITHOUT ROWID;
+
+CREATE TABLE ruid_buddies ( --materialized view
+ruid_active INT,
+ruid_passive INT,
+l_night INT,
+l_morning INT,
+l_afternoon INT,
+l_evening INT,
+PRIMARY KEY (ruid_active, ruid_passive)
 ) WITHOUT ROWID;
 
 CREATE TABLE ruid_events ( --materialized view
@@ -357,6 +357,16 @@ BEGIN
 UPDATE table_state SET modified = 1 WHERE table_name = 'uid_activity' AND modified = 0;
 END;
 
+CREATE TABLE uid_buddies (
+uid_active INT NOT NULL REFERENCES uid_details (uid),
+uid_passive INT NOT NULL REFERENCES uid_details (uid) CHECK (uid_passive != uid_active),
+l_night INT NOT NULL DEFAULT 0,
+l_morning INT NOT NULL DEFAULT 0,
+l_afternoon INT NOT NULL DEFAULT 0,
+l_evening INT NOT NULL DEFAULT 0,
+PRIMARY KEY (uid_active, uid_passive)
+) WITHOUT ROWID;
+
 CREATE TABLE uid_details (
 uid INTEGER PRIMARY KEY,
 csnick TEXT COLLATE NOCASE UNIQUE NOT NULL, --case insensitive matching and sorting
@@ -581,6 +591,15 @@ SUM(l_afternoon) AS l_afternoon,
 SUM(l_evening) AS l_evening,
 SUM(l_total) AS l_total
 FROM ruid_activity_by_month GROUP BY ruid, SUBSTR(date, 1, 4);
+
+CREATE VIEW v_ruid_buddies AS
+SELECT t1.ruid AS ruid_active,
+t2.ruid AS ruid_passive,
+SUM(l_night) AS l_night,
+SUM(l_morning) AS l_morning,
+SUM(l_afternoon) AS l_afternoon,
+SUM(l_evening) AS l_evening
+FROM uid_buddies JOIN uid_details AS t1 ON uid_buddies.uid_active = t1.uid JOIN uid_details AS t2 ON uid_buddies.uid_passive = t2.uid WHERE ruid_active != ruid_passive AND (SELECT status FROM uid_details WHERE uid = t1.ruid) NOT IN (3,4) AND (SELECT status FROM uid_details WHERE uid = t2.ruid) NOT IN (3,4) GROUP BY ruid_active, ruid_passive;
 
 CREATE VIEW v_ruid_events AS
 SELECT ruid,

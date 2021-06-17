@@ -168,7 +168,7 @@ class user
 		 * generate the table if user is a bot (status = 3).
 		 */
 		if (db::query_single_col('SELECT status FROM uid_details WHERE uid = '.$this->ruid) !== 3) {
-			$contents .= $this->create_table_people_timeofday();
+			$contents .= $this->create_table_people_timeofday(true);
 		}
 
 		/**

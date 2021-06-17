@@ -80,6 +80,7 @@ class html
 		$contents .= $this->create_table_activity_distribution_day();
 		$contents .= $this->create_table_people();
 		$contents .= $this->create_table_people2();
+		$contents .= $this->create_table_people_timeofday();
 
 		/**
 		 * Avoid displaying two identical tables.
@@ -92,7 +93,7 @@ class html
 			$contents .= $this->create_table_people('month');
 		}
 
-		$contents .= $this->create_table_people_timeofday();
+		$contents .= $this->create_table_people_timeofday(true);
 
 		/**
 		 * Build the "General Chat" section.
