@@ -37,7 +37,7 @@ class html
 		}
 
 		/**
-		 * Collect all the details we got for this channel.
+		 * Collect all details for this channel.
 		 */
 		$result = db::query_single_row('SELECT COUNT(*) AS days_logged, MIN(date) AS date_first_log_parsed, MAX(date) AS date_last_log_parsed FROM parse_history');
 		$days_logged = $result['days_logged'];

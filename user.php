@@ -85,7 +85,7 @@ class user
 	private function get_contents(): string
 	{
 		/**
-		 * Get all the dirt we got on this user.
+		 * Collect all details for this user.
 		 */
 		$result = db::query_single_row('SELECT MIN(firstseen) AS firstseen, MAX(lastseen) AS lastseen FROM uid_details WHERE ruid = '.$this->ruid);
 		$firstseen = $result['firstseen'];
