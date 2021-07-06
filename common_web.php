@@ -141,6 +141,9 @@ trait common_web
 		return '<table class="'.($title === 'Most Referenced Domain Names' ? 'medium' : ($cols === 3 ? 'large' : 'small')).'">'.$colgroup.$thead.$tbody.'</table>'."\n";
 	}
 
+	/**
+	 * Create the "Activity by $period" graph. Calling class affects scope.
+	 */
 	private function create_table_activity(string $period): ?string
 	{
 		$page = get_class($this);
@@ -374,6 +377,9 @@ trait common_web
 		return '<table class="act'.($period === 'year' ? ' year" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$colgroup.$thead.$tbody.$tfoot.'</table>'."\n";
 	}
 
+	/**
+	 * Create the "Activity Distribution by Day" graph. Calling class affects scope.
+	 */
 	private function create_table_activity_distribution_day(): ?string
 	{
 		$page = get_class($this);
@@ -501,6 +507,10 @@ trait common_web
 		return '<table class="act day">'.$colgroup.$thead.$tbody.$tfoot.'</table>'."\n";
 	}
 
+	/**
+	 * Create the "Activity Distribution by Hour" graph. Calling class affects
+	 * scope.
+	 */
 	private function create_table_activity_distribution_hour(): ?string
 	{
 		$page = get_class($this);
@@ -568,6 +578,10 @@ trait common_web
 		return '<table class="act">'.$colgroup.$thead.$tbody.$tfoot.'</table>'."\n";
 	}
 
+	/**
+	 * Create the "Most Talkative People" table for the given period. If $period is
+	 * omitted then all-time is assumed. Calling class affects scope.
+	 */
 	private function create_table_people(?string $period = null): ?string
 	{
 		$page = get_class($this);
@@ -679,6 +693,11 @@ trait common_web
 		return '<table class="ppl">'.$colgroup.$thead.$tbody.'</table>'."\n";
 	}
 
+	/**
+	 * Create the "Most Talkative People by Time of Day" table. If $buddies is true
+	 * then create the "Chat Buddies by Time of Day" table instead. Calling class
+	 * affects scope.
+	 */
 	private function create_table_people_timeofday(bool $buddies = false): ?string
 	{
 		$page = get_class($this);
@@ -760,6 +779,9 @@ trait common_web
 		return '<table class="tod">'.$colgroup.$thead.$tbody.'</table>'."\n";
 	}
 
+	/**
+	 * Make sure passed string is HTML conformant.
+	 */
 	private function htmlify(string $string): string
 	{
 		return htmlspecialchars($string, ENT_QUOTES | ENT_HTML5, 'UTF-8');

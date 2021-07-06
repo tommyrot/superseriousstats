@@ -281,6 +281,9 @@ class html
 		return $contents;
 	}
 
+	/**
+	 * Create the "Less Talkative People" table.
+	 */
 	private function create_table_people2(): ?string
 	{
 		$results = db::query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC limit 30,45');
