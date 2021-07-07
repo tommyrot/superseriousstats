@@ -188,6 +188,13 @@ class sss
 				continue;
 			}
 
+			/**
+			 * Skip updates for nonexistent registered nicks.
+			 */
+			if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM uid_details WHERE csnick = \''.$matches['registered_nick'].'\')') === 0) {
+				continue;
+			}
+
 			db::query_exec('UPDATE uid_details SET status = '.$matches['status'].' WHERE csnick = \''.$matches['registered_nick'].'\'');
 
 			if (!is_null($matches['aliases'])) {
