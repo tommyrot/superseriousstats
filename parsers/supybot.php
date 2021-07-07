@@ -16,7 +16,7 @@ class parser_supybot extends parser
 			$this->set_join($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) has quit IRC/', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+) ((?<slap>slaps (?<nick_undergoing>\S+).*)|.+))$/i', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
+		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+) (?:(?<slap>slaps (?<nick_undergoing>\S+).*)|.+))$/i', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
 			if (!is_null($matches['slap'])) {
 				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 			}
@@ -24,7 +24,7 @@ class parser_supybot extends parser
 			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
 			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick_performing>\S+) sets mode: (?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick_performing>\S+) sets mode: (?<modes>[-+][ov]+(?:[-+][ov]+)?) (?<nicks_undergoing>\S+(?: \S+)*)$/', $line, $matches)) {
 			$mode_num = 0;
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 

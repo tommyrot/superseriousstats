@@ -8,7 +8,7 @@ class parser_irssi extends parser
 {
 	protected function parse_line(string $line): void
 	{
-		$timestamp = '(?<time>\d{2}:\d{2}(:\d{2})?) ?';
+		$timestamp = '(?<time>\d{2}:\d{2}(?::\d{2})?) ?';
 
 		if (preg_match('/^'.$timestamp.'<[ ~&@%+!]?(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
@@ -16,7 +16,7 @@ class parser_irssi extends parser
 			$this->set_join($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'-!- (?<nick>\S+) \[\S+] has quit/', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+) ((?<slap>slaps (?<nick_undergoing>\S+).*)|.+))$/i', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
+		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+) (?:(?<slap>slaps (?<nick_undergoing>\S+).*)|.+))$/i', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
 			if (!is_null($matches['slap'])) {
 				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 			}
@@ -24,7 +24,7 @@ class parser_irssi extends parser
 			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'-!- (?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
 			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
-		} elseif (preg_match('/^'.$timestamp.'-!- (ServerMode|mode)\/\S+ \[(?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)] by (?<nick_performing>[^, ]+)/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'-!- (?:ServerMode|mode)\/\S+ \[(?<modes>[-+][ov]+(?:[-+][ov]+)?) (?<nicks_undergoing>\S+(?: \S+)*)] by (?<nick_performing>[^, ]+)/', $line, $matches)) {
 			$mode_num = 0;
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 

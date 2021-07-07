@@ -8,7 +8,7 @@ class parser_hexchat extends parser
 {
 	protected function parse_line(string $line): void
 	{
-		$timestamp = '\S{3} \d{2} (?<time>\d{2}:\d{2}(:\d{2})?) ';
+		$timestamp = '\S{3} \d{2} (?<time>\d{2}:\d{2}(?::\d{2})?) ';
 
 		if (preg_match('/^'.$timestamp.'<(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
@@ -21,7 +21,7 @@ class parser_hexchat extends parser
 			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'\* (?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
 			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
-		} elseif (preg_match('/^'.$timestamp.'\* (?<nick_performing>\S+) (?<mode_sign>gives|removes) (?<mode>channel operator status|voice) (to|from) (?<nicks_undergoing>\S+( \S+)*)$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\* (?<nick_performing>\S+) (?<mode_sign>gives|removes) (?<mode>channel operator status|voice) (?:to|from) (?<nicks_undergoing>\S+(?: \S+)*)$/', $line, $matches)) {
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 
 			if ($matches['mode_sign'] === 'gives') {

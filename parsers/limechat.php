@@ -8,7 +8,7 @@ class parser_limechat extends parser
 {
 	protected function parse_line(string $line): void
 	{
-		$timestamp = '(?<time>\d{2}:\d{2}(:\d{2})?) ';
+		$timestamp = '(?<time>\d{2}:\d{2}(?::\d{2})?) ';
 
 		if (preg_match('/^'.$timestamp.'(?<nick>\S+): (?<line>.+)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
@@ -18,7 +18,7 @@ class parser_limechat extends parser
 			$this->set_quit($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
 			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
-		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) has changed mode: (?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) has changed mode: (?<modes>[-+][ov]+(?:[-+][ov]+)?) (?<nicks_undergoing>\S+(?: \S+)*)$/', $line, $matches)) {
 			$mode_num = 0;
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 
