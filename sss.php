@@ -12,6 +12,11 @@ ini_set('error_reporting', '-1');
 ini_set('pcre.jit', '0');
 
 /**
+ * Check for minimum version requirement.
+ */
+version_compare(PHP_VERSION, '8.0', '>=') or exit('>> php version 8.0 or later required to run this program <<'."\n");
+
+/**
  * Check if all required extensions are loaded.
  */
 foreach (['sqlite3', 'mbstring'] as $module) {
