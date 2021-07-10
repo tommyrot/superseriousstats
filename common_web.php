@@ -115,9 +115,7 @@ trait common_web
 						 * "-perc" will append a percent sign to the column value.
 						 */
 						preg_match('/^num(?<decimals>[0-9])?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
-						$decimals = (!is_null($matches['decimals']) ? (int) $matches['decimals'] : 0);
-						$percentage = !is_null($matches['percentage']);
-						${'v'.$col} = number_format(${'v'.$col}, $decimals).($percentage ? '%' : '');
+						${'v'.$col} = number_format(${'v'.$col}, (!is_null($matches['decimals']) ? (int) $matches['decimals'] : 0)).(!is_null($matches['percentage']) ? '%' : '');
 
 						if (preg_match('/^0\.0+%?$/', ${'v'.$col})) {
 							${'v'.$col} = '<span class="grey">'.${'v'.$col}.'</span>';
