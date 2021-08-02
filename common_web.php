@@ -670,9 +670,10 @@ trait common_web
 			}
 
 			/**
-			 * Indicate change in ranking compared to previous day.
+			 * Indicate change in ranking compared to previous day except when it doesn't
+			 * make sense on the very first day of each specific table.
 			 */
-			if ($page === 'html') {
+			if ($page === 'html' && !($period === 'month' && date('j', strtotime($this->now)) === '1') && !($period === 'year' && date('z', strtotime($this->now)) === '0') && db::query_single_col('SELECT COUNT(*) FROM parse_history') !== 1) {
 				if ($result['rank_cur'] === $result['rank_old']) {
 					$pos = $result['rank_cur'];
 				} elseif (is_null($result['rank_old']) || $result['rank_cur'] < $result['rank_old']) {
