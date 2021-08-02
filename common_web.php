@@ -595,12 +595,16 @@ trait common_web
 				if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM ruid_activity_by_'.$period.' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.($period === 'month' ? substr($this->now, 0, 7) : substr($this->now, 0, 4)).'\''))) {
 					$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote, rank_cur, rank_old FROM ruid_activity_by_'.$period.' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid JOIN ruid_rank_'.$period.' ON t1.ruid = ruid_rank_'.$period.'.ruid WHERE status NOT IN (3,4) AND date = \''.($period === 'month' ? substr($this->now, 0, 7) : substr($this->now, 0, 4)).'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT 10');
 				}
+
+				$show_rank = (db::query_single_col('SELECT COUNT(*) FROM channel_activity WHERE date LIKE \''.substr($this->now, 0, ($period === 'month' ? 7 : 4)).'%\'') === 1 ? false : true);
 			} else {
 				$title = 'Most Talkative People &ndash; All-Time';
 
 				if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0'))) {
 					$results = db::query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, lasttalked, quote, rank_cur, rank_old FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid JOIN ruid_rank_alltime ON ruid_lines.ruid = ruid_rank_alltime.ruid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT 30');
 				}
+
+				$show_rank = (db::query_single_col('SELECT COUNT(*) FROM channel_activity') === 1 ? false : true);
 			}
 		} elseif ($page === 'history') {
 			$title = 'Most Talkative People &ndash; '.(!is_null($this->month) ? date('F Y', strtotime($this->year.'-'.($this->month <= 9 ? '0' : '').$this->month.'-01')) : $this->year);
@@ -673,7 +677,7 @@ trait common_web
 			 * Indicate change in ranking compared to previous day except when it doesn't
 			 * make sense on the very first day of each specific table.
 			 */
-			if ($page === 'html' && !($period === 'month' && date('j', strtotime($this->now)) === '1') && !($period === 'year' && date('z', strtotime($this->now)) === '0') && db::query_single_col('SELECT COUNT(*) FROM parse_history') !== 1) {
+			if ($page === 'html' && $show_rank) {
 				if ($result['rank_cur'] === $result['rank_old']) {
 					$pos = $result['rank_cur'];
 				} elseif (is_null($result['rank_old']) || $result['rank_cur'] < $result['rank_old']) {
