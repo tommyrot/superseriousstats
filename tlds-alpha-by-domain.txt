@@ -1,4 +1,4 @@
-# Version 2021121100, Last Updated Sat Dec 11 07:07:01 2021 UTC
+# Version 2022010800, Last Updated Sat Jan  8 07:07:01 2022 UTC
 AAA
 AARP
 ABARTH
@@ -717,7 +717,6 @@ LINK
 LIPSY
 LIVE
 LIVING
-LIXIL
 LK
 LLC
 LLP
