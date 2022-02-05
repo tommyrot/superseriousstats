@@ -76,17 +76,16 @@ trait common_web
 						 * This type is used for topics only and implies wrapping.
 						 */
 						$words = explode(' ', ${'v'.$col});
-						${'v'.$col} = '';
 
-						foreach ($words as $csword) {
+						foreach ($words as $key => $csword) {
 							if (preg_match('/^(www\.|https?:\/\/).+/i', $csword) && !is_null($urlparts = $this->get_urlparts($csword))) {
-								${'v'.$col} .= '<a href="'.$this->htmlify($urlparts['url']).'">'.$this->htmlify($urlparts['url']).'</a> ';
+								$words[$key] = '<a href="'.$this->htmlify($urlparts['url']).'">'.$this->htmlify($urlparts['url']).'</a> ';
 							} else {
-								${'v'.$col} .= $this->htmlify($csword).' ';
+								$words[$key] = $this->htmlify($csword).' ';
 							}
 						}
 
-						${'v'.$col} = rtrim(${'v'.$col});
+						${'v'.$col} = implode(' ', $words);
 						break;
 					case 'str-userstats':
 						${'v'.$col} = '<a href="user.php?nick='.$this->htmlify(urlencode(${'v'.$col})).'">'.$this->htmlify(${'v'.$col}).'</a>';
