@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2010-2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2022, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -26,11 +26,7 @@ trait common
 			}
 
 			if (is_string($this->$var)) {
-				if (str_starts_with($value, 'a:')) {
-					$this->$var = unserialize($value);
-				} else {
-					$this->$var = $value;
-				}
+				$this->$var = $value;
 			} elseif (is_int($this->$var)) {
 				if (preg_match('/^\d+$/', $value)) {
 					$this->$var = (int) $value;
@@ -41,6 +37,8 @@ trait common
 				} elseif (preg_match('/^false$/i', $value)) {
 					$this->$var = false;
 				}
+			} elseif (is_array($this->$var)) {
+				$this->$var = unserialize($value);
 			}
 		}
 	}
