@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2022, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -233,9 +233,9 @@ class html
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			/**
-			 * Hide words for which a nick with 7 or more days of activity exists.
+			 * Hide nicks with at least 3 days of activity or 20 lines typed from words.
 			 */
-			$section .= $this->create_table('Words of '.$result['length'].' Characters', ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE length = '.$result['length'].' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', $result['total']]);
+			$section .= $this->create_table('Words of '.$result['length'].' Characters', ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE length = '.$result['length'].' AND (csnick IS NULL OR ((SELECT COUNT(*) FROM uid_activity WHERE uid = t1.uid) < 3 AND IFNULL((SELECT l_total FROM uid_lines WHERE uid = t1.uid), 0) < 20)) ORDER BY v1 DESC, v2 ASC LIMIT 5', $result['total']]);
 		}
 
 		if ($section !== '') {
@@ -250,9 +250,9 @@ class html
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			/**
-			 * Hide words for which a nick with 7 or more days of activity exists.
+			 * Hide nicks with at least 3 days of activity or 20 lines typed from words.
 			 */
-			$section .= $this->create_table('Words First Used in '.$result['firstused'], ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE firstused = \''.$result['firstused'].'\' AND (csnick IS NULL OR IFNULL((SELECT activedays FROM ruid_lines WHERE ruid = t1.ruid), 0) < 7) ORDER BY v1 DESC, v2 ASC LIMIT 5', 'SELECT COUNT(*) FROM words WHERE firstused = \''.$result['firstused'].'\'']);
+			$section .= $this->create_table('Words First Used in '.$result['firstused'], ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE firstused = \''.$result['firstused'].'\' AND (csnick IS NULL OR ((SELECT COUNT(*) FROM uid_activity WHERE uid = t1.uid) < 3 AND IFNULL((SELECT l_total FROM uid_lines WHERE uid = t1.uid), 0) < 20)) ORDER BY v1 DESC, v2 ASC LIMIT 5', 'SELECT COUNT(*) FROM words WHERE firstused = \''.$result['firstused'].'\'']);
 		}
 
 		if ($section !== '') {
