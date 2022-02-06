@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2022, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -142,22 +142,37 @@ class parser
 	private function normalize_line(string $line): string
 	{
 		if (!preg_match('/^'.$this->hex_valid_utf8.'+$/', $line)) {
-			$this->line_new = '';
+			/**
+			 * Match every continuous chunk of valid UTF-8 encoded characters and all single
+			 * bytes that don't validate as such.
+			 */
+			preg_match_all('/'.$this->hex_valid_utf8.'+|./', $line, $matches);
 
-			while ($line !== '') {
+			foreach ($matches[0] as $key => $chunk) {
 				/**
-				 * 1. Match the first valid multibyte character or otherwise a single byte.
-				 * 2. Pass it on to rebuild_line() and replace the character with an empty
-				 *    string effectively making $line shorter.
-				 * 3. Continue until $line is zero bytes in length.
+				 * If $chunk consists of more than one byte it must be valid, otherwise check
+				 * against the valid single-byte range. Valid chunks don't need any treatment.
 				 */
-				$line = preg_replace_callback('/^(?:'.$this->hex_valid_utf8.'|.)/s', [$this, 'rebuild_line'], $line);
+				if (strlen($chunk) > 1 || preg_match('/[\x00-\x7F]/', $chunk)) {
+					continue;
+
+				/**
+				 * Single-byte characters from the Latin-1 Supplement are converted to UTF-8.
+				 */
+				} elseif (preg_match('/'.$this->hex_latin1_supplement.'/', $chunk)) {
+					$matches[0][$key] = preg_replace_callback('/'.$this->hex_latin1_supplement.'/', function (array $matches_callback): string {
+						return pack('C*', (ord($matches_callback[0]) >> 6) | 0xC0, (ord($matches_callback[0]) & 0x3F) | 0x80);
+					}, $chunk);
+
+				/**
+				 * Everything else is converted to the unicode replacement character.
+				 */
+				} else {
+					$matches[0][$key] = "\u{FFFD}";
+				}
 			}
 
-			/**
-			 * Set $line to the rebuilt $line_new.
-			 */
-			$line = $this->line_new;
+			$line = implode($matches[0]);
 		}
 
 		/**
@@ -198,33 +213,6 @@ class parser
 		}
 
 		call_user_func(($gzip ? 'gz' : 'f').'close', $fp);
-	}
-
-	/**
-	 * Build $line_new consisting only of valid UTF-8 characters.
-	 */
-	private function rebuild_line(array $matches): string
-	{
-		$char = $matches[0];
-
-		/**
-		 * 1. Valid UTF-8 is passed along unmodified.
-		 * 2. Single-byte characters from the Latin-1 Supplement are converted to
-		 *    multibyte unicode.
-		 * 3. Everything else is converted to the unicode replacement character.
-		 */
-		if (preg_match('/^'.$this->hex_valid_utf8.'$/', $char)) {
-			$this->line_new .= $char;
-		} elseif (preg_match('/^'.$this->hex_latin1_supplement.'$/', $char)) {
-			$char = preg_replace_callback('/^'.$this->hex_latin1_supplement.'$/', function (array $matches): string {
-				return pack('C*', (ord($matches[0]) >> 6) | 0xC0, (ord($matches[0]) & 0x3F) | 0x80);
-			}, $char);
-			$this->line_new .= $char;
-		} else {
-			$this->line_new .= "\xEF\xBF\xBD";
-		}
-
-		return '';
 	}
 
 	protected function set_action(string $time, string $csnick, string $line): void
