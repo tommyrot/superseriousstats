@@ -293,14 +293,8 @@ class html
 	 */
 	private function create_table_people2(): ?string
 	{
-		if ($this->xxl) {
-			$offset = 50;
-			$rows = 30;
-		} else {
-			$offset = 30;
-			$rows = 15;
-		}
-
+		$offset = ($this->xxl ? 50 : 30);
+		$rows = ($this->xxl ? 30 : 15);
 		$results = db::query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$offset.','.($rows * 3));
 		$col = 1;
 		$row = 0;
