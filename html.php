@@ -14,6 +14,7 @@ class html
 	private bool $link_history_php = true;
 	private bool $link_user_php = true;
 	private bool $show_banner = true;
+	private bool $xxl = false;
 	private string $channel = 'unconfigured';
 	private string $favicon = 'favicon.svg';
 	private string $now = '';
@@ -21,7 +22,7 @@ class html
 
 	public function __construct()
 	{
-		$this->apply_vars('settings', ['channel', 'favicon', 'stylesheet', 'link_history_php', 'link_user_php', 'show_banner']);
+		$this->apply_vars('settings', ['channel', 'favicon', 'stylesheet', 'link_history_php', 'link_user_php', 'show_banner', 'xxl']);
 	}
 
 	/**
@@ -101,42 +102,48 @@ class html
 		$contents .= $this->create_table_people_timeofday(true);
 
 		/**
+		 * When we are generating an XXL stats page override the default table size for
+		 * specific generic tables below.
+		 */
+		$rows = ($this->xxl ? 10 : 5);
+
+		/**
 		 * Build the "General Chat" section.
 		 */
 		$section = '';
-		$section .= $this->create_table('Most Talkative Chatters', ['Lines/Day', 'User'], ['num1', 'str'], ['SELECT CAST(l_total AS REAL) / activedays AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= DATETIME(\''.$this->now.'\', \'-30 day\') ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Most Fluent Chatters', ['Words/Line', 'User'], ['num1', 'str'], ['SELECT CAST(words AS REAL) / l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= DATETIME(\''.$this->now.'\', \'-30 day\') ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Most Tedious Chatters', ['Chars/Line', 'User'], ['num1', 'str'], ['SELECT CAST(characters AS REAL) / l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= DATETIME(\''.$this->now.'\', \'-30 day\') ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Individual Top Days &ndash; All-Time', ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Most Talkative Chatters', ['Lines/Day', 'User'], ['num1', 'str'], ['SELECT CAST(l_total AS REAL) / activedays AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= DATETIME(\''.$this->now.'\', \'-30 day\') ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows], $rows);
+		$section .= $this->create_table('Most Fluent Chatters', ['Words/Line', 'User'], ['num1', 'str'], ['SELECT CAST(words AS REAL) / l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= DATETIME(\''.$this->now.'\', \'-30 day\') ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows], $rows);
+		$section .= $this->create_table('Most Tedious Chatters', ['Chars/Line', 'User'], ['num1', 'str'], ['SELECT CAST(characters AS REAL) / l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays >= 7 AND lasttalked >= DATETIME(\''.$this->now.'\', \'-30 day\') ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows], $rows);
+		$section .= $this->create_table('Individual Top Days &ndash; All-Time', ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT '.$rows], $rows);
 
 		if ($show_table_year) {
-			$section .= $this->create_table('Individual Top Days &ndash; '.substr($this->now, 0, 4), ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.substr($this->now, 0, 4).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
+			$section .= $this->create_table('Individual Top Days &ndash; '.substr($this->now, 0, 4), ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.substr($this->now, 0, 4).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT '.$rows], $rows);
 		}
 
 		if ($show_table_month) {
-			$section .= $this->create_table('Individual Top Days &ndash; '.date('F Y', strtotime($this->now)), ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.substr($this->now, 0, 7).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
+			$section .= $this->create_table('Individual Top Days &ndash; '.date('F Y', strtotime($this->now)), ['Lines', 'User'], ['num', 'str'], ['SELECT MAX(l_total) AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.substr($this->now, 0, 7).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT '.$rows], $rows);
 		}
 
-		$section .= $this->create_table('Most Active Chatters &ndash; All-Time', ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(activedays AS REAL) / '.$days_logged.') * 100 AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
+		$section .= $this->create_table('Most Active Chatters &ndash; All-Time', ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(activedays AS REAL) / '.$days_logged.') * 100 AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND activedays != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows], $rows);
 
 		if ($show_table_year) {
-			$section .= $this->create_table('Most Active Chatters &ndash; '.substr($this->now, 0, 4), ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.substr($this->now, 0, 4).'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.substr($this->now, 0, 4).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
+			$section .= $this->create_table('Most Active Chatters &ndash; '.substr($this->now, 0, 4), ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.substr($this->now, 0, 4).'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.substr($this->now, 0, 4).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT '.$rows], $rows);
 		}
 
 		if ($show_table_month) {
-			$section .= $this->create_table('Most Active Chatters &ndash; '.date('F Y', strtotime($this->now)), ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.substr($this->now, 0, 7).'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.substr($this->now, 0, 7).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT 5']);
+			$section .= $this->create_table('Most Active Chatters &ndash; '.date('F Y', strtotime($this->now)), ['Activity', 'User'], ['num2-perc', 'str'], ['SELECT (CAST(COUNT(DISTINCT date) AS REAL) / (SELECT COUNT(*) FROM parse_history WHERE date LIKE \''.substr($this->now, 0, 7).'%\')) * 100 AS v1, csnick AS v2 FROM ruid_activity_by_day JOIN uid_details ON ruid_activity_by_day.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date LIKE \''.substr($this->now, 0, 7).'%\' GROUP BY ruid_activity_by_day.ruid ORDER BY v1 DESC, ruid_activity_by_day.ruid ASC LIMIT '.$rows], $rows);
 		}
 
-		$section .= $this->create_table('Exclamations', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT exclamations AS v1, csnick AS v2, ex_exclamations AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND exclamations != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(exclamations) FROM ruid_lines']);
-		$section .= $this->create_table('Questions', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT questions AS v1, csnick AS v2, ex_questions AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND questions != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(questions) FROM ruid_lines']);
-		$section .= $this->create_table('UPPERCASED Lines', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT uppercased AS v1, csnick AS v2, ex_uppercased AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND uppercased != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(uppercased) FROM ruid_lines']);
-		$section .= $this->create_table('Monologues', ['Total', 'User'], ['num', 'str'], ['SELECT monologues AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND monologues != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(monologues) FROM ruid_lines']);
-		$section .= $this->create_table('Longest Monologue', ['Lines', 'User'], ['num', 'str'], ['SELECT topmonologue AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND topmonologue != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Moodiest People', ['Smileys', 'User'], ['num', 'str'], ['SELECT SUM(total) AS v1, csnick AS v2 FROM ruid_smileys JOIN uid_details ON ruid_smileys.ruid = uid_details.uid JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE status NOT IN (3,4) AND category IS NOT NULL GROUP BY ruid_smileys.ruid ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', 'SELECT SUM(total) FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE category IS NOT NULL']);
-		$section .= $this->create_table('Slaps Given', ['Total', 'User'], ['num', 'str'], ['SELECT slaps AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND slaps != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(slaps) FROM ruid_lines']);
-		$section .= $this->create_table('Slaps Received', ['Total', 'User'], ['num', 'str'], ['SELECT slapped AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND slapped != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(slapped) FROM ruid_lines']);
-		$section .= $this->create_table('Most Lively Bots', ['Lines', 'Bot'], ['num', ($this->link_user_php ? 'str-userstats' : 'str')], ['SELECT l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3 AND l_total != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5']);
-		$section .= $this->create_table('Actions Performed', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT actions AS v1, csnick AS v2, ex_actions AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND actions != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(actions) FROM ruid_lines']);
+		$section .= $this->create_table('Exclamations', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT exclamations AS v1, csnick AS v2, ex_exclamations AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND exclamations != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(exclamations) FROM ruid_lines'], $rows);
+		$section .= $this->create_table('Questions', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT questions AS v1, csnick AS v2, ex_questions AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND questions != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(questions) FROM ruid_lines'], $rows);
+		$section .= $this->create_table('UPPERCASED Lines', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT uppercased AS v1, csnick AS v2, ex_uppercased AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND uppercased != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(uppercased) FROM ruid_lines'], $rows);
+		$section .= $this->create_table('Monologues', ['Total', 'User'], ['num', 'str'], ['SELECT monologues AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND monologues != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(monologues) FROM ruid_lines'], $rows);
+		$section .= $this->create_table('Longest Monologue', ['Lines', 'User'], ['num', 'str'], ['SELECT topmonologue AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND topmonologue != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows], $rows);
+		$section .= $this->create_table('Moodiest People', ['Smileys', 'User'], ['num', 'str'], ['SELECT SUM(total) AS v1, csnick AS v2 FROM ruid_smileys JOIN uid_details ON ruid_smileys.ruid = uid_details.uid JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE status NOT IN (3,4) AND category IS NOT NULL GROUP BY ruid_smileys.ruid ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT '.$rows, 'SELECT SUM(total) FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE category IS NOT NULL'], $rows);
+		$section .= $this->create_table('Slaps Given', ['Total', 'User'], ['num', 'str'], ['SELECT slaps AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND slaps != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(slaps) FROM ruid_lines'], $rows);
+		$section .= $this->create_table('Slaps Received', ['Total', 'User'], ['num', 'str'], ['SELECT slapped AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND slapped != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(slapped) FROM ruid_lines'], $rows);
+		$section .= $this->create_table('Most Lively Bots', ['Lines', 'Bot'], ['num', ($this->link_user_php ? 'str-userstats' : 'str')], ['SELECT l_total AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3 AND l_total != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows], $rows);
+		$section .= $this->create_table('Actions Performed', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT actions AS v1, csnick AS v2, ex_actions AS v3 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND actions != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(actions) FROM ruid_lines'], $rows);
 
 		if ($section !== '') {
 			$contents .= '<div class="section">General Chat</div>'."\n".$section;
@@ -157,7 +164,7 @@ class html
 			'm_devoiced' => 'deVoices &apos;-v&apos; Received'];
 
 		foreach ($modes as $mode => $title) {
-			$section .= $this->create_table($title, ['Total', 'User'], ['num', 'str'], ['SELECT '.$mode.' AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND '.$mode.' != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM('.$mode.') FROM ruid_events']);
+			$section .= $this->create_table($title, ['Total', 'User'], ['num', 'str'], ['SELECT '.$mode.' AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND '.$mode.' != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$rows, 'SELECT SUM('.$mode.') FROM ruid_events'], $rows);
 		}
 
 		if ($section !== '') {
@@ -168,14 +175,14 @@ class html
 		 * Events section.
 		 */
 		$section = '';
-		$section .= $this->create_table('Kicks Given', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT kicks AS v1, csnick AS v2, ex_kicks AS v3 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND kicks != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(kicks) FROM ruid_events']);
-		$section .= $this->create_table('Kicks Received', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT kicked AS v1, csnick AS v2, ex_kicked AS v3 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND kicked != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(kicked) FROM ruid_events']);
-		$section .= $this->create_table('Channel Joins', ['Total', 'User'], ['num', 'str'], ['SELECT joins AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND joins != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(joins) FROM ruid_events']);
-		$section .= $this->create_table('Channel Parts', ['Total', 'User'], ['num', 'str'], ['SELECT parts AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND parts != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(parts) FROM ruid_events']);
-		$section .= $this->create_table('IRC Quits', ['Total', 'User'], ['num', 'str'], ['SELECT quits AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND quits != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(quits) FROM ruid_events']);
-		$section .= $this->create_table('Nick Changes', ['Total', 'User'], ['num', 'str'], ['SELECT nickchanges AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND nickchanges != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(nickchanges) FROM ruid_events']);
-		$section .= $this->create_table('Aliases', ['Total', 'User'], ['num', 'str'], ['SELECT COUNT(*) - 1 AS v1, (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS v2 FROM uid_details AS t1 WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 1) GROUP BY ruid HAVING v1 != 0 ORDER BY v1 DESC, ruid ASC LIMIT 5', 'SELECT COUNT(*) FROM uid_details WHERE status = 2']);
-		$section .= $this->create_table('Topics Set', ['Total', 'User'], ['num', 'str'], ['SELECT topics AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND topics != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT 5', 'SELECT SUM(topics) FROM ruid_events']);
+		$section .= $this->create_table('Kicks Given', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT kicks AS v1, csnick AS v2, ex_kicks AS v3 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND kicks != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$rows, 'SELECT SUM(kicks) FROM ruid_events'], $rows);
+		$section .= $this->create_table('Kicks Received', ['Total', 'User', 'Example'], ['num', 'str', 'str'], ['SELECT kicked AS v1, csnick AS v2, ex_kicked AS v3 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND kicked != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$rows, 'SELECT SUM(kicked) FROM ruid_events'], $rows);
+		$section .= $this->create_table('Channel Joins', ['Total', 'User'], ['num', 'str'], ['SELECT joins AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND joins != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$rows, 'SELECT SUM(joins) FROM ruid_events'], $rows);
+		$section .= $this->create_table('Channel Parts', ['Total', 'User'], ['num', 'str'], ['SELECT parts AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND parts != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$rows, 'SELECT SUM(parts) FROM ruid_events'], $rows);
+		$section .= $this->create_table('IRC Quits', ['Total', 'User'], ['num', 'str'], ['SELECT quits AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND quits != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$rows, 'SELECT SUM(quits) FROM ruid_events'], $rows);
+		$section .= $this->create_table('Nick Changes', ['Total', 'User'], ['num', 'str'], ['SELECT nickchanges AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND nickchanges != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$rows, 'SELECT SUM(nickchanges) FROM ruid_events'], $rows);
+		$section .= $this->create_table('Aliases', ['Total', 'User'], ['num', 'str'], ['SELECT COUNT(*) - 1 AS v1, (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS v2 FROM uid_details AS t1 WHERE ruid IN (SELECT ruid FROM uid_details WHERE status = 1) GROUP BY ruid HAVING v1 != 0 ORDER BY v1 DESC, ruid ASC LIMIT '.$rows, 'SELECT COUNT(*) FROM uid_details WHERE status = 2'], $rows);
+		$section .= $this->create_table('Topics Set', ['Total', 'User'], ['num', 'str'], ['SELECT topics AS v1, csnick AS v2 FROM ruid_events JOIN uid_details ON ruid_events.ruid = uid_details.uid WHERE status NOT IN (3,4) AND topics != 0 ORDER BY v1 DESC, ruid_events.ruid ASC LIMIT '.$rows, 'SELECT SUM(topics) FROM ruid_events'], $rows);
 		$section .= $this->create_table('Most Recent Topics', ['Date', 'User', 'Topic'], ['date', 'str', 'str-url'], ['SELECT datetime AS v1, (SELECT csnick FROM uid_details WHERE uid = t1.ruid) AS v2, topic AS v3 FROM uid_topics JOIN uid_details AS t1 ON uid_topics.uid = t1.uid WHERE ruid NOT IN (SELECT ruid FROM uid_details WHERE status = 4) ORDER BY uid_topics.ROWID DESC LIMIT 5']);
 
 		if ($section !== '') {
@@ -189,7 +196,7 @@ class html
 		$results = db::query('SELECT category, smiley, SUM(total) AS total FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE category IS NOT NULL GROUP BY category ORDER BY total DESC, ruid_smileys.sid ASC LIMIT 9');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			$section .= $this->create_table(ucwords($result['category']).' '.$this->htmlify($result['smiley']), ['Total', 'User'], ['num', 'str'], ['SELECT SUM(total) AS v1, csnick AS v2 FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND category = \''.$result['category'].'\' GROUP BY ruid_smileys.ruid, category ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', $result['total']]);
+			$section .= $this->create_table(ucwords($result['category']).' '.$this->htmlify($result['smiley']), ['Total', 'User'], ['num', 'str'], ['SELECT SUM(total) AS v1, csnick AS v2 FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND category = \''.$result['category'].'\' GROUP BY ruid_smileys.ruid, category ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT '.$rows, $result['total']], $rows);
 		}
 
 		if ($section !== '') {
@@ -203,7 +210,7 @@ class html
 		$results = db::query('SELECT smiley, SUM(total) AS total FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid WHERE category IS NULL GROUP BY smiley ORDER BY total DESC, ruid_smileys.sid ASC LIMIT 9');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			$section .= $this->create_table('&quot;<i>'.$result['smiley'].'</i>&quot;', ['Total', 'User'], ['num', 'str'], ['SELECT total AS v1, csnick AS v2 FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND smiley = \''.$result['smiley'].'\' ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT 5', $result['total']]);
+			$section .= $this->create_table('&quot;<i>'.$result['smiley'].'</i>&quot;', ['Total', 'User'], ['num', 'str'], ['SELECT total AS v1, csnick AS v2 FROM ruid_smileys JOIN smileys ON ruid_smileys.sid = smileys.sid JOIN uid_details ON ruid_smileys.ruid = uid_details.uid WHERE status NOT IN (3,4) AND smiley = \''.$result['smiley'].'\' ORDER BY v1 DESC, ruid_smileys.ruid ASC LIMIT '.$rows, $result['total']], $rows);
 		}
 
 		if ($section !== '') {
@@ -217,9 +224,9 @@ class html
 		$section .= $this->create_table('Most Referenced Domain Names', ['Total', 'Domain', 'First Used'], ['num', 'url', 'date'], ['SELECT SUM(total) AS v1, \'http://\' || fqdn AS v2, MIN(firstused) AS v3 FROM ruid_urls JOIN urls ON ruid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid WHERE active = 1 GROUP BY urls.fid ORDER BY v1 DESC, v3 ASC LIMIT 10'], 10);
 		$section .= $this->create_table('Most Referenced TLDs', ['Total', 'TLD'], ['num', 'str'], ['SELECT SUM(total) AS v1, \'.\' || tld AS v2 FROM ruid_urls JOIN urls ON ruid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid WHERE active = 1 GROUP BY tld ORDER BY v1 DESC, v2 ASC LIMIT 10'], 10);
 		$section .= $this->create_table('Most Recent URLs', ['Date', 'User', 'URL'], ['date-norepeat', 'str', 'url'], ['SELECT lastused AS v1, csnick AS v2, url AS v3 FROM ruid_urls JOIN uid_details ON ruid_urls.ruid = uid_details.uid JOIN urls ON ruid_urls.lid = urls.lid WHERE status NOT IN (3,4) ORDER BY v1 DESC LIMIT 30'], 30);
-		$section .= $this->create_table('URLs by Users', ['Total', 'User'], ['num', 'str'], ['SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status != 3']);
-		$section .= $this->create_table('URLs by Bots', ['Total', 'Bot'], ['num', 'str'], ['SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3 AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT 5', 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3']);
-		$section .= $this->create_table('Reposts by Users', ['Total', 'User'], ['num', 'str'], ['SELECT SUM(total - CASE WHEN firstused = (SELECT MIN(firstused) FROM ruid_urls WHERE lid = t1.lid) THEN 1 ELSE 0 END) AS v1, csnick AS v2 FROM ruid_urls AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) GROUP BY t1.ruid HAVING v1 != 0 ORDER BY v1 DESC, t1.ruid ASC LIMIT 5', 'SELECT SUM(total - CASE WHEN firstused = (SELECT MIN(firstused) FROM ruid_urls WHERE lid = t1.lid) THEN 1 ELSE 0 END) FROM ruid_urls AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status != 3']);
+		$section .= $this->create_table('URLs by Users', ['Total', 'User'], ['num', 'str'], ['SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status != 3'], $rows);
+		$section .= $this->create_table('URLs by Bots', ['Total', 'Bot'], ['num', 'str'], ['SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3 AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3'], $rows);
+		$section .= $this->create_table('Reposts by Users', ['Total', 'User'], ['num', 'str'], ['SELECT SUM(total - CASE WHEN firstused = (SELECT MIN(firstused) FROM ruid_urls WHERE lid = t1.lid) THEN 1 ELSE 0 END) AS v1, csnick AS v2 FROM ruid_urls AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) GROUP BY t1.ruid HAVING v1 != 0 ORDER BY v1 DESC, t1.ruid ASC LIMIT '.$rows, 'SELECT SUM(total - CASE WHEN firstused = (SELECT MIN(firstused) FROM ruid_urls WHERE lid = t1.lid) THEN 1 ELSE 0 END) FROM ruid_urls AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status != 3'], $rows);
 
 		if ($section !== '') {
 			$contents .= '<div class="section">URLs</div>'."\n".$section;
@@ -235,7 +242,7 @@ class html
 			/**
 			 * Hide nicks with at least 3 days of activity or 20 lines typed from words.
 			 */
-			$section .= $this->create_table('Words of '.$result['length'].' Characters', ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE length = '.$result['length'].' AND (csnick IS NULL OR ((SELECT COUNT(*) FROM uid_activity WHERE uid = t1.uid) < 3 AND IFNULL((SELECT l_total FROM uid_lines WHERE uid = t1.uid), 0) < 20)) ORDER BY v1 DESC, v2 ASC LIMIT 5', $result['total']]);
+			$section .= $this->create_table('Words of '.$result['length'].' Characters', ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE length = '.$result['length'].' AND (csnick IS NULL OR ((SELECT COUNT(*) FROM uid_activity WHERE uid = t1.uid) < 3 AND IFNULL((SELECT l_total FROM uid_lines WHERE uid = t1.uid), 0) < 20)) ORDER BY v1 DESC, v2 ASC LIMIT '.$rows, $result['total']], $rows);
 		}
 
 		if ($section !== '') {
@@ -252,7 +259,7 @@ class html
 			/**
 			 * Hide nicks with at least 3 days of activity or 20 lines typed from words.
 			 */
-			$section .= $this->create_table('Words First Used in '.$result['firstused'], ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE firstused = \''.$result['firstused'].'\' AND (csnick IS NULL OR ((SELECT COUNT(*) FROM uid_activity WHERE uid = t1.uid) < 3 AND IFNULL((SELECT l_total FROM uid_lines WHERE uid = t1.uid), 0) < 20)) ORDER BY v1 DESC, v2 ASC LIMIT 5', 'SELECT COUNT(*) FROM words WHERE firstused = \''.$result['firstused'].'\'']);
+			$section .= $this->create_table('Words First Used in '.$result['firstused'], ['Total', 'Word'], ['num', 'str'], ['SELECT total AS v1, word AS v2 FROM words LEFT JOIN uid_details AS t1 ON words.word = t1.csnick COLLATE NOCASE WHERE firstused = \''.$result['firstused'].'\' AND (csnick IS NULL OR ((SELECT COUNT(*) FROM uid_activity WHERE uid = t1.uid) < 3 AND IFNULL((SELECT l_total FROM uid_lines WHERE uid = t1.uid), 0) < 20)) ORDER BY v1 DESC, v2 ASC LIMIT '.$rows, 'SELECT COUNT(*) FROM words WHERE firstused = \''.$result['firstused'].'\''], $rows);
 		}
 
 		if ($section !== '') {
@@ -266,7 +273,7 @@ class html
 		$results = db::query('SELECT milestone, COUNT(*) AS total FROM ruid_milestones GROUP BY milestone ORDER BY milestone ASC');
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			$section .= $this->create_table(number_format($result['milestone']).' Lines Milestone', ['Date', 'User'], ['date', 'str'], ['SELECT date AS v1, csnick AS v2 FROM ruid_milestones JOIN uid_details ON ruid_milestones.ruid = uid_details.uid WHERE milestone = '.$result['milestone'].' ORDER BY v1 ASC, ruid_milestones.ruid ASC LIMIT 5', $result['total']]);
+			$section .= $this->create_table(number_format($result['milestone']).' Lines Milestone', ['Date', 'User'], ['date', 'str'], ['SELECT date AS v1, csnick AS v2 FROM ruid_milestones JOIN uid_details ON ruid_milestones.ruid = uid_details.uid WHERE milestone = '.$result['milestone'].' ORDER BY v1 ASC, ruid_milestones.ruid ASC LIMIT '.$rows, $result['total']], $rows);
 		}
 
 		if ($section !== '') {
@@ -286,12 +293,20 @@ class html
 	 */
 	private function create_table_people2(): ?string
 	{
-		$results = db::query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT 30,45');
+		if ($this->xxl) {
+			$offset = 50;
+			$rows = 30;
+		} else {
+			$offset = 30;
+			$rows = 15;
+		}
+
+		$results = db::query('SELECT csnick, l_total FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.$offset.','.($rows * 3));
 		$col = 1;
 		$row = 0;
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
-			if (++$row > 15) {
+			if (++$row > $rows) {
 				++$col;
 				$row = 1;
 			}
@@ -299,23 +314,23 @@ class html
 			$columns[$col][$row] = [
 				'csnick' => $result['csnick'],
 				'l_total' => $result['l_total'],
-				'pos' => 30 + (($col - 1) * 15) + $row];
+				'pos' => $offset + (($col - 1) * $rows) + $row];
 		}
 
 		/**
 		 * Return if we don't have enough data to fill the table.
 		 */
-		if (!isset($columns[3][15])) {
+		if (!isset($columns[3][$rows])) {
 			return null;
 		}
 
-		$total = db::query_single_col('SELECT COUNT(*) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)') - 75;
+		$total = db::query_single_col('SELECT COUNT(*) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4)') - ($offset + $rows * 3);
 		$colgroup = '<colgroup>'.str_repeat('<col>', 13);
 		$thead = '<thead><tr><th colspan="13">'.($total !== 0 ? '<span class="title-left">Less Talkative People &ndash; All-Time</span><span class="title-right">'.number_format($total).($total !== 1 ? ' People' : ' Person').' had even less to say..</span>' : 'Less Talkative People &ndash; All-Time');
 		$thead .= '<tr><td><td>Lines<td><td>User<td><td>Lines<td><td>User<td><td>Lines<td><td>User<td>';
 		$tbody = '<tbody>';
 
-		for ($i = 1; $i <= 15; ++$i) {
+		for ($i = 1; $i <= $rows; ++$i) {
 			$tbody .= '<tr><td>';
 
 			for ($j = 1; $j <= 3; ++$j) {

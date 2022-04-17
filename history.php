@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2010-2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2010-2022, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -20,6 +20,7 @@ class history
 
 	private bool $link_user_php = true;
 	private bool $show_banner = true;
+	private bool $xxl = false;
 	private ?int $month = null;
 	private int $year = 0;
 	private string $channel = 'unconfigured';
@@ -51,7 +52,7 @@ class history
 		 * Open the database connection and update our settings.
 		 */
 		db::connect();
-		$this->apply_vars('settings', ['timezone', 'channel', 'favicon', 'stylesheet', 'main_page', 'link_user_php', 'show_banner']);
+		$this->apply_vars('settings', ['timezone', 'channel', 'favicon', 'stylesheet', 'main_page', 'link_user_php', 'show_banner', 'xxl']);
 		out::set_stylesheet($this->stylesheet);
 
 		/**

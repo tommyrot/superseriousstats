@@ -600,7 +600,7 @@ trait common_web
 				$title = 'Most Talkative People &ndash; All-Time';
 
 				if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND l_total != 0'))) {
-					$results = db::query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, lasttalked, quote, rank_cur, rank_old FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid JOIN ruid_rank_alltime ON ruid_lines.ruid = ruid_rank_alltime.ruid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT 30');
+					$results = db::query('SELECT csnick, l_total, l_night, l_morning, l_afternoon, l_evening, lasttalked, quote, rank_cur, rank_old FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid JOIN ruid_rank_alltime ON ruid_lines.ruid = ruid_rank_alltime.ruid WHERE status NOT IN (3,4) AND l_total != 0 ORDER BY l_total DESC, ruid_lines.ruid ASC LIMIT '.($this->xxl ? '50' : '30'));
 				}
 
 				$show_rank = (db::query_single_col('SELECT COUNT(*) FROM channel_activity') === 1 ? false : true);
@@ -609,7 +609,7 @@ trait common_web
 			$title = 'Most Talkative People &ndash; '.(!is_null($this->month) ? date('F Y', strtotime($this->year.'-'.($this->month <= 9 ? '0' : '').$this->month.'-01')) : $this->year);
 
 			if (!is_null($l_total = db::query_single_col('SELECT SUM(l_total) FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\''))) {
-				$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT 30');
+				$results = db::query('SELECT csnick, t1.l_total, t1.l_night, t1.l_morning, t1.l_afternoon, t1.l_evening, lasttalked, quote FROM '.(!is_null($this->month) ? 'ruid_activity_by_month' : 'ruid_activity_by_year').' AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN ruid_lines ON t1.ruid = ruid_lines.ruid WHERE status NOT IN (3,4) AND date = \''.$this->year.(!is_null($this->month) ? '-'.($this->month <= 9 ? '0' : '').$this->month : '').'\' ORDER BY t1.l_total DESC, t1.ruid ASC LIMIT '.($this->xxl ? '50' : '30'));
 			}
 		}
 
