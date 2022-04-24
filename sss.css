@@ -16,7 +16,7 @@ a:hover {
 	text-decoration:none;
 }
 body {
-	background-color:#F9F9F9;
+	background-color:#f9f9f9;
 	margin:0 auto;
 	width:840px;
 }
@@ -32,15 +32,15 @@ body {
 	width:818px;
 }
 .bannerbg {
-	background:#F9F9F9 url('bannerbg.png') left top repeat-x;
+	background:#f9f9f9 url('bannerbg.png') left top repeat-x;
 }
 .down:before {
-	color:#C74243;
+	color:#c74243;
 	content:'\25BC';
 }
 .error {
-	background-color:#FFE0E0;
-	border-color:#CC0000;
+	background-color:#ffe0e0;
+	border-color:#c00;
 	border-style:solid;
 	border-width:3px 1px 1px;
 	color:#666;
@@ -57,10 +57,10 @@ body {
 	color:#999;
 }
 .ranking {
-	background-color:#EEE;
+	background-color:#eee;
 	border-radius:5px;
-	border:1px solid #E0E0E0;
-	color:#999999;
+	border:1px solid #e0e0e0;
+	color:#999;
 	margin-left:15px;
 	padding:2px 5px;
 }
@@ -74,7 +74,7 @@ body {
 	width:818px;
 }
 .section {
-	border:1px solid #E0E0E0;
+	border:1px solid #e0e0e0;
 	padding:1px;
 	text-align:center;
 }
@@ -87,7 +87,7 @@ body {
 	font-weight:normal;
 }
 .up:before {
-	color:#70A35E;
+	color:#70a35e;
 	content:'\25B2';
 }
 .userpic {
@@ -101,22 +101,22 @@ body {
  * Graph colors; (n)ight, (m)orning, (a)fternoon, (e)vening
  */
 .n {
-	background-color:#416D9C;
+	background-color:#416d9c;
 }
 .m {
-	background-color:#70A35E;
+	background-color:#70a35e;
 }
 .a {
-	background-color:#EBB056;
+	background-color:#ebb056;
 }
 .e {
-	background-color:#C74243;
+	background-color:#c74243;
 }
 /***************************************
  * Global table styling
  */
 table {
-	background-color:#EEE;
+	background-color:#eee;
 	border-collapse:separate;
 	border-color:#666;
 	border-spacing:0;
@@ -155,7 +155,7 @@ td {
 }
 .small thead td,
 .small tbody td:nth-child(2) {
-	background-color:#E0E0E0;
+	background-color:#e0e0e0;
 	color:#999;
 	font-weight:bold;
 }
@@ -191,7 +191,7 @@ td {
 }
 .large thead td,
 .large tbody td:nth-child(2) {
-	background-color:#E0E0E0;
+	background-color:#e0e0e0;
 	color:#999;
 	font-weight:bold;
 }
@@ -234,7 +234,7 @@ td {
 }
 .medium thead td,
 .medium tbody td:nth-child(2) {
-	background-color:#E0E0E0;
+	background-color:#e0e0e0;
 	color:#999;
 	font-weight:bold;
 }
@@ -274,7 +274,7 @@ td {
 	padding:0;
 }
 .act tfoot td {
-	background-color:#E0E0E0;
+	background-color:#e0e0e0;
 	color:#999;
 	font-weight:bold;
 	padding:1px 0;
@@ -326,7 +326,7 @@ td {
 }
 .ppl thead td,
 .ppl tbody td:nth-child(3) {
-	background-color:#E0E0E0;
+	background-color:#e0e0e0;
 	color:#999;
 	font-weight:bold;
 }
@@ -389,7 +389,7 @@ td {
 .ppl2 tbody td:nth-child(3),
 .ppl2 tbody td:nth-child(7),
 .ppl2 tbody td:nth-child(11) {
-	background-color:#E0E0E0;
+	background-color:#e0e0e0;
 	color:#999;
 	font-weight:bold;
 }
@@ -430,7 +430,7 @@ td {
 }
 .tod thead td,
 .tod tbody td:nth-child(1) {
-	background-color:#E0E0E0;
+	background-color:#e0e0e0;
 	color:#999;
 	font-weight:bold;
 }
@@ -470,7 +470,7 @@ td {
 }
 .index thead td,
 .index tbody td:nth-child(1) {
-	background-color:#E0E0E0;
+	background-color:#e0e0e0;
 	color:#999;
 	font-weight:bold;
 }
