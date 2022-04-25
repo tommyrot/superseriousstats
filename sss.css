@@ -34,7 +34,7 @@ body {
 .bannerbg {
 	background:#f9f9f9 url('bannerbg.png') left top repeat-x;
 }
-.down:before {
+.down::before {
 	color:#c74243;
 	content:'\25BC';
 }
@@ -86,7 +86,7 @@ body {
 	font-style:italic;
 	font-weight:normal;
 }
-.up:before {
+.up::before {
 	color:#70a35e;
 	content:'\25B2';
 }
