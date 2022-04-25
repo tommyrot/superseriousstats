@@ -31,8 +31,23 @@ body {
 	height:62px;
 	width:818px;
 }
-.bannerbg {
-	background:#f9f9f9 url('bannerbg.png') left top repeat-x;
+.bannerbg-bottom {
+	background-color:#e0e0e0;
+	height:12px;
+	left:0;
+	position:absolute;
+	top:50px;
+	width:100%;
+	z-index:-1;
+}
+.bannerbg-top {
+	background-color:#eee;
+	height:50px;
+	left:0;
+	position:absolute;
+	top:0;
+	width:100%;
+	z-index:-1;
 }
 .down::before {
 	color:#c74243;
