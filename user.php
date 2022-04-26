@@ -147,8 +147,8 @@ class user
 			. '<link rel="stylesheet" href="'.$this->htmlify($this->stylesheet).'">'."\n"
 			. '</head>'."\n\n"
 			. '<body><div id="container">'."\n"
-			. ($this->show_banner ? '<div class="bannerbg-top"></div><div class="bannerbg-bottom"></div><svg class="banner" viewBox="0 0 818 62"><path style="fill:#8fce90" d="M459 50h-5V17h8v33z"/><path style="fill:#7697cb" d="M433 50h-5V25h8v25z"/><path style="fill:#89c686" d="M457 50h-3V17h4v33z"/><path style="fill:#e17677" d="M446 50h-5V33h8v17z"/><path style="fill:#999" d="M24 56H0v-2h46V33H0V6h48v4H2v21h46v25zm51 0H51V6h2v48h44V6h2v50zm28 0h-1V6h48v27h-46v23zm23-25h22V10h-44v21zm51 25h-24V6h48v27h-46v21h46v2zm0-25h22V10h-44v21zm28 25h-1V6h46v25h2v25h-2V33h-44v23zm22-25h21V10h-42v21zm52 25h-24v-2h46V33h-46V6h48v4h-46v21h46v25zm51 0h-24V6h48v27h-46v21h46v2zm0-25h22V10h-44v21zm28 25h-1V6h46v25h2v25h-2V33h-44v23zm22-25h21V10h-42v21zm33 25h-5v-2h4V10h-4V6h10v4h-4v44h4v2zm32 0h-24V6h48v50zm0-2h22V10h-44v44zm51 2h-24V6h2v48h44V6h2v50zm51 0h-24v-2h46V33h-46V6h48v4h-46v21h46v25zm51 0h-24v-2h46V33h-46V6h48v4h-46v21h46v25zm50 0h-1V10h-22V6h44v4h-20v46zm25 0h-1V6h48v50h-2V33h-44v23zm23-25h22V10h-44v21zm50 25h-1V10h-22V6h44v4h-20v46zm48 0h-24v-2h46V33h-46V6h48v4h-46v21h46v25z"/><path style="fill:#6c8fc2" d="M431 50h-3V25h4v25z"/><path style="fill:#dc6c6d" d="M444 50h-3V33h4v17z"/><path style="fill:#70a35e" d="M458 50h-4V17h8v33zm0-2h2V19h-4v29z"/><path style="fill:#c74243" d="M445 50h-4V33h8v17zm0-2h2V35h-4v13z"/><path style="fill:#416d9c" d="M432 50h-4V25h8v25zm0-2h2V27h-4v21z"/></svg>'."\n" : '')
-			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<span class="ranking">'.$ranking.'</span><br><br>'
+			. ($this->show_banner ? '<div id="bannerbg-top"></div><div id="bannerbg-bottom"></div><svg id="banner" viewBox="0 0 818 62"><path style="fill:#8fce90" d="M459 50h-5V17h8v33z"/><path style="fill:#7697cb" d="M433 50h-5V25h8v25z"/><path style="fill:#89c686" d="M457 50h-3V17h4v33z"/><path style="fill:#e17677" d="M446 50h-5V33h8v17z"/><path style="fill:#999" d="M24 56H0v-2h46V33H0V6h48v4H2v21h46v25zm51 0H51V6h2v48h44V6h2v50zm28 0h-1V6h48v27h-46v23zm23-25h22V10h-44v21zm51 25h-24V6h48v27h-46v21h46v2zm0-25h22V10h-44v21zm28 25h-1V6h46v25h2v25h-2V33h-44v23zm22-25h21V10h-42v21zm52 25h-24v-2h46V33h-46V6h48v4h-46v21h46v25zm51 0h-24V6h48v27h-46v21h46v2zm0-25h22V10h-44v21zm28 25h-1V6h46v25h2v25h-2V33h-44v23zm22-25h21V10h-42v21zm33 25h-5v-2h4V10h-4V6h10v4h-4v44h4v2zm32 0h-24V6h48v50zm0-2h22V10h-44v44zm51 2h-24V6h2v48h44V6h2v50zm51 0h-24v-2h46V33h-46V6h48v4h-46v21h46v25zm51 0h-24v-2h46V33h-46V6h48v4h-46v21h46v25zm50 0h-1V10h-22V6h44v4h-20v46zm25 0h-1V6h48v50h-2V33h-44v23zm23-25h22V10h-44v21zm50 25h-1V10h-22V6h44v4h-20v46zm48 0h-24v-2h46V33h-46V6h48v4h-46v21h46v25z"/><path style="fill:#6c8fc2" d="M431 50h-3V25h4v25z"/><path style="fill:#dc6c6d" d="M444 50h-3V33h4v17z"/><path style="fill:#70a35e" d="M458 50h-4V17h8v33zm0-2h2V19h-4v29z"/><path style="fill:#c74243" d="M445 50h-4V33h8v17zm0-2h2V35h-4v13z"/><path style="fill:#416d9c" d="M432 50h-4V25h8v25zm0-2h2V27h-4v21z"/></svg>'."\n" : '')
+			. '<div class="info">'.$this->get_userpic().$this->htmlify($this->csnick).', seriously'.(!is_null($mood) ? ' '.$this->htmlify($mood) : '.').'<span id="ranking">'.$ranking.'</span><br><br>'
 			. 'First seen on '.date('M j, Y', strtotime($firstseen)).' and last seen on '.date('M j, Y', strtotime($lastseen)).'.<br><br>'
 			. $this->htmlify($this->csnick).' typed '.number_format($l_total).' line'.($l_total !== 1 ? 's' : '').' on <a href="'.$this->htmlify($this->main_page).'">'.$this->htmlify($this->channel).'</a> &ndash; an average of '.number_format($l_avg).' line'.($l_avg !== 1 ? 's' : '').' per day.<br>'
 			. 'Most active day was '.date('M j, Y', strtotime($high_date)).' with a total of '.number_format($high_lines).' line'.($high_lines !== 1 ? 's' : '').' typed.</div>'."\n";
@@ -209,7 +209,7 @@ class user
 
 		foreach ($nicks as $nick) {
 			if (isset($images[$nick])) {
-				return '<img src="'.$this->htmlify($this->userpics_dir.'/'.$images[$nick]).'" alt="" class="userpic">';
+				return '<img src="'.$this->htmlify($this->userpics_dir.'/'.$images[$nick]).'" alt="" id="userpic">';
 			}
 		}
 
@@ -217,7 +217,7 @@ class user
 		 * Display $userpics_default if no image could be found.
 		 */
 		if ($this->userpics_default !== '') {
-			return '<img src="'.$this->htmlify($this->userpics_dir.'/'.$this->userpics_default).'" alt="" class="userpic">';
+			return '<img src="'.$this->htmlify($this->userpics_dir.'/'.$this->userpics_default).'" alt="" id="userpic">';
 		}
 
 		return null;

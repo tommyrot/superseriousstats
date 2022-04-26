@@ -26,12 +26,12 @@ body {
 .bold {
 	color:#666;
 }
-.banner {
+#banner {
 	display:block;
 	height:62px;
 	width:818px;
 }
-.bannerbg-bottom {
+#bannerbg-bottom {
 	background-color:#e0e0e0;
 	height:12px;
 	left:0;
@@ -40,7 +40,7 @@ body {
 	width:100%;
 	z-index:-1;
 }
-.bannerbg-top {
+#bannerbg-top {
 	background-color:#eee;
 	height:50px;
 	left:0;
@@ -53,7 +53,7 @@ body {
 	color:#c74243;
 	content:'\25BC';
 }
-.error {
+#error {
 	background-color:#ffe0e0;
 	border-color:#c00;
 	border-style:solid;
@@ -71,7 +71,7 @@ body {
 .grey {
 	color:#999;
 }
-.ranking {
+#ranking {
 	background-color:#eee;
 	border-radius:5px;
 	border:1px solid #e0e0e0;
@@ -105,7 +105,7 @@ body {
 	color:#70a35e;
 	content:'\25B2';
 }
-.userpic {
+#userpic {
 	border-radius:50%;
 	float:right;
 	height:80px;
