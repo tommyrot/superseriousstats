@@ -500,3 +500,58 @@ td {
 .index tbody td:nth-child(1n+2) {
 	text-align:right;
 }
+/***************************************
+ * Dark color theme
+ */
+@media (prefers-color-scheme: dark) {
+	a, td {
+		color:#ccc;
+	}
+	body {
+		background-color:#060606;
+	}
+	.bold, .section, .info, th {
+		color:#999;
+	}
+	#bannerbg-bottom {
+		background-color:#1f1f1f;
+	}
+	#bannerbg-top {
+		background-color:#111;
+	}
+	#banner-text {
+		fill:#666;
+	}
+	#ranking {
+		background-color:#111;
+		border-color:#1f1f1f;
+		color:#666;
+	}
+	.section {
+		border-color:#1f1f1f;
+	}
+	table {
+		background-color:#111;
+		border-color:#666;
+	}
+	.small thead td,
+	.small tbody td:nth-child(2),
+	.large thead td,
+	.large tbody td:nth-child(2),
+	.medium thead td,
+	.medium tbody td:nth-child(2),
+	.act tfoot td,
+	.ppl thead td,
+	.ppl tbody td:nth-child(3),
+	.ppl2 thead td,
+	.ppl2 tbody td:nth-child(3),
+	.ppl2 tbody td:nth-child(7),
+	.ppl2 tbody td:nth-child(11),
+	.tod thead td,
+	.tod tbody td:nth-child(1),
+	.index thead td,
+	.index tbody td:nth-child(1) {
+		background-color:#1f1f1f;
+		color:#666;
+	}
+}
