@@ -49,6 +49,9 @@ body {
 	width:100%;
 	z-index:-1;
 }
+#banner-text {
+	fill:#999;
+}
 .down::before {
 	color:#c74243;
 	content:'\25BC';
