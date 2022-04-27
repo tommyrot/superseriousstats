@@ -57,11 +57,11 @@ body {
 	content:'\25BC';
 }
 #error {
-	background-color:#ffe0e0;
-	border-color:#c00;
+	background-color:#eee;
+	border-color:#c74243;
 	border-style:solid;
 	border-width:3px 1px 1px;
-	color:#666;
+	color:#c74243;
 	float:left;
 	font-family:verdana,sans-serif;
 	font-size:10px;
@@ -516,7 +516,7 @@ td {
 	#bannerbg-bottom {
 		background-color:#1f1f1f;
 	}
-	#bannerbg-top {
+	#bannerbg-top, #error {
 		background-color:#111;
 	}
 	#banner-text {
