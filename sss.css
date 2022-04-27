@@ -9,36 +9,27 @@
 /***************************************
  * Assorted styling
  */
+body {
+	background-color:#f9f9f9;
+	margin:0 auto;
+	width:840px;
+}
 a {
 	color:#333;
 }
 a:hover {
 	text-decoration:none;
 }
-body {
-	background-color:#f9f9f9;
-	margin:0 auto;
-	width:840px;
-}
 #container {
 	float:left;
-}
-.bold {
-	color:#666;
 }
 #banner {
 	display:block;
 	height:62px;
 	width:818px;
 }
-#bannerbg-bottom {
-	background-color:#e0e0e0;
-	height:12px;
-	left:0;
-	position:absolute;
-	top:50px;
-	width:100%;
-	z-index:-1;
+#banner-text {
+	fill:#999;
 }
 #bannerbg-top {
 	background-color:#eee;
@@ -49,12 +40,20 @@ body {
 	width:100%;
 	z-index:-1;
 }
-#banner-text {
-	fill:#999;
+#bannerbg-bottom {
+	background-color:#e0e0e0;
+	height:12px;
+	left:0;
+	position:absolute;
+	top:50px;
+	width:100%;
+	z-index:-1;
 }
-.down::before {
-	color:#c74243;
-	content:'\25BC';
+.grey {
+	color:#999;
+}
+.bold {
+	color:#666;
 }
 #error {
 	background-color:#eee;
@@ -70,9 +69,6 @@ body {
 	padding:5px;
 	text-align:center;
 	width:416px;
-}
-.grey {
-	color:#999;
 }
 #ranking {
 	background-color:#eee;
@@ -107,6 +103,10 @@ body {
 .up::before {
 	color:#70a35e;
 	content:'\25B2';
+}
+.down::before {
+	color:#c74243;
+	content:'\25BC';
 }
 #userpic {
 	border-radius:50%;
@@ -504,23 +504,23 @@ td {
  * Dark color theme
  */
 @media (prefers-color-scheme: dark) {
-	a, td {
-		color:#ccc;
-	}
 	body {
 		background-color:#060606;
 	}
-	.bold, .section, .info, th {
+	a, td {
+		color:#ccc;
+	}
+	.bold, .info, th {
 		color:#999;
 	}
-	#bannerbg-bottom {
-		background-color:#1f1f1f;
+	#banner-text {
+		fill:#666;
 	}
 	#bannerbg-top, #error {
 		background-color:#111;
 	}
-	#banner-text {
-		fill:#666;
+	#bannerbg-bottom {
+		background-color:#1f1f1f;
 	}
 	#ranking {
 		background-color:#111;
@@ -529,6 +529,7 @@ td {
 	}
 	.section {
 		border-color:#1f1f1f;
+		color:#999;
 	}
 	table {
 		background-color:#111;
