@@ -509,13 +509,13 @@ td {
 		background-color:#171717;
 	}
 	a, td {
-		color:#ddd;
+		color:#c3c3c3;
 	}
 	.bold, .info, th {
-		color:#aaa;
+		color:#999;
 	}
 	#banner-text {
-		fill:#777;
+		fill:#6f6f6f;
 	}
 	.banner-graph, .n, .m, .a, .e {
 		filter:brightness(80%);
@@ -529,15 +529,15 @@ td {
 	#ranking {
 		background-color:#222;
 		border-color:#303030;
-		color:#777;
+		color:#6f6f6f;
 	}
 	.section {
 		border-color:#303030;
-		color:#aaa;
+		color:#999;
 	}
 	table {
 		background-color:#222;
-		border-color:#777;
+		border-color:#6f6f6f;
 	}
 	.small thead td,
 	.small tbody td:nth-child(2),
@@ -557,6 +557,6 @@ td {
 	.index thead td,
 	.index tbody td:nth-child(1) {
 		background-color:#303030;
-		color:#777;
+		color:#6f6f6f;
 	}
 }
