@@ -517,7 +517,7 @@ td {
 	#banner-text {
 		fill:#6f6f6f;
 	}
-	.banner-graph, .n, .m, .a, .e {
+	.banner-graph, .n, .m, .a, .e, .up::before, .down::before {
 		filter:brightness(80%);
 	}
 	#bannerbg-top, #error {
