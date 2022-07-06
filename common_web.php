@@ -113,7 +113,7 @@ trait common_web
 						 * "num[$x][-perc]". Where "$x" specifies the amount of decimals used, and
 						 * "-perc" will append a percent sign to the column value.
 						 */
-						preg_match('/^num(?<decimals>[0-9])?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
+						preg_match('/^num(?<decimals>\d)?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
 						${'v'.$col} = number_format(${'v'.$col}, (!is_null($matches['decimals']) ? (int) $matches['decimals'] : 0)).(!is_null($matches['percentage']) ? '%' : '');
 
 						if (preg_match('/^0\.0+%?$/', ${'v'.$col})) {
