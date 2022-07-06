@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2020-2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2020-2022, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -36,13 +36,13 @@ class db
 		 */
 		try {
 			self::$db = new SQLite3(self::$database, SQLITE3_OPEN_READWRITE);
-			out::put('notice', 'succesfully connected to database: \''.self::$database.'\'');
+			out::put('notice', 'successfully connected to database: \''.self::$database.'\'');
 		} catch (Exception $e) {
 			out::put('critical', 'sqlite fail: '.$e->getMessage());
 		}
 
 		/**
-		 * Setup the SQLite connection:
+		 * Set up the SQLite connection:
 		 *  - Set the maximum amount of time the busy handler waits when a table is
 		 *    locked to 60 seconds ("busy_timeout = 60000").
 		 *  - Store the rollback journal in memory ("journal_mode = MEMORY").

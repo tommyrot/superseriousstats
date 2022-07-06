@@ -175,7 +175,7 @@ trait common_web
 
 			/**
 			 * If there is more than one day left until the end of the current year, and
-			 * there has been activity during a 90 day period prior to $now, we display an
+			 * there has been activity during a 90-day period prior to $now, we display an
 			 * additional column with a bar depicting the estimated line count for the year.
 			 *
 			 * Secondly, when the leftmost 8 columns are empty we shrink the table so that

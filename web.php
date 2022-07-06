@@ -6,7 +6,7 @@
 
 /**
  * Class for handling database related tasks (for the web). This is a stripped
- * down class based on "db.php". For comments see aformentioned file.
+ * down class based on "db.php". For comments see aforementioned file.
  */
 class db
 {
@@ -24,7 +24,7 @@ class db
 		}
 
 		/**
-		 * Setup the SQLite connection:
+		 * Set up the SQLite connection:
 		 *  - Prevent all changes to database files ("query_only = ON").
 		 */
 		$pragmas = [
@@ -89,7 +89,7 @@ class db
 
 /**
  * Class for handling output messages (for the web). This is a stripped down
- * class based on "out.php". For comments see aformentioned file.
+ * class based on "out.php". For comments see aforementioned file.
  */
 class out
 {
