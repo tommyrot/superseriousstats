@@ -214,7 +214,7 @@ trait common_web
 			}
 		}
 
-		if (($result = $results->fetchArray(SQLITE3_ASSOC)) === false) {
+		if ($results->fetchArray(SQLITE3_ASSOC) === false) {
 			return null;
 		}
 

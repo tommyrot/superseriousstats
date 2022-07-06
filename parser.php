@@ -281,7 +281,7 @@ class parser
 		}
 
 		$nick_performing = $this->create_nick($time, $csnick_performing);
-		$nick_undergoing = $this->create_nick($time, $csnick_undergoing);
+		$this->create_nick($time, $csnick_undergoing);
 		$this->nick_objs[$nick_performing]->add_int('nickchanges', 1);
 	}
 
