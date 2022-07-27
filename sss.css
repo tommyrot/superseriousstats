@@ -38,7 +38,7 @@ a:hover {
 	left:0;
 	position:absolute;
 	top:0;
-	width:100%;
+	width:max(840px,100%);
 	z-index:-1;
 }
 #bannerbg-bottom {
@@ -47,7 +47,7 @@ a:hover {
 	left:0;
 	position:absolute;
 	top:50px;
-	width:100%;
+	width:max(840px,100%);
 	z-index:-1;
 }
 .grey {
