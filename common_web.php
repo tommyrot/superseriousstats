@@ -515,8 +515,6 @@ trait common_web
 				$lines[$time] = $result['l_'.$time];
 			}
 
-			$activity_bar = $this->get_activity_bar('horizontal', $lines, $lines['total']);
-
 			/**
 			 * Indicate change in ranking compared to previous day except when it doesn't
 			 * make sense on the very first day of each specific table.
@@ -534,6 +532,7 @@ trait common_web
 			}
 
 			$percentage = number_format(($lines['total'] / $l_total) * 100, 2).'%';
+			$activity_bar = $this->get_activity_bar('horizontal', $lines, $lines['total']);
 			$tbody .= '<tr><td>'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td>'.number_format($lines['total']).'<td>'.$pos.'<td>'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td>'.$this->ago($result['lasttalked']).'<td><ul>'.$activity_bar['content'].'</ul><td>'.$this->htmlify($result['quote']);
 		}
 
