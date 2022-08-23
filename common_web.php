@@ -293,69 +293,8 @@ trait common_web
 				$tbody .= '<ul><li style="height:14px"><span class="grey">n/a</span></ul>';
 			} else {
 				$total = ($lines[$date]['total'] >= 999500 ? number_format($lines[$date]['total'] / 1000000, 1).'M' : ($lines[$date]['total'] >= 10000 ? round($lines[$date]['total'] / 1000).'K' : $lines[$date]['total']));
-				$height['total'] = (int) round(($lines[$date]['total'] / $high_lines) * 100);
-				$tbody .= '<ul'.($date === 'estimate' ? ' class="est"' : '').'><li style="height:'.($height['total'] + 14).'px">'.$total;
-
-				/**
-				 * Divide the available pixels among times, according to activity.
-				 */
-				$unclaimed_pixels = $height['total'];
-				$unclaimed_subpixels = [];
-
-				foreach ($times as $time) {
-					if ($unclaimed_pixels !== 0 && $lines[$date][$time] !== 0) {
-						$height[$time] = (int) (($lines[$date][$time] / $high_lines) * 100);
-						$unclaimed_pixels -= $height[$time];
-						$unclaimed_subpixels[$time] = (($lines[$date][$time] / $high_lines) * 100) - $height[$time];
-					} else {
-						$height[$time] = 0;
-					}
-				}
-
-				while ($unclaimed_pixels !== 0) {
-					$high_subpixels = 0;
-
-					foreach ($unclaimed_subpixels as $time => $subpixels) {
-						if ($subpixels > $high_subpixels) {
-							$high_subpixels = $subpixels;
-							$high_time = $time;
-						}
-					}
-
-					++$height[$high_time];
-					--$unclaimed_pixels;
-					$unclaimed_subpixels[$high_time] = 0;
-				}
-
-				/**
-				 * Assemble the activity bar.
-				 */
-				foreach ($times as $time) {
-					if ($height[$time] === 0) {
-						continue;
-					}
-
-					/**
-					 * $height_li is the total height of all stacked bar sections up to and
-					 * including current iteration ($time).
-					 */
-					$height_li = 0;
-
-					switch ($time) {
-						case 'evening':
-							$height_li += $height['evening'];
-						case 'afternoon':
-							$height_li += $height['afternoon'];
-						case 'morning':
-							$height_li += $height['morning'];
-						case 'night':
-							$height_li += $height['night'];
-					}
-
-					$tbody .= '<li class="'.$time[0].'" style="height:'.$height_li.'px">';
-				}
-
-				$tbody .= '</ul>';
+				$activity_bar = $this->get_activity_bar('vertical', $lines[$date], $high_lines);
+				$tbody .= '<ul'.($date === 'estimate' ? ' class="est"' : '').'><li style="height:'.($activity_bar['px'] + 14).'px">'.$total.$activity_bar['content'].'</ul>';
 			}
 
 			$tfoot .= '<td>'.($date === $high_date ? '<span class="bold">' : '');
@@ -433,69 +372,8 @@ trait common_web
 			} else {
 				$percentage = ($lines[$day]['total'] / $result['l_total']) * 100;
 				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
-				$height['total'] = (int) round(($lines[$day]['total'] / $high_lines) * 100);
-				$tbody .= '<ul><li style="height:'.($height['total'] + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
-
-				/**
-				 * Divide the available pixels among times, according to activity.
-				 */
-				$unclaimed_pixels = $height['total'];
-				$unclaimed_subpixels = [];
-
-				foreach ($times as $time) {
-					if ($unclaimed_pixels !== 0 && $lines[$day][$time] !== 0) {
-						$height[$time] = (int) (($lines[$day][$time] / $high_lines) * 100);
-						$unclaimed_pixels -= $height[$time];
-						$unclaimed_subpixels[$time] = (($lines[$day][$time] / $high_lines) * 100) - $height[$time];
-					} else {
-						$height[$time] = 0;
-					}
-				}
-
-				while ($unclaimed_pixels !== 0) {
-					$high_subpixels = 0;
-
-					foreach ($unclaimed_subpixels as $time => $subpixels) {
-						if ($subpixels > $high_subpixels) {
-							$high_subpixels = $subpixels;
-							$high_time = $time;
-						}
-					}
-
-					++$height[$high_time];
-					--$unclaimed_pixels;
-					$unclaimed_subpixels[$high_time] = 0;
-				}
-
-				/**
-				 * Assemble the activity bar.
-				 */
-				foreach ($times as $time) {
-					if ($height[$time] === 0) {
-						continue;
-					}
-
-					/**
-					 * $height_li is the total height of all stacked bar sections up to and
-					 * including current iteration ($time).
-					 */
-					$height_li = 0;
-
-					switch ($time) {
-						case 'evening':
-							$height_li += $height['evening'];
-						case 'afternoon':
-							$height_li += $height['afternoon'];
-						case 'morning':
-							$height_li += $height['morning'];
-						case 'night':
-							$height_li += $height['night'];
-					}
-
-					$tbody .= '<li class="'.$time[0].'" style="height:'.$height_li.'px" title="'.number_format($lines[$day]['total']).'">';
-				}
-
-				$tbody .= '</ul>';
+				$activity_bar = $this->get_activity_bar('vertical', $lines[$day], $high_lines, true);
+				$tbody .= '<ul><li style="height:'.($activity_bar['px'] + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).$activity_bar['content'].'</ul>';
 			}
 
 			$tfoot .= '<td>'.($day === $high_day ? '<span class="bold">'.ucfirst($day).'</span>' : ucfirst($day));
@@ -559,11 +437,11 @@ trait common_web
 			} else {
 				$percentage = ($lines[$hour] / $result['l_total']) * 100;
 				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
-				$height = (int) round(($lines[$hour] / $high_lines) * 100);
-				$tbody .= '<ul><li style="height:'.($height + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
+				$px = (int) round(($lines[$hour] / $high_lines) * 100);
+				$tbody .= '<ul><li style="height:'.($px + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage);
 
-				if ($height !== 0) {
-					$tbody .= '<li class="'.($hour <= 5 ? 'n' : ($hour <= 11 ? 'm' : ($hour <= 17 ? 'a' : 'e'))).'" style="height:'.$height.'px" title="'.number_format($lines[$hour]).'">';
+				if ($px !== 0) {
+					$tbody .= '<li class="'.($hour <= 5 ? 'n' : ($hour <= 11 ? 'm' : ($hour <= 17 ? 'a' : 'e'))).'" style="height:'.$px.'px" title="'.number_format($lines[$hour]).'">';
 				}
 
 				$tbody .= '</ul>';
@@ -629,48 +507,15 @@ trait common_web
 
 		while ($result = $results->fetchArray(SQLITE3_ASSOC)) {
 			/**
-			 * Divide the available pixels among times, according to activity.
+			 * Arrange data in a usable format.
 			 */
-			$unclaimed_pixels = 50;
-			$unclaimed_subpixels = [];
+			$lines['total'] = $result['l_total'];
 
 			foreach ($times as $time) {
-				if ($unclaimed_pixels !== 0 && $result['l_'.$time] !== 0) {
-					$width[$time] = (int) (($result['l_'.$time] / $result['l_total']) * 50);
-					$unclaimed_pixels -= $width[$time];
-					$unclaimed_subpixels[$time] = (($result['l_'.$time] / $result['l_total']) * 50) - $width[$time];
-				} else {
-					$width[$time] = 0;
-				}
+				$lines[$time] = $result['l_'.$time];
 			}
 
-			while ($unclaimed_pixels !== 0) {
-				$high_subpixels = 0;
-
-				foreach ($unclaimed_subpixels as $time => $subpixels) {
-					if ($subpixels > $high_subpixels) {
-						$high_subpixels = $subpixels;
-						$high_time = $time;
-					}
-				}
-
-				++$width[$high_time];
-				--$unclaimed_pixels;
-				$unclaimed_subpixels[$high_time] = 0;
-			}
-
-			/**
-			 * Assemble the little activity bar of 50 pixels wide.
-			 */
-			$activity = '';
-
-			foreach ($times as $time) {
-				if ($width[$time] === 0) {
-					continue;
-				}
-
-				$activity .= '<li class="'.$time[0].'" style="width:'.$width[$time].'px">';
-			}
+			$activity_bar = $this->get_activity_bar('horizontal', $lines, $lines['total']);
 
 			/**
 			 * Indicate change in ranking compared to previous day except when it doesn't
@@ -688,8 +533,8 @@ trait common_web
 				$pos = ++$i;
 			}
 
-			$percentage = number_format(($result['l_total'] / $l_total) * 100, 2).'%';
-			$tbody .= '<tr><td>'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td>'.number_format($result['l_total']).'<td>'.$pos.'<td>'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td>'.$this->ago($result['lasttalked']).'<td><ul>'.$activity.'</ul><td>'.$this->htmlify($result['quote']);
+			$percentage = number_format(($lines['total'] / $l_total) * 100, 2).'%';
+			$tbody .= '<tr><td>'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td>'.number_format($lines['total']).'<td>'.$pos.'<td>'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td>'.$this->ago($result['lasttalked']).'<td><ul>'.$activity_bar['content'].'</ul><td>'.$this->htmlify($result['quote']);
 		}
 
 		return '<table class="ppl">'.$colgroup.$thead.$tbody.'</table>'."\n";
@@ -765,8 +610,8 @@ trait common_web
 				$tbody .= '<td>';
 
 				if (isset($lines[$time][$i])) {
-					$width = (int) round(($lines[$time][$i] / $high_lines) * 189);
-					$tbody .= $this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).($width !== 0 ? '<br><div class="'.$time[0].'" style="width:'.$width.'px"></div>' : '');
+					$px = (int) round(($lines[$time][$i] / $high_lines) * 189);
+					$tbody .= $this->htmlify($csnick[$time][$i]).' &ndash; '.number_format($lines[$time][$i]).($px !== 0 ? '<br><div class="'.$time[0].'" style="width:'.$px.'px"></div>' : '');
 				}
 			}
 		}
@@ -779,6 +624,98 @@ trait common_web
 		}
 
 		return '<table class="tod">'.$colgroup.$thead.$tbody.'</table>'."\n";
+	}
+
+	/**
+	 * Assemble the activity bar.
+	 */
+	private function get_activity_bar(string $orientation, array $lines, int $high_lines, bool $title = false): array
+	{
+		/**
+		 * In case of a vertical orientation, the maximum height of an activity bar is
+		 * 100 pixels. For a horizontal orientation the maximum width is 50 pixels. This
+		 * value is reflected by $px_max. The $times array dictates the order in which
+		 * particular bar sections are placed in the stack as well as the priority these
+		 * have in receiving any leftover pixels.
+		 */
+		if ($orientation === 'vertical') {
+			$times = ['evening', 'afternoon', 'morning', 'night'];
+			$px_max = 100;
+		} elseif ($orientation === 'horizontal') {
+			$times = ['night', 'morning', 'afternoon', 'evening'];
+			$px_max = 50;
+		}
+
+		/**
+		 * Calculate the total amount of pixels for current activity bar.
+		 */
+		$px['total'] = (int) round(($lines['total'] / $high_lines) * $px_max);
+
+		/**
+		 * Divide the available pixels among times, according to activity.
+		 */
+		$unclaimed_pixels = $px['total'];
+		$unclaimed_subpixels = [];
+
+		foreach ($times as $time) {
+			if ($unclaimed_pixels !== 0 && $lines[$time] !== 0) {
+				$px[$time] = (int) (($lines[$time] / $high_lines) * $px_max);
+				$unclaimed_pixels -= $px[$time];
+				$unclaimed_subpixels[$time] = (($lines[$time] / $high_lines) * $px_max) - $px[$time];
+			} else {
+				$px[$time] = 0;
+			}
+		}
+
+		while ($unclaimed_pixels !== 0) {
+			$high_subpixels = 0;
+
+			foreach ($unclaimed_subpixels as $time => $subpixels) {
+				if ($subpixels > $high_subpixels) {
+					$high_subpixels = $subpixels;
+					$high_time = $time;
+				}
+			}
+
+			++$px[$high_time];
+			--$unclaimed_pixels;
+			$unclaimed_subpixels[$high_time] = 0;
+		}
+
+		$activity_bar = [
+			'px' => $px['total'],
+			'content' => ''];
+
+		foreach ($times as $time) {
+			if ($px[$time] === 0) {
+				continue;
+			}
+
+			if ($orientation === 'vertical') {
+				/**
+				 * $px_stacked is the total amount of pixels of all stacked bar sections up to
+				 * and including current iteration ($time).
+				 */
+				$px_stacked = 0;
+
+				switch ($time) {
+					case 'evening':
+						$px_stacked += $px['evening'];
+					case 'afternoon':
+						$px_stacked += $px['afternoon'];
+					case 'morning':
+						$px_stacked += $px['morning'];
+					case 'night':
+						$px_stacked += $px['night'];
+				}
+
+				$activity_bar['content'] .= '<li class="'.$time[0].'" style="height:'.$px_stacked.'px"'.($title ? ' title="'.number_format($lines['total']).'"' : '').'>';
+			} elseif ($orientation === 'horizontal') {
+				$activity_bar['content'] .= '<li class="'.$time[0].'" style="width:'.$px[$time].'px">';
+			}
+		}
+
+		return $activity_bar;
 	}
 
 	/**
