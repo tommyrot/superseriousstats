@@ -294,7 +294,7 @@ trait common_web
 			} else {
 				$total = ($lines[$date]['total'] >= 999500 ? number_format($lines[$date]['total'] / 1000000, 1).'M' : ($lines[$date]['total'] >= 10000 ? round($lines[$date]['total'] / 1000).'K' : $lines[$date]['total']));
 				$activity_bar = $this->get_activity_bar('vertical', $lines[$date], $high_lines);
-				$tbody .= '<ul'.($date === 'estimate' ? ' class="est"' : '').'><li style="height:'.($activity_bar['px'] + 14).'px">'.$total.$activity_bar['content'].'</ul>';
+				$tbody .= '<ul'.($date === 'estimate' ? ' class="est"' : '').'><li style="height:'.($activity_bar['px'] + 14).'px">'.$total.$activity_bar['contents'].'</ul>';
 			}
 
 			$tfoot .= '<td>'.($date === $high_date ? '<span class="bold">' : '');
@@ -373,7 +373,7 @@ trait common_web
 				$percentage = ($lines[$day]['total'] / $result['l_total']) * 100;
 				$percentage = ($percentage >= 9.95 ? round($percentage) : number_format($percentage, 1)).'%';
 				$activity_bar = $this->get_activity_bar('vertical', $lines[$day], $high_lines, true);
-				$tbody .= '<ul><li style="height:'.($activity_bar['px'] + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).$activity_bar['content'].'</ul>';
+				$tbody .= '<ul><li style="height:'.($activity_bar['px'] + 14).'px">'.($percentage === '0.0%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).$activity_bar['contents'].'</ul>';
 			}
 
 			$tfoot .= '<td>'.($day === $high_day ? '<span class="bold">'.ucfirst($day).'</span>' : ucfirst($day));
@@ -533,7 +533,7 @@ trait common_web
 
 			$percentage = number_format(($lines['total'] / $l_total) * 100, 2).'%';
 			$activity_bar = $this->get_activity_bar('horizontal', $lines, $lines['total']);
-			$tbody .= '<tr><td>'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td>'.number_format($lines['total']).'<td>'.$pos.'<td>'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td>'.$this->ago($result['lasttalked']).'<td><ul>'.$activity_bar['content'].'</ul><td>'.$this->htmlify($result['quote']);
+			$tbody .= '<tr><td>'.($percentage === '0.00%' ? '<span class="grey">'.$percentage.'</span>' : $percentage).'<td>'.number_format($lines['total']).'<td>'.$pos.'<td>'.($this->link_user_php ? '<a href="user.php?nick='.$this->htmlify(urlencode($result['csnick'])).'">'.$this->htmlify($result['csnick']).'</a>' : $this->htmlify($result['csnick'])).'<td>'.$this->ago($result['lasttalked']).'<td><ul>'.$activity_bar['contents'].'</ul><td>'.$this->htmlify($result['quote']);
 		}
 
 		return '<table class="ppl">'.$colgroup.$thead.$tbody.'</table>'."\n";
@@ -683,7 +683,7 @@ trait common_web
 
 		$activity_bar = [
 			'px' => $px['total'],
-			'content' => ''];
+			'contents' => ''];
 
 		foreach ($times as $time) {
 			if ($px[$time] === 0) {
@@ -708,9 +708,9 @@ trait common_web
 						$px_stacked += $px['night'];
 				}
 
-				$activity_bar['content'] .= '<li class="'.$time[0].'" style="height:'.$px_stacked.'px"'.($title ? ' title="'.number_format($lines['total']).'"' : '').'>';
+				$activity_bar['contents'] .= '<li class="'.$time[0].'" style="height:'.$px_stacked.'px"'.($title ? ' title="'.number_format($lines['total']).'"' : '').'>';
 			} elseif ($orientation === 'horizontal') {
-				$activity_bar['content'] .= '<li class="'.$time[0].'" style="width:'.$px[$time].'px">';
+				$activity_bar['contents'] .= '<li class="'.$time[0].'" style="width:'.$px[$time].'px">';
 			}
 		}
 
