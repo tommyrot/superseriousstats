@@ -51,7 +51,7 @@ class parser
 	private int $streak = 0;
 	private string $date = '';
 	private string $hex_latin1_supplement = '[\x80-\xFF]';
-	private string $hex_valid_utf8 = '(?:[\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
+	private string $hex_valid_utf8 = '([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})';
 	private string $line_new = '';
 	private string $nick_prev = '';
 	private string $year = '';
@@ -146,7 +146,7 @@ class parser
 			 * Match every continuous chunk of valid UTF-8 encoded characters and all single
 			 * bytes that don't validate as such.
 			 */
-			preg_match_all('/'.$this->hex_valid_utf8.'+|./', $line, $matches);
+			preg_match_all('/'.$this->hex_valid_utf8.'+|./n', $line, $matches);
 
 			foreach ($matches[0] as $key => $chunk) {
 				/**
@@ -380,7 +380,7 @@ class parser
 			 * letters, no adjacent combination marks. This method of finding words is not
 			 * 100% accurate but it's good enough for our use case.
 			 */
-			if (preg_match('/^["\'(*]?(?<csword_trimmed>\p{L}+(?:-\p{L}+)?)[!?"\'),.:;*]?$/u', $csword, $matches)) {
+			if (preg_match('/^["\'(*]?(?<csword_trimmed>\p{L}+(-\p{L}+)?)[!?"\'),.:;*]?$/nu', $csword, $matches)) {
 				$csword_trimmed = $matches['csword_trimmed'];
 				$this->create_word($csword_trimmed);
 

@@ -1,30 +1,30 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2011-2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2011-2022, Jos de Ruijter <jos@dutnie.nl>
  */
 
 class parser_znc extends parser
 {
 	protected function parse_line(string $line): void
 	{
-		$timestamp = '\[(?<time>\d{2}:\d{2}(?::\d{2})?)] ';
+		$timestamp = '\[(?<time>\d{2}:\d{2}(:\d{2})?)] ';
 
-		if (preg_match('/^'.$timestamp.'<(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+		if (preg_match('/^'.$timestamp.'<(?<nick>\S+)> (?<line>.+)$/n', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* Joins: (?<nick>\S+)/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* Joins: (?<nick>\S+)/n', $line, $matches)) {
 			$this->set_join($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* Quits: (?<nick>\S+)/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* Quits: (?<nick>\S+)/n', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+) (?:(?<slap>slaps (?<nick_undergoing>\S+).*)|.+))$/i', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
+		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+) ((?<slap>slaps (?<nick_undergoing>\S+).*)|.+))$/in', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
 			if (!is_null($matches['slap'])) {
 				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 			}
 
 			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/n', $line, $matches)) {
 			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick_performing>\S+) sets mode: (?<modes>[-+][ov]+(?:[-+][ov]+)?) (?<nicks_undergoing>\S+(?: \S+)*)$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick_performing>\S+) sets mode: (?<modes>[-+][ov]+([-+][ov]+)?) (?<nicks_undergoing>\S+( \S+)*)$/n', $line, $matches)) {
 			$mode_num = 0;
 			$nicks_undergoing = explode(' ', $matches['nicks_undergoing']);
 
@@ -38,11 +38,11 @@ class parser_znc extends parser
 					++$mode_num;
 				}
 			}
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* Parts: (?<nick>\S+)/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* Parts: (?<nick>\S+)/n', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) changes topic to \'(?<line>.+)\'$/', $line, $matches) && $matches['line'] !== ' ') {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) changes topic to \'(?<line>.+)\'$/n', $line, $matches) && $matches['line'] !== ' ') {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<line>(?<nick_undergoing>\S+) was kicked by (?<nick_performing>\S+) )(?<reason>\(.*\))$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<line>(?<nick_undergoing>\S+) was kicked by (?<nick_performing>\S+) )(?<reason>\(.*\))$/n', $line, $matches)) {
 			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line'].(preg_match('/^\( ?\)$/', $matches['reason']) ? '('.$matches['nick_undergoing'].')' : $matches['reason']));
 		} else {
 			out::put('debug', 'skipping line '.$this->linenum.': \''.$line.'\'');

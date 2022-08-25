@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2022, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -30,22 +30,22 @@ trait urlparts
 		 * Assemble the regular expression if not already done so.
 		 */
 		if ($this->regexp_complete === '') {
-			$domain = '(?<domain>[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*)';
-			$tld = '(?<tld>[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)';
+			$domain = '(?<domain>[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)';
+			$tld = '(?<tld>[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)';
 			$fqdn = '(?<fqdn>'.$domain.'\.'.$tld.')\.?';
-			$ipv4address = '(?<ipv4address>(?:25[0-5]|(?:2[0-4]|1[0-9]|[1-9])?[0-9])(?:\.(?:25[0-5]|(?:2[0-4]|1[0-9]|[1-9])?[0-9])){3})';
-			$port = '(?<port>(?:6553[0-5]|(?:655[0-2]|(?:65[0-4]|(?:6[0-4]|[1-5][0-9]|[1-9])[0-9]|[1-9])[0-9]|[1-9])?[0-9]))';
-			$authority = '(?<authority>(?:'.$ipv4address.'|'.$fqdn.')(?::'.$port.')?)';
+			$ipv4address = '(?<ipv4address>(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})';
+			$port = '(?<port>(6553[0-5]|(655[0-2]|(65[0-4]|(6[0-4]|[1-5][0-9]|[1-9])[0-9]|[1-9])[0-9]|[1-9])?[0-9]))';
+			$authority = '(?<authority>('.$ipv4address.'|'.$fqdn.')(:'.$port.')?)';
 			$unreserved = '[a-z0-9_.~-]';
 			$pct_encoded = '%[0-9a-f]{2}';
 			$sub_delims = '[!$&\'()*+,;=]';
-			$pchar = '(?:'.$unreserved.'|'.$pct_encoded.'|'.$sub_delims.'|[:@])';
-			$fragment = '(?<fragment>(?:#(?:'.$pchar.'|[\/?])*)?)';
-			$path = '(?<path>(?:\/\/?(?:'.$pchar.'+\/?)*)?)';
-			$query = '(?<query>(?:\?(?:'.$pchar.'|[\/?])*)?)';
-			$scheme = '(?:(?<scheme>https?):\/\/)';
-			$this->regexp_callback = '/^'.$scheme.'?'.$authority.'/i';
-			$this->regexp_complete = '/^(?<url>'.$scheme.'?'.$authority.$path.$query.$fragment.')$/i';
+			$pchar = '('.$unreserved.'|'.$pct_encoded.'|'.$sub_delims.'|[:@])';
+			$fragment = '(?<fragment>(#('.$pchar.'|[\/?])*)?)';
+			$path = '(?<path>(\/\/?('.$pchar.'+\/?)*)?)';
+			$query = '(?<query>(\?('.$pchar.'|[\/?])*)?)';
+			$scheme = '((?<scheme>https?):\/\/)';
+			$this->regexp_callback = '/^'.$scheme.'?'.$authority.'/in';
+			$this->regexp_complete = '/^(?<url>'.$scheme.'?'.$authority.$path.$query.$fragment.')$/in';
 		}
 
 		/**

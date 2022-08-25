@@ -189,7 +189,7 @@ class sss
 			 * Skip lines we can't work with. This check is very loose and can only save so
 			 * many from shooting themselves in the foot.
 			 */
-			if (!preg_match('/^(?<status>[134]),(?<registered_nick>[^,*\']+)(?:,(?<aliases>[^,*\']+(?:,[^,*\']+)*)?)?$/', preg_replace('/\s+/', '', $line), $matches, PREG_UNMATCHED_AS_NULL)) {
+			if (!preg_match('/^(?<status>[134]),(?<registered_nick>[^,*\']+)(,(?<aliases>[^,*\']+(,[^,*\']+)*)?)?$/n', preg_replace('/\s+/', '', $line), $matches, PREG_UNMATCHED_AS_NULL)) {
 				continue;
 			}
 

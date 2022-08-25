@@ -189,7 +189,7 @@ class user
 		 */
 		if (is_dir($this->userpics_dir) && ($dh = opendir($this->userpics_dir)) !== false) {
 			while (($entry = readdir($dh)) !== false) {
-				if (!is_dir($this->userpics_dir.'/'.$entry) && preg_match('/^(?<filename>\S+)\.(?:bmp|gif|jpe?g|png|svg)$/i', $entry, $matches)) {
+				if (!is_dir($this->userpics_dir.'/'.$entry) && preg_match('/^(?<filename>\S+)\.(bmp|gif|jpe?g|png|svg)$/in', $entry, $matches)) {
 					$images[mb_strtolower($matches['filename'])] = $entry;
 				}
 			}

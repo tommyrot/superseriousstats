@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2021-2022, Jos de Ruijter <jos@dutnie.nl>
  */
 
 class parser_catgirl extends parser
@@ -16,7 +16,7 @@ class parser_catgirl extends parser
 			$this->set_join($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) leaves:/', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+) (?:(?<slap>slaps (?<nick_undergoing>\S+).*)|.+))$/i', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
+		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+) ((?<slap>slaps (?<nick_undergoing>\S+).*)|.+))$/in', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
 			if (!is_null($matches['slap'])) {
 				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
 			}
@@ -24,7 +24,7 @@ class parser_catgirl extends parser
 			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) is now known as (?<nick_undergoing>\S+)$/', $line, $matches)) {
 			$this->set_nickchange($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
-		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) (?:un)?sets [~&@%+!]?(?<nick_undergoing>\S+) (?<mode>[-+][ov])/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'(?<nick_performing>\S+) (un)?sets [~&@%+!]?(?<nick_undergoing>\S+) (?<mode>[-+][ov])/n', $line, $matches)) {
 			$this->set_mode($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['mode']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) leaves/', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
