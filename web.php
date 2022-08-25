@@ -45,7 +45,7 @@ class db
 		self::$db->close();
 	}
 
-	private static function fail(): void
+	private static function fail(): never
 	{
 		out::put(self::$db->lastErrorCode(), self::$db->lastErrorMsg());
 	}
@@ -97,7 +97,7 @@ class out
 
 	private function __construct() {}
 
-	public static function put(int|string $type, string $message): void
+	public static function put(int|string $type, string $message): never
 	{
 		/**
 		 * Code 5 = SQLITE_BUSY, code 6 = SQLITE_LOCKED.

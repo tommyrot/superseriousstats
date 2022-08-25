@@ -84,7 +84,7 @@ class db
 	/**
 	 * Output the text describing the most recent failed SQLite request and exit.
 	 */
-	private static function fail(): void
+	private static function fail(): never
 	{
 		out::put('critical', 'sqlite fail: '.self::$db->lastErrorMsg());
 	}
