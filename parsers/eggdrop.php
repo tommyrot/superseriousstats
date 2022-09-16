@@ -40,7 +40,7 @@ class parser_eggdrop extends parser
 			}
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) \(\S+\) left/n', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'Topic changed on \S+ by (?<nick>[^!: ]+)(!\S*) (?<line>.+)$/n', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'Topic changed on \S+ by (?<nick>[^!: ]+)(!\S*)?: (?<line>.+)$/n', $line, $matches)) {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'(?<line>(?<nick_undergoing>\S+) kicked from \S+ by (?<nick_performing>\S+):)(?<reason>.*)$/n', $line, $matches)) {
 			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line'].($matches['reason'] === '' ? ' '.$matches['nick_undergoing'] : $matches['reason']));
