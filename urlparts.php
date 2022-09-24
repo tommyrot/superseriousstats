@@ -18,18 +18,18 @@
  *  - User part in authority is not recognized and will not validate.
  *  - IPv6 addresses will not validate.
  *  - Square brackets must be percent encoded.
+ *  - Various normalizations.
  */
 trait urlparts
 {
-	private string $regexp_callback = '';
-	private string $regexp_complete = '';
+	private string $regexp = '';
 
 	private function get_urlparts(string $url): ?array
 	{
 		/**
 		 * Assemble the regular expression if not already done so.
 		 */
-		if ($this->regexp_complete === '') {
+		if ($this->regexp === '') {
 			$domain = '(?<domain>[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)';
 			$tld = '(?<tld>[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)';
 			$fqdn = '(?<fqdn>'.$domain.'\.'.$tld.')\.?';
@@ -44,21 +44,13 @@ trait urlparts
 			$path = '(?<path>(\/('.$pchar.'|\/)*)?)';
 			$query = '(?<query>(\?('.$pchar.'|[\/?])*)?)';
 			$scheme = '((?<scheme>https?):\/\/)';
-			$this->regexp_callback = '/^'.$scheme.'?'.$authority.'/in';
-			$this->regexp_complete = '/^(?<url>'.$scheme.'?'.$authority.$path.$query.$fragment.')$/in';
+			$this->regexp = '/^'.$scheme.'?'.$authority.$path.$query.$fragment.'$/in';
 		}
-
-		/**
-		 * Convert scheme and authority to lower case.
-		 */
-		$url = preg_replace_callback($this->regexp_callback, function (array $matches): string {
-			return strtolower($matches[0]);
-		}, $url);
 
 		/**
 		 * Validate the URL.
 		 */
-		if (!preg_match($this->regexp_complete, $url, $matches, PREG_UNMATCHED_AS_NULL)) {
+		if (!preg_match($this->regexp, $url, $matches, PREG_UNMATCHED_AS_NULL)) {
 			return null;
 		}
 
@@ -77,18 +69,30 @@ trait urlparts
 		}
 
 		/**
-		 * If the URL has no scheme, http is assumed.
+		 * Normalize the URL:
+		 *  - In absense of a scheme, http is assumed.
+		 *  - Convert scheme and authority to lower case.
+		 *  - Rebuild authority so any trailing dot is removed.
+		 *  - Make sure the path always has one single leading slash, and is
+		 *    empty when redundant.
 		 */
-		if (is_null($matches['scheme'])) {
-			$matches['scheme'] = 'http';
-			$matches['url'] = 'http://'.$matches['url'];
+		$matches['scheme'] = (!is_null($matches['scheme']) ? strtolower($matches['scheme']) : 'http');
+		$matches['authority'] = (!is_null($matches['fqdn']) ? strtolower($matches['fqdn']) : $matches['ipv4address']).(!is_null($matches['port']) ? ':'.$matches['port'] : '');
+		$matches['path'] = preg_replace('/^\/+/', '/', $matches['path']);
+
+		if (''.$matches['query'].$matches['fragment'] === '') {
+			$matches['path'] = preg_replace('/^\/$/', '', $matches['path']);
+		} else {
+			$matches['path'] = preg_replace('/^$/', '/', $matches['path']);
 		}
+
+		$matches['url'] = $matches['scheme'].'://'.$matches['authority'].$matches['path'].$matches['query'].$matches['fragment'];
 
 		/**
 		 * Create an array with all parts of the URL. Cast the port number to integer.
 		 * 0 means no port. For the other parts return an empty string instead of null.
 		 */
-		$urlparts['port'] = (is_null($matches['port']) ? 0 : (int) $matches['port']);
+		$urlparts['port'] = (!is_null($matches['port']) ? (int) $matches['port'] : 0);
 
 		foreach (['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'] as $part) {
 			$urlparts[$part] = $matches[$part] ?? '';
