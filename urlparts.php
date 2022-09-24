@@ -41,7 +41,7 @@ trait urlparts
 			$sub_delims = '[!$&\'()*+,;=]';
 			$pchar = '('.$unreserved.'|'.$pct_encoded.'|'.$sub_delims.'|[:@])';
 			$fragment = '(?<fragment>(#('.$pchar.'|[\/?])*)?)';
-			$path = '(?<path>(\/\/?('.$pchar.'+\/?)*)?)';
+			$path = '(?<path>(\/('.$pchar.'|\/)*)?)';
 			$query = '(?<query>(\?('.$pchar.'|[\/?])*)?)';
 			$scheme = '((?<scheme>https?):\/\/)';
 			$this->regexp_callback = '/^'.$scheme.'?'.$authority.'/in';
