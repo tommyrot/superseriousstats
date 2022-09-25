@@ -81,7 +81,7 @@ trait common_web
 							if (preg_match('/^(www\.|https?:\/\/).+/i', $csword) && !is_null($urlparts = $this->get_urlparts($csword))) {
 								$words[$key] = '<a href="'.$this->htmlify($urlparts['url']).'">'.$this->htmlify($urlparts['url']).'</a> ';
 							} else {
-								$words[$key] = $this->htmlify($csword).' ';
+								$words[$key] = $this->htmlify($csword);
 							}
 						}
 
