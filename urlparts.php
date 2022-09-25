@@ -6,7 +6,7 @@
 
 /**
  * Trait with code handling URL validation and disassembly. Returns null if a
- * URL fails the syntax check. Returns an array with the URLs parts on success.
+ * URL fails the syntax check. Returns an array with the URL parts on success.
  * Missing parts are represented by an empty string, a missing port part by
  * (int) 0.
  *
@@ -18,7 +18,7 @@
  *  - User part in authority is not recognized and will not validate.
  *  - IPv6 addresses will not validate.
  *  - Square brackets must be percent encoded.
- *  - Various normalizations.
+ *  - Apply various normalizations.
  */
 trait urlparts
 {
@@ -30,20 +30,20 @@ trait urlparts
 		 * Assemble the regular expression if not already done so.
 		 */
 		if ($this->regexp === '') {
+			$scheme = '((?<scheme>https?):\/\/)';
+			$ipv4address = '(?<ipv4address>(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})';
 			$domain = '(?<domain>[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)';
 			$tld = '(?<tld>[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)';
 			$fqdn = '(?<fqdn>'.$domain.'\.'.$tld.')\.?';
-			$ipv4address = '(?<ipv4address>(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})';
 			$port = '(?<port>(6553[0-5]|(655[0-2]|(65[0-4]|(6[0-4]|[1-5][0-9]|[1-9])[0-9]|[1-9])[0-9]|[1-9])?[0-9]))';
 			$authority = '(?<authority>('.$ipv4address.'|'.$fqdn.')(:'.$port.')?)';
 			$unreserved = '[a-z0-9_.~-]';
 			$pct_encoded = '%[0-9a-f]{2}';
 			$sub_delims = '[!$&\'()*+,;=]';
 			$pchar = '('.$unreserved.'|'.$pct_encoded.'|'.$sub_delims.'|[:@])';
-			$fragment = '(?<fragment>(#('.$pchar.'|[\/?])*)?)';
 			$path = '(?<path>(\/('.$pchar.'|\/)*)?)';
 			$query = '(?<query>(\?('.$pchar.'|[\/?])*)?)';
-			$scheme = '((?<scheme>https?):\/\/)';
+			$fragment = '(?<fragment>(#('.$pchar.'|[\/?])*)?)';
 			$this->regexp = '/^'.$scheme.'?'.$authority.$path.$query.$fragment.'$/in';
 		}
 
@@ -55,7 +55,7 @@ trait urlparts
 		}
 
 		/**
-		 * The TLD may not consist of all digits.
+		 * The TLD may not solely consist of digits.
 		 */
 		if (!is_null($matches['tld']) && preg_match('/^\d+$/', $matches['tld'])) {
 			return null;
