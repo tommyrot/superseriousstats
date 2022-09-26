@@ -108,12 +108,12 @@ trait common_web
 						break;
 					default:
 						/**
-						 * By default columns will be formatted as if containing numeric data. If
-						 * specified, the $type string should be of the following syntax:
-						 * "num[$x][-perc]". Where "$x" specifies the amount of decimals used, and
-						 * "-perc" will append a percent sign to the column value.
+						 * The final case specifies the format of numeric data. The $type argument must
+						 * consist of the string "num", optionally appended by a number specifying the
+						 * amount of decimals, and finally a percent sign "%" if the returned value is
+						 * a percentage.
 						 */
-						preg_match('/^num(?<decimals>\d)?(?<percentage>-perc)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
+						preg_match('/^num(?<decimals>\d)?(?<percentage>%)?$/', $type, $matches, PREG_UNMATCHED_AS_NULL);
 						${'v'.$col} = number_format(${'v'.$col}, (!is_null($matches['decimals']) ? (int) $matches['decimals'] : 0)).(!is_null($matches['percentage']) ? '%' : '');
 
 						if (preg_match('/^0(\.0+)?%?$/', ${'v'.$col})) {
