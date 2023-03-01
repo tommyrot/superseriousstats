@@ -33,26 +33,26 @@ l_morning INT NOT NULL DEFAULT 0,
 l_afternoon INT NOT NULL DEFAULT 0,
 l_evening INT NOT NULL DEFAULT 0,
 l_total INT NOT NULL CHECK (l_total > 0)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE fqdns (
 fid INTEGER PRIMARY KEY,
 fqdn TEXT UNIQUE NOT NULL,
 tld TEXT NOT NULL,
-active BOOLEAN NOT NULL DEFAULT 1 CHECK (active IN (0,1)) --column affinity NUMERIC
-);
+active INT NOT NULL DEFAULT 1 CHECK (active IN (0,1)) --quasi BOOLEAN
+) STRICT;
 CREATE INDEX fqdns_tld ON fqdns (tld);
 CREATE INDEX fqdns_active ON fqdns (active);
 
 CREATE TABLE parse_history (
 date TEXT PRIMARY KEY NOT NULL,
 lines_parsed INT NOT NULL CHECK (lines_parsed > 0)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE parse_state (
 var TEXT PRIMARY KEY NOT NULL,
 value TEXT NOT NULL
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_activity_by_day ( --materialized view
 ruid INT,
@@ -63,7 +63,7 @@ l_afternoon INT,
 l_evening INT,
 l_total INT,
 PRIMARY KEY (ruid, date)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_activity_by_month ( --materialized view
 ruid INT,
@@ -74,7 +74,7 @@ l_afternoon INT,
 l_evening INT,
 l_total INT,
 PRIMARY KEY (ruid, date)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_activity_by_year ( --materialized view
 ruid INT,
@@ -85,7 +85,7 @@ l_afternoon INT,
 l_evening INT,
 l_total INT,
 PRIMARY KEY (ruid, date)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_buddies ( --materialized view
 ruid_active INT,
@@ -95,7 +95,7 @@ l_morning INT,
 l_afternoon INT,
 l_evening INT,
 PRIMARY KEY (ruid_active, ruid_passive)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_events ( --materialized view
 ruid INT PRIMARY KEY,
@@ -116,7 +116,7 @@ nickchanges INT,
 topics INT,
 ex_kicks TEXT,
 ex_kicked TEXT
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_lines ( --materialized view
 ruid INT PRIMARY KEY,
@@ -195,39 +195,39 @@ ex_questions TEXT,
 ex_actions TEXT,
 ex_uppercased TEXT,
 lasttalked TEXT
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_milestones (
 ruid INT NOT NULL REFERENCES uid_details (uid),
 milestone INT NOT NULL,
 date TEXT NOT NULL,
 PRIMARY KEY (ruid, milestone)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_rank_alltime ( --materialized view
 ruid INT PRIMARY KEY,
 rank_cur INT,
 rank_old INT
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_rank_month ( --materialized view
 ruid INT PRIMARY KEY,
 rank_cur INT,
 rank_old INT
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_rank_year ( --materialized view
 ruid INT PRIMARY KEY,
 rank_cur INT,
 rank_old INT
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE ruid_smileys ( --materialized view
 ruid INT,
 sid INT,
 total INT,
 PRIMARY KEY (ruid, sid)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 CREATE INDEX ruid_smileys_sid ON ruid_smileys (sid);
 
 CREATE TABLE ruid_urls ( --materialized view
@@ -237,19 +237,19 @@ firstused TEXT,
 lastused TEXT,
 total INT,
 PRIMARY KEY (ruid, lid)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 CREATE INDEX ruid_urls_lid ON ruid_urls (lid);
 
 CREATE TABLE settings (
 var TEXT PRIMARY KEY NOT NULL,
 value TEXT NOT NULL
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE smileys (
 sid INTEGER PRIMARY KEY,
 smiley TEXT UNIQUE NOT NULL,
 category TEXT
-);
+) STRICT;
 CREATE INDEX smileys_category ON smileys (category);
 INSERT INTO smileys (smiley, category) VALUES
 (':)', 'smile'),
@@ -328,8 +328,8 @@ INSERT INTO smileys (smiley, category) VALUES
 
 CREATE TABLE table_state (
 table_name TEXT PRIMARY KEY NOT NULL,
-modified BOOLEAN NOT NULL DEFAULT 0 CHECK (modified IN (0,1)) --column affinity NUMERIC
-) WITHOUT ROWID;
+modified INT NOT NULL DEFAULT 0 CHECK (modified IN (0,1)) --quasi BOOLEAN
+) STRICT, WITHOUT ROWID;
 INSERT INTO table_state (table_name) VALUES
 ('uid_activity'),
 ('uid_details'),
@@ -347,7 +347,7 @@ l_afternoon INT NOT NULL DEFAULT 0,
 l_evening INT NOT NULL DEFAULT 0,
 l_total INT NOT NULL CHECK (l_total > 0),
 PRIMARY KEY (uid, date)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 CREATE TRIGGER uid_activity_update_modified_1 AFTER INSERT ON uid_activity
 BEGIN
 UPDATE table_state SET modified = 1 WHERE table_name = 'uid_activity' AND modified = 0;
@@ -365,7 +365,7 @@ l_morning INT NOT NULL DEFAULT 0,
 l_afternoon INT NOT NULL DEFAULT 0,
 l_evening INT NOT NULL DEFAULT 0,
 PRIMARY KEY (uid_active, uid_passive)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 
 CREATE TABLE uid_details (
 uid INTEGER PRIMARY KEY,
@@ -374,7 +374,7 @@ firstseen TEXT NOT NULL,
 lastseen TEXT NOT NULL,
 ruid INT NOT NULL DEFAULT 0, --defaults to uid by trigger
 status INT NOT NULL DEFAULT 0 CHECK (status IN (0,1,2,3,4))
-);
+) STRICT;
 CREATE INDEX uid_details_ruid ON uid_details (ruid);
 CREATE INDEX uid_details_status ON uid_details (status);
 CREATE TRIGGER uid_details_update_ruid AFTER INSERT ON uid_details
@@ -405,7 +405,7 @@ nickchanges INT NOT NULL DEFAULT 0,
 topics INT NOT NULL DEFAULT 0,
 ex_kicks TEXT,
 ex_kicked TEXT
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 CREATE TRIGGER uid_events_update_modified_1 AFTER INSERT ON uid_events
 BEGIN
 UPDATE table_state SET modified = 1 WHERE table_name = 'uid_events' AND modified = 0;
@@ -491,7 +491,7 @@ ex_questions TEXT,
 ex_actions TEXT,
 ex_uppercased TEXT,
 lasttalked TEXT NOT NULL DEFAULT '0000-00-00 00:00:00'
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 CREATE TRIGGER uid_lines_update_modified_1 AFTER INSERT ON uid_lines
 BEGIN
 UPDATE table_state SET modified = 1 WHERE table_name = 'uid_lines' AND modified = 0;
@@ -506,7 +506,7 @@ uid INT NOT NULL REFERENCES uid_details (uid),
 sid INT NOT NULL REFERENCES smileys (sid),
 total INT NOT NULL CHECK (total > 0),
 PRIMARY KEY (uid, sid)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 CREATE INDEX uid_smileys_sid ON uid_smileys (sid);
 CREATE TRIGGER uid_smileys_update_modified_1 AFTER INSERT ON uid_smileys
 BEGIN
@@ -521,7 +521,7 @@ CREATE TABLE uid_topics ( --truncated to last 10 records by trigger
 uid INT NOT NULL REFERENCES uid_details (uid),
 topic TEXT NOT NULL,
 datetime TEXT NOT NULL
-);
+) STRICT;
 CREATE INDEX uid_topics_uid ON uid_topics (uid);
 CREATE TRIGGER uid_topics_truncate AFTER INSERT ON uid_topics
 BEGIN
@@ -535,7 +535,7 @@ firstused TEXT NOT NULL,
 lastused TEXT NOT NULL,
 total INT NOT NULL CHECK (total > 0),
 PRIMARY KEY (uid, lid)
-) WITHOUT ROWID;
+) STRICT, WITHOUT ROWID;
 CREATE INDEX uid_urls_lid ON uid_urls (lid);
 CREATE TRIGGER uid_urls_update_modified_1 AFTER INSERT ON uid_urls
 BEGIN
@@ -550,7 +550,7 @@ CREATE TABLE urls (
 lid INTEGER PRIMARY KEY,
 url TEXT UNIQUE NOT NULL,
 fid INT REFERENCES fqdns (fid)
-);
+) STRICT;
 CREATE INDEX urls_fid ON urls (fid);
 
 CREATE TABLE words (
@@ -558,7 +558,7 @@ word TEXT PRIMARY KEY NOT NULL,
 length INT NOT NULL CHECK (length > 0),
 total INT NOT NULL CHECK (total > 0),
 firstused TEXT NOT NULL
-);
+) STRICT;
 CREATE INDEX words_length ON words (length);
 CREATE INDEX words_firstused ON words (firstused);
 
