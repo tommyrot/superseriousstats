@@ -69,35 +69,41 @@ trait urlparts
 		}
 
 		/**
-		 * Normalize the URL:
-		 *  - In absense of a scheme, http is assumed.
-		 *  - Convert scheme and authority to lower case.
-		 *  - Rebuild authority so any trailing dot is removed.
-		 *  - Make sure the path always has one single leading slash, and is
-		 *    empty when redundant.
+		 * Normalize all parts of the URL:
+		 *  - All values are of type string except port which is integer (0 = no port).
+		 *  - In absense of a scheme assume http.
+		 *  - Convert to lower case when appropriate.
+		 *  - Reconstruct authority so any trailing dot is removed.
+		 *  - Make sure path only has one leading slash and is empty when redundant.
+		 *  - Reconstruct the URL to reflect normalizations listed above.
 		 */
-		$matches['scheme'] = (!is_null($matches['scheme']) ? strtolower($matches['scheme']) : 'http');
-		$matches['authority'] = (!is_null($matches['fqdn']) ? strtolower($matches['fqdn']) : $matches['ipv4address']).(!is_null($matches['port']) ? ':'.$matches['port'] : '');
-		$matches['path'] = preg_replace('/^\/+/', '/', $matches['path']);
+		foreach (['scheme', 'fqdn', 'domain', 'tld', 'ipv4address', 'port', 'path', 'query', 'fragment'] as $part) {
+			switch ($part) {
+				case 'scheme':
+					$urlparts['scheme'] = strtolower($matches['scheme'] ?? 'http');
+					break;
+				case 'fqdn':
+				case 'domain':
+				case 'tld':
+					$urlparts[$part] = strtolower($matches[$part] ?? '');
+					break;
+				case 'port':
+					$urlparts['port'] = (int) ($matches['port'] ?? 0);
+					break;
+				default:
+					$urlparts[$part] = $matches[$part] ?? '';
+			}
+		}
 
-		if (''.$matches['query'].$matches['fragment'] === '') {
-			$matches['path'] = preg_replace('/^\/$/', '', $matches['path']);
+		$urlparts['authority'] = ($urlparts['fqdn'] !== '' ? $urlparts['fqdn'] : $urlparts['ipv4address']).($urlparts['port'] !== 0 ? ':'.$urlparts['port'] : '');
+
+		if ($urlparts['query'] === '' && $urlparts['fragment'] === '') {
+			$urlparts['path'] = preg_replace(['/^\/\/+/', '/^\/$/'], ['/', ''], $urlparts['path']);
 		} else {
-			$matches['path'] = preg_replace('/^$/', '/', $matches['path']);
+			$urlparts['path'] = preg_replace(['/^\/\/+/', '/^$/'], ['/', '/'], $urlparts['path']);
 		}
 
-		$matches['url'] = $matches['scheme'].'://'.$matches['authority'].$matches['path'].$matches['query'].$matches['fragment'];
-
-		/**
-		 * Create an array with all parts of the URL. Cast the port number to integer.
-		 * 0 means no port. For the other parts return an empty string instead of null.
-		 */
-		$urlparts['port'] = (!is_null($matches['port']) ? (int) $matches['port'] : 0);
-
-		foreach (['url', 'scheme', 'authority', 'ipv4address', 'fqdn', 'domain', 'tld', 'path', 'query', 'fragment'] as $part) {
-			$urlparts[$part] = $matches[$part] ?? '';
-		}
-
+		$urlparts['url'] = $urlparts['scheme'].'://'.$urlparts['authority'].$urlparts['path'].$urlparts['query'].$urlparts['fragment'];
 		return $urlparts;
 	}
 }
