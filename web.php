@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2020-2022, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2020-2023, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -64,7 +64,7 @@ class db
 		self::$db->exec($query) or self::fail();
 	}
 
-	public static function query_single_col(string $query): int|float|string|null
+	public static function query_single_col(string $query): float|int|string|null
 	{
 		if (($result = self::$db->querySingle($query)) === false) {
 			self::fail();
