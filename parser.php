@@ -521,8 +521,8 @@ class parser
 
 	/**
 	 * Syntax check a given nick. Leave unicode constraints mostly up to the server.
-	 * Removing characters (e.g. 0x27 = ') from the disallowed ones in the regular
-	 * expression below can have serious implications throughout the program.
+	 * Removing certain characters from the disallowed ones in the expression below
+	 * can have negative consequences, because of hardcoded expectations.
 	 *
 	 * The constraints are as follows:
 	 *  - Nicks may NOT start with: 1234567890-
@@ -530,7 +530,7 @@ class parser
 	 */
 	private function validate_nick(string $csnick): bool
 	{
-		if (preg_match('/^[0-9-]|[\x21-\x2C\x2E\x2F\x3A-\x40\x7E]/', $csnick)) {
+		if (preg_match('/^[0-9-]|[!"#$%&\'()*+,.\\/:;<=>?@~]/', $csnick)) {
 			out::put('debug', 'invalid nick: \''.$csnick.'\' on line '.$this->linenum);
 			return false;
 		}
