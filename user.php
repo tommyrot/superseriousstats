@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2022, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2023, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -229,11 +229,11 @@ class user
 	private function main(): void
 	{
 		/**
-		 * Do some input validation. Make sure the nick doesn't contain any invalid
-		 * characters and doesn't exceed 64 characters in length (arbitrary limit).
-		 * Don't create a page for excluded users (status = 4).
+		 * Do some input validation. Make sure the nick is valid UTF-8 and doesn't
+		 * exceed 64 characters in length (arbitrary limit). Don't create a page for
+		 * excluded users (status = 4).
 		 */
-		if (mb_strlen($_GET['nick']) > 64 || !preg_match('/^([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})+$/', $_GET['nick']) || preg_match('/\p{C}/u', $_GET['nick']) || preg_match('/^[0-9-]|[\x20-\x2C\x2E\x2F\x3A-\x40\x7E]|\xC2\xA0|\xE2\x80[\xA8\xA9]/', $_GET['nick']) || is_null($result = db::query_single_row('SELECT csnick, ruid, status FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE csnick = \''.preg_replace('/\'/', '\'\'', $_GET['nick']).'\')')) || $result['status'] === 4) {
+		if (mb_strlen($_GET['nick']) > 64 || !preg_match('/^([\x00-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})+$/', $_GET['nick']) || is_null($result = db::query_single_row('SELECT csnick, ruid, status FROM uid_details WHERE uid = (SELECT ruid FROM uid_details WHERE csnick = \''.preg_replace('/\'/', '\'\'', $_GET['nick']).'\')')) || $result['status'] === 4) {
 			out::put('critical', 'Nonexistent and/or erroneous nickname.');
 		}
 
