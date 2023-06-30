@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2009-2022, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2023, Jos de Ruijter <jos@dutnie.nl>
  */
 
 class parser_mirc extends parser
@@ -10,7 +10,7 @@ class parser_mirc extends parser
 	{
 		$timestamp = '\[(?<time>\d{2}:\d{2}(:\d{2})?)] ';
 
-		if (preg_match('/^'.$timestamp.'<[~&@%+!]?(?<nick>\S+)> (?<line>.+)$/n', $line, $matches)) {
+		if (preg_match('/^'.$timestamp.'<[~&@%+!]?(?<nick>\S+)> ?(?<line>.*)$/n', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) \(\S+\) has joined/n', $line, $matches)) {
 			$this->set_join($matches['time'], $matches['nick']);

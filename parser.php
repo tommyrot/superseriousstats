@@ -295,7 +295,6 @@ class parser
 		}
 
 		$nick = $this->create_nick($time, $csnick);
-		$this->nick_objs[$nick]->add_int('characters', mb_strlen($line));
 		$this->nick_objs[$nick]->set_string('lasttalked', $this->date.' '.$time);
 
 		/**
@@ -367,11 +366,20 @@ class parser
 		}
 
 		/**
+		 * Stop here if the line is empty. It may have consisted of color codes part of
+		 * ASCII or ANSI art, and/or other characters stripped during normalization.
+		 */
+		if ($line === '') {
+			return;
+		}
+
+		/**
 		 * Words are simply considered character groups separated by whitespace.
 		 */
 		$words = explode(' ', $line);
 		$wordcount = count($words);
 		$this->nick_objs[$nick]->add_int('words', $wordcount);
+		$this->nick_objs[$nick]->add_int('characters', mb_strlen($line));
 		$line_symbolized_urls = $line;
 
 		foreach ($words as $csword) {

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2021-2022, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2021-2023, Jos de Ruijter <jos@dutnie.nl>
  */
 
 class parser_catgirl extends parser
@@ -10,7 +10,7 @@ class parser_catgirl extends parser
 	{
 		$timestamp = '\[\d{4}-\d{2}-\d{2}T(?<time>\d{2}:\d{2}:\d{2})\+\d{4}] ';
 
-		if (preg_match('/^'.$timestamp.'<(?<nick>\S+)> (?<line>.+)$/', $line, $matches)) {
+		if (preg_match('/^'.$timestamp.'<(?<nick>\S+)> ?(?<line>.*)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) arrives in/', $line, $matches)) {
 			$this->set_join($matches['time'], $matches['nick']);
