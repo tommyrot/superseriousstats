@@ -28,7 +28,7 @@ class parser_catgirl extends parser
 			$this->set_mode($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['mode']);
 		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) leaves/', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) places a new sign in \S+: (?<line>.+)$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'(?<nick>\S+) places a new sign in \S+: ?(?<line>.*)$/', $line, $matches)) {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'(?<line>(?<nick_performing>\S+) kicks (?<nick_undergoing>\S+) out of \S+:)(?<reason>.*)$/', $line, $matches)) {
 			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line'].($matches['reason'] === '' ? ' '.$matches['nick_undergoing'] : $matches['reason']));

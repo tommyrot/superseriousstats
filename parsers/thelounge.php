@@ -40,7 +40,7 @@ class parser_thelounge extends parser
 			}
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) \(\S+\) left/', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) changed topic to \'(?<line>.+)\'$/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) changed topic to \'(?<line>.*)\'$/', $line, $matches)) {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<line>(?<nick_undergoing>\S+) was kicked by (?<nick_performing>\S+) )(?<reason>\(.*\))$/', $line, $matches)) {
 			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line'].(preg_match('/^\( ?\)$/', $matches['reason']) ? '('.$matches['nick_undergoing'].')' : $matches['reason']));

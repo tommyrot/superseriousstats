@@ -522,9 +522,11 @@ class parser
 		$this->nick_objs[$nick]->add_int('topics', 1);
 
 		/**
-		 * Track topics in a way that preserves the exact order of occurrence.
+		 * Track non-empty topics in a way that preserves the exact order of occurrence.
 		 */
-		$this->topics[] = [$this->date.' '.$time, $nick, $line];
+		if (!preg_match('/^ ?$/', $line)) {
+			$this->topics[] = [$this->date.' '.$time, $nick, $line];
+		}
 	}
 
 	/**

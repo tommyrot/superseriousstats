@@ -41,7 +41,7 @@ class parser_hexchat extends parser
 			}
 		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) \(\S+\) has left/n', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) has changed the topic to: (?<line>.+)$/n', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) has changed the topic to: ?(?<line>.*)$/n', $line, $matches)) {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+) has kicked (?<nick_undergoing>\S+) from \S+ )(?<reason>\(.*\))$/n', $line, $matches)) {
 			$this->set_kick($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'], $matches['line'].(preg_match('/^\( ?\)$/', $matches['reason']) ? '('.$matches['nick_undergoing'].')' : $matches['reason']));
