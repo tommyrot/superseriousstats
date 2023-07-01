@@ -16,9 +16,9 @@ class parser_thelounge extends parser
 			$this->set_join($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) \(\S+\) quit/', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\* [~&@%+!]?(?<line>(?<nick_performing>\S+) ((?<slap>slaps (?<nick_undergoing>\S+).*)|.+))$/in', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
+		} elseif (preg_match('/^'.$timestamp.'\* [~&@%+!]?(?<line>(?<nick_performing>\S+)((?<slap> slaps( (?<nick_undergoing>\S+).*)?)|.*))$/in', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
 			if (!is_null($matches['slap'])) {
-				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
+				$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'] ?? '');
 			}
 
 			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);

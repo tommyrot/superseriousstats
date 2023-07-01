@@ -226,7 +226,13 @@ class parser
 
 		$nick = $this->create_nick($time, $csnick);
 		$this->nick_objs[$nick]->add_int('actions', 1);
-		$this->nick_objs[$nick]->set_string('ex_actions', $line);
+
+		/**
+		 * Don't store empty actions (i.e. actions with just the nick).
+		 */
+		if (str_contains($line, ' ')) {
+			$this->nick_objs[$nick]->set_string('ex_actions', $line);
+		}
 	}
 
 	protected function set_join(string $time, string $csnick): void
@@ -491,6 +497,21 @@ class parser
 
 	protected function set_slap(string $time, string $csnick_performing, string $csnick_undergoing): void
 	{
+		if (!$this->validate_nick($csnick_performing)) {
+			return;
+		}
+
+		$nick_performing = $this->create_nick($time, $csnick_performing);
+		$this->nick_objs[$nick_performing]->add_int('slaps', 1);
+
+		/**
+		 * Stop here if the "undergoing" nick is empty. This also avoids debug output
+		 * from validate_nick() later.
+		 */
+		if ($csnick_undergoing === '') {
+			return;
+		}
+
 		/**
 		 * Strip possible network prefix (e.g. psyBNC) from the "undergoing" nick.
 		 */
@@ -499,16 +520,14 @@ class parser
 			$csnick_undergoing = $matches['nick_trimmed'];
 		}
 
-		if (!$this->validate_nick($csnick_performing) || !$this->validate_nick($csnick_undergoing)) {
+		if (!$this->validate_nick($csnick_undergoing)) {
 			return;
 		}
 
 		/**
 		 * The "undergoing" nick is only referenced and might not be real.
 		 */
-		$nick_performing = $this->create_nick($time, $csnick_performing);
 		$nick_undergoing = $this->create_nick($time, $csnick_undergoing, false);
-		$this->nick_objs[$nick_performing]->add_int('slaps', 1);
 		$this->nick_objs[$nick_undergoing]->add_int('slapped', 1);
 	}
 

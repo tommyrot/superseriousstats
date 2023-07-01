@@ -16,8 +16,8 @@ class parser_mirc extends parser
 			$this->set_join($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'\* (?<nick>\S+) \(\S+\) Quit/n', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*? [~&@%+!]?(?<line>(?<nick_performing>\S+) slaps (?<nick_undergoing>\S+).*)$/in', $line, $matches)) {
-			$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing']);
+		} elseif (preg_match('/^'.$timestamp.'\*\*? [~&@%+!]?(?<line>(?<nick_performing>\S+) slaps( (?<nick_undergoing>\S+).*)?)$/in', $line, $matches)) {
+			$this->set_slap($matches['time'], $matches['nick_performing'], $matches['nick_undergoing'] ?? '');
 			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
 		} elseif (preg_match('/^'.$timestamp.'\*\* [~&@%+!]?(?<line>(?<nick_performing>\S+).+)$/n', $line, $matches)) {
 			$this->set_action($matches['time'], $matches['nick_performing'], $matches['line']);
