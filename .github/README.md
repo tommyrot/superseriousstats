@@ -1,6 +1,12 @@
 ![superseriousstats](banner.svg)
 
-*superseriousstats is a fast and efficient program to create statistics out of various types of IRC chat logs.*
+**A fast and efficient program to create statistics out of IRC chat logs.**
 
-Project homepage: [https://sss.dutnie.nl](https://sss.dutnie.nl) -- for info, docs & demos  
-IRC channel: #superseriousstats @ irc.libera.chat:6697 (TLS) -- support, discussion
+[ [Demo](https://sss.dutnie.nl/demo2) ] [ [Docs](https://sss.dutnie.nl) ]
+
+---
+
+**Support**
+- Join #superseriousstats @ irc.libera.chat:6697 (tls)
+- Star ⭐ this repo!
+- Donate BTC to `14Nd9sTUfQ88SfsazL5GJ99JjtaKGpS2Kx` 🍺🍕
