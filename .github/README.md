@@ -7,6 +7,6 @@
 ---
 
 **Support**
-- Join #superseriousstats @ irc.libera.chat:6697 (tls)
+- Join #dev @ irc.dutnie.nl:6697 (tls)
 - Star ⭐ this repo!
 - Donate BTC to `14Nd9sTUfQ88SfsazL5GJ99JjtaKGpS2Kx` 🍺🍕
