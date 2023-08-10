@@ -1,0 +1,17 @@
+name: "Push Notification"
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: irc push
+        uses: rectalogic/notify-irc@v1
+        if: github.event_name == 'push'
+        with:
+          channel: "#dev"
+          server: "irc.dutnie.nl"
+          nickname: githubspam
+          password: ntKtw0cIHV7y
+          message: |
+            this just in ${{ github.event.compare }}
