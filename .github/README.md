@@ -2,7 +2,7 @@
 
 **A fast and efficient program to create statistics out of IRC chat logs.**
 
-[ [Demo](https://sss.dutnie.nl/demo2) ] [ [Docs](https://sss.dutnie.nl) ]
+[ [Demo](https://sss.dutnie.nl/demo1) ] [ [Docs](https://sss.dutnie.nl) ]
 
 ---
 
