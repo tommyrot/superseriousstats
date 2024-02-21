@@ -7,6 +7,6 @@
 ---
 
 **Support**
-- Join #dev @ irc.dutnie.nl:6697 (tls)
+- ⌨️ ircs://irc.dutnie.nl:6697/#dev
 - Star ⭐ this repo!
 - Donate BTC to `14Nd9sTUfQ88SfsazL5GJ99JjtaKGpS2Kx` 🍺🍕
