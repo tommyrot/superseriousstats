@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2009-2023, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2024, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -14,7 +14,7 @@ ini_set('pcre.jit', '0');
 /**
  * Check for PHP version requirement.
  */
-str_starts_with(PHP_VERSION, '8.2.') or exit('>> php version 8.2 required to run this program <<'."\n");
+preg_match('/^8\.[23]\./', PHP_VERSION) or exit('>> php version 8.2 or 8.3 required to run this program <<'."\n");
 
 /**
  * Check if all required extensions are loaded.
