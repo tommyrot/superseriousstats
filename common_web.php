@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2022, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2024, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -658,6 +658,9 @@ trait common_web
 
 		foreach ($times as $time) {
 			if ($unclaimed_pixels !== 0 && $lines[$time] !== 0) {
+				/**
+				 * Note: float to int conversion rounds down, we want that here.
+				 */
 				$px[$time] = (int) (($lines[$time] / $high_lines) * $px_max);
 				$unclaimed_pixels -= $px[$time];
 				$unclaimed_subpixels[$time] = (($lines[$time] / $high_lines) * $px_max) - $px[$time];
