@@ -170,40 +170,36 @@ trait common_web
 				$dates[] = date('Y-m', strtotime('-'.$i.' months', strtotime(substr($this->now, 0, 7).'-01')));
 			}
 		} elseif ($period === 'year') {
-			$estimate = false;
-			$i = 23;
-
 			/**
 			 * If there is more than one day left until the end of the current year, and
 			 * there has been activity during a 90-day period prior to $now, we display an
 			 * additional column with a bar depicting the estimated line count for the year.
-			 *
-			 * Secondly, when the leftmost 8 columns are empty we shrink the table so that
-			 * the "Activity Distribution by Day" table fits horizontally adjacent to it.
 			 */
+			$estimate = false;
+
 			if ($page === 'html') {
+				$i = (int) substr($this->now, 0, 4) - (int) db::query_single_col('SELECT MIN(SUBSTR(date, 1, 4)) FROM channel_activity');
+
 				if (str_starts_with($this->now, date('Y')) && ($days_left = (int) date('z', strtotime(substr($this->now, 0, 4).'-12-31')) - (int) date('z', strtotime($this->now))) !== 0 && db::query_single_col('SELECT EXISTS (SELECT 1 FROM channel_activity WHERE date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))') === 1) {
 					$estimate = true;
-					--$i;
 				}
 
-				if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM channel_activity WHERE SUBSTR(date, 1, 4) BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\')') === 0) {
-					$i -= 8;
-				}
-
-				$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity WHERE SUBSTR(date, 1, 4) >= \''.((int) substr($this->now, 0, 4) - $i).'\' GROUP BY SUBSTR(date, 1, 4) ORDER BY date ASC');
+				$results = db::query('SELECT SUBSTR(date, 1, 4) AS date, SUM(l_total) AS l_total, SUM(l_night) AS l_night, SUM(l_morning) AS l_morning, SUM(l_afternoon) AS l_afternoon, SUM(l_evening) AS l_evening FROM channel_activity GROUP BY SUBSTR(date, 1, 4) ORDER BY date ASC');
 			} elseif ($page === 'user') {
+				$i = (int) substr($this->now, 0, 4) - (int) db::query_single_col('SELECT MIN(date) FROM ruid_activity_by_year WHERE ruid = '.$this->ruid);
+
 				if (($days_left = (int) date('z', strtotime(substr($this->now, 0, 4).'-12-31')) - (int) date('z', strtotime($this->now))) !== 0 && db::query_single_col('SELECT EXISTS (SELECT 1 FROM ruid_activity_by_day WHERE ruid = '.$this->ruid.' AND date BETWEEN DATE(\''.$this->now.'\', \'-90 days\') AND DATE(\''.$this->now.'\', \'-1 day\'))') === 1) {
 					$estimate = true;
-					--$i;
 				}
 
-				if (db::query_single_col('SELECT EXISTS (SELECT 1 FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date BETWEEN \''.((int) substr($this->now, 0, 4) - $i).'\' AND \''.((int) substr($this->now, 0, 4) - ($i - 8)).'\')') === 0) {
-					$i -= 8;
-				}
-
-				$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' AND date >= \''.((int) substr($this->now, 0, 4) - $i).'\' ORDER BY date ASC');
+				$results = db::query('SELECT date, l_total, l_night, l_morning, l_afternoon, l_evening FROM ruid_activity_by_year WHERE ruid = '.$this->ruid.' ORDER BY date ASC');
 			}
+
+			/**
+			 * Depending on how much data there is to display, shrink the table so the
+			 * "Activity Distribution by Day" table fits horizontally adjacent to it.
+			 */
+			$i = ($i + ($estimate ? 1 : 0) <= 15 ? 15 - ($estimate ? 1 : 0) : ($i + ($estimate ? 1 : 0) <= 23 ? 23 - ($estimate ? 1 : 0) : $i));
 
 			for (; $i >= 0; --$i) {
 				$dates[] = (string) ((int) substr($this->now, 0, 4) - $i);
@@ -310,7 +306,7 @@ trait common_web
 			$tfoot .= ($date === $high_date ? '</span>' : '');
 		}
 
-		return '<table class="act'.($period === 'year' ? ' year" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$colgroup.$thead.$tbody.$tfoot.'</table>'."\n";
+		return (count($dates) > 24 ? '<div class="act scroll">' : '').'<table class="act'.($period === 'year' ? (count($dates) > 24 ? ' year-scroll' : ' year').'" style="width:'.(2 + (count($dates) * 34)).'px' : '').'">'.$colgroup.$thead.$tbody.$tfoot.'</table>'.(count($dates) > 24 ? '</div>' : '')."\n";
 	}
 
 	/**

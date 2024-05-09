@@ -282,9 +282,17 @@ td {
 .act.day {
 	width:240px;
 }
+.act.scroll {
+	margin-right:22px;
+	overflow-x:scroll;
+}
 .act.year {
 	/* Variable width specified in HTML */
 	float:right;
+}
+.act.year-scroll {
+	/* Variable width specified in HTML */
+	margin-right:0;
 }
 .act col {
 	width:34px;
