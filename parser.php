@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2023, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2025, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -176,8 +176,9 @@ class parser
 		}
 
 		/**
-		 * 1. 0x03 is used for (mIRC) color codes and may be followed by a foreground
-		 *    and background color separated by a comma; strip all valid combinations.
+		 * 1. 0x03 is used for color codes and may be followed by a foreground and/or
+		 *    background color separated by a comma; strip all valid combinations, both
+		 *    the syntax used by mIRC (fg required) as well as EPIC (fg optional).
 		 * 2. Replace any and all adjacent tabs (0x09) with a single space (0x20).
 		 * 3. Replace any kind of whitespace or invisible separator with a single space.
 		 * 4. Temporarily replace the zero width joiner (ZWJ) with a tab to preserve it.
@@ -188,7 +189,7 @@ class parser
 		 * 8. Reduce multiple adjacent spaces to a single space.
 		 * 9. Finally, remove spaces at the beginning and end of a line.
 		 */
-		return preg_replace(['/\x03(\d{1,2}(,\d{1,2})?)?/', '/\x09+/', '/\p{Z}+/u', '/(?<!^|[ \p{C}])\x{200D}(?!$|[ \p{C}])/u', '/[\p{Cf}\p{Co}\p{Cs}\p{Cn}]+/u', '/\x09/', '/\p{Cc}+/u', '/ {2,}/', '/^ | $/'], ['', ' ', ' ', "\t", '', "\u{200D}", '', ' ', ''], $line);
+		return preg_replace(['/\x03(\d{1,2})?(,\d{1,2})?/', '/\x09+/', '/\p{Z}+/u', '/(?<!^|[ \p{C}])\x{200D}(?!$|[ \p{C}])/u', '/[\p{Cf}\p{Co}\p{Cs}\p{Cn}]+/u', '/\x09/', '/\p{Cc}+/u', '/ {2,}/', '/^ | $/'], ['', ' ', ' ', "\t", '', "\u{200D}", '', ' ', ''], $line);
 	}
 
 	public function parse_log(string $logfile, int $linenum_start, bool $gzip): void
