@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2023, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2025, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -174,7 +174,7 @@ class user
 		/**
 		 * FOOT
 		 */
-		$contents .= '<div class="info">Statistics created with <a href="https://sss.dutnie.nl">superseriousstats</a> on '.date('r').' <span class="grey">('.date('T').')</span>.</div>'."\n";
+		$contents .= '<div class="info">Statistics created with <a href="https://github.com/tommyrot/superseriousstats">superseriousstats</a> on '.date('r').' <span class="grey">('.date('T').')</span>.</div>'."\n";
 		$contents .= '</div></body>'."\n\n".'</html>'."\n";
 		return $contents;
 	}
