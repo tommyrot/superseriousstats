@@ -61,11 +61,11 @@ Next, get the latest superseriousstats source via git or download the zipped arc
 
 3. Edit `sss.conf`. The available logfile parsers can be found in the `superseriousstats/parsers/` directory. Currently the following formats are supported: catgirl, eggdrop, hexchat (xchat), irssi (smuxi), limechat, mirc, nodelog, supybot, textual, thelounge, weechat, znc (muh2). Put the appropriate parser name in the config, e.g. `parser_eggdrop`.
 
-Note that all logfiles **must** be written as one file per day and **must** have a date in their filename; either 'Ymd' or 'Y-m-d'. Additionally, each channel **must** be logged to a separate directory. Lastly, all parseable lines and events must be prefixed by a 24-hour clock timestamp. For example: `~/irclogs/my_channel/#my_channel.1999-12-31.log`.
+   Note that all logfiles **must** be written as one file per day and **must** have a date in their filename; either 'Ymd' or 'Y-m-d'. Additionally, each channel **must** be logged to a separate directory. Lastly, all parseable lines and events must be prefixed by a 24-hour clock timestamp. For example: `~/irclogs/my_channel/#my_channel.1999-12-31.log`.
 
 4. The easiest way to keep your stats up to date is to make a cron job:
 
-```
+   ```
    $ crontab -e
    @hourly /usr/local/bin/php /path/to/superseriousstats/sss.php -qi /path/to/irclogs/my_channel/ \
    -o /path/to/www/my_channel/index.html
