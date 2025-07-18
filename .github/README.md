@@ -15,8 +15,8 @@
 
 ## Demos
 
-- [#ircv3](https://stats.dutnie.nl/ircv3) (default settings)
-- [#openbsd](https://stats.dutnie.nl/openbsd) (XXL tables)
+- [#ircv3](https://stats.dutnie.nl/ircv3/) (default settings)
+- [#openbsd](https://stats.dutnie.nl/openbsd/) (XXL tables)
 
 ## Support 😻
 
@@ -25,7 +25,7 @@
 
 ## About the Project
 
-Started in 2002 as a fun way to visualize IRC chats between friends, this project has evolved from a single static page into a dynamic ***piece of art*** with user profiles and a browsable history. It’s released under a permissive, free, and open license so like-minded people can enjoy it as they wish. I consider the project feature-complete, though there will always be ideas floating around in my mind.
+Started in 2002 as a fun way to visualize IRC chats between friends, this project has evolved from a single static page into a dynamic ***piece of art*** with user profiles and a browsable history. It's released under a permissive, free, and open license so like-minded people can enjoy it as they wish. I consider the project feature-complete, though there will always be ideas floating around in my mind.
 
 ## Installation
 
@@ -68,11 +68,11 @@ Change the path as needed.
 ```
 $database = '%CHANGEME%';
 ```
-Change to the actual path of the db. Note: make sure the path is relative to the server’s chroot environment.
+Change to the actual path of the db. Note: make sure the path is relative to the server's chroot environment.
 
 ---
 
-### 5. Go over the config file (`sss.conf`)
+### 5. Go over the config file `sss.conf`
 ```
 parser_name = "parser_weechat"  # Example; choose appropriate parser (see below)
 ```
@@ -102,7 +102,7 @@ For more detailed instructions, refer to the [manual](https://raw.githubusercont
 
 ## Frequently Asked Questions
 
-### Q: How do i link different nicks to a single user, tag a bot, or hide a user from the stats?
+### Q: How do I link different nicks to a single user, tag a bot, or hide a user from the stats?
 
 By default, superseriousstats automatically links nicks in a simple manner that should result in minimal false positives. This behavior can be disabled by setting `auto_link_nicks = "false"`. To manually manage user relations, first create an export of all existing nicks by running `sss.php -e <file>`. This file can then be edited and imported back into the database.
 
@@ -134,17 +134,17 @@ To group nicks, place them on the same line with the desired status. For example
 
 Save your changes and run `sss.php -m <file>` to import them. Lines starting with an asterisk are ignored on import, no need to remove them.
 
-> ⚠️ Wildcards won’t work in this file, and made-up nicks will be ignored. If you're manually managing nick relations, it is strongly advised to backup your efforts!
+> ⚠️ Wildcards won't work in this file, and made-up nicks will be ignored. If you're manually managing user relations, it is strongly advised to backup your efforts!
 
 ---
 
-### Q: Can users have avatars?
+### Q: How do I add avatars to users' profile pages `user.php`?
 
-Yes, on their profile page (`user.php`). Create a directory on your web server:
+Create a `userpics` directory on your web server, using the appropriate path:
 ```
 mkdir /path/to/www/my_channel/userpics
 ```
-Place avatar images in the directory, and name them after one of the user’s aliases. The file extension must be one of: bmp, gif, jpg, jpeg, png, svg.
+Place avatar images in this directory, named after one of the user's aliases. The file extension must be one of: bmp, gif, jpg, jpeg, png, or svg.
 
 ---
 
@@ -165,13 +165,13 @@ Change paths accordingly.
 
 ---
 
-### Q: My channel was logged by different clients in the past. How do i parse them?
+### Q: My channel was logged by different clients in the past. How do I parse them?
 
 It is important to parse logs in chronological order. Working from oldest to newest, put all continuous logs with the same syntax in a separate directory. Edit `sss.conf` and set the correct parser for this batch. Now parse all logs in the directory. Next, edit the config file again and set the parser for the next set of logs and parse them. Repeat this procedure as many times as necessary.
 
 ---
 
-### Q: I have just one big log file. What should i do?
+### Q: I have just one big log file. What should I do?
 
 You will have to split it into daily logfiles before parsing.
 
