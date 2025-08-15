@@ -32,11 +32,11 @@ Started in 2002 as a fun way to visualize IRC chats between friends, this projec
 ### Prerequisites:
 
 - Recent version of SQLite3
-- PHP 8.2+ CLI and FPM with the following modules:
+- PHP 8.2+ with the following modules:
   - `mbstring`
   - `sqlite`
   - `zlib` (CLI only, for gzipped logs)
-- Properly configured web server
+- Web server capable of running PHP with the above modules
 
 ---
 
