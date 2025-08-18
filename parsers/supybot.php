@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2011-2023, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2011-2025, Jos de Ruijter <jos@dutnie.nl>
  */
 
 class parser_supybot extends parser
@@ -12,9 +12,9 @@ class parser_supybot extends parser
 
 		if (preg_match('/^'.$timestamp.'<(?<nick>\S+)> ?(?<line>.*)$/', $line, $matches)) {
 			$this->set_normal($matches['time'], $matches['nick'], $matches['line']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) has joined/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) (<\S+> )?has joined/', $line, $matches)) {
 			$this->set_join($matches['time'], $matches['nick']);
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) has quit IRC/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) (<\S+> )?has quit IRC/', $line, $matches)) {
 			$this->set_quit($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'\* (?<line>(?<nick_performing>\S+)((?<slap> slaps( (?<nick_undergoing>\S+).*)?)|.*))$/in', $line, $matches, PREG_UNMATCHED_AS_NULL)) {
 			if (!is_null($matches['slap'])) {
@@ -38,7 +38,7 @@ class parser_supybot extends parser
 					++$mode_num;
 				}
 			}
-		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) has left/', $line, $matches)) {
+		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) (<\S+> )?has left/', $line, $matches)) {
 			$this->set_part($matches['time'], $matches['nick']);
 		} elseif (preg_match('/^'.$timestamp.'\*\*\* (?<nick>\S+) changes topic to "(?<line>.*)"$/', $line, $matches)) {
 			$this->set_topic($matches['time'], $matches['nick'], $matches['line']);

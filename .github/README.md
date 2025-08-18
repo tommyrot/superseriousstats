@@ -76,7 +76,7 @@ Change to the actual path of the db. Note: make sure the path is relative to the
 ```
 parser_name = "parser_weechat"  # Example; choose appropriate parser (see below)
 ```
-Supported formats can be found in the `parsers/` directory: catgirl, Eggdrop, HexChat (XChat), Irssi (Smuxi), LimeChat, mIRC, nodelog, Supybot, Textual, The Lounge, WeeChat, ZNC (muh2). Specify the filename without the extension.
+Supported formats can be found in the `parsers/` directory: catgirl, Eggdrop, HexChat (XChat), Irssi (Smuxi), LimeChat, mIRC, nodelog, Supybot (Limnoria), Textual, The Lounge, WeeChat, ZNC (muh2). Specify the filename without the extension.
 
 Note: use one logfile per day, with the date in the filename (either Ymd or Y-m-d format), and store logs for each channel in a separate directory. Example: `~/irclogs/my_channel/#my_channel.1999-12-31.log`. All parseable lines and events must begin with a 24-hour timestamp.
 
