@@ -74,7 +74,7 @@ Change to the actual path of the db. Note: make sure the path is relative to the
 
 ### 5. Go over the config file `sss.conf`
 ```
-parser_name = "parser_weechat"  # Example; choose appropriate parser (see below)
+parser_name = "weechat"  # Example; choose appropriate parser (see below)
 ```
 Supported formats can be found in the `parsers/` directory: catgirl, Eggdrop, HexChat (XChat), Irssi (Smuxi), LimeChat, mIRC, nodelog, Supybot (Limnoria), Textual, The Lounge, WeeChat, ZNC (muh2). Specify the filename without the extension.
 
