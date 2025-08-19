@@ -90,7 +90,7 @@ class sss
 		/**
 		 * Read either the user provided config file or the default one.
 		 */
-		$settings = $this->read_config($options['c'] ?? sss.conf);
+		$settings = $this->read_config($options['c'] ?? 'sss.conf');
 
 		/**
 		 * Set the proper timezone.
