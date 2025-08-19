@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2021-2023, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2021-2025, Jos de Ruijter <jos@dutnie.nl>
  */
 
-class parser_thelounge extends parser
+class thelounge extends parser
 {
 	protected function parse_line(string $line): void
 	{

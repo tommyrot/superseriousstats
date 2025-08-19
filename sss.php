@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2009-2024, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2009-2025, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -28,8 +28,8 @@ foreach (['sqlite3', 'mbstring'] as $module) {
  * time of instantiation.
  */
 spl_autoload_register(function (string $class): void {
-	if (str_starts_with($class, 'parser_')) {
-		require __DIR__.'/parsers/'.substr($class, 7).'.php';
+	if (file_exists(__DIR__.'/parsers/'.$class.'.php')) {
+		require __DIR__.'/parsers/'.$class.'.php';
 	} else {
 		require __DIR__.'/'.$class.'.php';
 	}

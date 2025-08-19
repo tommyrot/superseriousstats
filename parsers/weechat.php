@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2020-2023, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2020-2025, Jos de Ruijter <jos@dutnie.nl>
  */
 
-class parser_weechat extends parser
+class weechat extends parser
 {
 	protected function parse_line(string $line): void
 	{

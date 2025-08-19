@@ -4,7 +4,7 @@
  * Copyright (c) 2011-2025, Jos de Ruijter <jos@dutnie.nl>
  */
 
-class parser_supybot extends parser
+class supybot extends parser
 {
 	protected function parse_line(string $line): void
 	{
