@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2021, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2025, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -110,7 +110,7 @@ class maintenance
 		 */
 		db::query_exec('UPDATE fqdns SET active = 1 WHERE active = 0');
 
-		if (($rp = realpath(__DIR__.'/tlds-alpha-by-domain.txt')) === false) {
+		if (($rp = realpath('tlds-alpha-by-domain.txt')) === false) {
 			out::put('debug', 'no such file: \'tlds-alpha-by-domain.txt\', skipping tld validation');
 			return;
 		}

@@ -24,14 +24,19 @@ foreach (['sqlite3', 'mbstring'] as $module) {
 }
 
 /**
+ * Change the working directory to that of the script.
+ */
+chdir(__DIR__);
+
+/**
  * Autoloader. This code handles on the fly inclusion of classes and traits at
  * time of instantiation.
  */
 spl_autoload_register(function (string $class): void {
-	if (file_exists(__DIR__.'/parsers/'.$class.'.php')) {
-		require __DIR__.'/parsers/'.$class.'.php';
+	if (file_exists('parsers/'.$class.'.php')) {
+		require 'parsers/'.$class.'.php';
 	} else {
-		require __DIR__.'/'.$class.'.php';
+		require $class.'.php';
 	}
 });
 
@@ -85,7 +90,7 @@ class sss
 		/**
 		 * Read either the user provided config file or the default one.
 		 */
-		$settings = $this->read_config($options['c'] ?? __DIR__.'/sss.conf');
+		$settings = $this->read_config($options['c'] ?? sss.conf);
 
 		/**
 		 * Set the proper timezone.
