@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Copyright (c) 2007-2025, Jos de Ruijter <jos@dutnie.nl>
+ * Copyright (c) 2007-2026, Jos de Ruijter <jos@dutnie.nl>
  */
 
 /**
@@ -226,7 +226,7 @@ class html
 		$section .= $this->create_table('Most Recent URLs', ['Date', 'User', 'URL'], ['date-norepeat', 'str', 'url'], ['SELECT lastused AS v1, csnick AS v2, url AS v3 FROM ruid_urls JOIN uid_details ON ruid_urls.ruid = uid_details.uid JOIN urls ON ruid_urls.lid = urls.lid JOIN fqdns ON urls.fid = fqdns.fid WHERE status NOT IN (3,4) AND active = 1 ORDER BY v1 DESC LIMIT 30'], 30);
 		$section .= $this->create_table('URLs by Users', ['Total', 'User'], ['num', 'str'], ['SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status NOT IN (3,4) AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status != 3'], $rows);
 		$section .= $this->create_table('URLs by Bots', ['Total', 'Bot'], ['num', 'str'], ['SELECT urls AS v1, csnick AS v2 FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3 AND urls != 0 ORDER BY v1 DESC, ruid_lines.ruid ASC LIMIT '.$rows, 'SELECT SUM(urls) FROM ruid_lines JOIN uid_details ON ruid_lines.ruid = uid_details.uid WHERE status = 3'], $rows);
-		$section .= $this->create_table('Reposts by Users', ['Total', 'User'], ['num', 'str'], ['SELECT SUM(total - CASE WHEN firstused = (SELECT MIN(firstused) FROM ruid_urls WHERE lid = t1.lid) THEN 1 ELSE 0 END) AS v1, csnick AS v2 FROM ruid_urls AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status NOT IN (3,4) GROUP BY t1.ruid HAVING v1 != 0 ORDER BY v1 DESC, t1.ruid ASC LIMIT '.$rows, 'SELECT SUM(total - CASE WHEN firstused = (SELECT MIN(firstused) FROM ruid_urls WHERE lid = t1.lid) THEN 1 ELSE 0 END) FROM ruid_urls AS t1 JOIN uid_details ON t1.ruid = uid_details.uid WHERE status != 3'], $rows);
+		$section .= $this->create_table('Reposts by Users', ['Total', 'User'], ['num', 'str'], ['SELECT SUM(total - CASE WHEN t1.firstused = t2.firstused THEN 1 ELSE 0 END) AS v1, csnick AS v2 FROM ruid_urls AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN (SELECT lid, MIN(firstused) AS firstused FROM ruid_urls GROUP BY lid) AS t2 ON t1.lid = t2.lid WHERE status NOT IN (3,4) GROUP BY t1.ruid HAVING v1 != 0 ORDER BY v1 DESC, t1.ruid ASC LIMIT '.$rows, 'SELECT SUM(total - CASE WHEN t1.firstused = t2.firstused THEN 1 ELSE 0 END) FROM ruid_urls AS t1 JOIN uid_details ON t1.ruid = uid_details.uid JOIN (SELECT lid, MIN(firstused) AS firstused FROM ruid_urls GROUP BY lid) AS t2 ON t1.lid = t2.lid WHERE status != 3'], $rows);
 
 		if ($section !== '') {
 			$contents .= '<div class="section">URLs</div>'."\n".$section;
