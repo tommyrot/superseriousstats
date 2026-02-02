@@ -6,7 +6,7 @@
 
 ## Features
 
-- Cleanly written in PHP.
+- Cleanly written in PHP by an actual human being.
 - Incremental log processing with progress stored in an SQLite database.
 - Generates a static HTML page with no dependencies or embedded scripts.
 - Optional dynamic (.php) pages for historical and user stats.
