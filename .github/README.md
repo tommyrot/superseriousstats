@@ -18,10 +18,13 @@
 - [#ircv3](https://stats.dutnie.nl/ircv3/) (default settings)
 - [#openbsd](https://stats.dutnie.nl/openbsd/) (XXL tables)
 
-## Support 😻
+## Support
 
-- Star ⭐ this repo!
-- Donate BTC to `14Nd9sTUfQ88SfsazL5GJ99JjtaKGpS2Kx` 🍺🍕
+If you enjoy this beautiful project:
+- Use it!
+- Star the repo <3
+- Maybe sponsor me on GitHub
+- Donate BTC to `14Nd9sTUfQ88SfsazL5GJ99JjtaKGpS2Kx`
 
 ## About the Project
 
@@ -134,7 +137,7 @@ To group nicks, place them on the same line with the desired status. For example
 
 Save your changes and run `sss.php -m <file>` to import them. Lines starting with an asterisk are ignored on import, no need to remove them.
 
-> ⚠️ Wildcards won't work in this file, and made-up nicks will be ignored. If you're manually managing user relations, it is strongly advised to backup your efforts!
+> /!\ Wildcards won't work in this file, and made-up nicks will be ignored. If you're manually managing user relations, it is strongly advised to backup your efforts!
 
 ---
 
