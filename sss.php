@@ -14,7 +14,7 @@ ini_set('pcre.jit', '0');
 /**
  * Check for PHP version requirement.
  */
-preg_match('/^8\.[2345]\./', PHP_VERSION) or exit('>> php version 8.[2345] required to run this program <<'."\n");
+preg_match('/^8\.[2-9]\./', PHP_VERSION) or exit('>> php version 8.2 or later required to run this program <<'."\n");
 
 /**
  * Check if all required extensions are loaded.
